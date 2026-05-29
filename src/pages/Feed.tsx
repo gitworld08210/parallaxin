@@ -1,97 +1,104 @@
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { Bell, Sparkles, Plus } from "lucide-react";
 import { TopBar } from "@/components/vibe/TopBar";
-import { AuraAvatar } from "@/components/vibe/AuraAvatar";
-import { GlassCard } from "@/components/vibe/GlassCard";
-import { VerificationBadge } from "@/components/vibe/VerificationBadge";
-import { fmt, reels } from "@/lib/mock";
-import { motion } from "framer-motion";
-import { Bell, Heart, MessageCircle, Send, Sparkles } from "lucide-react";
+import { PostCard, FeedPost } from "@/components/social/PostCard";
+import { CommentSheet } from "@/components/social/CommentSheet";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthProvider";
 
 const Feed = () => {
+  const { user } = useAuth();
+  const [tab, setTab] = useState<"foryou" | "following">("foryou");
+  const [posts, setPosts] = useState<FeedPost[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [commentPost, setCommentPost] = useState<string | null>(null);
+
+  const load = async () => {
+    setLoading(true);
+    let q = supabase
+      .from("posts")
+      .select("id, user_id, content, media_url, media_type, like_count, comment_count, created_at, profile:profiles!posts_user_id_fkey(username, display_name, avatar_url, verified)")
+      .order("created_at", { ascending: false })
+      .limit(50);
+
+    if (tab === "following" && user) {
+      const { data: follows } = await supabase.from("follows").select("following_id").eq("follower_id", user.id);
+      const ids = (follows ?? []).map((f) => f.following_id);
+      if (ids.length === 0) { setPosts([]); setLoading(false); return; }
+      q = q.in("user_id", ids);
+    }
+    const { data } = await q;
+    let liked: Set<string> = new Set();
+    if (user && data?.length) {
+      const { data: l } = await supabase.from("likes").select("post_id").eq("user_id", user.id).in("post_id", data.map((d: any) => d.id));
+      liked = new Set((l ?? []).map((x) => x.post_id));
+    }
+    setPosts((data ?? []).map((d: any) => ({ ...d, liked: liked.has(d.id) })));
+    setLoading(false);
+  };
+
+  useEffect(() => { load(); /* eslint-disable-next-line */ }, [tab, user?.id]);
+
   return (
     <div>
       <TopBar
-        subtitle="VibeNexus"
-        title="For You"
+        subtitle="Aurelix"
+        title="Feed"
         right={
-          <button className="glass h-11 w-11 rounded-full grid place-items-center" aria-label="Notifications">
+          <Link to="/notifications" className="glass h-11 w-11 rounded-full grid place-items-center">
             <Bell className="h-5 w-5" />
-          </button>
+          </Link>
         }
       />
 
-      {/* Trending creators rail */}
-      <section className="px-5 mb-4">
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-sm font-semibold tracking-wide text-muted-foreground uppercase">Trending creators</h2>
-          <Sparkles className="h-4 w-4 text-primary" />
-        </div>
-        <div className="flex gap-3 overflow-x-auto hide-scrollbar -mx-5 px-5">
-          {reels.map((r) => (
-            <div key={r.id} className="flex flex-col items-center gap-1 shrink-0">
-              <AuraAvatar gradient={r.creator.avatar} size="md" glow initials={r.creator.name[0]} />
-              <span className="text-[11px] text-muted-foreground max-w-[64px] truncate">{r.creator.handle}</span>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Reels stack */}
-      <section className="px-5 space-y-5">
-        {reels.map((r, i) => (
-          <motion.article
-            key={r.id}
-            initial={{ opacity: 0, y: 24 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.06, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+      <div className="px-5 mb-4 flex glass rounded-full p-1">
+        {[
+          { id: "foryou", label: "For You", icon: Sparkles },
+          { id: "following", label: "Following", icon: null },
+        ].map((t: any) => (
+          <button
+            key={t.id}
+            onClick={() => setTab(t.id)}
+            className={`flex-1 py-2 text-xs font-semibold rounded-full flex items-center justify-center gap-1.5 transition-all ${
+              tab === t.id ? "bg-gradient-primary text-primary-foreground shadow-glow" : "text-muted-foreground"
+            }`}
           >
-            <GlassCard className="overflow-hidden p-0">
-              <div
-                className="relative aspect-[9/14] w-full"
-                style={{ backgroundImage: r.cover }}
-              >
-                <div className="absolute inset-0 bg-gradient-to-t from-background via-background/30 to-transparent" />
+            {t.icon && <t.icon className="h-3.5 w-3.5" />}
+            {t.label}
+          </button>
+        ))}
+      </div>
 
-                <div className="absolute top-4 left-4 right-4 flex items-center gap-3">
-                  <AuraAvatar gradient={r.creator.avatar} size="sm" initials={r.creator.name[0]} />
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-1.5">
-                      <p className="font-semibold truncate">{r.creator.name}</p>
-                      {r.creator.badges.map((b) => (
-                        <VerificationBadge key={b} kind={b} />
-                      ))}
-                    </div>
-                    <p className="text-xs text-muted-foreground">{r.creator.handle}</p>
-                  </div>
-                  <button className="text-xs font-semibold px-3 py-1.5 rounded-full bg-gradient-primary text-primary-foreground shadow-glow">
-                    Follow
-                  </button>
-                </div>
-
-                <div className="absolute right-3 bottom-24 flex flex-col items-center gap-4">
-                  <ActionIcon icon={Heart} value={fmt(r.likes)} />
-                  <ActionIcon icon={MessageCircle} value={fmt(r.comments)} />
-                  <ActionIcon icon={Send} value={fmt(r.shares)} />
-                </div>
-
-                <div className="absolute left-4 right-20 bottom-5">
-                  <p className="text-sm leading-snug">{r.caption}</p>
-                </div>
-              </div>
-            </GlassCard>
-          </motion.article>
+      <section className="px-5 space-y-4 pb-6">
+        {loading && <p className="text-sm text-muted-foreground text-center py-12">Loading the universe…</p>}
+        {!loading && posts.length === 0 && (
+          <div className="text-center py-16">
+            <p className="font-display text-2xl mb-2">Nothing here yet</p>
+            <p className="text-sm text-muted-foreground mb-6">
+              {tab === "following" ? "Follow creators to fill your feed." : "Be the first to share a vibe."}
+            </p>
+            <Link to="/compose" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-primary text-primary-foreground font-semibold text-sm shadow-glow">
+              <Plus className="h-4 w-4" /> Create post
+            </Link>
+          </div>
+        )}
+        {posts.map((p) => (
+          <PostCard key={p.id} post={p} onOpenComments={setCommentPost} />
         ))}
       </section>
+
+      <Link
+        to="/compose"
+        className="fixed bottom-24 right-5 z-40 h-14 w-14 rounded-full bg-gradient-primary text-primary-foreground grid place-items-center shadow-glow"
+        aria-label="New post"
+      >
+        <Plus className="h-6 w-6" />
+      </Link>
+
+      <CommentSheet postId={commentPost} open={!!commentPost} onOpenChange={(b) => !b && setCommentPost(null)} />
     </div>
   );
 };
-
-const ActionIcon = ({ icon: Icon, value }: { icon: any; value: string }) => (
-  <button className="flex flex-col items-center gap-1 group">
-    <span className="h-10 w-10 grid place-items-center rounded-full glass group-active:scale-95 transition-transform">
-      <Icon className="h-5 w-5" />
-    </span>
-    <span className="text-[10px] font-semibold">{value}</span>
-  </button>
-);
 
 export default Feed;

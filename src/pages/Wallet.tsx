@@ -1,6 +1,7 @@
 import { TopBar } from "@/components/vibe/TopBar";
 import { GlassCard } from "@/components/vibe/GlassCard";
-import { fmt, me } from "@/lib/mock";
+import { fmt } from "@/lib/format";
+import { useAuth } from "@/contexts/AuthProvider";
 import { Coins, Gift, ShieldCheck, Sparkles, Trophy } from "lucide-react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
@@ -8,9 +9,15 @@ import { Link } from "react-router-dom";
 const XP_PER_LEVEL = 10_000;
 
 const Wallet = () => {
+  const { profile } = useAuth();
+  const xp = (profile?.posts_count ?? 0) * 100 + (profile?.followers_count ?? 0) * 10;
+  const auraCoins = Math.floor(xp / 4);
+  const trustScore = profile?.verified ? 95 : 70;
+  const me = { xp, auraCoins, trustScore };
   const level = Math.floor(me.xp / XP_PER_LEVEL) + 1;
   const progress = (me.xp % XP_PER_LEVEL) / XP_PER_LEVEL;
   const eligible = me.auraCoins >= 10_000;
+
 
   return (
     <div>
