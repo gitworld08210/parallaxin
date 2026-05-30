@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ChevronLeft } from "lucide-react";
-import { TopBar } from "@/components/vibe/TopBar";
+import { ChevronLeft, MoreHorizontal } from "lucide-react";
 import { PostCard, FeedPost } from "@/components/social/PostCard";
 import { CommentSheet } from "@/components/social/CommentSheet";
 import { supabase } from "@/integrations/supabase/client";
@@ -33,11 +32,15 @@ const PostDetail = () => {
 
   return (
     <div>
-      <TopBar
-        subtitle="Post"
-        title=""
-        right={<button onClick={() => nav(-1)} className="glass h-11 w-11 rounded-full grid place-items-center"><ChevronLeft className="h-5 w-5" /></button>}
-      />
+      <header className="h-14 px-2 flex items-center justify-between border-b border-border sticky top-0 z-30 bg-background/95 backdrop-blur">
+        <button onClick={() => nav(-1)} className="h-10 w-10 grid place-items-center" aria-label="Back">
+          <ChevronLeft className="h-6 w-6" />
+        </button>
+        <h1 className="text-base font-semibold">Post</h1>
+        <button className="h-10 w-10 grid place-items-center" aria-label="More">
+          <MoreHorizontal className="h-5 w-5" />
+        </button>
+      </header>
       <div className="px-5 pb-6">
         {!post && <p className="text-sm text-muted-foreground text-center py-12">Loading…</p>}
         {post && <PostCard post={post} onOpenComments={() => setOpen(true)} />}
