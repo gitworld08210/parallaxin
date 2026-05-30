@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Settings, BadgeCheck, LogOut, Pencil, Grid3x3, Film, Bookmark, MoreHorizontal, Ban, VolumeX } from "lucide-react";
+import { BadgeCheck, LogOut, Pencil, Grid3x3, Film, Bookmark, MoreHorizontal, Ban, VolumeX } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { TopBar } from "@/components/vibe/TopBar";
 import { GlassCard } from "@/components/vibe/GlassCard";

@@ -18,6 +18,20 @@ const Feed = () => {
 
   const load = async () => {
     setLoading(true);
+
+    // gather blocks (both directions) + mutes to exclude
+    let excluded = new Set<string>();
+    if (user) {
+      const [{ data: bOut }, { data: bIn }, { data: mu }] = await Promise.all([
+        (supabase.from("blocks" as any).select("blocked_id").eq("blocker_id", user.id) as any),
+        (supabase.from("blocks" as any).select("blocker_id").eq("blocked_id", user.id) as any),
+        (supabase.from("mutes" as any).select("muted_id").eq("muter_id", user.id) as any),
+      ]);
+      (bOut ?? []).forEach((x: any) => excluded.add(x.blocked_id));
+      (bIn ?? []).forEach((x: any) => excluded.add(x.blocker_id));
+      (mu ?? []).forEach((x: any) => excluded.add(x.muted_id));
+    }
+
     let q = supabase
       .from("posts")
       .select("id, user_id, content, media_url, media_type, like_count, comment_count, created_at, profile:profiles!posts_user_profile_fkey(username, display_name, avatar_url, verified, verification_kind)")
@@ -27,17 +41,18 @@ const Feed = () => {
 
     if (tab === "following" && user) {
       const { data: follows } = await supabase.from("follows").select("following_id").eq("follower_id", user.id);
-      const ids = (follows ?? []).map((f) => f.following_id);
+      const ids = (follows ?? []).map((f) => f.following_id).filter((id) => !excluded.has(id));
       if (ids.length === 0) { setPosts([]); setLoading(false); return; }
       q = q.in("user_id", ids);
     }
     const { data } = await q;
+    let visible = (data ?? []).filter((d: any) => !excluded.has(d.user_id));
     let liked: Set<string> = new Set();
-    if (user && data?.length) {
-      const { data: l } = await supabase.from("likes").select("post_id").eq("user_id", user.id).in("post_id", data.map((d: any) => d.id));
+    if (user && visible.length) {
+      const { data: l } = await supabase.from("likes").select("post_id").eq("user_id", user.id).in("post_id", visible.map((d: any) => d.id));
       liked = new Set((l ?? []).map((x) => x.post_id));
     }
-    setPosts((data ?? []).map((d: any) => ({ ...d, liked: liked.has(d.id) })));
+    setPosts(visible.map((d: any) => ({ ...d, liked: liked.has(d.id) })));
     setLoading(false);
   };
 
