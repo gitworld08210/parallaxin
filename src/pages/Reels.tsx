@@ -132,13 +132,6 @@ const Reels = () => {
         ))}
       </div>
 
-      <Link
-        to="/compose/reel"
-        className="fixed bottom-24 right-5 z-40 h-14 w-14 rounded-full bg-gradient-primary text-primary-foreground grid place-items-center shadow-glow"
-        aria-label="New reel"
-      >
-        <Plus className="h-6 w-6" />
-      </Link>
 
       <CommentSheet postId={commentPost} open={!!commentPost} onOpenChange={(b) => !b && setCommentPost(null)} />
     </div>
