@@ -78,6 +78,19 @@ export const PostCard = ({ post, onOpenComments }: { post: FeedPost; onOpenComme
       .then(({ data }) => setSaved(!!data));
   }, [user?.id, post.id]);
 
+  useEffect(() => {
+    if (post.collaborators) return;
+    (async () => {
+      const { data } = await supabase
+        .from("post_collaborators" as any)
+        .select("user_id, profile:profiles!post_collaborators_user_profile_fkey(username, display_name, avatar_url)")
+        .eq("post_id", post.id).eq("status", "accepted");
+      const rows = (data ?? []) as any[];
+      setCollabs(rows.map((r) => r.profile).filter(Boolean));
+    })();
+  }, [post.id]);
+
+
   // View tracker — fires once per session when card crosses 60% visible
   useEffect(() => {
     if (!user || !articleRef.current || viewedThisSession.has(post.id)) return;
