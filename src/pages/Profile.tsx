@@ -304,8 +304,6 @@ const Profile = () => {
       {/* Highlights */}
       {profile && <HighlightsRail userId={profile.user_id} isMe={!!isMe} />}
 
-      {/* Showcase (self only) */}
-      {isMe && <ProfileShowcase bio={profile.bio} />}
 
       {/* Tabs */}
       <div className="mt-5 border-t border-border">
