@@ -44,39 +44,35 @@ export const StoriesRail = () => {
   useEffect(() => { load(); }, [user?.id]);
 
   const flatStories = groups.flatMap((g) => g.stories);
-  const myHasStory = groups.some((g) => g.user_id === user?.id);
 
   return (
     <>
-      <div className="px-5 mb-5 flex gap-4 overflow-x-auto no-scrollbar">
-        <Link to="/compose/story" className="flex flex-col items-center gap-1.5 shrink-0">
-          <div className="relative h-16 w-16 rounded-full bg-gradient-primary p-[2px]">
-            <div className="h-full w-full rounded-full bg-background grid place-items-center overflow-hidden">
-              {me?.avatar_url ? (
-                <img src={me.avatar_url} className="h-full w-full object-cover" alt="" />
-              ) : (
-                <div className="h-full w-full bg-gradient-primary grid place-items-center text-primary-foreground font-semibold text-sm">
-                  {initialsOf(me?.display_name || me?.username || "Y")}
-                </div>
-              )}
-            </div>
-            <span className="absolute -bottom-0.5 -right-0.5 h-5 w-5 rounded-full bg-gradient-primary grid place-items-center ring-2 ring-background">
+      <div className="px-3 py-3 flex gap-4 overflow-x-auto no-scrollbar border-b border-border">
+        <Link to="/compose/story" className="flex flex-col items-center gap-1 shrink-0 w-16">
+          <div className="relative h-16 w-16 rounded-full bg-muted grid place-items-center overflow-hidden border border-border">
+            {me?.avatar_url ? (
+              <img src={me.avatar_url} className="h-full w-full object-cover" alt="" />
+            ) : (
+              <div className="h-full w-full bg-muted grid place-items-center text-foreground font-semibold text-sm">
+                {initialsOf(me?.display_name || me?.username || "Y")}
+              </div>
+            )}
+            <span className="absolute bottom-0 right-0 h-5 w-5 rounded-full bg-primary grid place-items-center ring-2 ring-background">
               <Plus className="h-3 w-3 text-primary-foreground" strokeWidth={3} />
             </span>
           </div>
-          <span className="text-[10px] text-muted-foreground">Your story</span>
+          <span className="text-[11px] text-foreground truncate w-full text-center">Your story</span>
         </Link>
 
-        {groups.filter((g) => g.user_id !== user?.id || myHasStory && g.user_id === user?.id).map((g) => {
-          if (g.user_id === user?.id) return null;
+        {groups.filter((g) => g.user_id !== user?.id).map((g) => {
           const startIdx = flatStories.findIndex((s) => s.user_id === g.user_id);
           return (
             <button
               key={g.user_id}
               onClick={() => setViewingIdx(startIdx)}
-              className="flex flex-col items-center gap-1.5 shrink-0"
+              className="flex flex-col items-center gap-1 shrink-0 w-16"
             >
-              <div className="h-16 w-16 rounded-full p-[2px]" style={{ background: "conic-gradient(from 180deg, hsl(var(--primary)), hsl(var(--accent)), hsl(var(--primary)))" }}>
+              <div className="h-16 w-16 rounded-full p-[2px]" style={{ background: "conic-gradient(from 180deg, hsl(320 90% 55%), hsl(28 100% 58%), hsl(48 100% 60%), hsl(320 90% 55%))" }}>
                 <div className="h-full w-full rounded-full bg-background p-[2px]">
                   {g.profile?.avatar_url ? (
                     <img src={g.profile.avatar_url} className="h-full w-full rounded-full object-cover" alt="" />
@@ -87,7 +83,7 @@ export const StoriesRail = () => {
                   )}
                 </div>
               </div>
-              <span className="text-[10px] truncate max-w-[64px]">{g.profile?.username ?? "user"}</span>
+              <span className="text-[11px] truncate w-full text-center text-foreground">{g.profile?.username ?? "user"}</span>
             </button>
           );
         })}
