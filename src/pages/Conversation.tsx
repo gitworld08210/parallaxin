@@ -128,8 +128,29 @@ const Conversation = () => {
     if (!user || !id || !text.trim()) return;
     const content = text.trim().slice(0, 2000);
     setText("");
+    setAiSuggestions([]);
     await supabase.from("messages").insert({ conversation_id: id, sender_id: user.id, content });
   };
+
+  const fetchSuggestions = async () => {
+    if (!id || aiBusy) return;
+    const last = messages[messages.length - 1];
+    if (!last || last.sender_id === user?.id) { setAiSuggestions([]); return; }
+    setAiBusy(true);
+    try {
+      const { data } = await supabase.functions.invoke("ai-dm-suggest", { body: { conversation_id: id } });
+      setAiSuggestions(Array.isArray(data?.suggestions) ? data.suggestions : []);
+    } catch { /* silent */ }
+    finally { setAiBusy(false); }
+  };
+
+  useEffect(() => {
+    const last = messages[messages.length - 1];
+    if (last && last.sender_id !== user?.id) fetchSuggestions();
+    else setAiSuggestions([]);
+    // eslint-disable-next-line
+  }, [messages.length, user?.id]);
+
 
   const sendVoice = async (mediaUrl: string) => {
     if (!user || !id) return;
@@ -239,17 +260,33 @@ const Conversation = () => {
         <div ref={endRef} />
       </div>
 
-      <form onSubmit={send} className="fixed bottom-14 inset-x-0 mx-auto max-w-md p-2 bg-background border-t border-border flex gap-2 items-center">
-        <input
-          value={text} onChange={(e) => onType(e.target.value)}
-          placeholder="Message..."
-          className="flex-1 bg-muted rounded-full px-4 py-2.5 text-sm outline-none placeholder:text-muted-foreground"
-        />
-        {text.trim() ? (
-          <button type="submit" className="px-3 py-1 text-primary font-semibold text-sm">Send</button>
-        ) : (
-          user && <VoiceRecorder userId={user.id} onSend={sendVoice} />
+      <form onSubmit={send} className="fixed bottom-14 inset-x-0 mx-auto max-w-md p-2 bg-background border-t border-border flex flex-col gap-2">
+        {aiSuggestions.length > 0 && (
+          <div className="flex gap-1.5 overflow-x-auto -mx-1 px-1 pb-1">
+            {aiSuggestions.map((s, i) => (
+              <button
+                key={i}
+                type="button"
+                onClick={() => { setText(s); setAiSuggestions([]); }}
+                className="shrink-0 text-xs bg-primary/10 text-primary px-3 py-1.5 rounded-full font-medium hover:bg-primary/20 transition-colors"
+              >
+                ✨ {s}
+              </button>
+            ))}
+          </div>
         )}
+        <div className="flex gap-2 items-center">
+          <input
+            value={text} onChange={(e) => onType(e.target.value)}
+            placeholder="Message..."
+            className="flex-1 bg-muted rounded-full px-4 py-2.5 text-sm outline-none placeholder:text-muted-foreground"
+          />
+          {text.trim() ? (
+            <button type="submit" className="px-3 py-1 text-primary font-semibold text-sm">Send</button>
+          ) : (
+            user && <VoiceRecorder userId={user.id} onSend={sendVoice} />
+          )}
+        </div>
       </form>
 
       <ReportSheet open={!!reportMsg} onOpenChange={(b) => !b && setReportMsg(null)} targetKind="message" targetId={reportMsg} />
