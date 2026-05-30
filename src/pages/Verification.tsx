@@ -24,8 +24,14 @@ const Verification = () => {
   const [loading, setLoading] = useState(true);
   const [category, setCategory] = useState("public_figure");
   const [fullName, setFullName] = useState("");
+  const [organization, setOrganization] = useState("");
+  const [officialEmail, setOfficialEmail] = useState("");
+  const [country, setCountry] = useState("");
+  const [dob, setDob] = useState("");
+  const [reason, setReason] = useState("");
   const [links, setLinks] = useState("");
   const [file, setFile] = useState<File | null>(null);
+  const [supportFile, setSupportFile] = useState<File | null>(null);
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
@@ -37,19 +43,36 @@ const Verification = () => {
     })();
   }, [user?.id]);
 
+  const uploadDoc = async (f: File) => {
+    const ext = f.name.split(".").pop() || "jpg";
+    const path = `${user!.id}/${crypto.randomUUID()}.${ext}`;
+    const { error } = await supabase.storage.from("verification-docs").upload(path, f, { upsert: false });
+    if (error) throw error;
+    return path;
+  };
+
   const submit = async () => {
     if (!user) return;
     if (!fullName.trim()) return toast.error("Add your full legal name");
     if (!file) return toast.error("Upload an ID document");
     setBusy(true);
     try {
-      const ext = file.name.split(".").pop() || "jpg";
-      const path = `${user.id}/${crypto.randomUUID()}.${ext}`;
-      const { error: upErr } = await supabase.storage.from("verification-docs").upload(path, file, { upsert: false });
-      if (upErr) throw upErr;
+      const idPath = await uploadDoc(file);
+      const supportPath = supportFile ? await uploadDoc(supportFile) : null;
       const linkArr = links.split(/[\n,]/).map((s) => s.trim()).filter(Boolean);
       const { error } = await supabase.from("verification_requests").insert({
-        user_id: user.id, full_name: fullName.trim(), category, links: linkArr, id_doc_url: path, status: "pending",
+        user_id: user.id,
+        full_name: fullName.trim(),
+        category,
+        links: linkArr,
+        id_doc_url: idPath,
+        status: "pending",
+        organization: organization.trim() || null,
+        official_email: officialEmail.trim() || null,
+        country: country.trim() || null,
+        dob: dob || null,
+        reason: reason.trim() || null,
+        supporting_doc_url: supportPath,
       });
       if (error) throw error;
       toast.success("Submitted · review within 48h");
@@ -111,6 +134,32 @@ const Verification = () => {
               <input value={fullName} onChange={(e) => setFullName(e.target.value)} className="w-full mt-2 bg-transparent outline-none text-sm" placeholder="Jane Doe" />
             </GlassCard>
 
+            <div className="grid grid-cols-2 gap-2">
+              <GlassCard>
+                <label className="text-xs uppercase tracking-wider text-muted-foreground">Country</label>
+                <input value={country} onChange={(e) => setCountry(e.target.value)} className="w-full mt-2 bg-transparent outline-none text-sm" placeholder="US" />
+              </GlassCard>
+              <GlassCard>
+                <label className="text-xs uppercase tracking-wider text-muted-foreground">Date of birth</label>
+                <input type="date" value={dob} onChange={(e) => setDob(e.target.value)} className="w-full mt-2 bg-transparent outline-none text-sm" />
+              </GlassCard>
+            </div>
+
+            <GlassCard>
+              <label className="text-xs uppercase tracking-wider text-muted-foreground">Organization (optional)</label>
+              <input value={organization} onChange={(e) => setOrganization(e.target.value)} className="w-full mt-2 bg-transparent outline-none text-sm" placeholder="Company or institution" />
+            </GlassCard>
+
+            <GlassCard>
+              <label className="text-xs uppercase tracking-wider text-muted-foreground">Official email (optional)</label>
+              <input type="email" value={officialEmail} onChange={(e) => setOfficialEmail(e.target.value)} className="w-full mt-2 bg-transparent outline-none text-sm" placeholder="you@company.com" />
+            </GlassCard>
+
+            <GlassCard>
+              <label className="text-xs uppercase tracking-wider text-muted-foreground">Why should you be verified?</label>
+              <textarea value={reason} onChange={(e) => setReason(e.target.value)} rows={3} className="w-full mt-2 bg-transparent outline-none text-sm resize-none" placeholder="Brief description of your notability" />
+            </GlassCard>
+
             <GlassCard>
               <label className="text-xs uppercase tracking-wider text-muted-foreground">Reference links</label>
               <textarea value={links} onChange={(e) => setLinks(e.target.value)} rows={3} className="w-full mt-2 bg-transparent outline-none text-sm resize-none" placeholder="One per line · press, articles, official sites" />
@@ -125,6 +174,17 @@ const Verification = () => {
                 </div>
               </GlassCard>
               <input type="file" accept="image/*,application/pdf" className="hidden" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
+            </label>
+
+            <label className="block">
+              <GlassCard className="flex items-center gap-3 cursor-pointer">
+                <Upload className="h-5 w-5 text-primary" />
+                <div className="flex-1">
+                  <p className="text-sm font-semibold">{supportFile ? supportFile.name : "Supporting document (optional)"}</p>
+                  <p className="text-[11px] text-muted-foreground">Press kit, registry doc, or proof of affiliation</p>
+                </div>
+              </GlassCard>
+              <input type="file" accept="image/*,application/pdf" className="hidden" onChange={(e) => setSupportFile(e.target.files?.[0] ?? null)} />
             </label>
 
             <button onClick={submit} disabled={busy} className="w-full rounded-2xl py-3.5 text-sm font-semibold bg-gradient-primary text-primary-foreground shadow-glow disabled:opacity-60">
