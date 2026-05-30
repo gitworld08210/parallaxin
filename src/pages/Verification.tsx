@@ -97,7 +97,7 @@ const Verification = () => {
             <div className="grid grid-cols-2 gap-2">
               {kinds.map((k) => (
                 <button key={k.id} onClick={() => setCategory(k.id)} className="text-left">
-                  <GlassCard className={`transition-all ${category === k.id ? "border-primary/60 shadow-glow" : ""}`}>
+                  <GlassCard className={`transition-all h-full ${category === k.id ? "border-primary/60 shadow-glow" : ""}`}>
                     <VerificationBadge kind={k.id as any} />
                     <p className="font-semibold text-sm mt-2">{k.title}</p>
                     <p className="text-[11px] text-muted-foreground">{k.desc}</p>
