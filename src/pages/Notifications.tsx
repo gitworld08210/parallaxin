@@ -1,7 +1,6 @@
-import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { ChevronLeft, Heart, MessageCircle, UserPlus, Mail, Bell, BadgeCheck, Crown } from "lucide-react";
-import { TopBar } from "@/components/vibe/TopBar";
+import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
+import { Heart, MessageCircle, UserPlus, Mail, Bell, BadgeCheck, Crown, SlidersHorizontal } from "lucide-react";
 import { AuraAvatar } from "@/components/vibe/AuraAvatar";
 import { EmptyState } from "@/components/empty/EmptyState";
 import { supabase } from "@/integrations/supabase/client";
@@ -27,21 +26,30 @@ const iconFor = (t: string) =>
   Mail;
 
 const textFor = (t: string) =>
-  t === "like" ? "liked your post" :
-  t === "comment" ? "commented on your post" :
-  t === "follow" ? "started following you" :
-  t === "mention" ? "mentioned you" :
-  t === "verification_approved" ? "Your account has been verified" :
-  t === "verification_revoked" ? "Your verification has been removed" :
-  t === "founder_inducted" ? "Welcome to the Hall of Founders" :
-  t === "founder_revoked" ? "Your founder status has been updated" :
-  "sent you a message";
+  t === "like" ? "liked your post." :
+  t === "comment" ? "commented on your post." :
+  t === "follow" ? "started following you." :
+  t === "mention" ? "mentioned you in a post." :
+  t === "verification_approved" ? "Your account has been verified." :
+  t === "verification_revoked" ? "Your verification has been removed." :
+  t === "founder_inducted" ? "Welcome to the Hall of Founders." :
+  t === "founder_revoked" ? "Your founder status has been updated." :
+  "sent you a message.";
 
 const isSystem = (t: string) => t.startsWith("verification_") || t.startsWith("founder_");
 
+const bucketOf = (iso: string): "today" | "yesterday" | "earlier" => {
+  const d = new Date(iso);
+  const now = new Date();
+  const sameDay = d.toDateString() === now.toDateString();
+  if (sameDay) return "today";
+  const y = new Date(now); y.setDate(now.getDate() - 1);
+  if (d.toDateString() === y.toDateString()) return "yesterday";
+  return "earlier";
+};
+
 const Notifications = () => {
   const { user } = useAuth();
-  const nav = useNavigate();
   const [items, setItems] = useState<N[]>([]);
 
   useEffect(() => {
@@ -52,7 +60,6 @@ const Notifications = () => {
         .select("id, type, read, created_at, actor_id, post_id, actor:profiles!notifications_actor_profile_fkey(username, display_name, avatar_url)")
         .eq("user_id", user.id).order("created_at", { ascending: false }).limit(80);
       setItems((data ?? []) as any);
-      // mark all read
       await supabase.from("notifications").update({ read: true }).eq("user_id", user.id).eq("read", false);
     })();
 
@@ -71,71 +78,86 @@ const Notifications = () => {
     return () => { supabase.removeChannel(ch); };
   }, [user?.id]);
 
+  const groups = useMemo(() => {
+    const g: Record<"today" | "yesterday" | "earlier", N[]> = { today: [], yesterday: [], earlier: [] };
+    items.forEach((n) => g[bucketOf(n.created_at)].push(n));
+    return g;
+  }, [items]);
+
+  const renderRow = (n: N) => {
+    const Icon = iconFor(n.type);
+    const system = isSystem(n.type);
+    const inner = (
+      <>
+        <div className="relative shrink-0">
+          {system ? (
+            <div className="h-11 w-11 rounded-full bg-gradient-primary grid place-items-center shadow-glow">
+              <Icon className="h-5 w-5 text-primary-foreground" />
+            </div>
+          ) : n.actor?.avatar_url ? (
+            <img src={n.actor.avatar_url} alt="" className="h-11 w-11 rounded-full object-cover" />
+          ) : (
+            <AuraAvatar gradient={gradientFor(n.actor?.username)} size="md" initials={initialsOf(n.actor?.display_name || n.actor?.username)} />
+          )}
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-sm leading-snug">
+            {system ? (
+              <span className="font-semibold">{textFor(n.type)}</span>
+            ) : (
+              <>
+                <span className="font-semibold">{n.actor?.display_name || n.actor?.username || "Someone"}</span>{" "}
+                <span className="text-muted-foreground">{textFor(n.type)}</span>
+              </>
+            )}{" "}
+            <span className="text-muted-foreground text-xs">· {timeAgo(n.created_at)}</span>
+          </p>
+        </div>
+        {!n.read && <span className="h-2 w-2 rounded-full bg-primary shadow-glow shrink-0" />}
+      </>
+    );
+    const cls = "flex items-center gap-3 rounded-2xl px-3 py-3 hover:bg-muted/40 transition-colors";
+    const to = system
+      ? (n.type.startsWith("founder_") ? "/hall-of-founders" : "/profile")
+      : n.post_id ? `/p/${n.post_id}` : n.actor ? `/u/${n.actor.username}` : null;
+    return to ? (
+      <Link to={to} key={n.id} className={cls}>{inner}</Link>
+    ) : (
+      <div key={n.id} className={cls}>{inner}</div>
+    );
+  };
+
+  const Section = ({ label, list }: { label: string; list: N[] }) =>
+    list.length === 0 ? null : (
+      <div className="mt-2">
+        <p className="px-3 pt-3 pb-1 text-sm font-semibold text-foreground/90">{label}</p>
+        <div className="space-y-0.5">{list.map(renderRow)}</div>
+      </div>
+    );
+
   return (
     <div>
-      <TopBar
-        subtitle="Activity"
-        title="Notifications"
-        right={
-          <button onClick={() => nav(-1)} className="glass h-11 w-11 rounded-full grid place-items-center">
-            <ChevronLeft className="h-5 w-5" />
-          </button>
-        }
-      />
-      <div className="px-5 space-y-1 pb-6">
-        {items.length === 0 && (
+      <header className="h-14 px-5 flex items-center justify-between border-b border-border">
+        <h1 className="text-xl font-bold tracking-tight">Notifications</h1>
+        <button className="h-10 w-10 rounded-full grid place-items-center hover:bg-muted/40 transition-colors" aria-label="Filter">
+          <SlidersHorizontal className="h-5 w-5 text-foreground" />
+        </button>
+      </header>
+
+      <div className="px-2 pb-8">
+        {items.length === 0 ? (
           <EmptyState
             icon={Bell}
             title="Nothing new yet"
             subtitle="Likes, comments, follows, and mentions will show up here."
           />
+        ) : (
+          <>
+            <Section label="Today" list={groups.today} />
+            <Section label="Yesterday" list={groups.yesterday} />
+            <Section label="Earlier" list={groups.earlier} />
+          </>
         )}
-        {items.map((n) => {
-          const Icon = iconFor(n.type);
-          const system = isSystem(n.type);
-          const inner = (
-            <>
-              <div className="relative">
-                {system ? (
-                  <div className="h-12 w-12 rounded-full bg-gradient-primary grid place-items-center">
-                    <Icon className="h-5 w-5 text-primary-foreground" />
-                  </div>
-                ) : n.actor?.avatar_url ? (
-                  <img src={n.actor.avatar_url} alt="" className="h-12 w-12 rounded-full object-cover" />
-                ) : (
-                  <AuraAvatar gradient={gradientFor(n.actor?.username)} size="md" initials={initialsOf(n.actor?.display_name || n.actor?.username)} />
-                )}
-                {!system && (
-                  <span className="absolute -bottom-1 -right-1 h-6 w-6 rounded-full bg-gradient-primary grid place-items-center shadow-glow">
-                    <Icon className="h-3 w-3 text-primary-foreground" />
-                  </span>
-                )}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm">
-                  {system ? (
-                    <span className="font-semibold">{textFor(n.type)}</span>
-                  ) : (
-                    <>
-                      <span className="font-semibold">{n.actor?.display_name || n.actor?.username || "Someone"}</span>{" "}
-                      <span className="text-muted-foreground">{textFor(n.type)}</span>
-                    </>
-                  )}
-                </p>
-                <p className="text-[10px] text-muted-foreground">{timeAgo(n.created_at)}</p>
-              </div>
-            </>
-          );
-          const cls = "flex items-center gap-3 rounded-2xl px-2 py-3 hover:bg-muted/40 transition-colors";
-          const to = system
-            ? (n.type.startsWith("founder_") ? "/hall-of-founders" : "/profile")
-            : n.post_id ? `/p/${n.post_id}` : n.actor ? `/u/${n.actor.username}` : null;
-          return to ? (
-            <Link to={to} key={n.id} className={cls}>{inner}</Link>
-          ) : (
-            <div key={n.id} className={cls}>{inner}</div>
-          );
-        })}
       </div>
     </div>
   );
