@@ -209,50 +209,48 @@ const Profile = () => {
       </header>
 
       {/* Cover banner */}
-      <div className="relative h-40 sm:h-48 w-full overflow-hidden">
+      <div className="relative h-36 w-full overflow-hidden">
         {profile.cover_url ? (
           <img src={profile.cover_url} alt="" className="absolute inset-0 w-full h-full object-cover" />
         ) : (
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/40 via-aura/20 to-background" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,hsl(var(--primary)/0.6),transparent_60%),radial-gradient(circle_at_80%_80%,hsl(var(--aura)/0.5),transparent_55%),linear-gradient(180deg,hsl(var(--card)),hsl(var(--background)))]" />
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/30 to-transparent" />
       </div>
 
-      {/* Avatar overlapping cover */}
-      <div className="px-4 -mt-12 relative z-10">
-        <div className="inline-block rounded-full p-[3px] bg-gradient-to-br from-primary via-aura to-primary shadow-[0_0_30px_hsl(var(--primary)/0.5)]">
+      {/* Avatar + identity row */}
+      <div className="px-4 -mt-10 relative z-10 flex gap-4">
+        <div className="shrink-0 rounded-full p-[3px] bg-gradient-to-br from-primary via-aura to-primary shadow-[0_0_30px_hsl(var(--primary)/0.5)]">
           {profile.avatar_url ? (
-            <img src={profile.avatar_url} alt="" className="h-24 w-24 rounded-full object-cover ring-2 ring-background" />
+            <img src={profile.avatar_url} alt="" className="h-20 w-20 rounded-full object-cover ring-2 ring-background" />
           ) : (
             <div className="ring-2 ring-background rounded-full">
-              <AuraAvatar gradient={gradientFor(profile.username)} size="xl" initials={initialsOf(profile.display_name || profile.username)} />
+              <AuraAvatar gradient={gradientFor(profile.username)} size="lg" initials={initialsOf(profile.display_name || profile.username)} />
             </div>
           )}
         </div>
+        <div className="flex-1 min-w-0 pt-10">
+          <p className="text-lg font-bold inline-flex items-center gap-1.5 leading-tight">
+            <span className="truncate">{profile.display_name || profile.username}</span>
+            {profile.verification_kind && <VerificationBadge kind={profile.verification_kind as any} />}
+          </p>
+          <p className="text-xs text-muted-foreground">@{profile.username}</p>
+        </div>
       </div>
 
-      {/* Identity block */}
+      {/* Bio + website + founder pill */}
       <div className="px-4 mt-3">
-        <p className="text-xl font-bold inline-flex items-center gap-1.5">
-          {profile.display_name || profile.username}
-          {profile.verification_kind && <VerificationBadge kind={profile.verification_kind as any} />}
-          {profile.is_founder && (
-            <Link to={`/founders/${profile.username}`} aria-label="Founder">
-              <FounderBadge tier={profile.join_era === "genesis" ? "genesis" : profile.council_role ? "council" : "founder"} size={14} />
-            </Link>
-          )}
-        </p>
-        <p className="text-sm text-muted-foreground">@{profile.username}</p>
-        {profile.bio && <p className="text-sm mt-2 whitespace-pre-wrap leading-relaxed">{profile.bio}</p>}
+        {profile.bio && <p className="text-sm whitespace-pre-wrap leading-relaxed">{profile.bio}</p>}
         <a href={`https://aurelix.app/${profile.username}`} target="_blank" rel="noreferrer" className="text-sm text-primary mt-1 inline-block">
           aurelix.app/{profile.username}
         </a>
-
         {profile.is_founder && (
-          <Link to="/hall-of-founders" className="mt-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-gradient-to-r from-aura/30 to-primary/20 border border-aura/40 text-aura">
-            <Crown className="h-3.5 w-3.5" />
-            Hall of Founders
-          </Link>
+          <div className="mt-2">
+            <Link to="/hall-of-founders" className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-gradient-to-r from-aura/30 to-primary/20 border border-aura/40 text-aura">
+              <Crown className="h-3.5 w-3.5" />
+              Hall of Founders
+            </Link>
+          </div>
         )}
       </div>
 
