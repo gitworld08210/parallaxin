@@ -135,7 +135,7 @@ const Profile = () => {
             )}
             <div className="mt-4 flex items-center gap-2">
               <h2 className="font-display text-2xl font-semibold">{profile.display_name || profile.username}</h2>
-              {profile.verified && <VerificationBadge kind="verified" />}
+              {profile.verification_kind && <VerificationBadge kind={profile.verification_kind as any} />}
             </div>
             <p className="text-sm text-muted-foreground">@{profile.username}</p>
             {profile.bio && <p className="mt-3 text-sm max-w-xs">{profile.bio}</p>}
