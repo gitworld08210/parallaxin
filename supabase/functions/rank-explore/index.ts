@@ -35,6 +35,16 @@ Deno.serve(async (req) => {
     (mu.data ?? []).forEach((x: any) => excluded.add(x.muted_id));
   }
 
+  // Exclude posts from private accounts (the requester's own posts are fine, but
+  // explore is a public-discovery surface so we hide all private accounts here).
+  const { data: privateProfiles } = await admin
+    .from("profiles")
+    .select("user_id")
+    .eq("is_private", true);
+  (privateProfiles ?? []).forEach((p: any) => {
+    if (!user || p.user_id !== user.id) excluded.add(p.user_id);
+  });
+
   // 200 newest public posts (excluding reels), then re-rank
   const { data: posts } = await admin
     .from("posts")

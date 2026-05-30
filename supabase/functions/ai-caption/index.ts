@@ -16,7 +16,11 @@ Deno.serve(async (req) => {
     const claims = await requireAuth(req);
     if (!claims) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
-    const { hint } = await req.json();
+    const body = await req.json().catch(() => ({}));
+    const rawHint = body?.hint;
+    const hint = typeof rawHint === "string"
+      ? rawHint.replace(/[\r\n\t]+/g, " ").slice(0, 500)
+      : "creator post";
     const apiKey = Deno.env.get("LOVABLE_API_KEY");
     if (!apiKey) throw new Error("Missing LOVABLE_API_KEY");
 
@@ -31,7 +35,7 @@ Deno.serve(async (req) => {
         model: "openai/gpt-5.5-pro",
         messages: [
           { role: "system", content: "You write short, evocative, premium social-media captions for Aurelix, a luxury creator app. 1-2 sentences, no hashtags unless asked, at most one tasteful emoji. Never start with 'Here is' or 'Caption:'." },
-          { role: "user", content: `Write a caption. Hint: ${hint ?? "creator post"}` },
+          { role: "user", content: `Write a caption. Hint: ${hint}` },
         ],
       }),
     });
