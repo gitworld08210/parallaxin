@@ -102,7 +102,8 @@ const App = () => (
                   <Route path="/u/:username" element={<Profile />} />
                   <Route path="/u/:username/:kind" element={<FollowList />} />
                   <Route path="/premium" element={<Premium />} />
-                  <Route path="/verification" element={<Verification />} />
+                  <Route path="/verification" element={<VerificationCenter />} />
+                  <Route path="/verification/request" element={<VerificationRequest />} />
                   <Route path="/assistant" element={<Assistant />} />
                   <Route path="/drafts" element={<Drafts />} />
                   <Route path="/p/:postId/insights" element={<PostInsights />} />
