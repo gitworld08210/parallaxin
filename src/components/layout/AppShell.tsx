@@ -92,11 +92,32 @@ export const AppShell = () => {
               <Plus className={cn("h-7 w-7", isReels ? "text-white" : "text-foreground")} strokeWidth={2.25} />
             </button>
           </SheetTrigger>
-          <SheetContent side="bottom" className="rounded-t-2xl bg-background border-t border-border">
-            <div className="grid grid-cols-3 gap-2 pt-4 pb-3">
-              <CreateAction to="/compose" icon={ImageIcon} label="Post" onPick={() => setCreateOpen(false)} />
-              <CreateAction to="/compose/reel" icon={Film} label="Reel" onPick={() => setCreateOpen(false)} />
-              <CreateAction to="/compose/story" icon={Sparkles} label="Story" onPick={() => setCreateOpen(false)} />
+          <SheetContent side="bottom" className="rounded-t-3xl bg-background border-t border-border px-5 pt-5 pb-8">
+            <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-border" />
+            <h2 className="text-xl font-bold tracking-tight mb-4">Create</h2>
+
+            {/* Three colored tiles */}
+            <div className="grid grid-cols-3 gap-3">
+              <BigTile to="/compose" icon={ImageIcon} label="Post" gradient="from-sky-500 to-blue-600" onPick={() => setCreateOpen(false)} />
+              <BigTile to="/compose/reel" icon={Film} label="Reel" gradient="from-fuchsia-500 to-pink-600" onPick={() => setCreateOpen(false)} />
+              <BigTile to="/compose/story" icon={Sparkles} label="Story" gradient="from-orange-500 to-rose-500" onPick={() => setCreateOpen(false)} />
+            </div>
+
+            {/* Full-width Live */}
+            <Link
+              to="/compose/reel"
+              onClick={() => setCreateOpen(false)}
+              className="mt-3 block py-5 rounded-2xl bg-gradient-primary text-primary-foreground font-semibold text-sm shadow-glow flex items-center justify-center gap-2"
+            >
+              <Radio className="h-5 w-5" /> Live
+            </Link>
+
+            {/* List rows */}
+            <div className="mt-5 space-y-1">
+              <RowAction to="/compose/reel" icon={Radio} title="Go Live" subtitle="Broadcast to your audience" onPick={() => setCreateOpen(false)} />
+              <RowAction to="/compose" icon={Camera} title="Camera" subtitle="Take a photo or video" onPick={() => setCreateOpen(false)} />
+              <RowAction to="/compose" icon={Wand2} title="AI Video" subtitle="Create with AI" onPick={() => setCreateOpen(false)} />
+              <RowAction to="/compose" icon={Upload} title="Upload" subtitle="From gallery" onPick={() => setCreateOpen(false)} />
             </div>
           </SheetContent>
         </Sheet>
