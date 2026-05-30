@@ -58,21 +58,44 @@ const Feed = () => {
 
   useEffect(() => { load(); /* eslint-disable-next-line */ }, [tab, user?.id]);
 
+  // Collapsing top bar on scroll-down, restore on scroll-up
+  const [chromeHidden, setChromeHidden] = useState(false);
+  const lastY = useRef(0);
+  useEffect(() => {
+    const onScroll = () => {
+      const y = window.scrollY;
+      if (y < 32) { setChromeHidden(false); lastY.current = y; return; }
+      const dy = y - lastY.current;
+      if (dy > 6) setChromeHidden(true);
+      else if (dy < -6) setChromeHidden(false);
+      lastY.current = y;
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
   return (
     <div>
-      <TopBar
-        title="Aurelix"
-        right={
-          <>
-            <Link to="/discover" className="p-2" aria-label="Discover">
-              <Compass className="h-6 w-6 text-foreground" strokeWidth={1.75} />
-            </Link>
-            <Link to="/notifications" className="p-2" aria-label="Notifications">
-              <Heart className="h-6 w-6 text-foreground" strokeWidth={1.75} />
-            </Link>
-          </>
-        }
-      />
+      <div
+        className={cn(
+          "sticky top-0 z-30 bg-background/95 backdrop-blur-sm transition-transform duration-300",
+          chromeHidden ? "-translate-y-full" : "translate-y-0",
+        )}
+      >
+        <TopBar
+          title="Aurelix"
+          right={
+            <>
+              <Link to="/discover" className="p-2" aria-label="Discover">
+                <Compass className="h-6 w-6 text-foreground" strokeWidth={1.75} />
+              </Link>
+              <Link to="/notifications" className="p-2" aria-label="Notifications">
+                <Heart className="h-6 w-6 text-foreground" strokeWidth={1.75} />
+              </Link>
+            </>
+          }
+        />
+      </div>
 
       <StoriesRail />
 
