@@ -22,7 +22,7 @@ const Verification = () => {
   const nav = useNavigate();
   const [existing, setExisting] = useState<VR | null>(null);
   const [loading, setLoading] = useState(true);
-  const [category, setCategory] = useState("creator");
+  const [category, setCategory] = useState("public_figure");
   const [fullName, setFullName] = useState("");
   const [links, setLinks] = useState("");
   const [file, setFile] = useState<File | null>(null);
