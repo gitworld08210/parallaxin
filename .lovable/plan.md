@@ -1,65 +1,97 @@
-# Tier 2 + Tier 3 implementation plan
 
-Tier 1 already shipped (story reactions, share-to-DM, realtime toasts, block/mute, AI assistant). Now building Tier 2 and Tier 3 from the original roadmap.
+# Tier 4 Part 2 + Founders Deepening
 
-## Tier 2 — Creator tools
+Scope locked to option (b). Tier 5 (2FA, data export, deletion) and invite tokens / whisper channel deferred to next pass.
 
-### 1. Drafts & Scheduled posts
-- Migration: add `posts.status` (`draft|scheduled|published`, default `published`) and `posts.scheduled_for timestamptz`.
-- Update `posts_select_all` policy → only show `published`; add `posts_select_own_drafts` so owners see their own drafts/scheduled.
-- Composer (`CreatePost`/wherever post creation lives): add "Save draft" + "Schedule" options (datetime picker).
-- New page `/drafts` listing user's drafts + scheduled posts with edit/publish-now/delete.
-- Edge function `publish-scheduled` + `pg_cron` job every minute → flips `scheduled` rows whose `scheduled_for <= now()` to `published`.
+## 1. Tier 4 Part 2 — Polish & Safety
 
-### 2. Post insights
-- Migration: `post_views` table (`post_id`, `viewer_id nullable`, `created_at`). Index on `post_id`.
-- PostCard: fire one insert per post per session via IntersectionObserver.
-- New `/post/:id/insights` (owner-only): reach (distinct viewers), impressions (rows), like rate, save rate, comment rate. Simple stat cards + sparkline.
-- Add "View insights" entry to PostCard owner menu.
+### Voice notes in DMs
+- Add mic button in `Conversation.tsx` composer.
+- Record via `MediaRecorder` → upload to `post-media/voice/{userId}/{uuid}.webm`.
+- New `messages.media_url` + `messages.media_type` columns (audio).
+- Inline waveform-style player (no heavy lib — CSS bars + `<audio>` element).
 
-### 3. Collections (saved folders)
-- Migration: `collections` (id, user_id, name, cover_url) + `collection_items` (collection_id, post_id, created_at). RLS owner-only.
-- Saves UI in Profile → "Saved" tab becomes folder grid + "All saves" default.
-- Bookmark long-press / "Save to collection…" sheet to pick or create folder.
+### Block & Report
+- Block button on Profile header (uses existing `blocks` table). Blocked users hidden from Feed/Explore/DMs via client-side filter.
+- Report sheet (`ReportSheet.tsx`) wired to existing `reports` table — reason picker (spam, harassment, impersonation, other) + details textarea.
+- Surface in PostCard "..." menu, Profile "..." menu, Message long-press.
 
-### 4. Close Friends
-- Migration: `close_friends` (owner_id, friend_id). RLS owner-only.
-- Profile → "Edit close friends" screen (toggle following list).
-- Story composer: audience toggle `public | close_friends`. Add `stories.audience` column; update `stories_select_all` to hide close-friends stories from non-members.
+### Story Highlights UI
+- `HighlightsRail.tsx` on Profile — horizontal circle rail showing `story_highlights` covers.
+- `NewHighlightSheet.tsx` — pick from user's expired stories (`stories` where `expires_at < now()`) + cover + title.
+- Tap highlight → reuse Story viewer.
 
-## Tier 3 — Discovery & social graph
+### Alt-text AI
+- Compose screen: "Suggest alt text" button → edge function `suggest-alt-text` calling Lovable AI `google/gemini-2.5-flash` with image URL.
 
-### 5. Explore grid 2.0
-- Rework `/discover` (or create it) into a masonry/3-col mosaic of recent + high-engagement public posts, excluding blocks/mutes.
-- Personalized "For You" rail at top: edge function `rank-explore` calls `google/gemini-2.5-flash` with the user's recent likes/views to score 30 candidate posts.
-- Cache result for 15 min per user in a `explore_cache` table.
+## 2. Hall of Founders + Council — Part 2
 
-### 6. Suggested users
-- Edge function `suggest-users`: scores candidates by (mutual follows × 3 + shared-hashtag affinity × 1), excludes already-followed/blocked/muted/self.
-- New `SuggestedUsers` rail on Feed (after first 3 posts) and on Profile empty states. Horizontal card list with Follow button.
+### Founder Chronicle page
+- Route `/founders/:username` → `FounderChronicle.tsx`.
+- Full-screen mythic archive entry: hero `AuraFrame` (large), era mark, founder title, chronicle prose, signature works (3 pinned posts), unique sigil.
+- New column `profiles.chronicle text`.
 
-### 7. Activity status / last seen
-- Migration: `profiles.last_seen_at timestamptz`, `profiles.show_activity boolean default true`.
-- Heartbeat: tick `last_seen_at = now()` from `AppShell` every 60s while tab visible.
-- Green dot in Messages list + Conversation header when `now() - last_seen_at < 2min` AND `show_activity = true`.
-- Settings toggle to disable activity broadcasting.
+### Council Chambers
+- Refactor `FounderCouncilScreen.tsx` into 4 wings: Architect / Curator / Sentinel / Innovator.
+- Each wing = ambient gradient hero + member constellation (no ranked list; clustered avatar nodes).
+- Tap member → Chronicle.
 
-## Files to touch
+### Genesis Era section
+- New section in `HallOfFoundersScreen.tsx` — reverent layout for `join_era = 'genesis'`, year mark, slow rotating central sigil, members arranged in arc.
 
-- New migrations: `posts.status`/`scheduled_for`, `post_views`, `collections`, `collection_items`, `close_friends`, `stories.audience`, `profiles.last_seen_at`, `profiles.show_activity`, `explore_cache`.
-- New edge functions: `publish-scheduled` (+ cron), `rank-explore`, `suggest-users`.
-- New pages: `src/pages/Drafts.tsx`, `src/pages/PostInsights.tsx`, `src/pages/CloseFriends.tsx`. Reworked `src/pages/Discover.tsx`.
-- New components: `SaveToCollectionSheet.tsx`, `SuggestedUsersRail.tsx`, `ScheduleSheet.tsx`, `ActivityDot.tsx`.
-- Updates: `PostCard.tsx` (insights menu, view tracker, save-to-collection), `StoryViewer.tsx`/composer (audience), `Profile.tsx` (collections tab, close friends entry), `Feed.tsx` (suggested users rail), `Messages.tsx`/`Conversation.tsx` (activity dot), `AppShell.tsx` (heartbeat).
+### Founder-only Aurum theme
+- New CSS class `.theme-aurum` in `index.css` (obsidian + warm gold tokens).
+- Settings toggle visible only when `profiles.is_founder = true`.
+- Persisted in `localStorage` + applied on `<html>`.
 
-## Out of scope (saved for Tier 4-5)
+### Signature Aura
+- New column `profiles.signature_aura text` (one of: ether, ember, verdant, violet, gold, frost).
+- Picker in Settings (founders only). `AuraFrame` reads and tints rings accordingly.
 
-- Read receipts, typing, voice notes, 2FA, reports, alt-text AI, story highlights generator.
+### Genesis Mark watermark
+- Subtle SVG sigil in PostCard footer when post author `is_founder = true`.
 
-## Order of execution
+### Council vote weight
+- Column `profiles.council_vote_weight int default 1` (council members get 3). No UI yet — schema-ready.
 
-1. All migrations in one batch.
-2. Edge functions + cron.
-3. Tier 2 UI (drafts → insights → collections → close friends).
-4. Tier 3 UI (explore → suggested users → activity).
-5. QA on mobile viewport (420×765).
+## 3. Database migration
+
+```sql
+ALTER TABLE public.profiles
+  ADD COLUMN chronicle text,
+  ADD COLUMN signature_aura text,
+  ADD COLUMN council_vote_weight int NOT NULL DEFAULT 1;
+
+ALTER TABLE public.messages
+  ADD COLUMN media_url text,
+  ADD COLUMN media_type text;
+```
+RLS already covers these (own-row policies).
+
+## 4. Edge function
+
+`suggest-alt-text` — POST `{ imageUrl }` → returns `{ altText }` via Lovable AI Gateway. CORS enabled, JWT validated in code.
+
+## 5. Visual language (non-negotiable)
+
+- Palette: obsidian `#06070B`, aurum `#C9A24C`, ether `#7EC8FF`.
+- Founder pages use serif display (Cormorant).
+- Motion: 20s+ rotation, no bouncy springs, parallax bloom on scroll.
+- **No visible numeric scores anywhere.** Titles + eras only.
+- No leaderboard ordering — eras and constellations.
+
+## Files created
+- `src/components/social/ReportSheet.tsx`
+- `src/components/social/HighlightsRail.tsx`
+- `src/components/social/NewHighlightSheet.tsx`
+- `src/components/dm/VoiceRecorder.tsx`, `VoiceMessage.tsx`
+- `src/pages/FounderChronicle.tsx`
+- `src/components/founders/SignatureAuraPicker.tsx`
+- `src/components/founders/GenesisMark.tsx`
+- `supabase/functions/suggest-alt-text/index.ts`
+- 1 migration
+
+## Files edited
+- `Profile.tsx`, `Conversation.tsx`, `Compose.tsx`, `HallOfFoundersScreen.tsx`, `FounderCouncilScreen.tsx`, `PostCard.tsx`, `Settings.tsx`, `index.css`, `App.tsx`
+
+Ready to switch to build mode.
