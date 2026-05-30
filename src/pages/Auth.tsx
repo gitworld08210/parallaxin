@@ -18,9 +18,20 @@ const Auth = () => {
   const [username, setUsername] = useState("");
   const [busy, setBusy] = useState(false);
 
+  const routeForUser = async (uid: string) => {
+    const { data } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", uid)
+      .eq("role", "admin")
+      .maybeSingle();
+    nav(data ? "/admin" : "/", { replace: true });
+  };
+
   useEffect(() => {
-    if (!loading && user) nav("/", { replace: true });
-  }, [user, loading, nav]);
+    if (!loading && user) routeForUser(user.id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, loading]);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,9 +49,10 @@ const Auth = () => {
         if (error) throw error;
         toast.success("Check your email to confirm your account ✦");
       } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
         toast.success("Welcome back ✦");
+        if (data.user) await routeForUser(data.user.id);
       }
     } catch (err: any) {
       toast.error(err.message || "Something went wrong");
