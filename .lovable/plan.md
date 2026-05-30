@@ -68,3 +68,15 @@ Reply with any of:
 - `tier1+assistant` — recommended
 - `all-tier1-2` — engagement + creator tools
 - Or list numbers: e.g. `2, 4, 9, 17`
+---
+
+## Wave 2 — Shipped
+
+- DB: `story_reactions`, `blocks`, `mutes`, `messages.shared_post_id`
+- Story reactions (emoji bar) + reply-to-story → auto-DM
+- Share-to-DM bottom sheet on every PostCard (+ Copy link split)
+- Conversation renders shared-post preview card
+- Global in-app realtime toaster (new DMs + notifications) mounted in AppShell
+- Block & Mute from profile More menu; Feed filters both directions
+- `/assistant` page (Aurelix AI, streaming GPT-5.5 Pro) + Wand button in Feed top bar
+- Edge function `ai-assistant` streams SSE through Lovable AI Gateway
