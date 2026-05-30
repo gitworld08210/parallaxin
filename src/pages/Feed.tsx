@@ -64,6 +64,9 @@ const Feed = () => {
         title="Feed"
         right={
           <div className="flex gap-2">
+            <Link to="/discover" className="glass h-11 w-11 rounded-full grid place-items-center" aria-label="Discover">
+              <Compass className="h-5 w-5" />
+            </Link>
             <Link to="/assistant" className="glass h-11 w-11 rounded-full grid place-items-center" aria-label="Aurelix AI">
               <Wand2 className="h-5 w-5 text-primary" />
             </Link>
