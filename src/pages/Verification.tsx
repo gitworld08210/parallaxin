@@ -10,11 +10,11 @@ import { toast } from "sonner";
 
 type VR = { id: string; status: string; category: string; created_at: string };
 const kinds = [
-  { id: "creator", title: "Creator", desc: "Active creators with original content" },
-  { id: "gov", title: "Government", desc: "Official institutions and agencies" },
-  { id: "brand", title: "Brand", desc: "Registered brands and businesses" },
+  { id: "public_figure", title: "Creator", desc: "Active creators with original content" },
+  { id: "government", title: "Government", desc: "Official institutions and agencies" },
+  { id: "business", title: "Brand", desc: "Registered brands and businesses" },
   { id: "founder", title: "Founder", desc: "Founders & company leadership" },
-  { id: "verified", title: "Standard", desc: "Notable public figures" },
+  { id: "media", title: "Standard", desc: "Notable public figures" },
 ];
 
 const Verification = () => {
