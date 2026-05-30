@@ -42,13 +42,13 @@ export default function Analytics() {
             </div>
             <div>
               <p className="text-sm font-semibold mb-3">Top Performing Content</p>
-              <EmptyState icon={BarChart3} title="No content yet" description="Publish posts to see analytics here." />
+              <EmptyState icon={BarChart3} title="No content yet" subtitle="Publish posts to see analytics here." />
             </div>
           </TabsContent>
 
-          <TabsContent value="content"><EmptyState icon={BarChart3} title="No content data" description="Stats appear after you publish." /></TabsContent>
-          <TabsContent value="audience"><EmptyState icon={BarChart3} title="No audience data" description="Grow your following to see insights." /></TabsContent>
-          <TabsContent value="earnings"><EmptyState icon={BarChart3} title="No earnings data" description="Enable monetization to start earning." /></TabsContent>
+          <TabsContent value="content"><EmptyState icon={BarChart3} title="No content data" subtitle="Stats appear after you publish." /></TabsContent>
+          <TabsContent value="audience"><EmptyState icon={BarChart3} title="No audience data" subtitle="Grow your following to see insights." /></TabsContent>
+          <TabsContent value="earnings"><EmptyState icon={BarChart3} title="No earnings data" subtitle="Enable monetization to start earning." /></TabsContent>
         </Tabs>
       </div>
     </div>
