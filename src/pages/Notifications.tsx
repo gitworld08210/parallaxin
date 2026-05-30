@@ -22,6 +22,7 @@ const iconFor = (t: string) =>
   t === "like" ? Heart :
   t === "comment" ? MessageCircle :
   t === "follow" ? UserPlus :
+  t === "collab_invite" || t === "collab_accepted" ? Users :
   t === "verification_approved" || t === "verification_revoked" ? BadgeCheck :
   t === "founder_inducted" || t === "founder_revoked" ? Crown :
   Mail;
@@ -31,6 +32,8 @@ const textFor = (t: string) =>
   t === "comment" ? "commented on your post." :
   t === "follow" ? "started following you." :
   t === "mention" ? "mentioned you in a post." :
+  t === "collab_invite" ? "invited you to collaborate on a post." :
+  t === "collab_accepted" ? "accepted your collab invite." :
   t === "verification_approved" ? "Your account has been verified." :
   t === "verification_revoked" ? "Your verification has been removed." :
   t === "founder_inducted" ? "Welcome to the Hall of Founders." :
