@@ -233,21 +233,22 @@ const Profile = () => {
           <p className="text-lg font-bold inline-flex items-center gap-1.5 leading-tight">
             <span className="truncate">{profile.display_name || profile.username}</span>
             {profile.verification_kind && <VerificationBadge kind={profile.verification_kind as any} />}
+            {profile.is_founder && (
+              <Link to="/hall-of-founders" aria-label="Hall of Founders" className="inline-flex items-center justify-center h-5 w-5 rounded-full text-aura">
+                <Crown className="h-4 w-4" />
+              </Link>
+            )}
           </p>
           <p className="text-xs text-muted-foreground">@{profile.username}</p>
-          {profile.bio && <p className="text-sm whitespace-pre-wrap leading-relaxed pt-1">{profile.bio}</p>}
-          <a href={`https://aurelix.app/${profile.username}`} target="_blank" rel="noreferrer" className="text-sm text-primary inline-block">
-            aurelix.app/{profile.username}
-          </a>
-          {profile.is_founder && (
-            <div className="pt-1">
-              <Link to="/hall-of-founders" className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-gradient-to-r from-aura/30 to-primary/20 border border-aura/40 text-aura">
-                <Crown className="h-3.5 w-3.5" />
-                Hall of Founders
-              </Link>
-            </div>
-          )}
         </div>
+      </div>
+
+      {/* About strip — bio + website link, full width */}
+      <div className="px-4 mt-3 space-y-1">
+        {profile.bio && <p className="text-sm whitespace-pre-wrap leading-relaxed">{profile.bio}</p>}
+        <a href={`https://aurelix.app/${profile.username}`} target="_blank" rel="noreferrer" className="text-sm text-primary inline-block">
+          aurelix.app/{profile.username}
+        </a>
       </div>
 
       {/* Stats */}
@@ -299,15 +300,6 @@ const Profile = () => {
           </>
         )}
       </div>
-
-      {/* Verification CTA */}
-      {isMe && !profile.verified && (
-        <Link to="/verification-center" className="block mx-4 mt-4 px-3 py-2.5 rounded-xl border border-primary/30 bg-primary/5 flex items-center gap-2 text-sm">
-          <BadgeCheck className="h-4 w-4 text-primary" />
-          <span className="flex-1 text-foreground">Request verification</span>
-          <span className="text-muted-foreground">›</span>
-        </Link>
-      )}
 
       {/* Highlights */}
       {profile && <HighlightsRail userId={profile.user_id} isMe={!!isMe} />}
