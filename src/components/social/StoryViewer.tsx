@@ -3,6 +3,7 @@ import { X, Send } from "lucide-react";
 import { timeAgo } from "@/lib/format";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthProvider";
+import { StoryStickersLayer } from "@/components/social/StoryStickersLayer";
 import { toast } from "sonner";
 
 type Story = {
