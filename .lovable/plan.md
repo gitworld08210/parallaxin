@@ -1,99 +1,64 @@
-Align the existing app screens to the attached Aurelix mockup. Visual/presentation changes only — no backend, auth, or data-model changes. Bottom tab nav stays as it is today (user likes current notification/bell icon).
+## Goal
 
-## Screens to update
+The mockup shows several features that don't yet exist in the app. Add them as **visible but non-clickable placeholders** (with a "Coming soon" hint on tap) so the UI matches the vision. We'll wire real functionality later.
 
-### 1. Splash & Onboarding (`src/pages/Onboarding.tsx`)
+## Missing features identified
 
-- Full-bleed dark hero with the "creator universe" collage feel.
-- Centered title "A New Universe for Creators." + tagline "Create. Connect. Earn. Grow."
-- Page-indicator dots, primary red "Get Started" button, secondary "Log In" link.
+Comparing mockup vs current app:
 
-### 2. Login (`src/pages/Auth.tsx`)
 
-- Netflix-style centered layout: Aurelix logo + "Creator Universe" subtitle.
-- Email/Phone + Password inputs, red "Log In" button, "Forgot password?" link.
-- "or continue with" divider → Google / Apple / GitHub.
-- "New to Aurelix? Sign up" footer.
+| Feature                                                                                                                                                                 | In app?              | Action                           |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------- | -------------------------------- |
+| Home, Explore, Reels, Messages, Notifications, Hall of Founders, Saved, Settings, Premium, Wallet, Verification, Profile                                                | Yes                  | skip                             |
+| **Communities**                                                                                                                                                         | No                   | add placeholder                  |
+| **Creator Hub**                                                                                                                                                         | No                   | add placeholder                  |
+| **Analytics** (global, not per-post)                                                                                                                                    | No                   | add placeholder                  |
+| **Help & Support**                                                                                                                                                      | No                   | add placeholder                  |
+| **Achievements** card (Top Creator, Viral Creator, Trendsetter, Hall of Founders badges)                                                                                | No                   | add to Profile as static section |
+| **Performance Overview** (Views / Engagement / Profile Visits / New Followers with sparkline-style stats)                                                               | No                   | add to Profile as static section |
+| **Top Supporters** list                                                                                                                                                 | No                   | add to Profile as static section |
+| **Aura Level** ring (level 12 Legendary, XP progress)                                                                                                                   | No                   | add to Profile as static section |
+| **About** card (interests chips: AI Enthusiast, Cyberpunk Lover, Web3 Believer, Content Creator)**Note:-** All feature button add show on side menu of profile section | Partial (bio exists) | add interests chips card         |
 
-### 3. Home Feed (`src/pages/Feed.tsx`)
 
-- Top bar: red "AURELIX" wordmark + dropdown caret on left, search + heart on right.
-- Stories rail directly under top bar (already exists — restyle ring + "Your story" first item).
-- Post card: avatar + name + Aura badge chip on the right, image, action row (heart/comment/share/save), caption with hashtags, time.
+## Implementation
 
-### 4. Reels / Shorts (`src/pages/Reels.tsx`)
+### 1. Side menu entries (non-clickable)
 
-- Full-screen vertical video container, "Reels" title + camera icon top-left/right.
-- Right-side action stack: like count, comments, share — vertically aligned.
-- Bottom overlay: @handle + Follow pill, caption, audio strip.
+In `src/components/layout/SideMenu.tsx`, add new rows for **Communities**, **Creator Hub**, **Analytics**, **Help & Support**. Render them styled identically to the active rows but:
 
-### 5. Messages (`src/pages/Messages.tsx`)
+- Use a `<button>` (not a `<Link>`)
+- On click → `toast({ title: "Coming soon", description: "<feature> is launching shortly." })`
+- Add a subtle "Soon" pill on the right
 
-- "Messages" title + compose icon.
-- Search bar.
-- Segmented tabs: All / Primary (badge) / Requests.
-- Conversation rows with avatar, name + verified tick, preview text, time, unread count pill.
+### 2. Profile page additions (static, non-clickable)
 
-### 6. Create / Post (`src/pages/Compose.tsx`)
+In `src/pages/Profile.tsx`, add four new presentational sections below the existing profile header, each wrapped in a card matching the mockup's dark glass aesthetic:
 
-- Bottom sheet style with "Create" header.
-- Three large colored tiles: Post / Reel / Story.
-- Full-width red "Live" tile.
-- List rows below: Go Live, Camera, AI Video, Upload.
+- **About card** — bio text + 4 interest chips with icons
+- **Achievements** — 2×2 grid of badge tiles (icon + title + subtitle)
+- **Performance Overview** — 4 stat tiles (label, big number, % change, faux sparkline SVG)
+- **Top Supporters** — list of 4 mock supporters with avatar + handle + Aura amount
+- **Aura Level** — circular progress ring with level number, label, and XP
 
-### 7. Post View (`src/pages/PostDetail.tsx`)
+All data is hardcoded mock data for now. All "See All" / "View …" buttons render but on click show the same "Coming soon" toast.
 
-- Back chevron + "Post" title.
-- Carousel indicator (1/4), caption with hashtags, date.
-- Likes / Comments / Shares row, heart/comment/share/save icon strip.
+### 3. Visual style
 
-### 8. Search / Discover (`src/pages/Discover.tsx`)
+- Reuse existing semantic tokens (`bg-card`, `border-border`, `text-primary`, `shadow-glow`)
+- New sections use the same red-glow accent already defined in `index.css`
+- No new colors added
 
-- Rounded search input with placeholder.
-- Horizontal filter chips: For you / Trending / Creators / Reels / AI.
-- "Trending Now 🔥" section: hashtag chips with post counts.
-- "Top Creators" list: avatar + handle + Follow button rows.
+## Non-goals
 
-### 9. Notifications (`src/pages/Notifications.tsx`)
+- No new routes, no backend changes, no schema changes
+- No real analytics, communities, or achievements logic
+- Existing pages (Feed, Reels, Messages, etc.) untouched
 
-- "Notifications" title + filter icon on the right (no back chevron).
-- Group by **Today / Yesterday** section labels.
-- Cleaner row: avatar, one-line message (bold name + light action + inline time), small red unread dot at the far right.
-- Remove the small overlay action icon on avatars.
+## Files touched
 
-### 10. Profile (`src/pages/Profile.tsx`)
+- `src/components/layout/SideMenu.tsx` — add 4 non-clickable rows
+- `src/pages/Profile.tsx` — add 5 new presentational sections
+- (maybe) `src/components/profile/` — small new folder for the section components if Profile.tsx gets long
 
-- Header: avatar, display name + verified tick, @handle, three counts (Posts / Followers / Following).
-- Bio + secondary line, Edit Profile + Share Profile buttons.
-- Highlights rail (rounded thumbnails).
-- Tabs: posts grid / reels / tagged.
-
-### 11. Sidebar / Menu (new `src/components/layout/SideMenu.tsx`, opened from top-bar avatar)
-
-- Header: avatar + name + @handle, close button.
-- List: My Profile, Creator Hub, Aura Wallet (with balance pill), Saved, Analytics, Settings, Help & Support, Light Mode toggle, request verification.
-- Red "Log Out" at the bottom.
-
-## Design tokens (`src/index.css`, `tailwind.config.ts`)
-
-- Confirm pure-black background, white text, signature Aurelix red as primary, soft red glow for shadows/gradients.
-- Reuse existing semantic tokens — no hardcoded hex in components.
-
-## Out of scope
-
-- Bottom navigation bar — left as-is.
-- Notification icon / bell — unchanged.
-- Any backend, schema, RLS, edge function, or auth logic.
-
-## Suggested order
-
-1. Tokens & shared chrome (TopBar, GlassCard) audit
-2. Onboarding + Login
-3. Feed + Stories rail + PostCard
-4. Reels
-5. Messages
-6. Compose
-7. PostDetail
-8. Discover
-9. Notifications
-10. Profile + Side menu
+Ready to build when you approve.
