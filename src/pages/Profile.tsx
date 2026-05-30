@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Settings, BadgeCheck, LogOut, Pencil, Grid3x3, Film, Bookmark } from "lucide-react";
+import { Settings, BadgeCheck, LogOut, Pencil, Grid3x3, Film, Bookmark, MoreHorizontal, Ban, VolumeX } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { TopBar } from "@/components/vibe/TopBar";
 import { GlassCard } from "@/components/vibe/GlassCard";
 import { AuraAvatar } from "@/components/vibe/AuraAvatar";
@@ -39,6 +40,8 @@ const Profile = () => {
   const [reels, setReels] = useState<FeedPost[]>([]);
   const [saved, setSaved] = useState<FeedPost[]>([]);
   const [isFollowing, setIsFollowing] = useState(false);
+  const [isBlocked, setIsBlocked] = useState(false);
+  const [isMuted, setIsMuted] = useState(false);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<Tab>("posts");
   const [commentPost, setCommentPost] = useState<string | null>(null);
@@ -76,11 +79,46 @@ const Profile = () => {
         if (user && p.user_id !== user.id) {
           const { data: f } = await supabase.from("follows").select("follower_id").eq("follower_id", user.id).eq("following_id", p.user_id).maybeSingle();
           setIsFollowing(!!f);
+          const { data: b } = await (supabase.from("blocks" as any).select("blocker_id").eq("blocker_id", user.id).eq("blocked_id", p.user_id).maybeSingle() as any);
+          setIsBlocked(!!b);
+          const { data: mu } = await (supabase.from("mutes" as any).select("muter_id").eq("muter_id", user.id).eq("muted_id", p.user_id).maybeSingle() as any);
+          setIsMuted(!!mu);
         }
       }
       setLoading(false);
     })();
   }, [username, me?.username, user?.id]);
+
+  const toggleBlock = async () => {
+    if (!user || !profile) return;
+    if (isBlocked) {
+      setIsBlocked(false);
+      await (supabase.from("blocks" as any).delete().eq("blocker_id", user.id).eq("blocked_id", profile.user_id) as any);
+      toast.success("Unblocked");
+    } else {
+      setIsBlocked(true);
+      const { error } = await (supabase.from("blocks" as any).insert({ blocker_id: user.id, blocked_id: profile.user_id } as any) as any);
+      if (error) { setIsBlocked(false); toast.error(error.message); }
+      else {
+        // also remove follow both ways
+        await supabase.from("follows").delete().eq("follower_id", user.id).eq("following_id", profile.user_id);
+        await supabase.from("follows").delete().eq("follower_id", profile.user_id).eq("following_id", user.id);
+        toast.success("Blocked");
+      }
+    }
+  };
+  const toggleMute = async () => {
+    if (!user || !profile) return;
+    if (isMuted) {
+      setIsMuted(false);
+      await (supabase.from("mutes" as any).delete().eq("muter_id", user.id).eq("muted_id", profile.user_id) as any);
+      toast.success("Unmuted");
+    } else {
+      setIsMuted(true);
+      const { error } = await (supabase.from("mutes" as any).insert({ muter_id: user.id, muted_id: profile.user_id } as any) as any);
+      if (error) { setIsMuted(false); toast.error(error.message); } else toast.success("Muted");
+    }
+  };
 
   const toggleFollow = async () => {
     if (!user || !profile) return;
