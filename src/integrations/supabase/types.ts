@@ -221,6 +221,35 @@ export type Database = {
           },
         ]
       }
+      highlight_items: {
+        Row: {
+          created_at: string
+          highlight_id: string
+          position: number
+          story_id: string
+        }
+        Insert: {
+          created_at?: string
+          highlight_id: string
+          position?: number
+          story_id: string
+        }
+        Update: {
+          created_at?: string
+          highlight_id?: string
+          position?: number
+          story_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "highlight_items_highlight_id_fkey"
+            columns: ["highlight_id"]
+            isOneToOne: false
+            referencedRelation: "story_highlights"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       likes: {
         Row: {
           created_at: string
@@ -559,6 +588,30 @@ export type Database = {
           },
         ]
       }
+      story_highlights: {
+        Row: {
+          cover_url: string | null
+          created_at: string
+          id: string
+          title: string
+          user_id: string
+        }
+        Insert: {
+          cover_url?: string | null
+          created_at?: string
+          id?: string
+          title: string
+          user_id: string
+        }
+        Update: {
+          cover_url?: string | null
+          created_at?: string
+          id?: string
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       story_reactions: {
         Row: {
           created_at: string
@@ -627,6 +680,10 @@ export type Database = {
       is_conversation_member: {
         Args: { _conv: string; _user: string }
         Returns: boolean
+      }
+      mark_conversation_read: {
+        Args: { _conversation_id: string }
+        Returns: undefined
       }
       start_dm: { Args: { other_user_id: string }; Returns: string }
     }
