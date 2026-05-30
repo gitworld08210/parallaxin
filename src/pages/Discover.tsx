@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { Search, TrendingUp, Sparkles, Crown, BadgeCheck, Flame } from "lucide-react";
-import { TopBar } from "@/components/vibe/TopBar";
 import { AuraAvatar } from "@/components/vibe/AuraAvatar";
 import { VerificationBadge } from "@/components/vibe/VerificationBadge";
 import { supabase } from "@/integrations/supabase/client";
