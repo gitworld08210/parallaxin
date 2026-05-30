@@ -9,6 +9,7 @@ import { GlassCard } from "@/components/vibe/GlassCard";
 import { VerificationBadge } from "@/components/vibe/VerificationBadge";
 import { fmt, gradientFor, initialsOf, timeAgo } from "@/lib/format";
 import { toast } from "sonner";
+import { ShareToDM } from "@/components/social/ShareToDM";
 
 export type FeedPost = {
   id: string;
@@ -47,6 +48,7 @@ export const PostCard = ({ post, onOpenComments }: { post: FeedPost; onOpenComme
   const [liked, setLiked] = useState(post.liked);
   const [likes, setLikes] = useState(post.like_count);
   const [saved, setSaved] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
   const lastTap = useRef(0);
 
   useEffect(() => { setLiked(post.liked); setLikes(post.like_count); }, [post.liked, post.like_count]);
@@ -88,6 +90,9 @@ export const PostCard = ({ post, onOpenComments }: { post: FeedPost; onOpenComme
   };
 
   const share = async () => {
+    setShareOpen(true);
+  };
+  const copyLink = async () => {
     const url = `${window.location.origin}/p/${post.id}`;
     try { await navigator.clipboard.writeText(url); toast.success("Link copied"); } catch { toast.error("Couldn't copy"); }
   };
@@ -138,14 +143,16 @@ export const PostCard = ({ post, onOpenComments }: { post: FeedPost; onOpenComme
         <footer className="flex items-center gap-1 px-2 py-2">
           <ActionBtn active={liked} onClick={toggleLike} icon={Heart} label={fmt(likes)} accent={liked} />
           <ActionBtn onClick={() => onOpenComments(post.id)} icon={MessageCircle} label={fmt(post.comment_count)} />
-          <ActionBtn onClick={share} icon={Send} label="Share" />
-          <div className="ml-auto">
+          <ActionBtn onClick={share} icon={Send} label="Send" />
+          <div className="ml-auto flex items-center gap-1">
+            <button onClick={copyLink} className="text-[10px] text-muted-foreground px-2 py-1 rounded-full hover:bg-muted/40" aria-label="Copy link">Copy</button>
             <button onClick={toggleSave} className="h-10 w-10 grid place-items-center rounded-full hover:bg-muted/40">
               <Bookmark className={`h-4 w-4 ${saved ? "fill-current text-primary" : ""}`} />
             </button>
           </div>
         </footer>
       </GlassCard>
+      <ShareToDM postId={post.id} open={shareOpen} onOpenChange={setShareOpen} />
     </motion.article>
   );
 };

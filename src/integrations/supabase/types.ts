@@ -14,6 +14,24 @@ export type Database = {
   }
   public: {
     Tables: {
+      blocks: {
+        Row: {
+          blocked_id: string
+          blocker_id: string
+          created_at: string
+        }
+        Insert: {
+          blocked_id: string
+          blocker_id: string
+          created_at?: string
+        }
+        Update: {
+          blocked_id?: string
+          blocker_id?: string
+          created_at?: string
+        }
+        Relationships: []
+      }
       comments: {
         Row: {
           content: string
@@ -181,6 +199,7 @@ export type Database = {
           id: string
           read_at: string | null
           sender_id: string
+          shared_post_id: string | null
         }
         Insert: {
           content: string
@@ -189,6 +208,7 @@ export type Database = {
           id?: string
           read_at?: string | null
           sender_id: string
+          shared_post_id?: string | null
         }
         Update: {
           content?: string
@@ -197,6 +217,7 @@ export type Database = {
           id?: string
           read_at?: string | null
           sender_id?: string
+          shared_post_id?: string | null
         }
         Relationships: [
           {
@@ -214,6 +235,24 @@ export type Database = {
             referencedColumns: ["user_id"]
           },
         ]
+      }
+      mutes: {
+        Row: {
+          created_at: string
+          muted_id: string
+          muter_id: string
+        }
+        Insert: {
+          created_at?: string
+          muted_id: string
+          muter_id: string
+        }
+        Update: {
+          created_at?: string
+          muted_id?: string
+          muter_id?: string
+        }
+        Relationships: []
       }
       notifications: {
         Row: {
@@ -420,6 +459,30 @@ export type Database = {
             referencedColumns: ["user_id"]
           },
         ]
+      }
+      story_reactions: {
+        Row: {
+          created_at: string
+          emoji: string
+          id: string
+          story_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          emoji: string
+          id?: string
+          story_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          emoji?: string
+          id?: string
+          story_id?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       verification_requests: {
         Row: {

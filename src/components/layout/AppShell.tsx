@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthProvider";
+import { RealtimeToaster } from "@/components/social/RealtimeToaster";
 
 const tabs = [
   { to: "/", icon: Home, label: "Feed" },
@@ -39,6 +40,7 @@ export const AppShell = () => {
 
   return (
     <div className={cn("min-h-screen mx-auto max-w-md relative pb-28", isReels && "bg-black")}>
+      <RealtimeToaster />
       <main key={pathname} className="animate-fade-in">
         <Outlet />
       </main>
