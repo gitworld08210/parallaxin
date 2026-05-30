@@ -529,6 +529,67 @@ export type Database = {
           },
         ]
       }
+      post_collaborators: {
+        Row: {
+          invited_at: string
+          post_id: string
+          responded_at: string | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          invited_at?: string
+          post_id: string
+          responded_at?: string | null
+          status?: string
+          user_id: string
+        }
+        Update: {
+          invited_at?: string
+          post_id?: string
+          responded_at?: string | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_collaborators_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      post_embeddings: {
+        Row: {
+          content_hash: string
+          embedding: string
+          post_id: string
+          updated_at: string
+        }
+        Insert: {
+          content_hash: string
+          embedding: string
+          post_id: string
+          updated_at?: string
+        }
+        Update: {
+          content_hash?: string
+          embedding?: string
+          post_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_embeddings_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: true
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       post_views: {
         Row: {
           created_at: string
@@ -605,6 +666,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          ai_dm_suggestions_enabled: boolean
           aura_rank: string | null
           avatar_url: string | null
           bio: string | null
@@ -640,6 +702,7 @@ export type Database = {
           verified: boolean
         }
         Insert: {
+          ai_dm_suggestions_enabled?: boolean
           aura_rank?: string | null
           avatar_url?: string | null
           bio?: string | null
@@ -675,6 +738,7 @@ export type Database = {
           verified?: boolean
         }
         Update: {
+          ai_dm_suggestions_enabled?: boolean
           aura_rank?: string | null
           avatar_url?: string | null
           bio?: string | null
@@ -856,6 +920,73 @@ export type Database = {
         }
         Relationships: []
       }
+      story_sticker_responses: {
+        Row: {
+          created_at: string
+          id: string
+          response: Json
+          sticker_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          response: Json
+          sticker_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          response?: Json
+          sticker_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "story_sticker_responses_sticker_id_fkey"
+            columns: ["sticker_id"]
+            isOneToOne: false
+            referencedRelation: "story_stickers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      story_stickers: {
+        Row: {
+          created_at: string
+          id: string
+          kind: string
+          payload: Json
+          position: Json
+          story_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          kind: string
+          payload?: Json
+          position?: Json
+          story_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          kind?: string
+          payload?: Json
+          position?: Json
+          story_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "story_stickers_story_id_fkey"
+            columns: ["story_id"]
+            isOneToOne: false
+            referencedRelation: "stories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       subscriptions: {
         Row: {
           cancel_at_period_end: boolean | null
@@ -899,6 +1030,24 @@ export type Database = {
           status?: string
           stripe_customer_id?: string
           stripe_subscription_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_interest_vectors: {
+        Row: {
+          embedding: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          embedding: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          embedding?: string
           updated_at?: string
           user_id?: string
         }
@@ -1015,6 +1164,13 @@ export type Database = {
       mark_conversation_read: {
         Args: { _conversation_id: string }
         Returns: undefined
+      }
+      match_posts_for_user: {
+        Args: { _match_count?: number; _user_id: string }
+        Returns: {
+          post_id: string
+          similarity: number
+        }[]
       }
       start_dm: { Args: { other_user_id: string }; Returns: string }
     }
