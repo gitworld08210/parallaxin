@@ -51,6 +51,12 @@ const DeleteAccountScreen = lazy(() => import("./pages/security/DeleteAccountScr
 const ChangePasswordScreen = lazy(() => import("./pages/security/ChangePasswordScreen"));
 const ChangeEmailScreen = lazy(() => import("./pages/security/ChangeEmailScreen"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
+const CreatorHub = lazy(() => import("./pages/CreatorHub"));
+const Analytics = lazy(() => import("./pages/Analytics"));
+const Achievements = lazy(() => import("./pages/Achievements"));
+const AuraLevel = lazy(() => import("./pages/AuraLevel"));
+const Monetization = lazy(() => import("./pages/Monetization"));
+const VerificationCenter = lazy(() => import("./pages/VerificationCenter"));
 const NotFound = lazy(() => import("./pages/NotFound.tsx"));
 
 const queryClient = new QueryClient({
@@ -118,6 +124,12 @@ const App = () => (
                   <Route path="/settings/delete" element={<DeleteAccountScreen />} />
                   <Route path="/settings/password" element={<ChangePasswordScreen />} />
                   <Route path="/settings/email" element={<ChangeEmailScreen />} />
+                  <Route path="/creator-hub" element={<CreatorHub />} />
+                  <Route path="/analytics" element={<Analytics />} />
+                  <Route path="/achievements" element={<Achievements />} />
+                  <Route path="/aura-level" element={<AuraLevel />} />
+                  <Route path="/monetization" element={<Monetization />} />
+                  <Route path="/verification-center" element={<VerificationCenter />} />
                 </Route>
               </Route>
               <Route path="*" element={<NotFound />} />
