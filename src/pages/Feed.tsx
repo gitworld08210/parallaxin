@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { Heart, Compass, Plus, Sparkles, Users } from "lucide-react";
+import { Heart, Compass, Sparkles, Users } from "lucide-react";
 import { TopBar } from "@/components/vibe/TopBar";
 import { PostCard, FeedPost } from "@/components/social/PostCard";
 import { CommentSheet } from "@/components/social/CommentSheet";
