@@ -32,6 +32,15 @@ import CloseFriends from "./pages/CloseFriends";
 import FounderChronicle from "./pages/FounderChronicle";
 import { HallOfFoundersScreen } from "./components/founders/HallOfFoundersScreen";
 import { FounderCouncilScreen } from "./components/founders/FounderCouncilScreen";
+import Settings from "./pages/Settings";
+import TwoFactorSetup from "./pages/security/TwoFactorSetup";
+import LoginActivityScreen from "./pages/security/LoginActivityScreen";
+import PrivacyScreen from "./pages/security/PrivacyScreen";
+import BlockedListScreen from "./pages/security/BlockedListScreen";
+import DataExportScreen from "./pages/security/DataExportScreen";
+import DeleteAccountScreen from "./pages/security/DeleteAccountScreen";
+import ChangePasswordScreen from "./pages/security/ChangePasswordScreen";
+import ChangeEmailScreen from "./pages/security/ChangeEmailScreen";
 
 import NotFound from "./pages/NotFound.tsx";
 
