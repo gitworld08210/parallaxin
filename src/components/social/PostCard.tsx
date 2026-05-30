@@ -145,6 +145,7 @@ export const PostCard = ({ post, onOpenComments }: { post: FeedPost; onOpenComme
         <div className="flex-1 min-w-0">
           <Link to={`/u/${handle}`} className="inline-flex items-center gap-1">
             <p className="font-semibold text-sm truncate leading-tight">{handle}</p>
+            {isFounder && <FounderBadge tier={tier} size={12} />}
             {post.profile?.verification_kind
               ? <VerificationBadge kind={post.profile.verification_kind as any} />
               : post.profile?.verified && <VerificationBadge kind="verified" />}
@@ -163,6 +164,11 @@ export const PostCard = ({ post, onOpenComments }: { post: FeedPost; onOpenComme
                 <Link to={`/p/${post.id}/insights`}>
                   <BarChart3 className="h-4 w-4 mr-2" /> View insights
                 </Link>
+              </DropdownMenuItem>
+            )}
+            {!isOwner && (
+              <DropdownMenuItem onSelect={() => setReportOpen(true)} className="text-destructive focus:text-destructive">
+                <Flag className="h-4 w-4 mr-2" /> Report
               </DropdownMenuItem>
             )}
             {isOwner && (
@@ -222,12 +228,16 @@ export const PostCard = ({ post, onOpenComments }: { post: FeedPost; onOpenComme
         </button>
       )}
 
-      <p className="px-3 mt-1 pb-4 text-[11px] uppercase tracking-wider text-muted-foreground">
-        {timeAgo(post.created_at)}
-      </p>
+      <div className="flex items-center justify-between px-3 mt-1 pb-4">
+        <p className="text-[11px] uppercase tracking-wider text-muted-foreground">
+          {timeAgo(post.created_at)}
+        </p>
+        {isFounder && <GenesisMark />}
+      </div>
 
       <ShareToDM postId={post.id} open={shareOpen} onOpenChange={setShareOpen} />
       <SaveToCollectionSheet postId={post.id} open={collectionOpen} onOpenChange={setCollectionOpen} />
+      <ReportSheet open={reportOpen} onOpenChange={setReportOpen} targetKind="post" targetId={post.id} />
     </article>
   );
 };
