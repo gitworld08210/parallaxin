@@ -252,7 +252,52 @@ const Profile = () => {
       </div>
 
       {/* Stats */}
-...
+      <div className="px-4 mt-5 grid grid-cols-3 gap-2 text-left">
+        <Stat value={profile.posts_count} label="Posts" />
+        <Stat value={profile.followers_count} label="Followers" to={`/u/${profile.username}/followers`} />
+        <Stat value={profile.following_count} label="Following" to={`/u/${profile.username}/following`} />
+      </div>
+
+      {/* Actions */}
+      <div className="px-4 mt-5 flex gap-2">
+        {isMe ? (
+          <>
+            <Link to="/profile/edit" className="flex-1 text-center py-2.5 rounded-xl bg-gradient-to-r from-primary to-aura text-primary-foreground font-semibold text-sm shadow-[0_0_20px_hsl(var(--primary)/0.4)]">
+              Edit Profile
+            </Link>
+            <button onClick={shareProfile} className="flex-1 text-center py-2.5 rounded-xl border border-border bg-muted/30 text-foreground font-semibold text-sm">
+              Share Profile
+            </button>
+            <button onClick={shareProfile} aria-label="Invite" className="h-10 w-10 grid place-items-center rounded-xl border border-border bg-muted/30">
+              <UserPlus className="h-4 w-4" />
+            </button>
+          </>
+        ) : (
+          <>
+            <button
+              onClick={toggleFollow}
+              className={cn(
+                "flex-1 py-2.5 rounded-xl font-semibold text-sm",
+                isFollowing ? "bg-muted text-foreground" : "bg-gradient-to-r from-primary to-aura text-primary-foreground shadow-[0_0_20px_hsl(var(--primary)/0.4)]",
+              )}
+            >
+              {isFollowing ? "Following" : "Follow"}
+            </button>
+            <button
+              onClick={async () => {
+                if (!user || !profile) return;
+                const { data, error } = await supabase.rpc("start_dm", { other_user_id: profile.user_id });
+                if (error) { toast.error(error.message || "Could not start chat"); return; }
+                if (data) nav(`/messages/${data}`);
+              }}
+              className="flex-1 py-2.5 rounded-xl border border-border bg-muted/30 text-foreground font-semibold text-sm"
+            >
+              Message
+            </button>
+            <button onClick={shareProfile} aria-label="Share" className="h-10 w-10 grid place-items-center rounded-xl border border-border bg-muted/30">
+              <Share2 className="h-4 w-4" />
+            </button>
+          </>
         )}
       </div>
 
