@@ -119,7 +119,10 @@ export const PostCard = ({ post, onOpenComments }: { post: FeedPost; onOpenComme
 
   const onMediaTap = () => {
     const now = Date.now();
-    if (now - lastTap.current < 300) { if (!liked) toggleLike(); }
+    if (now - lastTap.current < 300) {
+      if (!liked) toggleLike();
+      setBurst((n) => n + 1);
+    }
     lastTap.current = now;
   };
 
