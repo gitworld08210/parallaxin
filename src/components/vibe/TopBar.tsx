@@ -12,20 +12,16 @@ export const TopBar = ({
   className?: string;
 }) => {
   return (
-    <header className={cn("px-5 pt-6 pb-4 flex items-end justify-between gap-4", className)}>
-      <div>
-        {subtitle && (
-          <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground font-medium">
-            {subtitle}
-          </p>
-        )}
+    <header className={cn("h-14 px-4 flex items-center justify-between gap-3 border-b border-border", className)}>
+      <div className="min-w-0 flex items-baseline gap-2">
         {title && (
-          <h1 className="font-display text-3xl font-semibold leading-tight">
-            {title}
-          </h1>
+          <h1 className="text-xl font-bold tracking-tight truncate">{title}</h1>
+        )}
+        {subtitle && (
+          <p className="text-xs text-muted-foreground truncate hidden sm:block">{subtitle}</p>
         )}
       </div>
-      {right}
+      {right && <div className="flex items-center gap-1 shrink-0">{right}</div>}
     </header>
   );
 };

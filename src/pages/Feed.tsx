@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Bell, Sparkles, Plus, Wand2, Compass } from "lucide-react";
+import { Heart, Compass, Plus } from "lucide-react";
 import { TopBar } from "@/components/vibe/TopBar";
 import { PostCard, FeedPost } from "@/components/social/PostCard";
 import { CommentSheet } from "@/components/social/CommentSheet";
 import { StoriesRail } from "@/components/social/StoriesRail";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthProvider";
+import { cn } from "@/lib/utils";
 
 const Feed = () => {
   const { user } = useAuth();
@@ -17,8 +18,6 @@ const Feed = () => {
 
   const load = async () => {
     setLoading(true);
-
-    // gather blocks (both directions) + mutes to exclude
     let excluded = new Set<string>();
     if (user) {
       const [{ data: bOut }, { data: bIn }, { data: mu }] = await Promise.all([
@@ -60,61 +59,62 @@ const Feed = () => {
   return (
     <div>
       <TopBar
-        subtitle="Aurelix"
-        title="Feed"
+        title="Aurelix"
         right={
-          <div className="flex gap-2">
-            <Link to="/discover" className="glass h-11 w-11 rounded-full grid place-items-center" aria-label="Discover">
-              <Compass className="h-5 w-5" />
+          <>
+            <Link to="/discover" className="p-2" aria-label="Discover">
+              <Compass className="h-6 w-6 text-foreground" strokeWidth={1.75} />
             </Link>
-            <Link to="/assistant" className="glass h-11 w-11 rounded-full grid place-items-center" aria-label="Aurelix AI">
-              <Wand2 className="h-5 w-5 text-primary" />
+            <Link to="/notifications" className="p-2" aria-label="Notifications">
+              <Heart className="h-6 w-6 text-foreground" strokeWidth={1.75} />
             </Link>
-            <Link to="/notifications" className="glass h-11 w-11 rounded-full grid place-items-center">
-              <Bell className="h-5 w-5" />
-            </Link>
-          </div>
+          </>
         }
       />
 
       <StoriesRail />
 
-      <div className="px-5 mb-4 flex glass rounded-full p-1">
+      {/* Underline tabs */}
+      <div className="flex border-b border-border">
         {[
-          { id: "foryou", label: "For You", icon: Sparkles },
-          { id: "following", label: "Following", icon: null },
+          { id: "foryou", label: "For you" },
+          { id: "following", label: "Following" },
         ].map((t: any) => (
           <button
             key={t.id}
             onClick={() => setTab(t.id)}
-            className={`flex-1 py-2 text-xs font-semibold rounded-full flex items-center justify-center gap-1.5 transition-all ${
-              tab === t.id ? "bg-gradient-primary text-primary-foreground shadow-glow" : "text-muted-foreground"
-            }`}
+            className={cn(
+              "flex-1 py-3 text-sm font-semibold relative",
+              tab === t.id ? "text-foreground" : "text-muted-foreground",
+            )}
           >
-            {t.icon && <t.icon className="h-3.5 w-3.5" />}
             {t.label}
+            {tab === t.id && (
+              <span className="absolute left-0 right-0 -bottom-px h-[2px] bg-foreground" />
+            )}
           </button>
         ))}
       </div>
 
-      <section className="px-5 space-y-4 pb-6">
-        {loading && <p className="text-sm text-muted-foreground text-center py-12">Loading the universe…</p>}
+      <section className="pb-6">
+        {loading && <p className="text-sm text-muted-foreground text-center py-12">Loading…</p>}
         {!loading && posts.length === 0 && (
-          <div className="text-center py-16">
-            <p className="font-display text-2xl mb-2">Nothing here yet</p>
+          <div className="text-center py-20 px-6">
+            <p className="text-xl font-semibold mb-1.5">Nothing here yet</p>
             <p className="text-sm text-muted-foreground mb-6">
-              {tab === "following" ? "Follow creators to fill your feed." : "Be the first to share a vibe."}
+              {tab === "following" ? "Follow people to fill your feed." : "Be the first to share something."}
             </p>
-            <Link to="/compose" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-primary text-primary-foreground font-semibold text-sm shadow-glow">
+            <Link to="/compose" className="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-primary text-primary-foreground font-semibold text-sm">
               <Plus className="h-4 w-4" /> Create post
             </Link>
           </div>
         )}
-        {posts.map((p) => (
-          <PostCard key={p.id} post={p} onOpenComments={setCommentPost} />
-        ))}
+        <div className="divide-y divide-border">
+          {posts.map((p) => (
+            <PostCard key={p.id} post={p} onOpenComments={setCommentPost} />
+          ))}
+        </div>
       </section>
-
 
       <CommentSheet postId={commentPost} open={!!commentPost} onOpenChange={(b) => !b && setCommentPost(null)} />
     </div>
