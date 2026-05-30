@@ -63,6 +63,7 @@ export const PostCard = ({ post, onOpenComments }: { post: FeedPost; onOpenComme
   const [reportOpen, setReportOpen] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [burst, setBurst] = useState(0);
+  const [collabs, setCollabs] = useState<NonNullable<FeedPost["collaborators"]>>(post.collaborators ?? []);
   const lastTap = useRef(0);
   const articleRef = useRef<HTMLElement>(null);
   const isOwner = user?.id === post.user_id;
