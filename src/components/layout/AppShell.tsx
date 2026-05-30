@@ -52,6 +52,19 @@ export const AppShell = () => {
     return () => { supabase.removeChannel(ch); };
   }, [user?.id]);
 
+  // Activity heartbeat — tick last_seen_at every 60s while the tab is visible
+  useEffect(() => {
+    if (!user) return;
+    const tick = () => {
+      if (document.visibilityState !== "visible") return;
+      supabase.from("profiles").update({ last_seen_at: new Date().toISOString() } as any).eq("user_id", user.id).then(() => {});
+    };
+    tick();
+    const iv = setInterval(tick, 60_000);
+    document.addEventListener("visibilitychange", tick);
+    return () => { clearInterval(iv); document.removeEventListener("visibilitychange", tick); };
+  }, [user?.id]);
+
   const isReels = pathname.startsWith("/reels");
   const onProfileRoute = pathname.startsWith("/profile") || pathname.startsWith("/u/");
 
