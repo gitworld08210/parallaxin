@@ -1,7 +1,8 @@
 import { TopBar } from "@/components/vibe/TopBar";
 import { GlassCard } from "@/components/vibe/GlassCard";
-import { Check, Crown, Sparkles, Infinity as InfinityIcon } from "lucide-react";
+import { Check, Crown, Sparkles, Infinity as InfinityIcon, ShoppingBag } from "lucide-react";
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
 
 const tiers = [
   {
@@ -61,6 +62,21 @@ const Premium = () => {
       <TopBar subtitle="Premium tiers" title="Aura Universe" />
 
       <div className="px-5 space-y-5">
+        <Link to="/store" className="block">
+          <GlassCard className="p-4 flex items-center justify-between gap-3 hover:opacity-90 transition">
+            <div className="flex items-center gap-3">
+              <span className="h-10 w-10 rounded-2xl grid place-items-center bg-gradient-gold shadow-gold">
+                <ShoppingBag className="h-5 w-5 text-primary-foreground" />
+              </span>
+              <div>
+                <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Real money</p>
+                <p className="font-semibold">Open Store · Subscriptions & Coin packs</p>
+              </div>
+            </div>
+            <span className="text-xs text-muted-foreground">→</span>
+          </GlassCard>
+        </Link>
+
         {tiers.map((t, i) => (
           <motion.div
             key={t.id}

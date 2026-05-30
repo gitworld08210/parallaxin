@@ -58,6 +58,8 @@ const Achievements = lazy(() => import("./pages/Achievements"));
 const AuraLevel = lazy(() => import("./pages/AuraLevel"));
 const Monetization = lazy(() => import("./pages/Monetization"));
 const VerificationCenter = lazy(() => import("./pages/VerificationCenter"));
+const Store = lazy(() => import("./pages/Store"));
+const CheckoutReturn = lazy(() => import("./pages/CheckoutReturn"));
 const NotFound = lazy(() => import("./pages/NotFound.tsx"));
 const AdminLayout = lazy(() => import("./pages/admin/AdminLayout"));
 const VerificationRequestsAdmin = lazy(() => import("./pages/admin/VerificationRequestsAdmin"));
@@ -113,6 +115,8 @@ const App = () => (
                   <Route path="/u/:username" element={<Profile />} />
                   <Route path="/u/:username/:kind" element={<FollowList />} />
                   <Route path="/premium" element={<Premium />} />
+                  <Route path="/store" element={<Store />} />
+                  <Route path="/checkout/return" element={<CheckoutReturn />} />
                   <Route path="/verification" element={<Verification />} />
                   <Route path="/assistant" element={<Assistant />} />
                   <Route path="/drafts" element={<Drafts />} />
