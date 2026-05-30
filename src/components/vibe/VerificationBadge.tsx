@@ -1,17 +1,21 @@
 import { cn } from "@/lib/utils";
-import { VerificationKind } from "@/lib/mock";
-import { BadgeCheck, Crown, Landmark, Sparkles, Star } from "lucide-react";
+import { BadgeCheck, Crown, Landmark, Sparkles, Star, Newspaper } from "lucide-react";
 
-const map: Record<VerificationKind, { icon: typeof BadgeCheck; color: string; label: string }> = {
+const map: Record<string, { icon: typeof BadgeCheck; color: string; label: string }> = {
   verified: { icon: BadgeCheck, color: "text-verified", label: "Verified" },
   creator: { icon: Sparkles, color: "text-creator", label: "Creator" },
+  public_figure: { icon: Sparkles, color: "text-creator", label: "Creator" },
   gov: { icon: Landmark, color: "text-gov", label: "Government" },
+  government: { icon: Landmark, color: "text-gov", label: "Government" },
   brand: { icon: Star, color: "text-brand", label: "Brand" },
+  business: { icon: Star, color: "text-brand", label: "Brand" },
   founder: { icon: Crown, color: "text-founder", label: "Founder" },
+  media: { icon: Newspaper, color: "text-verified", label: "Standard" },
 };
 
-export const VerificationBadge = ({ kind, className }: { kind: VerificationKind; className?: string }) => {
-  const { icon: Icon, color, label } = map[kind];
+export const VerificationBadge = ({ kind, className }: { kind: string; className?: string }) => {
+  const entry = map[kind] ?? map.verified;
+  const { icon: Icon, color, label } = entry;
   return (
     <span
       title={label}
