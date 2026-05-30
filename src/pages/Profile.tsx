@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { BadgeCheck, LogOut, Grid3x3, Film, Bookmark, MoreHorizontal, Ban, VolumeX, FileText, Star, Flag, Crown } from "lucide-react";
+import { BadgeCheck, LogOut, Grid3x3, Film, Bookmark, MoreHorizontal, Ban, VolumeX, FileText, Star, Flag, Crown, Menu } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { AuraAvatar } from "@/components/vibe/AuraAvatar";
 import { VerificationBadge } from "@/components/vibe/VerificationBadge";
@@ -9,6 +9,7 @@ import { CommentSheet } from "@/components/social/CommentSheet";
 import { ReportSheet } from "@/components/social/ReportSheet";
 import { HighlightsRail } from "@/components/social/HighlightsRail";
 import { FounderBadge } from "@/components/founders/FounderBadge";
+import { SideMenu } from "@/components/layout/SideMenu";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthProvider";
 import { fmt, gradientFor, initialsOf } from "@/lib/format";
