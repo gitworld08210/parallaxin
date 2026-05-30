@@ -1,93 +1,138 @@
-# Fix Performance + Build Admin Console + Premium UI Polish
+## Goal
 
-Three problems, one coordinated pass.
+Remove the in-app admin panel entirely. All approvals (verification + Founder Hall) happen by an admin flipping a boolean in the backend table editor. The database itself reacts: grants perks, sends notifications, and is fully reversible (admin can flip back to false to revoke).
 
----
-
-## Problem 1 — Slow loading (root cause)
-
-The app currently waits for the full auth bootstrap, then sequentially loads profile, feed, stories, suggestions, and notifications on the Feed mount. Each `await loadProfile` blocks render, and there's no query cache (no React Query), so every navigation refetches from scratch. Combined with the new onboarding redirect, first paint can take 3–6s on cold loads.
-
-**Fix:**
-
-1. **Add an `useAuthReady` hook** so queries only run after `getSession()` resolves once — prevents `auth.uid()`-null RLS failures that currently retry silently.
-2. **Install React Query** (`@tanstack/react-query` is already in deps — wire it up properly with a `QueryClientProvider` in `App.tsx`, `staleTime: 60s`, `gcTime: 5min`).
-3. **Parallelize Feed data fetching** — convert sequential `await` chain in `Feed.tsx` to `Promise.all([posts, stories, suggestions])`.
-4. **Skeleton-first render** — show `FeedSkeleton` immediately instead of blocking on profile.
-5. **Lazy-route everything heavy** — `React.lazy` for Assistant, Wallet, Premium, Reels, Settings, all `/security/*` screens. Cuts initial bundle ~40%.
-6. **Add DB indexes** on hot paths: `posts(created_at desc) where status='published'`, `stories(expires_at) where expires_at > now()`, `notifications(user_id, created_at desc)`.
-7. **Image optimization** — add `loading="lazy"` + `decoding="async"` to PostCard media; preload first 3 feed images only.
-
-Expected impact: FCP from ~3s → <800ms on warm load, TTI from ~6s → ~1.5s.
+No `/admin` route. No admin UI. No edge functions for approval. Just: **edit row → trigger fires → user gets notified.**
 
 ---
 
-## Problem 2 — Missing admin approval in backend 
+## 1. Verification flow (rebuild around a boolean)
 
-You have `verification_requests` and (presumably) founder-application data in the DB, but no admin console exists. There's also no `user_roles` table — so there's no secure way to check "is this user an admin" today.
+Today `verification_requests.status` is text (`pending`/`approved`/`rejected`) and nothing happens when it changes.
 
-**Fix:**
+New shape:
 
-1. **Migration:**
-  - Create `app_role` enum (`admin`, `moderator`, `user`).
-  - Create `user_roles` table + `has_role(user_id, role)` security-definer function (per security guidelines — never store role on profiles).
-  - Create `founder_applications` table if not present (or reuse an existing field — I'll inspect during build).
-  - Add RLS so admins can `SELECT/UPDATE` on `verification_requests` and `founder_applications`.
-  - Grant initial `admin` role to your account (you'll provide your user_id, or I'll add it via your email).
-2. **Build `/admin` route** (protected by `has_role('admin')`) with three tabs:
-  - **Verification Queue** — pending badge requests with full_name, category, links, ID doc preview, Approve / Reject buttons.
-  - **Founder Hall Queue** — pending founder applications with chronicle preview, council role selector, Approve / Reject.
-  - **Reports** — open reports with action buttons.
-3. Approve action calls a secure edge function (`admin-approve-verification`, `admin-approve-founder`) that re-checks `has_role('admin')` server-side before mutating `profiles.verified = true` / `is_founder = true`.
+- Keep `verification_requests` table (users still submit).
+- Add column `approved boolean default false` (the only thing admin touches).
+- Add DB trigger `on_verification_approved`:
+  - When `approved` flips `false → true`: set `profiles.verified = true`, set `profiles.verification_kind = category`, insert a row into `notifications` (`type = 'verification_approved'`), set `reviewed_at = now()`.
+  - When `approved` flips `true → false`: set `profiles.verified = false`, clear `verification_kind`, insert `notifications` row (`type = 'verification_revoked'`).
+
+Admin workflow: Backend → Tables → `verification_requests` → toggle `approved` checkbox. Done.
 
 ---
 
-## Problem 3 — UI motivation (Netflix / X / Telegram)
+## 2. Founder Hall flow (seed list, not applications)
 
-Pick ONE primary direction — mixing all three creates visual noise. My recommendation given your existing mythic/Aurelix aesthetic:
+Drop the application model. Founder Hall is a curated list the admin controls directly.
 
-**Telegram-grade chat polish + instgram-grade media tiles + X-grade feed density.**
+- **Delete** `founder_applications` table.
+- **Delete** `FounderApply.tsx` page and any link to it.
+- **Delete** `admin-approve-founder` and `admin-approve-verification` edge functions.
+- **Delete** `src/pages/admin/AdminConsole.tsx`.
 
-Concretely:
+Create a new table `founder_seats`:
 
-- Design is inspired by Netflix colour etc
-  &nbsp;
-- **Feed (X-inspired):** Tighter line-height, inline media with rounded-2xl, hover-reveal action bar, "For You" / "Following" segmented control sticky at top.
-- **Reels/Discover (Instgram-inspired):** Edge-to-edge horizontal carousels ("Trending in your aura", "From your council", "New tonight"), poster-style cards with gradient scrim + title overlay, snap-scroll.
-- **Messages (Telegram-inspired):** Pinned chats, swipe-to-archive, message bubbles with tail, typing indicator dots, read-receipt double-check, voice waveform scrubbing, reply-with-quote.
+```text
+founder_seats
+  id            uuid pk
+  user_id       uuid unique     -- which user holds this seat
+  seat_number   int unique      -- 1..50 (admin assigns)
+  council_role  app_role_enum   -- architect/curator/sentinel/innovator (nullable)
+  founder_title text            -- optional ceremonial title
+  is_active     boolean default true   -- admin's on/off switch
+  created_at    timestamptz
+```
 
-I'll execute these in 3 passes:
+Seed rows 1–50 + 1 admin seat empty (`user_id = null, is_active = false`) so admin sees the slots ready to fill.
 
-- Pass D1: Feed density + segmented control
-- Pass D2: Discover/Reels instgram-style rails
-- Pass D3: Messages Telegram-style chat polish
+DB trigger `on_founder_seat_change`:
 
----
+- When `user_id` is set AND `is_active = true`: update that profile → `is_founder = true`, `founder_level = 1`, `join_era = 'founder'`, copy `council_role` + `founder_title`. Insert notification `type = 'founder_inducted'`.
+- When `is_active` flips `true → false` OR `user_id` cleared: revoke → `is_founder = false`, clear founder fields. Insert notification `type = 'founder_revoked'`.
 
-## Technical summary
+Admin workflow: Backend → Tables → `founder_seats` → paste a `user_id` into seat #7, set `council_role`, ensure `is_active = true`. Save. User is now a founder.
 
-**Files to add:**
-
-- `src/hooks/useAuthReady.ts`, `src/hooks/useUserRole.ts`
-- `src/pages/admin/AdminConsole.tsx`, `VerificationQueue.tsx`, `FounderQueue.tsx`, `ReportsQueue.tsx`
-- `supabase/functions/admin-approve-verification/index.ts`, `admin-approve-founder/index.ts`
-- One migration: `user_roles` + `has_role` + admin RLS policies + indexes
-
-**Files to edit:**
-
-- `src/App.tsx` — QueryClientProvider, lazy routes, `/admin` route
-- `src/contexts/AuthProvider.tsx` — expose `isReady`
-- `src/pages/Feed.tsx` — parallel fetch, segmented control, skeleton-first
-- `src/pages/Discover.tsx` + `Reels.tsx` — instgram rails
-- `src/pages/Messages.tsx` + `Conversation.tsx` — Telegram polish
-- `src/components/social/PostCard.tsx` — lazy images, density
-
-**Tier 6 stays on hold** per your earlier instruction.
+To revoke: flip `is_active` to false. Perks vanish, user notified.
 
 ---
 
-## What I need from you
+## 3. Notifications
 
-1. **Your account email or user_id** so I can grant you the `admin` role in the migration (otherwise nobody can use the admin console).
-2. Confirm the **UI direction recommendation** above, or tell me to lean harder into one of the three apps.
-3. Confirm scope — should I do all 3 problems in one go (large), or sequence them (Perf → Admin → UI)?
+Extend `notifications.type` accepted values (it's already free-text) to include:
+
+- `verification_approved` / `verification_revoked`
+- `founder_inducted` / `founder_revoked`
+
+Add a small UI mapper in `Notifications.tsx` so these render with the right icon + copy:
+
+- "You've been verified ✓"
+- "Welcome to the Founder Hall — Seat #7"
+- "Your founder status has been updated"
+
+No new screens — they appear in the existing notifications list.
+
+---
+
+## 4. Hall of Founders screen (read-only public list + perks)
+
+`HallOfFoundersScreen.tsx` becomes a public showcase driven by `founder_seats`:
+
+- Query: `founder_seats` where `is_active = true AND user_id IS NOT NULL`, joined with `profiles`, ordered by `seat_number`.
+- Layout: cinematic grid of 50 numbered seats. Filled seats show avatar + display name + council_role badge + seat number. Empty seats show a dim "Seat awaits" placeholder.
+- Tap a founder → their profile.
+- Top of screen: **Perks of the Founder Hall** section (static, taken from prior plan):
+  1. Genesis Mark on profile + everywhere they appear
+  2. Signature Aura frame (animated gradient)
+  3. Council voting weight ×3 on platform proposals
+  4. Permanent join era `founder`
+  5. Founder-only chat ring (future)
+  6. Free Premium for life
+  7. Early access to new features
+  8. Name engraved in the Genesis Wall (settings → about)
+
+No "Apply" button anywhere. Founder Hall is invitation-only via admin.
+
+---
+
+## 5. Security cleanup
+
+- Keep `user_roles` + `has_role()` (used by trigger to guard who can write to `approved`/`is_active`).
+- Add RLS on `founder_seats`:
+  - SELECT: everyone (it's a public hall).
+  - INSERT/UPDATE/DELETE: only `has_role(auth.uid(), 'admin')`.
+- Add RLS on `verification_requests.approved` column write: only admin via a `BEFORE UPDATE` trigger that rejects non-admin attempts to change `approved`.
+
+---
+
+## 6. Files
+
+**Delete**
+
+- `src/pages/admin/AdminConsole.tsx`
+- `src/pages/FounderApply.tsx`
+- `supabase/functions/admin-approve-verification/`
+- `supabase/functions/admin-approve-founder/`
+
+**Migration (single file)**
+
+- Drop `founder_applications`.
+- Add `verification_requests.approved boolean default false`.
+- Create `founder_seats` + seed 50 empty rows.
+- Create both triggers + notification inserts.
+- RLS policies on `founder_seats`.
+
+**Edit**
+
+- `src/App.tsx` — remove `/admin` and `/founder-apply` routes.
+- `src/components/founders/HallOfFoundersScreen.tsx` — rewrite to read `founder_seats` + render perks section.
+- `src/pages/Notifications.tsx` — render new notification types.
+
+---
+
+## Questions before I build
+
+1. **Seed count:** confirm 50 founder seats (or different number)?
+2. **Seat numbering:** should seat #1 be reserved for you (the admin), or all 50 open?
+3. **Revoking founder:** when admin flips `is_active = false`, should the user's past content (posts/comments) lose the founder badge retroactively, or only future? (Recommend: badge disappears everywhere immediately — single source of truth on `profiles.is_founder`.)
+4. **Verification revoke notification copy:** make notification brack so admin write message annual or here ai can generate message. Admin give reason for revoke hall of founders ai make notification from taking reason 

@@ -239,36 +239,39 @@ export type Database = {
           },
         ]
       }
-      founder_applications: {
+      founder_seats: {
         Row: {
-          chronicle: string
+          council_role: Database["public"]["Enums"]["council_role"] | null
           created_at: string
-          desired_role: Database["public"]["Enums"]["council_role"] | null
+          founder_title: string | null
           id: string
-          reviewed_at: string | null
-          status: string
-          user_id: string
-          why: string
+          is_active: boolean
+          revoke_reason: string | null
+          seat_number: number
+          updated_at: string
+          user_id: string | null
         }
         Insert: {
-          chronicle: string
+          council_role?: Database["public"]["Enums"]["council_role"] | null
           created_at?: string
-          desired_role?: Database["public"]["Enums"]["council_role"] | null
+          founder_title?: string | null
           id?: string
-          reviewed_at?: string | null
-          status?: string
-          user_id: string
-          why: string
+          is_active?: boolean
+          revoke_reason?: string | null
+          seat_number: number
+          updated_at?: string
+          user_id?: string | null
         }
         Update: {
-          chronicle?: string
+          council_role?: Database["public"]["Enums"]["council_role"] | null
           created_at?: string
-          desired_role?: Database["public"]["Enums"]["council_role"] | null
+          founder_title?: string | null
           id?: string
-          reviewed_at?: string | null
-          status?: string
-          user_id?: string
-          why?: string
+          is_active?: boolean
+          revoke_reason?: string | null
+          seat_number?: number
+          updated_at?: string
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -821,6 +824,7 @@ export type Database = {
       }
       verification_requests: {
         Row: {
+          approved: boolean
           category: string
           created_at: string
           full_name: string
@@ -832,6 +836,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          approved?: boolean
           category: string
           created_at?: string
           full_name: string
@@ -843,6 +848,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          approved?: boolean
           category?: string
           created_at?: string
           full_name?: string
