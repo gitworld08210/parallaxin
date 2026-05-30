@@ -9,11 +9,16 @@ import { AppShell } from "@/components/layout/AppShell";
 import Auth from "./pages/Auth";
 import ResetPassword from "./pages/ResetPassword";
 import Feed from "./pages/Feed";
+import Reels from "./pages/Reels";
 import Discover from "./pages/Discover";
 import Messages from "./pages/Messages";
 import Conversation from "./pages/Conversation";
 import Notifications from "./pages/Notifications";
 import Compose from "./pages/Compose";
+import ReelCompose from "./pages/ReelCompose";
+import StoryCompose from "./pages/StoryCompose";
+import PostDetail from "./pages/PostDetail";
+import Tag from "./pages/Tag";
 import Wallet from "./pages/Wallet";
 import Profile from "./pages/Profile";
 import EditProfile from "./pages/EditProfile";
@@ -37,11 +42,16 @@ const App = () => (
             <Route element={<ProtectedRoute />}>
               <Route element={<AppShell />}>
                 <Route path="/" element={<Feed />} />
+                <Route path="/reels" element={<Reels />} />
                 <Route path="/discover" element={<Discover />} />
                 <Route path="/messages" element={<Messages />} />
                 <Route path="/messages/:id" element={<Conversation />} />
                 <Route path="/notifications" element={<Notifications />} />
                 <Route path="/compose" element={<Compose />} />
+                <Route path="/compose/reel" element={<ReelCompose />} />
+                <Route path="/compose/story" element={<StoryCompose />} />
+                <Route path="/p/:postId" element={<PostDetail />} />
+                <Route path="/tag/:tag" element={<Tag />} />
                 <Route path="/wallet" element={<Wallet />} />
                 <Route path="/profile" element={<Profile />} />
                 <Route path="/profile/edit" element={<EditProfile />} />

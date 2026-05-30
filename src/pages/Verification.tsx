@@ -1,90 +1,137 @@
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { ChevronLeft, Upload, BadgeCheck, Clock, XCircle } from "lucide-react";
 import { TopBar } from "@/components/vibe/TopBar";
 import { GlassCard } from "@/components/vibe/GlassCard";
 import { VerificationBadge } from "@/components/vibe/VerificationBadge";
-import { VerificationKind } from "@/lib/mock";
-import { ChevronLeft } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import { useState } from "react";
-import { toast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthProvider";
+import { toast } from "sonner";
 
-const kinds: { id: VerificationKind; title: string; desc: string }[] = [
-  { id: "creator", title: "Creator verified", desc: "For active creators with consistent original content" },
-  { id: "gov", title: "Government verified", desc: "Official institutions and public sector accounts" },
-  { id: "brand", title: "Brand verified", desc: "Registered brands and businesses" },
-  { id: "verified", title: "Standard verified", desc: "Notable individuals & authentic identity" },
+type VR = { id: string; status: string; category: string; created_at: string };
+const kinds = [
+  { id: "creator", title: "Creator", desc: "Active creators with original content" },
+  { id: "gov", title: "Government", desc: "Official institutions" },
+  { id: "brand", title: "Brand", desc: "Registered brands and businesses" },
+  { id: "verified", title: "Standard", desc: "Notable individuals" },
 ];
 
 const Verification = () => {
+  const { user } = useAuth();
   const nav = useNavigate();
-  const [selected, setSelected] = useState<VerificationKind>("creator");
-  const [reason, setReason] = useState("");
+  const [existing, setExisting] = useState<VR | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [category, setCategory] = useState("creator");
+  const [fullName, setFullName] = useState("");
+  const [links, setLinks] = useState("");
+  const [file, setFile] = useState<File | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    if (!user) return;
+    (async () => {
+      const { data } = await supabase.from("verification_requests").select("id, status, category, created_at").eq("user_id", user.id).maybeSingle();
+      setExisting((data as VR) ?? null);
+      setLoading(false);
+    })();
+  }, [user?.id]);
+
+  const submit = async () => {
+    if (!user) return;
+    if (!fullName.trim()) return toast.error("Add your full legal name");
+    if (!file) return toast.error("Upload an ID document");
+    setBusy(true);
+    try {
+      const ext = file.name.split(".").pop() || "jpg";
+      const path = `${user.id}/${crypto.randomUUID()}.${ext}`;
+      const { error: upErr } = await supabase.storage.from("verification-docs").upload(path, file, { upsert: false });
+      if (upErr) throw upErr;
+      const linkArr = links.split(/[\n,]/).map((s) => s.trim()).filter(Boolean);
+      const { error } = await supabase.from("verification_requests").insert({
+        user_id: user.id, full_name: fullName.trim(), category, links: linkArr, id_doc_url: path, status: "pending",
+      });
+      if (error) throw error;
+      toast.success("Submitted · review within 48h");
+      setExisting({ id: "tmp", status: "pending", category, created_at: new Date().toISOString() });
+    } catch (e: any) { toast.error(e.message || "Failed"); } finally { setBusy(false); }
+  };
+
+  if (loading) return <div className="p-10 text-center text-sm text-muted-foreground">Loading…</div>;
 
   return (
     <div>
       <TopBar
         subtitle="Identity"
         title="Verification"
-        right={
-          <button onClick={() => nav(-1)} className="glass h-11 w-11 rounded-full grid place-items-center">
-            <ChevronLeft className="h-5 w-5" />
-          </button>
-        }
+        right={<button onClick={() => nav(-1)} className="glass h-11 w-11 rounded-full grid place-items-center"><ChevronLeft className="h-5 w-5" /></button>}
       />
 
-      <div className="px-5 space-y-3">
-        {kinds.map((k) => (
-          <button
-            key={k.id}
-            onClick={() => setSelected(k.id)}
-            className="w-full text-left"
-          >
-            <GlassCard
-              className={`flex items-start gap-3 transition-all ${
-                selected === k.id ? "border-primary/60 shadow-glow" : ""
-              }`}
-            >
-              <span className="h-10 w-10 rounded-xl glass-strong grid place-items-center">
-                <VerificationBadge kind={k.id} />
-              </span>
-              <div className="flex-1">
-                <p className="font-semibold text-sm">{k.title}</p>
-                <p className="text-xs text-muted-foreground">{k.desc}</p>
-              </div>
-              <span
-                className={`h-5 w-5 rounded-full border-2 ${
-                  selected === k.id ? "bg-gradient-primary border-transparent" : "border-border"
-                }`}
-              />
+      <div className="px-5 space-y-4">
+        {existing ? (
+          <GlassCard className="text-center py-8">
+            {existing.status === "pending" && (
+              <>
+                <Clock className="h-10 w-10 mx-auto mb-3 text-primary" />
+                <p className="font-display text-xl">Under review</p>
+                <p className="text-sm text-muted-foreground mt-1">Submitted {new Date(existing.created_at).toLocaleDateString()} · we'll notify you within 48h.</p>
+              </>
+            )}
+            {existing.status === "approved" && (
+              <>
+                <BadgeCheck className="h-10 w-10 mx-auto mb-3 text-verified" />
+                <p className="font-display text-xl">Verified ✦</p>
+                <p className="text-sm text-muted-foreground mt-1">Your badge is now live.</p>
+              </>
+            )}
+            {existing.status === "rejected" && (
+              <>
+                <XCircle className="h-10 w-10 mx-auto mb-3 text-destructive" />
+                <p className="font-display text-xl">Not approved</p>
+                <p className="text-sm text-muted-foreground mt-1">You can reapply in 30 days.</p>
+              </>
+            )}
+          </GlassCard>
+        ) : (
+          <>
+            <div className="grid grid-cols-2 gap-2">
+              {kinds.map((k) => (
+                <button key={k.id} onClick={() => setCategory(k.id)} className="text-left">
+                  <GlassCard className={`transition-all ${category === k.id ? "border-primary/60 shadow-glow" : ""}`}>
+                    <VerificationBadge kind={k.id as any} />
+                    <p className="font-semibold text-sm mt-2">{k.title}</p>
+                    <p className="text-[11px] text-muted-foreground">{k.desc}</p>
+                  </GlassCard>
+                </button>
+              ))}
+            </div>
+
+            <GlassCard>
+              <label className="text-xs uppercase tracking-wider text-muted-foreground">Full legal name</label>
+              <input value={fullName} onChange={(e) => setFullName(e.target.value)} className="w-full mt-2 bg-transparent outline-none text-sm" placeholder="Jane Doe" />
             </GlassCard>
-          </button>
-        ))}
 
-        <GlassCard>
-          <label className="text-xs uppercase tracking-wider text-muted-foreground">Reason</label>
-          <textarea
-            value={reason}
-            onChange={(e) => setReason(e.target.value)}
-            rows={4}
-            placeholder="Tell admins why you qualify…"
-            className="w-full mt-2 bg-transparent outline-none text-sm placeholder:text-muted-foreground resize-none"
-          />
-        </GlassCard>
+            <GlassCard>
+              <label className="text-xs uppercase tracking-wider text-muted-foreground">Reference links</label>
+              <textarea value={links} onChange={(e) => setLinks(e.target.value)} rows={3} className="w-full mt-2 bg-transparent outline-none text-sm resize-none" placeholder="One per line · press, articles, official sites" />
+            </GlassCard>
 
-        <button
-          onClick={() =>
-            toast({
-              title: "Request submitted",
-              description: "Admin review queued. You'll be notified within 48h.",
-            })
-          }
-          className="w-full rounded-2xl py-3.5 text-sm font-semibold bg-gradient-primary text-primary-foreground shadow-glow"
-        >
-          Submit for admin review
-        </button>
+            <label className="block">
+              <GlassCard className="flex items-center gap-3 cursor-pointer">
+                <Upload className="h-5 w-5 text-primary" />
+                <div className="flex-1">
+                  <p className="text-sm font-semibold">{file ? file.name : "Upload ID document"}</p>
+                  <p className="text-[11px] text-muted-foreground">Passport, gov ID, or business registry · private</p>
+                </div>
+              </GlassCard>
+              <input type="file" accept="image/*,application/pdf" className="hidden" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
+            </label>
 
-        <p className="text-center text-[11px] text-muted-foreground pt-2">
-          Fraud detection · trust scoring · anti-farming checks run automatically
-        </p>
+            <button onClick={submit} disabled={busy} className="w-full rounded-2xl py-3.5 text-sm font-semibold bg-gradient-primary text-primary-foreground shadow-glow disabled:opacity-60">
+              {busy ? "Submitting…" : "Submit for review"}
+            </button>
+            <p className="text-center text-[11px] text-muted-foreground pt-1">Manual review by admin · no auto-approval</p>
+          </>
+        )}
       </div>
     </div>
   );

@@ -276,6 +276,7 @@ export type Database = {
           content: string
           created_at: string
           id: string
+          is_reel: boolean
           like_count: number
           media_type: string | null
           media_url: string | null
@@ -287,6 +288,7 @@ export type Database = {
           content?: string
           created_at?: string
           id?: string
+          is_reel?: boolean
           like_count?: number
           media_type?: string | null
           media_url?: string | null
@@ -298,6 +300,7 @@ export type Database = {
           content?: string
           created_at?: string
           id?: string
+          is_reel?: boolean
           like_count?: number
           media_type?: string | null
           media_url?: string | null
@@ -359,6 +362,95 @@ export type Database = {
           user_id?: string
           username?: string
           verified?: boolean
+        }
+        Relationships: []
+      }
+      saves: {
+        Row: {
+          created_at: string
+          post_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          post_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          post_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      stories: {
+        Row: {
+          created_at: string
+          expires_at: string
+          id: string
+          media_type: string
+          media_url: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          media_type?: string
+          media_url: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          media_type?: string
+          media_url?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stories_user_profile_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      verification_requests: {
+        Row: {
+          category: string
+          created_at: string
+          full_name: string
+          id: string
+          id_doc_url: string | null
+          links: string[] | null
+          reviewed_at: string | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          full_name: string
+          id?: string
+          id_doc_url?: string | null
+          links?: string[] | null
+          reviewed_at?: string | null
+          status?: string
+          user_id: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          full_name?: string
+          id?: string
+          id_doc_url?: string | null
+          links?: string[] | null
+          reviewed_at?: string | null
+          status?: string
+          user_id?: string
         }
         Relationships: []
       }

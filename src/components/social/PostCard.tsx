@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Heart, MessageCircle, Send, Bookmark, MoreHorizontal } from "lucide-react";
@@ -28,12 +28,33 @@ export type FeedPost = {
   liked: boolean;
 };
 
+const linkify = (text: string) =>
+  text.split(/(\s+)/).map((tok, i) => {
+    if (tok.startsWith("#") && tok.length > 1) {
+      const tag = tok.slice(1).replace(/[^\w]/g, "");
+      if (tag) return <Link key={i} to={`/tag/${tag}`} className="text-primary">{tok}</Link>;
+    }
+    if (tok.startsWith("@") && tok.length > 1) {
+      const u = tok.slice(1).replace(/[^\w.]/g, "");
+      if (u) return <Link key={i} to={`/u/${u}`} className="text-primary">{tok}</Link>;
+    }
+    return <span key={i}>{tok}</span>;
+  });
+
 export const PostCard = ({ post, onOpenComments }: { post: FeedPost; onOpenComments: (id: string) => void }) => {
   const { user } = useAuth();
   const [liked, setLiked] = useState(post.liked);
   const [likes, setLikes] = useState(post.like_count);
+  const [saved, setSaved] = useState(false);
+  const lastTap = useRef(0);
 
   useEffect(() => { setLiked(post.liked); setLikes(post.like_count); }, [post.liked, post.like_count]);
+
+  useEffect(() => {
+    if (!user) return;
+    supabase.from("saves").select("post_id").eq("user_id", user.id).eq("post_id", post.id).maybeSingle()
+      .then(({ data }) => setSaved(!!data));
+  }, [user?.id, post.id]);
 
   const toggleLike = async () => {
     if (!user) return toast.error("Sign in to like");
@@ -47,8 +68,26 @@ export const PostCard = ({ post, onOpenComments }: { post: FeedPost; onOpenComme
     }
   };
 
+  const toggleSave = async () => {
+    if (!user) return toast.error("Sign in to save");
+    const next = !saved;
+    setSaved(next);
+    if (next) {
+      const { error } = await supabase.from("saves").insert({ user_id: user.id, post_id: post.id });
+      if (error) setSaved(false); else toast.success("Saved");
+    } else {
+      await supabase.from("saves").delete().eq("user_id", user.id).eq("post_id", post.id);
+    }
+  };
+
+  const onMediaTap = () => {
+    const now = Date.now();
+    if (now - lastTap.current < 300) { if (!liked) toggleLike(); }
+    lastTap.current = now;
+  };
+
   const share = async () => {
-    const url = `${window.location.origin}/u/${post.profile?.username}`;
+    const url = `${window.location.origin}/p/${post.id}`;
     try { await navigator.clipboard.writeText(url); toast.success("Link copied"); } catch { toast.error("Couldn't copy"); }
   };
 
@@ -80,11 +119,11 @@ export const PostCard = ({ post, onOpenComments }: { post: FeedPost; onOpenComme
         </header>
 
         {post.content && (
-          <p className="px-4 pb-3 text-sm leading-snug whitespace-pre-wrap">{post.content}</p>
+          <p className="px-4 pb-3 text-sm leading-snug whitespace-pre-wrap">{linkify(post.content)}</p>
         )}
 
         {post.media_url && (
-          <div className="relative w-full bg-muted/30">
+          <div onClick={onMediaTap} className="relative w-full bg-muted/30">
             {post.media_type === "video" ? (
               <video src={post.media_url} controls className="w-full max-h-[520px] object-cover" />
             ) : (
@@ -98,7 +137,9 @@ export const PostCard = ({ post, onOpenComments }: { post: FeedPost; onOpenComme
           <ActionBtn onClick={() => onOpenComments(post.id)} icon={MessageCircle} label={fmt(post.comment_count)} />
           <ActionBtn onClick={share} icon={Send} label="Share" />
           <div className="ml-auto">
-            <button className="h-10 w-10 grid place-items-center rounded-full hover:bg-muted/40"><Bookmark className="h-4 w-4" /></button>
+            <button onClick={toggleSave} className="h-10 w-10 grid place-items-center rounded-full hover:bg-muted/40">
+              <Bookmark className={`h-4 w-4 ${saved ? "fill-current text-primary" : ""}`} />
+            </button>
           </div>
         </footer>
       </GlassCard>
@@ -106,7 +147,7 @@ export const PostCard = ({ post, onOpenComments }: { post: FeedPost; onOpenComme
   );
 };
 
-const ActionBtn = ({ icon: Icon, label, onClick, active, accent }: any) => (
+const ActionBtn = ({ icon: Icon, label, onClick, accent }: any) => (
   <button onClick={onClick} className="flex items-center gap-1.5 px-3 py-2 rounded-full hover:bg-muted/40">
     <Icon className={`h-4 w-4 ${accent ? "fill-current text-accent" : ""}`} strokeWidth={2.25} />
     <span className="text-xs font-semibold">{label}</span>

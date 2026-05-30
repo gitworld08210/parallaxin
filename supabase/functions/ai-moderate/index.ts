@@ -1,12 +1,7 @@
-import "https://deno.land/x/xhr@0.1.0/mod.ts";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
 
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
   try {
     const { text } = await req.json();
     if (!text || typeof text !== "string") {
@@ -17,12 +12,17 @@ Deno.serve(async (req) => {
 
     const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
+      headers: {
+        "Content-Type": "application/json",
+        "Lovable-API-Key": apiKey,
+        "X-Lovable-AIG-SDK": "vercel-ai-sdk",
+      },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash-lite",
+        model: "openai/gpt-5.5-pro",
+        response_format: { type: "json_object" },
         messages: [
-          { role: "system", content: 'You are a content moderator. Decide if the text contains hate, harassment, sexual content involving minors, explicit violence, or doxxing. Respond ONLY as JSON: {"flagged": boolean, "reason": string}. Reason should be short and user-friendly when flagged, empty otherwise.' },
-          { role: "user", content: text.slice(0, 2000) },
+          { role: "system", content: 'You are a strict content moderator. Decide if the text contains hate, harassment, sexual content involving minors, explicit violence, doxxing, or illegal content. Respond ONLY as JSON: {"flagged": boolean, "reason": string, "severity": "low"|"medium"|"high"}. Reason should be short and user-friendly when flagged; empty when not flagged.' },
+          { role: "user", content: text.slice(0, 4000) },
         ],
       }),
     });
@@ -31,10 +31,10 @@ Deno.serve(async (req) => {
     }
     const data = await res.json();
     const raw = data.choices?.[0]?.message?.content?.trim() ?? "{}";
-    let parsed: any = { flagged: false, reason: "" };
+    let parsed: any = { flagged: false, reason: "", severity: "low" };
     try { parsed = JSON.parse(raw.replace(/```json|```/g, "").trim()); } catch {}
     return new Response(JSON.stringify(parsed), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (e) {
-    return new Response(JSON.stringify({ flagged: false, error: String(e) }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    return new Response(JSON.stringify({ flagged: false, error: String(e) }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   }
 });

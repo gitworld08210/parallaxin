@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Bell, Sparkles, Plus } from "lucide-react";
+import { Bell, Sparkles, Plus, Film, ImageIcon } from "lucide-react";
 import { TopBar } from "@/components/vibe/TopBar";
 import { PostCard, FeedPost } from "@/components/social/PostCard";
 import { CommentSheet } from "@/components/social/CommentSheet";
+import { StoriesRail } from "@/components/social/StoriesRail";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthProvider";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 const Feed = () => {
   const { user } = useAuth();
@@ -19,6 +21,7 @@ const Feed = () => {
     let q = supabase
       .from("posts")
       .select("id, user_id, content, media_url, media_type, like_count, comment_count, created_at, profile:profiles!posts_user_profile_fkey(username, display_name, avatar_url, verified)")
+      .eq("is_reel", false)
       .order("created_at", { ascending: false })
       .limit(50);
 
@@ -51,6 +54,8 @@ const Feed = () => {
           </Link>
         }
       />
+
+      <StoriesRail />
 
       <div className="px-5 mb-4 flex glass rounded-full p-1">
         {[
@@ -88,13 +93,32 @@ const Feed = () => {
         ))}
       </section>
 
-      <Link
-        to="/compose"
-        className="fixed bottom-24 right-5 z-40 h-14 w-14 rounded-full bg-gradient-primary text-primary-foreground grid place-items-center shadow-glow"
-        aria-label="New post"
-      >
-        <Plus className="h-6 w-6" />
-      </Link>
+      <Sheet>
+        <SheetTrigger asChild>
+          <button
+            className="fixed bottom-24 right-5 z-40 h-14 w-14 rounded-full bg-gradient-primary text-primary-foreground grid place-items-center shadow-glow"
+            aria-label="Create"
+          >
+            <Plus className="h-6 w-6" />
+          </button>
+        </SheetTrigger>
+        <SheetContent side="bottom" className="rounded-t-3xl">
+          <div className="grid grid-cols-3 gap-3 pt-6 pb-4">
+            <Link to="/compose" className="glass-strong rounded-2xl py-5 flex flex-col items-center gap-2">
+              <ImageIcon className="h-6 w-6 text-primary" />
+              <span className="text-xs font-semibold">Post</span>
+            </Link>
+            <Link to="/compose/reel" className="glass-strong rounded-2xl py-5 flex flex-col items-center gap-2">
+              <Film className="h-6 w-6 text-primary" />
+              <span className="text-xs font-semibold">Reel</span>
+            </Link>
+            <Link to="/compose/story" className="glass-strong rounded-2xl py-5 flex flex-col items-center gap-2">
+              <Sparkles className="h-6 w-6 text-primary" />
+              <span className="text-xs font-semibold">Story</span>
+            </Link>
+          </div>
+        </SheetContent>
+      </Sheet>
 
       <CommentSheet postId={commentPost} open={!!commentPost} onOpenChange={(b) => !b && setCommentPost(null)} />
     </div>

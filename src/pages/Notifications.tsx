@@ -89,8 +89,9 @@ const Notifications = () => {
             </>
           );
           const cls = "flex items-center gap-3 rounded-2xl px-2 py-3 hover:bg-muted/40 transition-colors";
-          return n.actor ? (
-            <Link to={`/u/${n.actor.username}`} key={n.id} className={cls}>{inner}</Link>
+          const to = n.post_id ? `/p/${n.post_id}` : n.actor ? `/u/${n.actor.username}` : null;
+          return to ? (
+            <Link to={to} key={n.id} className={cls}>{inner}</Link>
           ) : (
             <div key={n.id} className={cls}>{inner}</div>
           );
