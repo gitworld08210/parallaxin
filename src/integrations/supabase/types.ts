@@ -331,6 +331,7 @@ export type Database = {
           updated_at: string
           user_id: string
           username: string
+          verification_kind: string | null
           verified: boolean
         }
         Insert: {
@@ -346,6 +347,7 @@ export type Database = {
           updated_at?: string
           user_id: string
           username: string
+          verification_kind?: string | null
           verified?: boolean
         }
         Update: {
@@ -361,6 +363,7 @@ export type Database = {
           updated_at?: string
           user_id?: string
           username?: string
+          verification_kind?: string | null
           verified?: boolean
         }
         Relationships: []
@@ -463,6 +466,7 @@ export type Database = {
         Args: { _conv: string; _user: string }
         Returns: boolean
       }
+      start_dm: { Args: { other_user_id: string }; Returns: string }
     }
     Enums: {
       [_ in never]: never
