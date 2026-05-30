@@ -27,7 +27,7 @@ export const SideMenu = ({ trigger }: { trigger: React.ReactNode }) => {
     { to: "/profile", icon: UserIcon, label: "My Profile" },
     { to: "/wallet", icon: Wallet, label: "Aura Wallet", trailing: <span className="text-xs font-bold text-primary">12,450</span> },
     { to: "/profile?tab=saved", icon: Bookmark, label: "Saved" },
-    { to: "/verification", icon: BadgeCheck, label: "Verification Center", trailing: <span className="text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-primary/15 text-primary border border-primary/30">New</span> },
+    { to: "/verification", icon: BadgeCheck, label: "Request verification" },
     { to: "/settings", icon: Settings, label: "Settings" },
     // Coming-soon placeholders
     { icon: Users, label: "Communities", onClick: soon("Communities"), soon: true },

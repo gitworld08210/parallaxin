@@ -826,55 +826,37 @@ export type Database = {
         Row: {
           approved: boolean
           category: string
-          country: string | null
           created_at: string
-          dob: string | null
           full_name: string
           id: string
           id_doc_url: string | null
           links: string[] | null
-          official_email: string | null
-          organization: string | null
-          reason: string | null
           reviewed_at: string | null
           status: string
-          supporting_doc_url: string | null
           user_id: string
         }
         Insert: {
           approved?: boolean
           category: string
-          country?: string | null
           created_at?: string
-          dob?: string | null
           full_name: string
           id?: string
           id_doc_url?: string | null
           links?: string[] | null
-          official_email?: string | null
-          organization?: string | null
-          reason?: string | null
           reviewed_at?: string | null
           status?: string
-          supporting_doc_url?: string | null
           user_id: string
         }
         Update: {
           approved?: boolean
           category?: string
-          country?: string | null
           created_at?: string
-          dob?: string | null
           full_name?: string
           id?: string
           id_doc_url?: string | null
           links?: string[] | null
-          official_email?: string | null
-          organization?: string | null
-          reason?: string | null
           reviewed_at?: string | null
           status?: string
-          supporting_doc_url?: string | null
           user_id?: string
         }
         Relationships: []
