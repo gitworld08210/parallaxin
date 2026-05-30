@@ -1,10 +1,15 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { ImagePlus, X, Globe, Star } from "lucide-react";
+import { ImagePlus, X, Globe, Star, BarChart3, MessageSquare, Plus, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthProvider";
 import { TopBar } from "@/components/vibe/TopBar";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { toast } from "sonner";
+
+type Sticker =
+  | { id: string; kind: "poll"; x: number; y: number; question: string; options: string[] }
+  | { id: string; kind: "qa"; x: number; y: number; prompt: string };
 
 const StoryCompose = () => {
   const { user } = useAuth();
@@ -13,6 +18,12 @@ const StoryCompose = () => {
   const [preview, setPreview] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [audience, setAudience] = useState<"public" | "close_friends">("public");
+  const [stickers, setStickers] = useState<Sticker[]>([]);
+  const [stickerSheet, setStickerSheet] = useState<null | "poll" | "qa">(null);
+  const [pollQ, setPollQ] = useState("");
+  const [pollOpts, setPollOpts] = useState<string[]>(["", ""]);
+  const [qaPrompt, setQaPrompt] = useState("");
+  const canvasRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!file) { setPreview(null); return; }
@@ -20,6 +31,39 @@ const StoryCompose = () => {
     setPreview(url);
     return () => URL.revokeObjectURL(url);
   }, [file]);
+
+  const addPoll = () => {
+    const opts = pollOpts.map((o) => o.trim()).filter(Boolean);
+    if (!pollQ.trim() || opts.length < 2) return toast.error("Question + 2 options required");
+    setStickers((s) => [...s, { id: crypto.randomUUID(), kind: "poll", x: 0.5, y: 0.7, question: pollQ.trim(), options: opts.slice(0, 4) }]);
+    setPollQ(""); setPollOpts(["", ""]); setStickerSheet(null);
+  };
+  const addQA = () => {
+    if (!qaPrompt.trim()) return toast.error("Prompt required");
+    setStickers((s) => [...s, { id: crypto.randomUUID(), kind: "qa", x: 0.5, y: 0.7, prompt: qaPrompt.trim() }]);
+    setQaPrompt(""); setStickerSheet(null);
+  };
+
+  const dragStart = (id: string) => (e: React.PointerEvent) => {
+    e.stopPropagation();
+    const target = e.currentTarget as HTMLElement;
+    target.setPointerCapture(e.pointerId);
+    const move = (ev: PointerEvent) => {
+      const rect = canvasRef.current?.getBoundingClientRect();
+      if (!rect) return;
+      const nx = Math.min(0.95, Math.max(0.05, (ev.clientX - rect.left) / rect.width));
+      const ny = Math.min(0.95, Math.max(0.05, (ev.clientY - rect.top) / rect.height));
+      setStickers((prev) => prev.map((s) => s.id === id ? { ...s, x: nx, y: ny } : s));
+    };
+    const up = () => {
+      window.removeEventListener("pointermove", move);
+      window.removeEventListener("pointerup", up);
+    };
+    window.addEventListener("pointermove", move);
+    window.addEventListener("pointerup", up);
+  };
+
+  const removeSticker = (id: string) => setStickers((s) => s.filter((x) => x.id !== id));
 
   const submit = async () => {
     if (!user || !file) return toast.error("Pick a photo or video");
@@ -30,13 +74,22 @@ const StoryCompose = () => {
       const { error: upErr } = await supabase.storage.from("post-media").upload(path, file, { cacheControl: "3600", upsert: false });
       if (upErr) throw upErr;
       const { data } = supabase.storage.from("post-media").getPublicUrl(path);
-      const { error } = await supabase.from("stories").insert({
+      const { data: storyRow, error } = await supabase.from("stories").insert({
         user_id: user.id,
         media_url: data.publicUrl,
         media_type: file.type.startsWith("video") ? "video" : "image",
         audience: audience as any,
-      } as any);
+      } as any).select("id").single();
       if (error) throw error;
+      if (stickers.length && storyRow?.id) {
+        const rows = stickers.map((s) => ({
+          story_id: storyRow.id,
+          kind: s.kind,
+          position: { x: s.x, y: s.y },
+          payload: s.kind === "poll" ? { question: s.question, options: s.options } : { prompt: s.prompt },
+        }));
+        await supabase.from("story_stickers" as any).insert(rows as any);
+      }
       toast.success("Story added ✦ · expires in 24h");
       nav("/");
     } catch (e: any) { toast.error(e.message || "Failed"); } finally { setBusy(false); }
@@ -59,48 +112,108 @@ const StoryCompose = () => {
             <input type="file" accept="image/*,video/*" className="hidden" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
           </label>
         ) : (
-          <div className="relative rounded-xl overflow-hidden aspect-[9/16] bg-black">
+          <div ref={canvasRef} className="relative rounded-xl overflow-hidden aspect-[9/16] bg-black select-none">
             {file?.type.startsWith("video") ? (
               <video src={preview} autoPlay loop muted playsInline className="w-full h-full object-cover" />
             ) : (
               <img src={preview} className="w-full h-full object-cover" alt="" />
             )}
-            <button onClick={() => setFile(null)} className="absolute top-2 right-2 h-9 w-9 grid place-items-center rounded-full bg-black/60 text-white">
+            <button onClick={() => setFile(null)} className="absolute top-2 right-2 h-9 w-9 grid place-items-center rounded-full bg-black/60 text-white z-20">
               <X className="h-4 w-4" />
+            </button>
+
+            {stickers.map((s) => (
+              <div
+                key={s.id}
+                onPointerDown={dragStart(s.id)}
+                style={{ left: `${s.x * 100}%`, top: `${s.y * 100}%`, transform: "translate(-50%, -50%)" }}
+                className="absolute z-10 max-w-[80%] touch-none cursor-grab active:cursor-grabbing"
+              >
+                {s.kind === "poll" ? (
+                  <div className="rounded-2xl bg-white/95 backdrop-blur px-3 py-2.5 shadow-xl">
+                    <p className="text-xs font-bold text-foreground text-center mb-1.5">{s.question}</p>
+                    <div className="grid grid-cols-2 gap-1.5">
+                      {s.options.map((o, i) => (
+                        <div key={i} className="text-[11px] font-semibold text-foreground bg-muted rounded-lg px-2 py-1 text-center truncate">{o}</div>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="rounded-2xl bg-white/95 backdrop-blur px-3 py-2.5 shadow-xl min-w-[200px]">
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide mb-1">Q&amp;A</p>
+                    <p className="text-xs font-semibold text-foreground">{s.prompt}</p>
+                    <div className="mt-1.5 text-[10px] text-muted-foreground italic">Type a response…</div>
+                  </div>
+                )}
+                <button onPointerDown={(e) => e.stopPropagation()} onClick={() => removeSticker(s.id)}
+                  className="absolute -top-1.5 -right-1.5 h-5 w-5 grid place-items-center rounded-full bg-destructive text-destructive-foreground shadow">
+                  <X className="h-3 w-3" />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {preview && (
+          <div className="mt-3 flex gap-2">
+            <button onClick={() => setStickerSheet("poll")} className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-card border border-border text-sm font-semibold">
+              <BarChart3 className="h-4 w-4" /> Poll
+            </button>
+            <button onClick={() => setStickerSheet("qa")} className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-card border border-border text-sm font-semibold">
+              <MessageSquare className="h-4 w-4" /> Q&amp;A
             </button>
           </div>
         )}
 
-        {/* Audience picker */}
         <div className="mt-4 bg-card border border-border rounded-xl divide-y divide-border">
-          <AudienceOption
-            active={audience === "public"}
-            onPick={() => setAudience("public")}
-            icon={Globe}
-            label="Everyone"
-            desc="Anyone can see this story"
-          />
-          <AudienceOption
-            active={audience === "close_friends"}
-            onPick={() => setAudience("close_friends")}
-            icon={Star}
-            label="Close friends"
-            desc="Only people in your close friends list"
-            tint="emerald"
-          />
+          <AudienceOption active={audience === "public"} onPick={() => setAudience("public")} icon={Globe} label="Everyone" desc="Anyone can see this story" />
+          <AudienceOption active={audience === "close_friends"} onPick={() => setAudience("close_friends")} icon={Star} label="Close friends" desc="Only people in your close friends list" tint="emerald" />
         </div>
         <Link to="/close-friends" className="block text-xs text-primary font-semibold px-1 mt-2">Edit close friends list ›</Link>
 
-        <button
-          type="button"
-          onClick={submit}
-          disabled={busy}
-          className="relative z-10 mt-6 mb-4 w-full py-3.5 rounded-xl bg-primary text-primary-foreground font-semibold text-sm disabled:opacity-60 active:scale-[0.99] transition-transform"
-        >
+        <button type="button" onClick={submit} disabled={busy}
+          className="relative z-10 mt-6 mb-4 w-full py-3.5 rounded-xl bg-primary text-primary-foreground font-semibold text-sm disabled:opacity-60 active:scale-[0.99] transition-transform">
           {busy ? "Sharing…" : "Share story"}
         </button>
-
       </div>
+
+      <Sheet open={stickerSheet === "poll"} onOpenChange={(v) => !v && setStickerSheet(null)}>
+        <SheetContent side="bottom" className="rounded-t-2xl">
+          <SheetHeader><SheetTitle>Add poll</SheetTitle></SheetHeader>
+          <div className="mt-3 space-y-2">
+            <input value={pollQ} onChange={(e) => setPollQ(e.target.value)} placeholder="Ask a question…"
+              className="w-full bg-muted rounded-xl px-3 py-2.5 text-sm outline-none" maxLength={80} />
+            {pollOpts.map((o, i) => (
+              <div key={i} className="flex gap-2">
+                <input value={o} onChange={(e) => setPollOpts((p) => p.map((x, j) => j === i ? e.target.value : x))}
+                  placeholder={`Option ${i + 1}`} className="flex-1 bg-muted rounded-xl px-3 py-2.5 text-sm outline-none" maxLength={40} />
+                {pollOpts.length > 2 && (
+                  <button onClick={() => setPollOpts((p) => p.filter((_, j) => j !== i))} className="h-10 w-10 grid place-items-center rounded-xl bg-muted">
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                )}
+              </div>
+            ))}
+            {pollOpts.length < 4 && (
+              <button onClick={() => setPollOpts((p) => [...p, ""])} className="w-full flex items-center justify-center gap-1.5 py-2 rounded-xl border border-dashed border-border text-sm text-muted-foreground">
+                <Plus className="h-4 w-4" /> Add option
+              </button>
+            )}
+            <button onClick={addPoll} className="w-full py-3 rounded-xl bg-primary text-primary-foreground text-sm font-semibold">Add poll</button>
+          </div>
+        </SheetContent>
+      </Sheet>
+
+      <Sheet open={stickerSheet === "qa"} onOpenChange={(v) => !v && setStickerSheet(null)}>
+        <SheetContent side="bottom" className="rounded-t-2xl">
+          <SheetHeader><SheetTitle>Ask a question</SheetTitle></SheetHeader>
+          <div className="mt-3 space-y-2">
+            <input value={qaPrompt} onChange={(e) => setQaPrompt(e.target.value)} placeholder="Ask me anything…"
+              className="w-full bg-muted rounded-xl px-3 py-2.5 text-sm outline-none" maxLength={100} />
+            <button onClick={addQA} className="w-full py-3 rounded-xl bg-primary text-primary-foreground text-sm font-semibold">Add Q&amp;A</button>
+          </div>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 };
