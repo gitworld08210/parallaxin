@@ -7,17 +7,38 @@ import { VerificationBadge } from "@/components/vibe/VerificationBadge";
 import { EmptyState } from "@/components/empty/EmptyState";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthProvider";
-import { gradientFor, initialsOf, timeAgo } from "@/lib/format";
+import { gradientFor, initialsOf } from "@/lib/format";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
+
+// Telegram-style timestamp: HH:mm today, weekday this week, dd/mm older.
+const chatTime = (iso: string) => {
+  const d = new Date(iso);
+  const now = new Date();
+  const sameDay = d.toDateString() === now.toDateString();
+  if (sameDay) return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  const diffDays = Math.floor((now.getTime() - d.getTime()) / 86_400_000);
+  if (diffDays < 7) return d.toLocaleDateString([], { weekday: "short" });
+  return d.toLocaleDateString([], { day: "2-digit", month: "2-digit" });
+};
+
 
 type Conv = {
   id: string;
   last_message_at: string;
   other: { user_id: string; username: string; display_name: string; avatar_url: string | null; verification_kind?: string | null } | null;
   last: string | null;
+  unread: number;
 };
 
 type ProfileRow = {
+  user_id: string;
+  username: string;
+  display_name: string;
+  avatar_url: string | null;
+  verification_kind: string | null;
+};
+
   user_id: string;
   username: string;
   display_name: string;
@@ -49,22 +70,30 @@ const Messages = () => {
     const [{ data: conversations }, { data: others }, { data: lastMsgs }] = await Promise.all([
       supabase.from("conversations").select("id, last_message_at").in("id", ids).order("last_message_at", { ascending: false }),
       supabase.from("conversation_participants").select("conversation_id, user_id, profile:profiles!conv_participants_user_profile_fkey(user_id, username, display_name, avatar_url, verification_kind)").in("conversation_id", ids).neq("user_id", user.id),
-      supabase.from("messages").select("conversation_id, content, created_at").in("conversation_id", ids).order("created_at", { ascending: false }),
+      supabase.from("messages").select("conversation_id, content, created_at, sender_id, read_at").in("conversation_id", ids).order("created_at", { ascending: false }),
     ]);
 
     const otherByConv = new Map<string, any>();
     (others ?? []).forEach((o: any) => { if (!otherByConv.has(o.conversation_id)) otherByConv.set(o.conversation_id, o.profile); });
     const lastByConv = new Map<string, string>();
-    (lastMsgs ?? []).forEach((m: any) => { if (!lastByConv.has(m.conversation_id)) lastByConv.set(m.conversation_id, m.content); });
+    const unreadByConv = new Map<string, number>();
+    (lastMsgs ?? []).forEach((m: any) => {
+      if (!lastByConv.has(m.conversation_id)) lastByConv.set(m.conversation_id, m.content);
+      if (m.sender_id !== user.id && !m.read_at) {
+        unreadByConv.set(m.conversation_id, (unreadByConv.get(m.conversation_id) ?? 0) + 1);
+      }
+    });
 
     setConvs((conversations ?? []).map((c) => ({
       id: c.id,
       last_message_at: c.last_message_at,
       other: otherByConv.get(c.id) ?? null,
       last: lastByConv.get(c.id) ?? null,
+      unread: unreadByConv.get(c.id) ?? 0,
     })));
     setLoading(false);
   };
+
 
   useEffect(() => { load(); /* eslint-disable-next-line */ }, [user?.id]);
 
@@ -167,18 +196,31 @@ const Messages = () => {
                   <AuraAvatar gradient={gradientFor(c.other?.username)} size="md" initials={initialsOf(c.other?.display_name || c.other?.username)} />
                 )}
                 <div className="flex-1 min-w-0">
-                  <p className="font-semibold truncate text-sm flex items-center gap-1">
-                    {c.other?.display_name || c.other?.username || "Conversation"}
-                    {c.other?.verification_kind && <VerificationBadge kind={c.other.verification_kind as any} />}
-                  </p>
-                  <p className="text-xs text-muted-foreground truncate mt-0.5">
-                    {c.last ?? "Tap to start chatting"} · {timeAgo(c.last_message_at)}
-                  </p>
+                  <div className="flex items-center gap-2">
+                    <p className={cn("truncate text-sm flex items-center gap-1", c.unread > 0 ? "font-semibold text-foreground" : "font-medium text-foreground")}>
+                      {c.other?.display_name || c.other?.username || "Conversation"}
+                      {c.other?.verification_kind && <VerificationBadge kind={c.other.verification_kind as any} />}
+                    </p>
+                    <span className={cn("ml-auto text-[11px] shrink-0", c.unread > 0 ? "text-primary font-semibold" : "text-muted-foreground")}>
+                      {chatTime(c.last_message_at)}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    <p className={cn("text-xs truncate flex-1", c.unread > 0 ? "text-foreground" : "text-muted-foreground")}>
+                      {c.last ?? "Tap to start chatting"}
+                    </p>
+                    {c.unread > 0 && (
+                      <span className="shrink-0 inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-primary-foreground text-[11px] font-semibold">
+                        {c.unread > 99 ? "99+" : c.unread}
+                      </span>
+                    )}
+                  </div>
                 </div>
               </Link>
             </li>
           ))}
         </ul>
+
       </div>
 
       <Sheet open={composerOpen} onOpenChange={setComposerOpen}>
