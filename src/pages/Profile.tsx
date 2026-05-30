@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { BadgeCheck, LogOut, Grid3x3, Film, Bookmark, MoreHorizontal, Ban, VolumeX, FileText, Star, Flag, Crown, Menu } from "lucide-react";
+import { ArrowLeft, BadgeCheck, Grid3x3, Film, Bookmark, MoreHorizontal, Ban, VolumeX, Flag, Crown, Menu, Bell, UserPlus, Share2, Tag as TagIcon, Mic, Image as ImageIcon } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { AuraAvatar } from "@/components/vibe/AuraAvatar";
 import { VerificationBadge } from "@/components/vibe/VerificationBadge";
@@ -11,6 +11,7 @@ import { HighlightsRail } from "@/components/social/HighlightsRail";
 import { FounderBadge } from "@/components/founders/FounderBadge";
 import { SideMenu } from "@/components/layout/SideMenu";
 import { ProfileShowcase } from "@/components/profile/ProfileShowcase";
+import { EmptyState } from "@/components/empty/EmptyState";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthProvider";
 import { fmt, gradientFor, initialsOf } from "@/lib/format";
@@ -35,11 +36,11 @@ type ProfileRow = {
   council_role?: string | null;
 };
 
-type Tab = "posts" | "reels" | "saved";
+type Tab = "posts" | "reels" | "spaces" | "saved" | "tagged";
 
 const Profile = () => {
   const { username } = useParams();
-  const { user, profile: me, signOut } = useAuth();
+  const { user, profile: me } = useAuth();
   const nav = useNavigate();
   const [profile, setProfile] = useState<ProfileRow | null>(null);
   const [posts, setPosts] = useState<FeedPost[]>([]);
@@ -137,25 +138,47 @@ const Profile = () => {
     }
   };
 
+  const shareProfile = async () => {
+    const url = `${window.location.origin}/u/${profile?.username}`;
+    try {
+      if (navigator.share) await navigator.share({ title: profile?.display_name || profile?.username, url });
+      else { await navigator.clipboard.writeText(url); toast.success("Profile link copied"); }
+    } catch {/* ignore */}
+  };
+
   if (loading) return <div className="p-10 text-center text-sm text-muted-foreground">Loading…</div>;
   if (!profile) return <div className="p-10 text-center text-sm text-muted-foreground">Profile not found.</div>;
 
-  const current = tab === "posts" ? posts : tab === "reels" ? reels : saved;
+  const current = tab === "posts" ? posts : tab === "reels" ? reels : tab === "saved" ? saved : [];
+
+  const tabs: { id: Tab; label: string; icon: any }[] = [
+    { id: "posts", label: "Posts", icon: Grid3x3 },
+    { id: "reels", label: "Reels", icon: Film },
+    { id: "spaces", label: "Spaces", icon: Mic },
+    ...(isMe ? [{ id: "saved" as Tab, label: "Saved", icon: Bookmark }] : []),
+    { id: "tagged", label: "Tagged", icon: TagIcon },
+  ];
 
   return (
-    <div>
-      {/* IG-style profile header */}
-      <header className="h-14 px-3 flex items-center justify-between gap-3 border-b border-border">
-        <h1 className="text-base font-semibold truncate flex items-center gap-1">
-          {profile.username}
-          {profile.verification_kind && <VerificationBadge kind={profile.verification_kind as any} />}
-        </h1>
+    <div className="pb-10">
+      {/* Top bar */}
+      <header className="sticky top-0 z-30 h-14 px-3 flex items-center justify-between gap-3 bg-background/80 backdrop-blur border-b border-border">
+        <div className="flex items-center gap-2">
+          <button onClick={() => nav(-1)} className="p-2 -ml-2" aria-label="Back">
+            <ArrowLeft className="h-5 w-5" />
+          </button>
+          <span className="text-lg font-extrabold tracking-tight text-primary">AURELIX</span>
+        </div>
         <div className="flex items-center gap-1">
+          <Link to="/notifications" className="p-2 relative" aria-label="Notifications">
+            <Bell className="h-5 w-5" />
+            <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-primary" />
+          </Link>
           {isMe ? (
             <SideMenu
               trigger={
                 <button className="p-2" aria-label="Menu">
-                  <Menu className="h-6 w-6 text-foreground" />
+                  <Menu className="h-5 w-5" />
                 </button>
               }
             />
@@ -163,7 +186,7 @@ const Profile = () => {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button className="p-2" aria-label="More">
-                  <MoreHorizontal className="h-6 w-6 text-foreground" />
+                  <MoreHorizontal className="h-5 w-5" />
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-44">
@@ -185,69 +208,82 @@ const Profile = () => {
         </div>
       </header>
 
-      {/* Identity row: avatar left, stats right */}
-      <div className="px-4 pt-5 flex items-center gap-6">
-        {profile.avatar_url ? (
-          <img src={profile.avatar_url} alt="" className="h-20 w-20 rounded-full object-cover shrink-0" />
+      {/* Cover banner */}
+      <div className="relative h-40 sm:h-48 w-full overflow-hidden">
+        {profile.cover_url ? (
+          <img src={profile.cover_url} alt="" className="absolute inset-0 w-full h-full object-cover" />
         ) : (
-          <AuraAvatar gradient={gradientFor(profile.username)} size="xl" initials={initialsOf(profile.display_name || profile.username)} />
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/40 via-aura/20 to-background" />
         )}
-        <div className="flex-1 grid grid-cols-3 gap-2 text-center">
-          <Stat value={profile.posts_count} label="posts" />
-          <Stat value={profile.followers_count} label="followers" to={`/u/${profile.username}/followers`} />
-          <Stat value={profile.following_count} label="following" to={`/u/${profile.username}/following`} />
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
+      </div>
+
+      {/* Avatar overlapping cover */}
+      <div className="px-4 -mt-12 relative z-10">
+        <div className="inline-block rounded-full p-[3px] bg-gradient-to-br from-primary via-aura to-primary shadow-[0_0_30px_hsl(var(--primary)/0.5)]">
+          {profile.avatar_url ? (
+            <img src={profile.avatar_url} alt="" className="h-24 w-24 rounded-full object-cover ring-2 ring-background" />
+          ) : (
+            <div className="ring-2 ring-background rounded-full">
+              <AuraAvatar gradient={gradientFor(profile.username)} size="xl" initials={initialsOf(profile.display_name || profile.username)} />
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Display name + bio */}
+      {/* Identity block */}
       <div className="px-4 mt-3">
-        <p className="text-sm font-semibold inline-flex items-center gap-1.5">
+        <p className="text-xl font-bold inline-flex items-center gap-1.5">
           {profile.display_name || profile.username}
+          {profile.verification_kind && <VerificationBadge kind={profile.verification_kind as any} />}
           {profile.is_founder && (
             <Link to={`/founders/${profile.username}`} aria-label="Founder">
-              <FounderBadge tier={profile.join_era === "genesis" ? "genesis" : profile.council_role ? "council" : "founder"} size={13} />
+              <FounderBadge tier={profile.join_era === "genesis" ? "genesis" : profile.council_role ? "council" : "founder"} size={14} />
             </Link>
           )}
         </p>
-        {profile.founder_title && (
-          <p className="text-[10px] uppercase tracking-[0.25em] text-aura/80 mt-0.5">{profile.founder_title}</p>
+        <p className="text-sm text-muted-foreground">@{profile.username}</p>
+        {profile.bio && <p className="text-sm mt-2 whitespace-pre-wrap leading-relaxed">{profile.bio}</p>}
+        <a href={`https://aurelix.app/${profile.username}`} target="_blank" rel="noreferrer" className="text-sm text-primary mt-1 inline-block">
+          aurelix.app/{profile.username}
+        </a>
+
+        {profile.is_founder && (
+          <Link to="/hall-of-founders" className="mt-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-gradient-to-r from-aura/30 to-primary/20 border border-aura/40 text-aura">
+            <Crown className="h-3.5 w-3.5" />
+            Hall of Founders
+          </Link>
         )}
-        {profile.bio && <p className="text-sm mt-0.5 whitespace-pre-wrap">{profile.bio}</p>}
       </div>
 
-      {/* Highlights rail */}
-      {profile && <HighlightsRail userId={profile.user_id} isMe={!!isMe} />}
-
-      {/* Founder hall entry */}
-      {profile.is_founder && (
-        <Link to="/hall-of-founders" className="mx-4 mt-4 block px-3 py-2.5 rounded-md border border-aura/30 bg-aura/5 flex items-center gap-2 text-sm">
-          <Crown className="h-4 w-4 text-aura" />
-          <span className="flex-1 text-foreground">Enter Hall of Founders</span>
-          <span className="text-muted-foreground">›</span>
-        </Link>
-      )}
+      {/* Stats */}
+      <div className="px-4 mt-5 grid grid-cols-3 gap-2 text-left">
+        <Stat value={profile.posts_count} label="Posts" />
+        <Stat value={profile.followers_count} label="Followers" to={`/u/${profile.username}/followers`} />
+        <Stat value={profile.following_count} label="Following" to={`/u/${profile.username}/following`} />
+      </div>
 
       {/* Actions */}
-      <div className="px-4 mt-4 flex gap-2">
+      <div className="px-4 mt-5 flex gap-2">
         {isMe ? (
           <>
-            <Link to="/profile/edit" className="flex-1 text-center py-1.5 rounded-md bg-muted text-foreground font-semibold text-sm">
-              Edit profile
+            <Link to="/profile/edit" className="flex-1 text-center py-2.5 rounded-xl bg-gradient-to-r from-primary to-aura text-primary-foreground font-semibold text-sm shadow-[0_0_20px_hsl(var(--primary)/0.4)]">
+              Edit Profile
             </Link>
-            <Link to="/settings" className="flex-1 text-center py-1.5 rounded-md bg-muted text-foreground font-semibold text-sm">
-              Settings
-            </Link>
-            <Link to="/premium" className="flex-1 text-center py-1.5 rounded-md bg-muted text-foreground font-semibold text-sm">
-              Upgrade
-            </Link>
+            <button onClick={shareProfile} className="flex-1 text-center py-2.5 rounded-xl border border-border bg-muted/30 text-foreground font-semibold text-sm">
+              Share Profile
+            </button>
+            <button onClick={shareProfile} aria-label="Invite" className="h-10 w-10 grid place-items-center rounded-xl border border-border bg-muted/30">
+              <UserPlus className="h-4 w-4" />
+            </button>
           </>
         ) : (
           <>
             <button
               onClick={toggleFollow}
               className={cn(
-                "flex-1 py-1.5 rounded-md font-semibold text-sm",
-                isFollowing ? "bg-muted text-foreground" : "bg-primary text-primary-foreground",
+                "flex-1 py-2.5 rounded-xl font-semibold text-sm",
+                isFollowing ? "bg-muted text-foreground" : "bg-gradient-to-r from-primary to-aura text-primary-foreground shadow-[0_0_20px_hsl(var(--primary)/0.4)]",
               )}
             >
               {isFollowing ? "Following" : "Follow"}
@@ -259,58 +295,62 @@ const Profile = () => {
                 if (error) { toast.error(error.message || "Could not start chat"); return; }
                 if (data) nav(`/messages/${data}`);
               }}
-              className="flex-1 py-1.5 rounded-md bg-muted text-foreground font-semibold text-sm"
+              className="flex-1 py-2.5 rounded-xl border border-border bg-muted/30 text-foreground font-semibold text-sm"
             >
               Message
+            </button>
+            <button onClick={shareProfile} aria-label="Share" className="h-10 w-10 grid place-items-center rounded-xl border border-border bg-muted/30">
+              <Share2 className="h-4 w-4" />
             </button>
           </>
         )}
       </div>
 
-      {/* Verification CTA — slim */}
+      {/* Verification CTA */}
       {isMe && !profile.verified && (
-        <Link to="/verification" className="block mx-4 mt-4 px-3 py-2.5 rounded-md bg-muted flex items-center gap-2 text-sm">
+        <Link to="/verification-center" className="block mx-4 mt-4 px-3 py-2.5 rounded-xl border border-primary/30 bg-primary/5 flex items-center gap-2 text-sm">
           <BadgeCheck className="h-4 w-4 text-primary" />
           <span className="flex-1 text-foreground">Request verification</span>
           <span className="text-muted-foreground">›</span>
         </Link>
       )}
 
-      {/* Showcase sections (self view only) */}
+      {/* Highlights */}
+      {profile && <HighlightsRail userId={profile.user_id} isMe={!!isMe} />}
+
+      {/* Showcase (self only) */}
       {isMe && <ProfileShowcase bio={profile.bio} />}
 
       {/* Tabs */}
-      <div className="mt-5 flex border-t border-border">
-        {([
-          { id: "posts", icon: Grid3x3, label: "Posts" },
-          { id: "reels", icon: Film, label: "Reels" },
-          ...(isMe ? [{ id: "saved" as Tab, icon: Bookmark, label: "Saved" }] : []),
-        ] as { id: Tab; icon: any; label: string }[]).map((t) => (
-          <button
-            key={t.id}
-            onClick={() => setTab(t.id)}
-            className={cn(
-              "flex-1 py-2.5 flex items-center justify-center relative",
-              tab === t.id ? "text-foreground" : "text-muted-foreground",
-            )}
-            aria-label={t.label}
-          >
-            <t.icon className="h-5 w-5" strokeWidth={1.75} />
-            {tab === t.id && <span className="absolute left-0 right-0 -top-px h-[1.5px] bg-foreground" />}
-          </button>
-        ))}
+      <div className="mt-5 border-t border-border">
+        <div className="flex overflow-x-auto no-scrollbar">
+          {tabs.map((t) => (
+            <button
+              key={t.id}
+              onClick={() => setTab(t.id)}
+              className={cn(
+                "flex-1 min-w-[72px] py-3 flex items-center justify-center gap-1.5 relative text-sm font-medium",
+                tab === t.id ? "text-foreground" : "text-muted-foreground",
+              )}
+            >
+              <t.icon className="h-4 w-4" strokeWidth={1.75} />
+              <span>{t.label}</span>
+              {tab === t.id && <span className="absolute left-3 right-3 -bottom-px h-[2px] rounded-full bg-primary" />}
+            </button>
+          ))}
+        </div>
       </div>
 
-      {/* Grid / list */}
+      {/* Content */}
       {tab === "posts" ? (
-        <div className="grid grid-cols-3 gap-[2px]">
+        <div className="grid grid-cols-3 gap-0.5 mt-0.5">
           {current.length === 0 && <p className="col-span-3 text-sm text-muted-foreground text-center py-12">No posts yet.</p>}
           {current.map((p) => (
-            <Link key={p.id} to={`/p/${p.id}`} className="aspect-square bg-muted overflow-hidden">
+            <Link key={p.id} to={`/p/${p.id}`} className="aspect-square bg-muted overflow-hidden rounded-sm group">
               {p.media_url ? (
                 p.media_type === "video"
-                  ? <video src={p.media_url} muted className="w-full h-full object-cover" />
-                  : <img src={p.media_url} alt="" className="w-full h-full object-cover" />
+                  ? <video src={p.media_url} muted className="w-full h-full object-cover transition-transform group-hover:scale-105" />
+                  : <img src={p.media_url} alt="" className="w-full h-full object-cover transition-transform group-hover:scale-105" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center p-2 text-[11px] text-muted-foreground line-clamp-4 text-center">{p.content}</div>
               )}
@@ -318,19 +358,23 @@ const Profile = () => {
           ))}
         </div>
       ) : tab === "reels" ? (
-        <div className="grid grid-cols-3 gap-[2px]">
+        <div className="grid grid-cols-3 gap-0.5 mt-0.5">
           {current.length === 0 && <p className="col-span-3 text-sm text-muted-foreground text-center py-12">No reels yet.</p>}
           {current.map((r) => (
-            <Link key={r.id} to={`/p/${r.id}`} className="aspect-[9/16] bg-muted overflow-hidden">
+            <Link key={r.id} to={`/p/${r.id}`} className="aspect-[9/16] bg-muted overflow-hidden rounded-sm">
               {r.media_url && <video src={r.media_url} muted className="w-full h-full object-cover" />}
             </Link>
           ))}
         </div>
-      ) : (
+      ) : tab === "saved" ? (
         <div className="divide-y divide-border pb-6">
           {current.length === 0 && <p className="text-sm text-muted-foreground text-center py-12">Nothing saved yet.</p>}
           {current.map((p) => <PostCard key={p.id} post={p} onOpenComments={setCommentPost} />)}
         </div>
+      ) : tab === "spaces" ? (
+        <EmptyState icon={Mic} title="No Spaces yet" subtitle="Live audio rooms will appear here." />
+      ) : (
+        <EmptyState icon={TagIcon} title="No tagged posts" subtitle="Posts you're tagged in will show up here." />
       )}
 
       <CommentSheet postId={commentPost} open={!!commentPost} onOpenChange={(b) => !b && setCommentPost(null)} />
@@ -341,9 +385,9 @@ const Profile = () => {
 
 const Stat = ({ value, label, to }: { value: number; label: string; to?: string }) => {
   const inner = (
-    <div>
-      <p className="text-base font-semibold leading-tight">{fmt(value)}</p>
-      <p className="text-xs text-muted-foreground">{label}</p>
+    <div className="px-1">
+      <p className="text-2xl font-bold leading-tight tracking-tight">{fmt(value)}</p>
+      <p className="text-[11px] uppercase tracking-wider text-muted-foreground mt-0.5">{label}</p>
     </div>
   );
   return to ? <Link to={to}>{inner}</Link> : inner;
