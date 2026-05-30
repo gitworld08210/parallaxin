@@ -239,6 +239,39 @@ export type Database = {
           },
         ]
       }
+      founder_applications: {
+        Row: {
+          chronicle: string
+          created_at: string
+          desired_role: Database["public"]["Enums"]["council_role"] | null
+          id: string
+          reviewed_at: string | null
+          status: string
+          user_id: string
+          why: string
+        }
+        Insert: {
+          chronicle: string
+          created_at?: string
+          desired_role?: Database["public"]["Enums"]["council_role"] | null
+          id?: string
+          reviewed_at?: string | null
+          status?: string
+          user_id: string
+          why: string
+        }
+        Update: {
+          chronicle?: string
+          created_at?: string
+          desired_role?: Database["public"]["Enums"]["council_role"] | null
+          id?: string
+          reviewed_at?: string | null
+          status?: string
+          user_id?: string
+          why?: string
+        }
+        Relationships: []
+      }
       highlight_items: {
         Row: {
           created_at: string
@@ -765,6 +798,27 @@ export type Database = {
         }
         Relationships: []
       }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
       verification_requests: {
         Row: {
           category: string
@@ -806,6 +860,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
       is_conversation_member: {
         Args: { _conv: string; _user: string }
         Returns: boolean
@@ -817,6 +878,7 @@ export type Database = {
       start_dm: { Args: { other_user_id: string }; Returns: string }
     }
     Enums: {
+      app_role: "admin" | "moderator" | "user"
       council_role: "architect" | "curator" | "sentinel" | "innovator"
       post_status: "draft" | "scheduled" | "published"
       story_audience: "public" | "close_friends"
@@ -947,6 +1009,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      app_role: ["admin", "moderator", "user"],
       council_role: ["architect", "curator", "sentinel", "innovator"],
       post_status: ["draft", "scheduled", "published"],
       story_audience: ["public", "close_friends"],
