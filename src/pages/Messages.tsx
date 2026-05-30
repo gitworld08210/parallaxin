@@ -39,12 +39,6 @@ type ProfileRow = {
   verification_kind: string | null;
 };
 
-  user_id: string;
-  username: string;
-  display_name: string;
-  avatar_url: string | null;
-  verification_kind: string | null;
-};
 
 const Messages = () => {
   const { user, profile: me } = useAuth();
