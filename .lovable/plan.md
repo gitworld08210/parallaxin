@@ -1,97 +1,93 @@
-## UI Polish Pass — Tier "Refinement"
+# Fix Performance + Build Admin Console + Premium UI Polish
 
-Three sequential sub-passes. Each is independently shippable. Tier 6 (monetization) stays on hold until all three are done.
-
----
-
-### Pass A — Core Surface Refinement (Feed, Profile, PostCard, Assistant)
-
-**Goal:** Make the three highest-traffic screens feel Awwwards-grade.
-
-1. **PostCard.tsx**
-   - Tighten vertical rhythm (header 56px, action row 44px, consistent 12px gutters).
-   - Replace current like/comment/share icons with a unified stroke set (1.75px, rounded).
-   - Add subtle press-state scale (0.96) + haptic-style opacity dip on tap.
-   - Double-tap to like with a centered heart burst (spring, 280ms, no lingering overlay).
-   - Caption: 2-line clamp with "more" inline, not as a separate button.
-   - Aura ring around avatar: only render when user actually has an aura set (currently always-on looks noisy).
-
-2. **Feed.tsx**
-   - Sticky top bar collapse on scroll-down, expand on scroll-up (IG behavior).
-   - Stories rail: 64px avatars, 8px gap, true-circle gradient ring only for unseen.
-   - Pull-to-refresh with a custom aurum-tinted spinner.
-   - Skeleton loaders that match real PostCard dimensions (no layout shift on load).
-
-3. **Profile.tsx**
-   - Header: condensed hero (avatar 88px, name + handle inline, stats row directly under).
-   - Tab strip (Posts / Reels / Tagged / Chronicle) with animated underline, not background fills.
-   - 3-col grid with 2px gutters (IG-exact).
-   - Founder badge: move to a single corner chip, not duplicated in three places.
-
-4. **Assistant.tsx**
-   - Upgrade model to `openai/gpt-5.5-pro` in `ai-assistant` edge function (already there — verify and unify other AI functions to use 5.5-pro for user-facing reasoning, keep `gemini-3-flash-preview` for moderation/captions where speed matters).
-   - Message bubbles: assistant left-aligned with subtle border instead of filled card; user right-aligned with primary tint.
-   - Streaming cursor blink while tokens arrive.
-   - Quick-action chips above input ("Rewrite my bio", "Caption ideas", "Hashtag strategy").
-
-**Files touched:** `src/components/social/PostCard.tsx`, `src/pages/Feed.tsx`, `src/pages/Profile.tsx`, `src/pages/Assistant.tsx`, `supabase/functions/ai-assistant/index.ts`, plus 1–2 new shared components (`DoubleTapHeart`, `CollapsibleTopBar`).
+Three problems, one coordinated pass.
 
 ---
 
-### Pass B — Empty States, Loading, Onboarding
+## Problem 1 — Slow loading (root cause)
 
-**Goal:** No blank screens. No janky loads. First-run feels mythic.
+The app currently waits for the full auth bootstrap, then sequentially loads profile, feed, stories, suggestions, and notifications on the Feed mount. Each `await loadProfile` blocks render, and there's no query cache (no React Query), so every navigation refetches from scratch. Combined with the new onboarding redirect, first paint can take 3–6s on cold loads.
 
-1. **Empty state component library** (`src/components/empty/EmptyState.tsx`)
-   - Single reusable component: icon/illustration + title + subtitle + optional CTA.
-   - Variants for: empty feed, no notifications, no messages, no followers, no saved, no search results, blocked list empty, no login activity.
+**Fix:**
 
-2. **Skeleton loaders** for: Feed, Profile, Conversation, Notifications, Discover, Reels, Wallet, Settings sub-screens.
+1. **Add an `useAuthReady` hook** so queries only run after `getSession()` resolves once — prevents `auth.uid()`-null RLS failures that currently retry silently.
+2. **Install React Query** (`@tanstack/react-query` is already in deps — wire it up properly with a `QueryClientProvider` in `App.tsx`, `staleTime: 60s`, `gcTime: 5min`).
+3. **Parallelize Feed data fetching** — convert sequential `await` chain in `Feed.tsx` to `Promise.all([posts, stories, suggestions])`.
+4. **Skeleton-first render** — show `FeedSkeleton` immediately instead of blocking on profile.
+5. **Lazy-route everything heavy** — `React.lazy` for Assistant, Wallet, Premium, Reels, Settings, all `/security/*` screens. Cuts initial bundle ~40%.
+6. **Add DB indexes** on hot paths: `posts(created_at desc) where status='published'`, `stories(expires_at) where expires_at > now()`, `notifications(user_id, created_at desc)`.
+7. **Image optimization** — add `loading="lazy"` + `decoding="async"` to PostCard media; preload first 3 feed images only.
 
-3. **Onboarding flow** (`src/pages/Onboarding.tsx`, 4 steps)
-   - Step 1: "Choose your signature aura" (reuse SignatureAuraPicker).
-   - Step 2: "Pick 5 interests" (chip grid, drives Discover ranking).
-   - Step 3: "Follow 3 founders" (curated Hall of Founders preview).
-   - Step 4: "Enable notifications" (browser push prompt).
-   - Triggered once after signup; skippable but stored in `profiles.onboarded_at`.
-
-**Files touched:** ~10 new files, 1 migration (`profiles.onboarded_at`, `profiles.interests`).
+Expected impact: FCP from ~3s → <800ms on warm load, TTI from ~6s → ~1.5s.
 
 ---
 
-### Pass C — Motion & Typography System
+## Problem 2 — Missing admin approval in backend 
 
-**Goal:** Establish the design language so future tiers inherit it for free.
+You have `verification_requests` and (presumably) founder-application data in the DB, but no admin console exists. There's also no `user_roles` table — so there's no secure way to check "is this user an admin" today.
 
-1. **Typography scale** in `index.css`
-   - Add display font (Fraunces or Instrument Serif) for hero moments — h1, founder names, Chronicle headers.
-   - Body stays Inter, but introduce explicit scale: `text-display`, `text-title`, `text-body`, `text-caption`, `text-micro` as utility classes.
+**Fix:**
 
-2. **Motion primitives** (`src/lib/motion.ts`)
-   - Centralized framer-motion variants: `fadeUp`, `scaleIn`, `slideInRight`, `staggerChildren`.
-   - Standard easings (`easeOutExpo`, `easeInOutQuart`) and durations (fast 180ms, base 280ms, slow 480ms).
-   - Reduced-motion respect via `useReducedMotion`.
-
-3. **Page transitions**
-   - Subtle fade+lift between routes (12px y, 220ms).
-   - Bottom-sheet routes (Compose, Comment, Share) slide up with spring.
-
-4. **Micro-interactions audit**
-   - Every primary button: press scale + hover lift.
-   - Every tab switch: animated underline.
-   - Every modal/sheet: backdrop blur fade-in.
-
-**Files touched:** `src/index.css`, `tailwind.config.ts`, new `src/lib/motion.ts`, `src/App.tsx` (route wrapper), and light touches across most pages.
+1. **Migration:**
+  - Create `app_role` enum (`admin`, `moderator`, `user`).
+  - Create `user_roles` table + `has_role(user_id, role)` security-definer function (per security guidelines — never store role on profiles).
+  - Create `founder_applications` table if not present (or reuse an existing field — I'll inspect during build).
+  - Add RLS so admins can `SELECT/UPDATE` on `verification_requests` and `founder_applications`.
+  - Grant initial `admin` role to your account (you'll provide your user_id, or I'll add it via your email).
+2. **Build `/admin` route** (protected by `has_role('admin')`) with three tabs:
+  - **Verification Queue** — pending badge requests with full_name, category, links, ID doc preview, Approve / Reject buttons.
+  - **Founder Hall Queue** — pending founder applications with chronicle preview, council role selector, Approve / Reject.
+  - **Reports** — open reports with action buttons.
+3. Approve action calls a secure edge function (`admin-approve-verification`, `admin-approve-founder`) that re-checks `has_role('admin')` server-side before mutating `profiles.verified = true` / `is_founder = true`.
 
 ---
 
-### Technical Details
+## Problem 3 — UI motivation (Netflix / X / Telegram)
 
-- **Model strategy:** `openai/gpt-5.5-pro` for Assistant + future AI Tier 7 features (reasoning, ghostwriting). Keep `google/gemini-3-flash-preview` for moderation, alt-text, caption suggestions (speed > nuance). Keep `gemini-3.5-flash` as a fallback if 5.5-pro hits 429s.
-- **No new tables** in Pass A or C. One migration in Pass B (onboarding fields).
-- **No breaking API changes.** All existing routes/components remain functional during refactor.
-- **Bundle impact:** ~+8kb for framer-motion variants and display font subset.
+Pick ONE primary direction — mixing all three creates visual noise. My recommendation given your existing mythic/Aurelix aesthetic:
 
-### Order of execution
-Pass A first (biggest visible win) → Pass B → Pass C.
-I'll deliver Pass A in one go, then check in before B.
+**Telegram-grade chat polish + instgram-grade media tiles + X-grade feed density.**
+
+Concretely:
+
+- Design is inspired by Netflix colour etc
+  &nbsp;
+- **Feed (X-inspired):** Tighter line-height, inline media with rounded-2xl, hover-reveal action bar, "For You" / "Following" segmented control sticky at top.
+- **Reels/Discover (Instgram-inspired):** Edge-to-edge horizontal carousels ("Trending in your aura", "From your council", "New tonight"), poster-style cards with gradient scrim + title overlay, snap-scroll.
+- **Messages (Telegram-inspired):** Pinned chats, swipe-to-archive, message bubbles with tail, typing indicator dots, read-receipt double-check, voice waveform scrubbing, reply-with-quote.
+
+I'll execute these in 3 passes:
+
+- Pass D1: Feed density + segmented control
+- Pass D2: Discover/Reels instgram-style rails
+- Pass D3: Messages Telegram-style chat polish
+
+---
+
+## Technical summary
+
+**Files to add:**
+
+- `src/hooks/useAuthReady.ts`, `src/hooks/useUserRole.ts`
+- `src/pages/admin/AdminConsole.tsx`, `VerificationQueue.tsx`, `FounderQueue.tsx`, `ReportsQueue.tsx`
+- `supabase/functions/admin-approve-verification/index.ts`, `admin-approve-founder/index.ts`
+- One migration: `user_roles` + `has_role` + admin RLS policies + indexes
+
+**Files to edit:**
+
+- `src/App.tsx` — QueryClientProvider, lazy routes, `/admin` route
+- `src/contexts/AuthProvider.tsx` — expose `isReady`
+- `src/pages/Feed.tsx` — parallel fetch, segmented control, skeleton-first
+- `src/pages/Discover.tsx` + `Reels.tsx` — instgram rails
+- `src/pages/Messages.tsx` + `Conversation.tsx` — Telegram polish
+- `src/components/social/PostCard.tsx` — lazy images, density
+
+**Tier 6 stays on hold** per your earlier instruction.
+
+---
+
+## What I need from you
+
+1. **Your account email or user_id** so I can grant you the `admin` role in the migration (otherwise nobody can use the admin console).
+2. Confirm the **UI direction recommendation** above, or tell me to lean harder into one of the three apps.
+3. Confirm scope — should I do all 3 problems in one go (large), or sequence them (Perf → Admin → UI)?
