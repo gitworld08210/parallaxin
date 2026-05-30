@@ -27,6 +27,12 @@ Deno.serve(async (req) => {
         status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
+    const MAX_MESSAGES = 40;
+    const MAX_CONTENT_LEN = 4000;
+    const safeMessages = messages
+      .slice(-MAX_MESSAGES)
+      .filter((m: any) => m && (m.role === 'user' || m.role === 'assistant'))
+      .map((m: any) => ({ role: m.role, content: String(m.content ?? '').slice(0, MAX_CONTENT_LEN) }));
 
     const apiKey = Deno.env.get('LOVABLE_API_KEY');
     if (!apiKey) {
