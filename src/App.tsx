@@ -83,6 +83,15 @@ const App = () => (
                 <Route path="/hall-of-founders" element={<HallOfFoundersScreen />} />
                 <Route path="/founder-council" element={<FounderCouncilScreen />} />
                 <Route path="/founders/:username" element={<FounderChronicle />} />
+                <Route path="/settings" element={<Settings />} />
+                <Route path="/settings/security" element={<TwoFactorSetup />} />
+                <Route path="/settings/activity" element={<LoginActivityScreen />} />
+                <Route path="/settings/privacy" element={<PrivacyScreen />} />
+                <Route path="/settings/blocked" element={<BlockedListScreen />} />
+                <Route path="/settings/export" element={<DataExportScreen />} />
+                <Route path="/settings/delete" element={<DeleteAccountScreen />} />
+                <Route path="/settings/password" element={<ChangePasswordScreen />} />
+                <Route path="/settings/email" element={<ChangeEmailScreen />} />
               </Route>
             </Route>
             <Route path="*" element={<NotFound />} />
