@@ -15,6 +15,7 @@ const EditProfile = () => {
   const [username, setUsername] = useState("");
   const [bio, setBio] = useState("");
   const [avatar, setAvatar] = useState<string | null>(null);
+  const [cover, setCover] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
@@ -23,6 +24,7 @@ const EditProfile = () => {
       setUsername(profile.username);
       setBio(profile.bio || "");
       setAvatar(profile.avatar_url);
+      setCover((profile as any).cover_url ?? null);
     }
   }, [profile]);
 
