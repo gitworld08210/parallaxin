@@ -125,15 +125,23 @@ const Feed = () => {
       <section className="pb-6">
         {loading && <FeedSkeleton count={3} />}
         {!loading && posts.length === 0 && (
-          <div className="text-center py-20 px-6">
-            <p className="text-xl font-semibold mb-1.5">Nothing here yet</p>
-            <p className="text-sm text-muted-foreground mb-6">
-              {tab === "following" ? "Follow people to fill your feed." : "Be the first to share something."}
-            </p>
-            <Link to="/compose" className="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-primary text-primary-foreground font-semibold text-sm">
-              <Plus className="h-4 w-4" /> Create post
-            </Link>
-          </div>
+          tab === "following" ? (
+            <EmptyState
+              icon={Users}
+              title="Your following feed is empty"
+              subtitle="Follow people you find interesting to see their posts here."
+              cta={{ label: "Discover people", to: "/discover" }}
+              size="lg"
+            />
+          ) : (
+            <EmptyState
+              icon={Sparkles}
+              title="Nothing here yet"
+              subtitle="Be the first to share something with the Aurelix community."
+              cta={{ label: "Create post", to: "/compose" }}
+              size="lg"
+            />
+          )
         )}
         <div className="divide-y divide-border">
           {posts.map((p, idx) => (
