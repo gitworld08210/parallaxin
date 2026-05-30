@@ -190,3 +190,37 @@ const CreateAction = ({ to, icon: Icon, label, onPick }: { to: string; icon: any
     <span className="text-xs font-semibold">{label}</span>
   </Link>
 );
+
+const BigTile = ({
+  to, icon: Icon, label, gradient, onPick,
+}: { to: string; icon: any; label: string; gradient: string; onPick: () => void }) => (
+  <Link
+    onClick={onPick}
+    to={to}
+    className={cn(
+      "aspect-square rounded-2xl flex flex-col items-center justify-center gap-2 text-white shadow-glow active:scale-[0.97] transition-transform bg-gradient-to-br",
+      gradient
+    )}
+  >
+    <Icon className="h-7 w-7" strokeWidth={2} />
+    <span className="text-sm font-bold">{label}</span>
+  </Link>
+);
+
+const RowAction = ({
+  to, icon: Icon, title, subtitle, onPick,
+}: { to: string; icon: any; title: string; subtitle: string; onPick: () => void }) => (
+  <Link
+    onClick={onPick}
+    to={to}
+    className="flex items-center gap-3 px-3 py-3 rounded-2xl hover:bg-muted/40 transition-colors"
+  >
+    <span className="h-10 w-10 rounded-full bg-secondary border border-border grid place-items-center shrink-0">
+      <Icon className="h-5 w-5 text-foreground" />
+    </span>
+    <div className="flex-1 min-w-0">
+      <p className="text-sm font-semibold">{title}</p>
+      <p className="text-xs text-muted-foreground">{subtitle}</p>
+    </div>
+  </Link>
+);
