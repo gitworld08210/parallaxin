@@ -1,43 +1,53 @@
-## Plan: 5 new features
+# Remaining UI Wiring
 
-### 1. Story stickers (Polls & Q&A)
-- **DB**: `story_stickers` (id, story_id, kind: 'poll'|'qa', payload jsonb {question, options[]}, position {x,y}) + `story_sticker_responses` (id, sticker_id, user_id, response jsonb, created_at, unique(sticker_id,user_id))
-- **UI**: extend `StoryCompose` with a sticker tool — drag/drop poll (2–4 options) or Q&A prompt onto the canvas. In `StoryViewer`, render interactive stickers: tap to vote / submit answer; show live tallies (poll bar fills) or hidden answers (only owner sees responses).
-- **Owner insights**: new tab in story viewer for the author — list of votes/answers per sticker.
+Finish the three UI pieces left over from the engagement/AI feature build. Backend (tables, RLS, triggers) already exists.
 
-### 2. Collaborative posts (multi-author)
-- **DB**: `post_collaborators` (post_id, user_id, status: 'pending'|'accepted'|'declined', invited_at, responded_at, primary key (post_id, user_id))
-- **RLS**: post visible/owned by all accepted collaborators; only original author can invite; each invitee can accept/decline their own row.
-- **Compose**: in `Compose` add an "Invite collaborators" picker (username search via profiles).
-- **Display**: `PostCard` shows stacked avatars + "with @x and @y" (accepted only). Post appears in each accepted collaborator's profile grid and counts toward their `posts_count` (update `posts_count_trg` to also count accepted collab posts).
-- **Notifications**: new types `collab_invite`, `collab_accepted`.
+## 1. Story stickers — authoring + viewing
 
-### 3. AI hashtag + best-time suggestions
-- **Edge function**: `ai-post-suggestions` — input `{ content, media_type }`, output `{ hashtags: string[], best_time_iso: string, reasoning: string }`. Uses Lovable AI (`google/gemini-3-flash-preview`) with structured output (Zod schema via AI SDK `Output.object`). Best-time = analyze the user's last 30 days of `post_views` + follower activity windows; fallback to global heuristic if sparse.
-- **UI**: in `Compose` add a "✨ Suggest" button → shows hashtag chips (tap to append) + recommended posting time (tap to set `scheduled_for`).
+**StoryCompose**
+- Add a "Stickers" toolbar button → opens a small sheet with two options: **Poll** and **Q&A**.
+- Poll editor: question + 2–4 options. Q&A editor: prompt text.
+- Render sticker as a draggable chip overlaid on the story canvas; position stored as `{x, y}` normalized 0–1.
+- On publish: after `stories` insert, insert into `story_stickers` with `kind`, `payload`, `position`.
 
-### 4. AI DM reply suggestions
-- **Edge function**: `ai-dm-suggest` — input `{ conversation_id, last_n: 8 }`, fetches last messages (server-side, service role + member check), returns `{ suggestions: string[3] }` matching user's tone. Lovable AI, structured output.
-- **UI**: in `Conversation`, above the input bar render 3 dismissable suggestion chips. Refresh on new incoming message. Setting toggle on `profiles` → `ai_dm_suggestions_enabled bool default true`.
+**StoryViewer**
+- Fetch `story_stickers` for the current story.
+- Render at saved positions. 
+  - Poll: tap an option → upsert into `story_sticker_responses`, show live % bars (subscribe via `supabase_realtime`).
+  - Q&A: input field → insert response.
+- If viewer is the story author: show an "Insights" tab listing all responses with responder avatar + answer.
 
-### 5. Personalized "For You" ranking
-- **DB**: `post_embeddings` (post_id pk, embedding vector(768), content_hash, created_at) — enable `pgvector`. `user_interest_vectors` (user_id pk, embedding vector(768), updated_at).
-- **Edge functions**:
-  - `embed-post` — triggered after publish (DB webhook or called from `Compose`); embeds `content` + hashtags via Lovable AI embeddings model; upserts.
-  - `update-user-interests` — runs nightly or on engagement; averages embeddings of posts the user liked/saved/viewed in last 14 days.
-  - `rank-foryou` — input `user_id`, returns top N post_ids by cosine similarity (excluding seen via `post_views`, blocked users, already-following-only filter optional). Falls back to chronological for cold-start.
-- **UI**: new "For You" tab on `Feed` next to "Following". Uses `rank-foryou` then hydrates posts via existing query. Cache results 5 min in React Query.
+## 2. Collaborative posts — display + accept/decline
 
-### Order of build
-1. DB migration (all new tables + pgvector + grants + RLS + trigger updates) — single migration
-2. Edge functions (5 new) + deploy
-3. UI: For You tab → Compose AI suggest → DM suggestions → Collab posts → Story stickers
-4. Smoke test each: post a collab → vote on a poll → tap AI suggest → see For You ranks
+**PostCard**
+- Query `post_collaborators` (status='accepted') joined with profiles for the post.
+- Header: stacked avatars (author + collaborators, max 3 shown + "+N"), text "@author with @user1 and @user2".
 
-### Technical notes
-- Lovable AI: use existing AI gateway pattern (already used in `ai-assistant`, `ai-caption`). Embeddings model: `google/text-embedding-004` (768-dim).
-- Realtime: add `story_sticker_responses` to `supabase_realtime` for live poll counts.
-- All new tables get explicit GRANTs (authenticated CRUD as policies allow; service_role ALL; no anon).
-- Reuse existing `useAuth`, `TopBar`, `GlassCard`, `framer-motion` patterns. No new design tokens needed.
+**Profile grid**
+- Include posts where the user is an accepted collaborator (not only authored posts).
 
-This is a large scope (~3 edge functions, 1 migration, ~10 component changes). Want me to build it all in one pass, or split — e.g. start with **For You + AI suggestions** (highest leverage), then collab posts + story stickers in a follow-up?
+**Collab invite flow**
+- New page/sheet `CollabInvites` (or inline in Notifications) listing pending rows where `user_id = me`.
+- Two buttons per row: Accept → `status='accepted'`, `responded_at=now()`; Decline → `status='declined'`.
+
+## 3. Notifications
+
+Extend the notifications list renderer to handle:
+- `collab_invite` → "{actor} invited you to collaborate on a post" → tap opens accept/decline sheet.
+- `collab_accepted` → "{actor} accepted your collab invite" → tap opens the post.
+
+## Technical notes
+
+- Realtime: `ALTER PUBLICATION supabase_realtime ADD TABLE public.story_sticker_responses;` (migration).
+- Sticker drag: simple pointer events with bounds clamping — no extra deps.
+- Avatar stack: reuse existing `Avatar` component with negative margin.
+- Keep all new UI in feature folders next to existing `StoryCompose.tsx`, `StoryViewer.tsx`, `PostCard.tsx`, `Notifications.tsx`.
+
+## Build order
+
+1. Migration: enable realtime on `story_sticker_responses`.
+2. PostCard collab display + Profile grid include.
+3. Notifications rendering for new types + accept/decline sheet.
+4. StoryCompose sticker authoring.
+5. StoryViewer sticker rendering + responses + insights.
+6. Smoke test each flow.
