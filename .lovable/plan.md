@@ -1,64 +1,44 @@
-## Goal
+# Aurelix Profile Suite — Scaffold with Zero Values
 
-The mockup shows several features that don't yet exist in the app. Add them as **visible but non-clickable placeholders** (with a "Coming soon" hint on tap) so the UI matches the vision. We'll wire real functionality later.
+Goal: build all screens from your reference mock as **visual shells with 0 / empty values**. No fake data like "$12,450" or "52.3K". Once shells look right, we wire real data in a follow-up.
 
-## Missing features identified
+I'm coding this with code with **openai (**gpt5.5)— that's the model running this Lovable session.
 
-Comparing mockup vs current app:
+## Phase 1 — Side Menu polish
 
+Update `SideMenu.tsx`:
 
-| Feature                                                                                                                                                                 | In app?              | Action                           |
-| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------- | -------------------------------- |
-| Home, Explore, Reels, Messages, Notifications, Hall of Founders, Saved, Settings, Premium, Wallet, Verification, Profile                                                | Yes                  | skip                             |
-| **Communities**                                                                                                                                                         | No                   | add placeholder                  |
-| **Creator Hub**                                                                                                                                                         | No                   | add placeholder                  |
-| **Analytics** (global, not per-post)                                                                                                                                    | No                   | add placeholder                  |
-| **Help & Support**                                                                                                                                                      | No                   | add placeholder                  |
-| **Achievements** card (Top Creator, Viral Creator, Trendsetter, Hall of Founders badges)                                                                                | No                   | add to Profile as static section |
-| **Performance Overview** (Views / Engagement / Profile Visits / New Followers with sparkline-style stats)                                                               | No                   | add to Profile as static section |
-| **Top Supporters** list                                                                                                                                                 | No                   | add to Profile as static section |
-| **Aura Level** ring (level 12 Legendary, XP progress)                                                                                                                   | No                   | add to Profile as static section |
-| **About** card (interests chips: AI Enthusiast, Cyberpunk Lover, Web3 Believer, Content Creator)**Note:-** All feature button add show on side menu of profile section | Partial (bio exists) | add interests chips card         |
+- Aurelix wordmark + logo mark at top
+- Rows: Home, Explore, Reels, Messages, Notifications, Bookmarks, Communities, Creator Hub, Monetization, Verification Center (NEW pill), Aura Wallet, Saved, Settings, Help & Support, Dark Mode toggle
+- Counter pills show `0` (not 8/12)
+- AURELIX PREMIUM CTA card at bottom
+- All new rows route to real pages (built in later phases) — no more "coming soon" toasts
 
+## Phase 2 — New routes (all zero-state shells)
 
-## Implementation
+Each new page: header with back arrow, neon-themed layout matching mock, **all numbers = 0, all lists empty with subtle empty-state copy**.
 
-### 1. Side menu entries (non-clickable)
+1. `/creator-hub` — Welcome card ("Welcome back, {name}"), Total Earnings `$0.00` + flat sparkline, 3 KPI tiles (Profile Views / Content Reach / Engagement all `0`), Quick Access grid (Analytics, Monetization, Achievements, Verification, Aura Level, Creator Tools)
+2. `/analytics` — Tabs (Overview/Content/Audience/Earnings), Views `0`, empty recharts line, 4 KPI tiles at `0`, "No content yet" empty state for Top Performing Content
+3. `/achievements` — Locked badge list (Top Creator, Viral Creator, Trendsetter, Hall of Founders, Early Adopter, Community Builder), Progress `0 / 24`
+4. `/aura-level` — Circular ring at 0%, Level `0`, `0 / 1,000 XP`, Aura Benefits list (all locked)
+5. `/monetization` — Total Balance `$0.00`, Earnings Overview `$0.00` + flat chart, Revenue Sources rows all `$0`, Withdraw Earnings CTA (disabled)
+6. `/verification-center` — Hero shield, "Get Verified on Aurelix", Request Verification CTA (links to existing `/verification`), status checklist (Not Verified / Eligible / Benefits)
 
-In `src/components/layout/SideMenu.tsx`, add new rows for **Communities**, **Creator Hub**, **Analytics**, **Help & Support**. Render them styled identically to the active rows but:
+## Phase 3 — Polish existing screens to match mock
 
-- Use a `<button>` (not a `<Link>`)
-- On click → `toast({ title: "Coming soon", description: "<feature> is launching shortly." })`
-- Add a subtle "Soon" pill on the right
+- `Profile.tsx` — AURELIX wordmark header style, neon avatar ring, stat row uses real DB values (already wired)
+- `Notifications.tsx` — tab pills (All/Mentions/Comments/Likes), shows real data (already wired)
+- `Settings.tsx` — row layout matching mock
+- `EditProfile.tsx` — layout matching mock (already largely there)
 
-### 2. Profile page additions (static, non-clickable)
+## Technical notes
 
-In `src/pages/Profile.tsx`, add four new presentational sections below the existing profile header, each wrapped in a card matching the mockup's dark glass aesthetic:
+- All shells use existing semantic tokens from `index.css` (no new colors)
+- Charts use `recharts` with empty/zero data arrays
+- Badges/icons: lucide-react + simple SVG, no new deps
+- New routes registered in `App.tsx`
+- Zero backend changes — pure frontend scaffolding
+- After you approve the look, we discuss per-screen: what data source, what calculations, what becomes interactive
 
-- **About card** — bio text + 4 interest chips with icons
-- **Achievements** — 2×2 grid of badge tiles (icon + title + subtitle)
-- **Performance Overview** — 4 stat tiles (label, big number, % change, faux sparkline SVG)
-- **Top Supporters** — list of 4 mock supporters with avatar + handle + Aura amount
-- **Aura Level** — circular progress ring with level number, label, and XP
-
-All data is hardcoded mock data for now. All "See All" / "View …" buttons render but on click show the same "Coming soon" toast.
-
-### 3. Visual style
-
-- Reuse existing semantic tokens (`bg-card`, `border-border`, `text-primary`, `shadow-glow`)
-- New sections use the same red-glow accent already defined in `index.css`
-- No new colors added
-
-## Non-goals
-
-- No new routes, no backend changes, no schema changes
-- No real analytics, communities, or achievements logic
-- Existing pages (Feed, Reels, Messages, etc.) untouched
-
-## Files touched
-
-- `src/components/layout/SideMenu.tsx` — add 4 non-clickable rows
-- `src/pages/Profile.tsx` — add 5 new presentational sections
-- (maybe) `src/components/profile/` — small new folder for the section components if Profile.tsx gets long
-
-Ready to build when you approve.
+Reply **"go"** to start, or tell me which phase to do first.
