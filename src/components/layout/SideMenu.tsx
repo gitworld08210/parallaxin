@@ -1,24 +1,39 @@
 import { Link } from "react-router-dom";
 import {
-  User as UserIcon, LayoutGrid, Wallet, Bookmark, BarChart3, Settings, HelpCircle, BadgeCheck, LogOut, X,
+  User as UserIcon, LayoutGrid, Wallet, Bookmark, BarChart3, Settings, HelpCircle, BadgeCheck, LogOut, X, Users,
 } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useAuth } from "@/contexts/AuthProvider";
 import { AuraAvatar } from "@/components/vibe/AuraAvatar";
 import { gradientFor, initialsOf } from "@/lib/format";
+import { toast } from "sonner";
 
 export const SideMenu = ({ trigger }: { trigger: React.ReactNode }) => {
   const { profile, signOut } = useAuth();
 
-  const rows: { to?: string; icon: any; label: string; trailing?: React.ReactNode; onClick?: () => void; danger?: boolean }[] = [
+  const soon = (label: string) => () =>
+    toast(`${label} — coming soon`, { description: "This feature is launching shortly." });
+
+  type Row = {
+    to?: string;
+    icon: any;
+    label: string;
+    trailing?: React.ReactNode;
+    onClick?: () => void;
+    soon?: boolean;
+  };
+
+  const rows: Row[] = [
     { to: "/profile", icon: UserIcon, label: "My Profile" },
-    { to: "/discover", icon: LayoutGrid, label: "Creator Hub" },
     { to: "/wallet", icon: Wallet, label: "Aura Wallet", trailing: <span className="text-xs font-bold text-primary">12,450</span> },
     { to: "/profile?tab=saved", icon: Bookmark, label: "Saved" },
-    { to: "/profile/insights", icon: BarChart3, label: "Analytics" },
     { to: "/verification", icon: BadgeCheck, label: "Request verification" },
     { to: "/settings", icon: Settings, label: "Settings" },
-    { to: "/settings", icon: HelpCircle, label: "Help & Support" },
+    // Coming-soon placeholders
+    { icon: Users, label: "Communities", onClick: soon("Communities"), soon: true },
+    { icon: LayoutGrid, label: "Creator Hub", onClick: soon("Creator Hub"), soon: true },
+    { icon: BarChart3, label: "Analytics", onClick: soon("Analytics"), soon: true },
+    { icon: HelpCircle, label: "Help & Support", onClick: soon("Help & Support"), soon: true },
   ];
 
   return (
@@ -47,7 +62,12 @@ export const SideMenu = ({ trigger }: { trigger: React.ReactNode }) => {
             const inner = (
               <>
                 <r.icon className="h-5 w-5 text-foreground" strokeWidth={1.75} />
-                <span className="flex-1 text-sm font-medium">{r.label}</span>
+                <span className="flex-1 text-sm font-medium text-left">{r.label}</span>
+                {r.soon && (
+                  <span className="text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-primary/15 text-primary border border-primary/30">
+                    Soon
+                  </span>
+                )}
                 {r.trailing}
               </>
             );
