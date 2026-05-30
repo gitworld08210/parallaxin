@@ -1,4 +1,4 @@
-import { Home, Film, MessageCircle, Plus, ImageIcon, Sparkles, User } from "lucide-react";
+import { Home, Film, MessageCircle, Plus, ImageIcon, Sparkles, User, Radio, Camera, Upload, Wand2 } from "lucide-react";
 import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
@@ -92,11 +92,32 @@ export const AppShell = () => {
               <Plus className={cn("h-7 w-7", isReels ? "text-white" : "text-foreground")} strokeWidth={2.25} />
             </button>
           </SheetTrigger>
-          <SheetContent side="bottom" className="rounded-t-2xl bg-background border-t border-border">
-            <div className="grid grid-cols-3 gap-2 pt-4 pb-3">
-              <CreateAction to="/compose" icon={ImageIcon} label="Post" onPick={() => setCreateOpen(false)} />
-              <CreateAction to="/compose/reel" icon={Film} label="Reel" onPick={() => setCreateOpen(false)} />
-              <CreateAction to="/compose/story" icon={Sparkles} label="Story" onPick={() => setCreateOpen(false)} />
+          <SheetContent side="bottom" className="rounded-t-3xl bg-background border-t border-border px-5 pt-5 pb-8">
+            <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-border" />
+            <h2 className="text-xl font-bold tracking-tight mb-4">Create</h2>
+
+            {/* Three colored tiles */}
+            <div className="grid grid-cols-3 gap-3">
+              <BigTile to="/compose" icon={ImageIcon} label="Post" gradient="from-sky-500 to-blue-600" onPick={() => setCreateOpen(false)} />
+              <BigTile to="/compose/reel" icon={Film} label="Reel" gradient="from-fuchsia-500 to-pink-600" onPick={() => setCreateOpen(false)} />
+              <BigTile to="/compose/story" icon={Sparkles} label="Story" gradient="from-orange-500 to-rose-500" onPick={() => setCreateOpen(false)} />
+            </div>
+
+            {/* Full-width Live */}
+            <Link
+              to="/compose/reel"
+              onClick={() => setCreateOpen(false)}
+              className="mt-3 block py-5 rounded-2xl bg-gradient-primary text-primary-foreground font-semibold text-sm shadow-glow flex items-center justify-center gap-2"
+            >
+              <Radio className="h-5 w-5" /> Live
+            </Link>
+
+            {/* List rows */}
+            <div className="mt-5 space-y-1">
+              <RowAction to="/compose/reel" icon={Radio} title="Go Live" subtitle="Broadcast to your audience" onPick={() => setCreateOpen(false)} />
+              <RowAction to="/compose" icon={Camera} title="Camera" subtitle="Take a photo or video" onPick={() => setCreateOpen(false)} />
+              <RowAction to="/compose" icon={Wand2} title="AI Video" subtitle="Create with AI" onPick={() => setCreateOpen(false)} />
+              <RowAction to="/compose" icon={Upload} title="Upload" subtitle="From gallery" onPick={() => setCreateOpen(false)} />
             </div>
           </SheetContent>
         </Sheet>
@@ -167,5 +188,39 @@ const CreateAction = ({ to, icon: Icon, label, onPick }: { to: string; icon: any
   <Link onClick={onPick} to={to} className="rounded-xl py-5 flex flex-col items-center gap-2 bg-card border border-border hover:bg-secondary transition-colors">
     <Icon className="h-6 w-6 text-foreground" />
     <span className="text-xs font-semibold">{label}</span>
+  </Link>
+);
+
+const BigTile = ({
+  to, icon: Icon, label, gradient, onPick,
+}: { to: string; icon: any; label: string; gradient: string; onPick: () => void }) => (
+  <Link
+    onClick={onPick}
+    to={to}
+    className={cn(
+      "aspect-square rounded-2xl flex flex-col items-center justify-center gap-2 text-white shadow-glow active:scale-[0.97] transition-transform bg-gradient-to-br",
+      gradient
+    )}
+  >
+    <Icon className="h-7 w-7" strokeWidth={2} />
+    <span className="text-sm font-bold">{label}</span>
+  </Link>
+);
+
+const RowAction = ({
+  to, icon: Icon, title, subtitle, onPick,
+}: { to: string; icon: any; title: string; subtitle: string; onPick: () => void }) => (
+  <Link
+    onClick={onPick}
+    to={to}
+    className="flex items-center gap-3 px-3 py-3 rounded-2xl hover:bg-muted/40 transition-colors"
+  >
+    <span className="h-10 w-10 rounded-full bg-secondary border border-border grid place-items-center shrink-0">
+      <Icon className="h-5 w-5 text-foreground" />
+    </span>
+    <div className="flex-1 min-w-0">
+      <p className="text-sm font-semibold">{title}</p>
+      <p className="text-xs text-muted-foreground">{subtitle}</p>
+    </div>
   </Link>
 );

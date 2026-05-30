@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { Heart, Compass, Sparkles, Users } from "lucide-react";
-import { TopBar } from "@/components/vibe/TopBar";
+import { Bell, Search, Sparkles, Users, ChevronDown } from "lucide-react";
 import { PostCard, FeedPost } from "@/components/social/PostCard";
 import { CommentSheet } from "@/components/social/CommentSheet";
 import { StoriesRail } from "@/components/social/StoriesRail";
@@ -99,19 +98,20 @@ const Feed = () => {
           chromeHidden ? "-translate-y-full" : "translate-y-0",
         )}
       >
-        <TopBar
-          title="Aurelix"
-          right={
-            <>
-              <Link to="/discover" className="p-2" aria-label="Discover">
-                <Compass className="h-6 w-6 text-foreground" strokeWidth={1.75} />
-              </Link>
-              <Link to="/notifications" className="p-2" aria-label="Notifications">
-                <Heart className="h-6 w-6 text-foreground" strokeWidth={1.75} />
-              </Link>
-            </>
-          }
-        />
+        <header className="h-14 px-5 flex items-center justify-between gap-3 border-b border-border">
+          <button className="flex items-center gap-1.5">
+            <span className="font-display text-2xl font-black tracking-wide text-primary">AURELIX</span>
+            <ChevronDown className="h-4 w-4 text-foreground" />
+          </button>
+          <div className="flex items-center gap-1">
+            <Link to="/discover" className="p-2" aria-label="Search">
+              <Search className="h-6 w-6 text-foreground" strokeWidth={1.75} />
+            </Link>
+            <Link to="/notifications" className="p-2" aria-label="Notifications">
+              <Bell className="h-6 w-6 text-foreground" strokeWidth={1.75} />
+            </Link>
+          </div>
+        </header>
       </div>
 
       <StoriesRail />

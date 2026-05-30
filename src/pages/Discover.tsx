@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { Search, TrendingUp, Sparkles, Crown, BadgeCheck, Flame } from "lucide-react";
-import { TopBar } from "@/components/vibe/TopBar";
 import { AuraAvatar } from "@/components/vibe/AuraAvatar";
 import { VerificationBadge } from "@/components/vibe/VerificationBadge";
 import { supabase } from "@/integrations/supabase/client";
@@ -98,21 +97,69 @@ const Discover = () => {
   );
   const rising = useMemo(() => allProfiles.slice(0, 12), [allProfiles]);
 
+  const FILTERS = ["For you", "Trending", "Creators", "Reels", "AI"] as const;
+  const [filter, setFilter] = useState<typeof FILTERS[number]>("For you");
+  const trendingTags = [
+    { tag: "cyberpunk", count: "12.4K" },
+    { tag: "future", count: "8.7K" },
+    { tag: "aiart", count: "6.2K" },
+    { tag: "aurelix", count: "15.1K" },
+  ];
+
   return (
     <div className="pb-8">
-      <TopBar subtitle="Explore" title="Discover" />
+      <header className="h-14 px-5 flex items-center border-b border-border">
+        <h1 className="text-xl font-bold tracking-tight">Discover</h1>
+      </header>
 
       <div className="px-4 pt-3">
-        <div className="bg-muted rounded-xl flex items-center gap-2 px-3 py-2.5">
+        <div className="bg-secondary/60 border border-border rounded-full flex items-center gap-2 px-4 py-2.5">
           <Search className="h-4 w-4 text-muted-foreground" />
           <input
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder="Search creators…"
+            placeholder="Search creators, posts, topics…"
             className="bg-transparent outline-none flex-1 text-sm placeholder:text-muted-foreground"
           />
         </div>
       </div>
+
+      {/* Filter chips */}
+      {!term && (
+        <div className="flex gap-2 px-4 pt-4 overflow-x-auto hide-scrollbar">
+          {FILTERS.map((f) => (
+            <button
+              key={f}
+              onClick={() => setFilter(f)}
+              className={cn(
+                "shrink-0 px-4 py-1.5 rounded-full text-xs font-semibold border transition-colors",
+                filter === f
+                  ? "bg-primary text-primary-foreground border-primary shadow-glow"
+                  : "bg-secondary/40 text-foreground border-border hover:border-primary/40"
+              )}
+            >
+              {f}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Trending Now hashtags */}
+      {!term && (
+        <section className="px-4 mt-6">
+          <h2 className="text-sm font-semibold flex items-center gap-1.5 mb-3">
+            Trending Now <Flame className="h-4 w-4 text-primary" />
+          </h2>
+          <div className="grid grid-cols-2 gap-2">
+            {trendingTags.map((t) => (
+              <div key={t.tag} className="rounded-2xl border border-border bg-card p-3">
+                <p className="text-sm font-bold text-primary">#{t.tag}</p>
+                <p className="text-[11px] text-muted-foreground">{t.count} posts</p>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Search results take over when typing */}
       {term ? (

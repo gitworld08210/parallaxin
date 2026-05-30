@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { Heart, MessageCircle, Send, Plus, Volume2, VolumeX, Pause } from "lucide-react";
+import { Heart, MessageCircle, Send, Plus, Volume2, VolumeX, Pause, Camera } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthProvider";
 import { CommentSheet } from "@/components/social/CommentSheet";
@@ -102,8 +102,19 @@ const Reels = () => {
   };
 
   return (
-    <div className="bg-black text-white" onMouseMove={bumpChrome} onTouchStart={bumpChrome}>
+    <div className="bg-black text-white relative" onMouseMove={bumpChrome} onTouchStart={bumpChrome}>
+      {/* Reels title */}
+      <header className={cn(
+        "absolute top-0 inset-x-0 z-30 h-14 px-5 flex items-center justify-between transition-opacity duration-500",
+        chromeDim ? "opacity-0 pointer-events-none" : "opacity-100"
+      )}>
+        <h1 className="text-xl font-bold tracking-tight">Reels</h1>
+        <Link to="/compose/reel" className="p-2" aria-label="Create reel">
+          <Camera className="h-5 w-5" strokeWidth={1.75} />
+        </Link>
+      </header>
       <div ref={containerRef} className="h-[100dvh] overflow-y-scroll snap-y snap-mandatory">
+
         {reels.length === 0 && (
           <div className="h-[100dvh] grid place-items-center text-center px-8">
             <div>
