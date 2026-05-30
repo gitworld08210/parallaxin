@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
-import { X } from "lucide-react";
+import { X, Send } from "lucide-react";
 import { timeAgo } from "@/lib/format";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthProvider";
+import { toast } from "sonner";
 
 type Story = {
   id: string;
@@ -11,13 +14,19 @@ type Story = {
   profile: { username: string; display_name: string; avatar_url: string | null } | null;
 };
 
+const EMOJIS = ["❤️", "🔥", "😍", "😂", "👏", "🙌"];
+
 export const StoryViewer = ({ stories, startIdx, onClose }: { stories: Story[]; startIdx: number; onClose: () => void }) => {
+  const { user } = useAuth();
   const [idx, setIdx] = useState(startIdx);
   const [progress, setProgress] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const [reply, setReply] = useState("");
   const current = stories[idx];
 
   useEffect(() => {
     setProgress(0);
+    if (paused) return;
     const duration = current?.media_type === "video" ? 12000 : 5000;
     const start = Date.now();
     const i = setInterval(() => {
@@ -30,7 +39,7 @@ export const StoryViewer = ({ stories, startIdx, onClose }: { stories: Story[]; 
       }
     }, 60);
     return () => clearInterval(i);
-  }, [idx, current?.id]);
+  }, [idx, current?.id, paused]);
 
   if (!current) return null;
 
@@ -39,6 +48,25 @@ export const StoryViewer = ({ stories, startIdx, onClose }: { stories: Story[]; 
     const w = e.currentTarget.clientWidth;
     if (x < w / 3) { if (idx > 0) setIdx(idx - 1); }
     else { if (idx < stories.length - 1) setIdx(idx + 1); else onClose(); }
+  };
+
+  const react = async (emoji: string) => {
+    if (!user) return toast.error("Sign in");
+    const { error } = await (supabase.from("story_reactions" as any).insert({
+      story_id: current.id, user_id: user.id, emoji,
+    } as any) as any);
+    if (error) toast.error(error.message); else toast.success(`Reacted ${emoji}`);
+  };
+
+  const sendReply = async () => {
+    if (!user || !reply.trim() || !current.profile) return;
+    if (current.user_id === user.id) { toast.error("Can't reply to yourself"); return; }
+    const { data: convId, error: rpcErr } = await supabase.rpc("start_dm", { other_user_id: current.user_id });
+    if (rpcErr || !convId) { toast.error("Couldn't start chat"); return; }
+    const content = `↩️ Replied to story: ${reply.trim().slice(0, 500)}`;
+    await supabase.from("messages").insert({ conversation_id: convId, sender_id: user.id, content });
+    setReply("");
+    toast.success("Reply sent");
   };
 
   return (
@@ -67,13 +95,49 @@ export const StoryViewer = ({ stories, startIdx, onClose }: { stories: Story[]; 
         </button>
       </div>
 
-      <div onClick={tap} className="absolute inset-0 grid place-items-center">
+      <div
+        onClick={tap}
+        onPointerDown={() => setPaused(true)}
+        onPointerUp={() => setPaused(false)}
+        onPointerLeave={() => setPaused(false)}
+        className="absolute inset-0 grid place-items-center"
+      >
         {current.media_type === "video" ? (
           <video src={current.media_url} autoPlay playsInline className="max-h-full max-w-full" />
         ) : (
           <img src={current.media_url} className="max-h-full max-w-full" alt="" />
         )}
       </div>
+
+      {current.user_id !== user?.id && (
+        <div className="absolute bottom-0 inset-x-0 z-20 p-4 pb-6 bg-gradient-to-t from-black/80 to-transparent">
+          <div className="flex justify-around mb-3">
+            {EMOJIS.map((e) => (
+              <button
+                key={e}
+                onClick={(ev) => { ev.stopPropagation(); react(e); }}
+                onPointerDown={(ev) => ev.stopPropagation()}
+                className="text-2xl active:scale-125 transition-transform"
+              >
+                {e}
+              </button>
+            ))}
+          </div>
+          <div className="flex gap-2" onPointerDown={(e) => e.stopPropagation()} onClick={(e) => e.stopPropagation()}>
+            <input
+              value={reply}
+              onChange={(e) => setReply(e.target.value)}
+              onFocus={() => setPaused(true)}
+              onBlur={() => setPaused(false)}
+              placeholder={`Reply to ${current.profile?.username ?? "story"}…`}
+              className="flex-1 bg-white/10 rounded-full px-4 py-2.5 text-sm outline-none placeholder:text-white/60 text-white"
+            />
+            <button onClick={sendReply} className="h-10 w-10 grid place-items-center rounded-full bg-white text-black">
+              <Send className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
