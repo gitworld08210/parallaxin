@@ -23,9 +23,9 @@ export const HallOfFoundersScreen = () => {
 
   useEffect(() => {
     (async () => {
-      const { data } = await supabase.from("profiles")
+      const { data } = await (supabase.from("profiles") as any)
         .select("user_id, username, display_name, avatar_url, founder_title, aura_rank, join_era, council_role")
-        .eq("is_founder" as any, true as any)
+        .eq("is_founder", true)
         .order("created_at", { ascending: true })
         .limit(120);
       setFounders((data ?? []) as Founder[]);
