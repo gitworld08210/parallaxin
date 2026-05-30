@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { Heart, Compass, Plus } from "lucide-react";
 import { TopBar } from "@/components/vibe/TopBar";
@@ -6,6 +6,7 @@ import { PostCard, FeedPost } from "@/components/social/PostCard";
 import { CommentSheet } from "@/components/social/CommentSheet";
 import { StoriesRail } from "@/components/social/StoriesRail";
 import { SuggestedUsersRail } from "@/components/social/SuggestedUsersRail";
+import { FeedSkeleton } from "@/components/social/FeedSkeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthProvider";
 import { cn } from "@/lib/utils";
