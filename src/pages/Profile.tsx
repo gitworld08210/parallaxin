@@ -337,6 +337,7 @@ const Profile = () => {
       )}
 
       <CommentSheet postId={commentPost} open={!!commentPost} onOpenChange={(b) => !b && setCommentPost(null)} />
+      <ReportSheet open={reportOpen} onOpenChange={setReportOpen} targetKind="profile" targetId={profile?.user_id ?? null} />
     </div>
   );
 };
