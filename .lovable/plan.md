@@ -101,3 +101,25 @@ src/contexts/AuthProvider.tsx      ← include verification_kind
 1. Add the recommended extras (story reactions, share-to-DM, block/mute, in-app DM toaster)? **yes / no / pick which**
 2. Move bottom tabs to Home/Search/+/Activity/Profile (Instagram-style) or keep current Feed/Reels/Discover/DMs/Profile? **A / B**
 3. AI Assistant page — build the full chat surface now, or just the "AI Enhance" caption button in Compose? **full / button-only**
+
+---
+
+## Admin: manually approve a verification request
+
+Run this SQL in the Lovable Cloud SQL editor. Replace `<request_id>` and `<kind>` (`verified | creator | gov | brand | founder`):
+
+```sql
+WITH r AS (
+  UPDATE public.verification_requests
+  SET status = 'approved', reviewed_at = now()
+  WHERE id = '<request_id>'
+  RETURNING user_id, category
+)
+UPDATE public.profiles p
+SET verified = true,
+    verification_kind = COALESCE('<kind>', r.category, 'verified')
+FROM r
+WHERE p.user_id = r.user_id;
+```
+
+To reject: `UPDATE public.verification_requests SET status='rejected', reviewed_at=now() WHERE id='<request_id>';`
