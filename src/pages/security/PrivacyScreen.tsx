@@ -39,9 +39,9 @@ export default function PrivacyScreen() {
     }
   })(); }, [user]);
 
-  const save = async (patch: Record<string, any>) => {
+  const save = async (patch: any) => {
     if (!user) return;
-    const { error } = await supabase.from("profiles").update(patch).eq("user_id", user.id);
+    const { error } = await (supabase.from("profiles") as any).update(patch).eq("user_id", user.id);
     if (error) toast.error(error.message);
   };
 
