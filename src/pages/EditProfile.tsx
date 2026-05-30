@@ -28,16 +28,17 @@ const EditProfile = () => {
     }
   }, [profile]);
 
-  const uploadAvatar = async (file: File) => {
+  const uploadImage = async (file: File, kind: "avatar" | "cover") => {
     if (!user) return;
     setBusy(true);
     try {
       const ext = file.name.split(".").pop() || "png";
-      const path = `${user.id}/avatar-${Date.now()}.${ext}`;
+      const path = `${user.id}/${kind}-${Date.now()}.${ext}`;
       const { error } = await supabase.storage.from("avatars").upload(path, file, { upsert: true });
       if (error) throw error;
       const { data } = supabase.storage.from("avatars").getPublicUrl(path);
-      setAvatar(data.publicUrl);
+      if (kind === "avatar") setAvatar(data.publicUrl);
+      else setCover(data.publicUrl);
     } catch (e: any) { toast.error(e.message); }
     finally { setBusy(false); }
   };
@@ -46,7 +47,7 @@ const EditProfile = () => {
     if (!user) return;
     setBusy(true);
     const { error } = await supabase.from("profiles").update({
-      display_name: displayName, username, bio, avatar_url: avatar,
+      display_name: displayName, username, bio, avatar_url: avatar, cover_url: cover,
     }).eq("user_id", user.id);
     setBusy(false);
     if (error) return toast.error(error.message);
