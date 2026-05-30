@@ -1,7 +1,8 @@
 import { TopBar } from "@/components/vibe/TopBar";
 import { GlassCard } from "@/components/vibe/GlassCard";
-import { Check, Crown, Sparkles, Infinity as InfinityIcon } from "lucide-react";
+import { Check, Crown, Sparkles, Infinity as InfinityIcon, ShoppingBag } from "lucide-react";
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
 
 const tiers = [
   {
