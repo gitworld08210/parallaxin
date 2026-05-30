@@ -112,13 +112,20 @@ const Messages = () => {
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return convs;
-    return convs.filter((c) =>
+    let base = convs;
+    if (tab === "primary") base = base.filter((c) => c.unread > 0);
+    else if (tab === "requests") base = base.filter((c) => !c.last);
+    if (!q) return base;
+    return base.filter((c) =>
       (c.other?.username || "").toLowerCase().includes(q) ||
       (c.other?.display_name || "").toLowerCase().includes(q) ||
       (c.last || "").toLowerCase().includes(q)
     );
-  }, [convs, query]);
+  }, [convs, query, tab]);
+
+  const primaryCount = useMemo(() => convs.filter((c) => c.unread > 0).length, [convs]);
+  const requestsCount = useMemo(() => convs.filter((c) => !c.last).length, [convs]);
+
 
   const startChat = async (otherId: string) => {
     if (!user) return;
