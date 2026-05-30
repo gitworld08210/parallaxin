@@ -26,6 +26,9 @@ import Premium from "./pages/Premium";
 import Verification from "./pages/Verification";
 import FollowList from "./pages/FollowList";
 import Assistant from "./pages/Assistant";
+import Drafts from "./pages/Drafts";
+import PostInsights from "./pages/PostInsights";
+import CloseFriends from "./pages/CloseFriends";
 
 import NotFound from "./pages/NotFound.tsx";
 
@@ -62,6 +65,9 @@ const App = () => (
                 <Route path="/premium" element={<Premium />} />
                 <Route path="/verification" element={<Verification />} />
                 <Route path="/assistant" element={<Assistant />} />
+                <Route path="/drafts" element={<Drafts />} />
+                <Route path="/p/:postId/insights" element={<PostInsights />} />
+                <Route path="/close-friends" element={<CloseFriends />} />
               </Route>
             </Route>
             <Route path="*" element={<NotFound />} />
