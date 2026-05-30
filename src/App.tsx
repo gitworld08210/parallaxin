@@ -1,6 +1,6 @@
 import { lazy, Suspense } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -118,6 +118,7 @@ const App = () => (
                   <Route path="/drafts" element={<Drafts />} />
                   <Route path="/p/:postId/insights" element={<PostInsights />} />
                   <Route path="/close-friends" element={<CloseFriends />} />
+                  <Route path="/founders" element={<Navigate to="/hall-of-founders" replace />} />
                   <Route path="/hall-of-founders" element={<HallOfFoundersScreen />} />
                   <Route path="/founder-council" element={<FounderCouncilScreen />} />
                   <Route path="/founders/:username" element={<FounderChronicle />} />

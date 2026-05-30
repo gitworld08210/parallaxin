@@ -1,62 +1,46 @@
 ## Goal
 
-Use the existing `/auth` login form for everyone. After a successful sign-in, check the user's role:
+You skipped the questions, so I'll start with the most visible bug from your session and do a targeted sweep of the user-facing app. The session replay shows you opened `/founders` and got a 404 — that route doesn't exist. From there I'll audit the other obvious failure points.
 
-- If they have the `admin` role → redirect straight to `/admin` (admin panel only, no regular app chrome).
-- Otherwise → normal flow (onboarding or `/`).
+## What I'll fix
 
-No separate admin login URL. Same email + password form. The difference is purely where they land based on role.
+### 1. `/founders` 404 (confirmed bug)
 
-## Behavior
+`src/App.tsx` defines `/hall-of-founders`, `/founder-council`, and `/founders/:username` — but **not** `/founders`. Anyone typing `/founders` (or following an old link) lands on NotFound.
 
-1. `**/auth` (existing page)** — unchanged UI. After `signIn` succeeds, query `user_roles` for the signed-in user. If `admin` row exists, navigate to `/admin`; else navigate to the previous intended route or `/`.
-2. `**AuthProvider**` — on app load / `onAuthStateChange`, if the current route is a normal app route AND the user is admin, do NOT auto-redirect (admins can still browse the app if they manually navigate). But the post-login redirect always sends admins to `/admin`.
-3. `**/admin**` — new admin-only area, guarded by a new `AdminRoute` wrapper using `useUserRole`. Non-admins hitting `/admin` get redirected to `/`. Admins see a dedicated admin layout (sidebar + header, no bottom nav / side menu from the consumer app).
+Fix: add a redirect `/founders` → `/hall-of-founders` inside the `ProtectedRoute` group in `src/App.tsx`.
 
-## Admin panel contents
+### 2. Audit and fix dead links in the main app
 
-Sidebar with four sections:
+I'll grep every `<Link to=...>`, `navigate(...)`, and `href="/..."` in `src/` and cross-check against the routes registered in `App.tsx`. Anything pointing at a non-existent route gets either:
+- pointed at the correct route, or
+- a new route + redirect added.
 
-- **Verification requests** — list pending `verification_requests` with all fields (full_name, category, organization, official_email, country, dob, reason, links, ID doc preview, supporting doc preview via signed URLs from the private `verification-docs` bucket). Approve / Reject toggles `approved`; the existing `on_verification_approved_trg` trigger handles profile + notifications.
-- **Reports** — list `reports`, update `status` (open / reviewed / resolved).
-- **Founder seats** — list `founder_seats`, assign/revoke `user_id`, edit `founder_title`, `council_role`, `is_active`, `revoke_reason`.
-- **Users & roles** — search profiles by username, grant/revoke `admin` or `moderator` rows in `user_roles`.
+Likely suspects to check (based on file layout): `/founders`, `/founders/:username` from menus, profile links, notifications.
 
-Header: "Admin Panel" + admin's name + Sign out.
+### 3. Sanity-check the four common breakage areas
 
-## Routing changes (in `src/App.tsx`)
+Quick pass with browser + console + DB to confirm these still work end-to-end. Fix anything broken I find; otherwise leave alone.
 
-- Add `<Route element={<AdminRoute />}><Route path="/admin" element={<AdminLayout />}>…children…</Route></Route>`.
-- `/auth` stays the same; only its post-login redirect logic changes.
+- **Feed** — `/` loads, posts render, like/comment/save buttons work.
+- **Compose** — `/compose` publishes a post; image upload to `post-media` bucket succeeds.
+- **Profile** — `/profile/:username` opens, edit profile saves, verification request submits.
+- **Messages / notifications** — `/messages` opens a conversation, `/notifications` lists recent items.
 
-## Database changes
+For each one I find broken, I'll add the specific fix to this plan before touching code (or just fix if it's a one-liner like a wrong path).
 
-Add RLS policies on `user_roles` so admins can `SELECT / INSERT / DELETE` rows there (needed for the Users & roles screen). Uses `has_role(auth.uid(), 'admin')`. No schema changes — existing admin policies on `verification_requests`, `reports`, `founder_seats` already cover review/update.
+## Out of scope for this pass
 
-## First admin
+- New features (audit log, ban users, analytics, etc.)
+- Visual polish / redesign
+- Admin panel changes (already working per last session)
 
-I'll seed one admin row in `user_roles` for the email you give me. Until then the panel exists but nobody passes the role check. Tell me which email should become the first admin and I'll insert it right after the build step.
+## Files likely to change
 
-Admin login id = [adit080210@gmail.com](mailto:adit080210@gmail.com) 
+- `src/App.tsx` — add `/founders` redirect, any other missing routes found in the audit.
+- `src/components/layout/SideMenu.tsx` and other nav components — fix any wrong `to=` paths.
+- Specific page files only if the audit surfaces a real runtime bug.
 
-Password:- admin@9756
+## What I need from you after approval
 
-## Files to add
-
-- `src/components/AdminRoute.tsx`
-- `src/pages/admin/AdminLayout.tsx`
-- `src/pages/admin/VerificationRequestsAdmin.tsx`
-- `src/pages/admin/ReportsAdmin.tsx`
-- `src/pages/admin/FounderSeatsAdmin.tsx`
-- `src/pages/admin/UsersRolesAdmin.tsx`
-
-## Files to edit
-
-- `src/pages/Auth.tsx` — after sign-in, check role and redirect admins to `/admin`.
-- `src/App.tsx` — register the `/admin` routes.
-
-## Out of scope
-
-- 2FA for admins.
-- Admin action audit log.
-- Extra notification emails beyond what the existing trigger already writes.
+Once you hit Implement, I'll do the audit and fix what's broken. If you actually have a *specific* page or action that's frustrating you (posting fails, profile won't save, etc.), drop one line about it and I'll prioritize that first instead of guessing.
