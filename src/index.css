@@ -137,13 +137,13 @@
 }
 
 @layer utilities {
-  .bg-gradient-primary { background: hsl(var(--primary)); }
+  .bg-gradient-primary { background: var(--gradient-primary); }
   .bg-gradient-gold { background: var(--gradient-gold); }
-  .bg-gradient-infinity { background: hsl(var(--surface-elevated)); }
-  .bg-radial-glow { background: transparent; }
-  .shadow-glow { box-shadow: none; }
+  .bg-gradient-infinity { background: var(--gradient-infinity); }
+  .bg-radial-glow { background: var(--gradient-radial-glow); }
+  .shadow-glow { box-shadow: var(--shadow-glow); }
   .shadow-aura { box-shadow: var(--shadow-aura); }
-  .shadow-gold { box-shadow: none; }
+  .shadow-gold { box-shadow: var(--shadow-gold); }
   .shadow-elevated { box-shadow: var(--shadow-elevated); }
 }
 
