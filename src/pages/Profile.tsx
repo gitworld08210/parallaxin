@@ -169,25 +169,10 @@ const Profile = () => {
                 </button>
                 <button
                   onClick={async () => {
-                    if (!user) return;
-                    const { data: convs } = await supabase.from("conversation_participants").select("conversation_id").eq("user_id", user.id);
-                    const myConvIds = (convs ?? []).map((c) => c.conversation_id);
-                    let convId: string | null = null;
-                    if (myConvIds.length) {
-                      const { data: shared } = await supabase.from("conversation_participants").select("conversation_id").eq("user_id", profile.user_id).in("conversation_id", myConvIds);
-                      convId = shared?.[0]?.conversation_id ?? null;
-                    }
-                    if (!convId) {
-                      const { data: conv } = await supabase.from("conversations").insert({ is_group: false }).select("id").single();
-                      if (conv) {
-                        await supabase.from("conversation_participants").insert([
-                          { conversation_id: conv.id, user_id: user.id },
-                          { conversation_id: conv.id, user_id: profile.user_id },
-                        ]);
-                        convId = conv.id;
-                      }
-                    }
-                    if (convId) nav(`/messages/${convId}`);
+                    if (!user || !profile) return;
+                    const { data, error } = await supabase.rpc("start_dm", { other_user_id: profile.user_id });
+                    if (error) { toast.error(error.message || "Could not start chat"); return; }
+                    if (data) nav(`/messages/${data}`);
                   }}
                   className="glass-strong rounded-xl py-2.5 text-sm font-semibold"
                 >
