@@ -1,57 +1,80 @@
-## Inspection findings
+# Instagram-Parity Upgrade + Reels Fix
 
-I audited every feature against the live DB schema, RLS, triggers and storage. Below are the real problems — most pages look fine visually but a few core wiring issues silently break almost every feature.
+Audit of what's missing today: there's no Reels surface, no Stories, no Saves/Bookmarks, no hashtag/explore-by-tag, no post detail view, no tag-people, and the verified-badge flow has no submission/admin path. Compose accepts video but there's no dedicated "Create Reel" entry point, no vertical full-screen player, no Reels feed, and no Reels tab on the profile. We'll close those gaps with a premium minimal UI and keep the existing aesthetic (glass cards, gradient accents, Cinzel/SF stack).
 
-### 1. CRITICAL — Profile embeds are broken everywhere
-All foreign keys on `posts.user_id`, `comments.user_id`, `notifications.actor_id`, `conversation_participants.user_id`, etc. point to **`auth.users`**, not `public.profiles`. But the code uses PostgREST embeds like:
+## 1. Reels (priority)
 
-```ts
-.select("..., profile:profiles!posts_user_id_fkey(username, display_name, avatar_url, verified)")
+```text
+Tab bar:  Feed · Reels · Discover · DMs · Profile
+                ▲ new
 ```
 
-PostgREST can't resolve that — `posts_user_id_fkey` doesn't reference `profiles`. So `profile` comes back `null` in:
-- `Feed.tsx` — every card shows "unknown"
-- `Profile.tsx` — own posts list
-- `CommentSheet.tsx` — comments show no author
-- `Notifications.tsx` — actor name missing
-- `Messages.tsx` / `Conversation.tsx` — other participant unknown
+- **`/reels` page** — full-bleed vertical pager (snap-y, one video per viewport, mute toggle, autoplay-on-visible via IntersectionObserver, double-tap-to-like, side rail with like/comment/share/avatar). TikTok/Reels-style.
+- **`/compose/reel` page** — dedicated reel uploader: video-only picker, 9:16 preview, trim hint, caption, AI caption button, posts with `media_type='video'` + new `is_reel=true`.
+- **FAB** on Reels page → `/compose/reel`. Plus icon on Feed FAB opens a sheet: *Post* or *Reel*.
+- **Profile** gets a Reels sub-tab (grid of vertical thumbs) alongside Posts and Tagged.
+- DB: add `is_reel boolean default false` to `posts`; backfill existing video posts as reels.
 
-**Fix:** Add proper FK from each user-referencing column to `profiles.user_id` (or hint the embed via `profiles!user_id`), then update the select strings to use the named relationship. Cleanest: add a unique constraint on `profiles.user_id` (already unique de-facto) and FK references from `posts`, `comments`, `notifications`, `conversation_participants`, `messages.sender_id`, `follows.{follower_id,following_id}` to `profiles(user_id)`. Then PostgREST resolves `profile:profiles(...)` automatically.
+## 2. Stories (lightweight)
 
-### 2. CRITICAL — Signup does not create a profile row
-The function `public.handle_new_user()` exists but has **no trigger** attached on `auth.users`. New signups (email or Google) never get a `profiles` row, which is exactly what the session replay shows: **"Profile not found"** on `/profile`.
+- `stories` table (user_id, media_url, media_type, expires_at = now()+24h).
+- Horizontal avatar rail at top of Feed; tap → fullscreen story viewer with progress bars, tap-to-advance, swipe-down to close.
+- "Your story" first slot opens compose-story sheet (image/video, auto-expires).
 
-**Fix:** Create the trigger:
-```sql
-create trigger on_auth_user_created
-after insert on auth.users
-for each row execute function public.handle_new_user();
-```
-Also backfill: insert a profile for any existing `auth.users` without one.
+## 3. Saves / Bookmarks
 
-### 3. Email OTP code may not appear in the email
-`Auth.tsx` uses `verifyOtp({ type: "signup", token: otp })`, but Supabase's default "Confirm signup" template only renders `{{ .ConfirmationURL }}`. Users get a magic link, not a 6-digit code, and the OTP screen will time out.
+- `saves` table (user_id, post_id, created_at).
+- Bookmark button in PostCard becomes functional.
+- Profile → "Saved" tab (private, RLS scoped to owner).
 
-**Fix:** Update the signup email template to include `{{ .Token }}` (and keep the link as fallback). I'll set this via the auth config tool.
+## 4. Hashtags & Post detail
 
-### 4. PostCard share link is wrong
-`PostCard.tsx` copies `/profile/${username}`, but the route is `/u/:username`. Shared links 404 to the not-found page. **Fix:** use `/u/${handle}`.
+- Parse `#tag` and `@mention` in post content → linkified.
+- `/tag/:tag` page lists posts containing it.
+- `/p/:postId` post-detail route (used by share, notifications, comment deep-links). Replaces the broken `/u/:username` share for posts.
+- Fix `notifications` deep-links to route to `/p/:postId`.
 
-### 5. Minor issues
-- `Notifications.tsx`: when `n.actor` is null, `to="#"` navigates to `/`. Use a `<div>` instead.
-- `Premium.tsx` CTAs are non-functional; leaving as design placeholders unless you want them wired.
-- `Verification.tsx` submit only toasts; no row is written (no verification_requests table). Leaving as-is unless you want a real request flow.
-- `Wallet.tsx` numbers are derived client-side (XP/Coins/Trust) — by design for now.
+## 5. Verified-badge request flow (manual approval)
 
-## What I'll change
+- `verification_requests` table: id, user_id, full_name, category, id_doc_url, links text[], status (`pending|approved|rejected`), created_at, reviewed_at.
+- `/verification` page becomes a real form (upload to new `verification-docs` private bucket, RLS: owner can insert/select own).
+- On submit: insert row, show "Under review" state, disable resubmit while pending.
+- **Approval is manual** — you flip `profiles.verified=true` (and update `verification_requests.status`) directly in the backend table editor. No admin UI built. I'll document this in `.lovable/plan.md`.
+- Badge already renders via `profiles.verified` — no UI change needed once flag flips.
 
-1. Migration:
-   - Add FKs from `posts.user_id`, `comments.user_id`, `notifications.actor_id`, `conversation_participants.user_id`, `messages.sender_id`, `follows.follower_id`, `follows.following_id` to `public.profiles(user_id)` (add unique constraint on `profiles.user_id` first if missing).
-   - Create `on_auth_user_created` trigger on `auth.users` → `handle_new_user()`.
-   - Backfill missing `profiles` rows for existing users.
-2. Update embed selects in Feed, Profile, CommentSheet, Notifications, Messages, Conversation to use the new relationship name (`profile:profiles!<new_fk>(...)` or simply `profiles(...)`).
-3. Configure auth email template to expose `{{ .Token }}` so the OTP code actually arrives.
-4. Fix `PostCard` share URL → `/u/${handle}`.
-5. Replace `Link to="#"` with non-link wrapper in `Notifications.tsx` when actor missing.
+## 6. AI moderation/caption upgrade
 
-No UI/visual changes; this is purely fixing broken plumbing.
+- Swap `ai-caption` and `ai-moderate` edge functions to `openai/gpt-5.5-pro` via Lovable AI Gateway (AI SDK, `generateText` + structured `Output.object` for moderation: `{flagged, reason, severity}`).
+- Add image moderation: when a post has media, pass the URL to gpt-5.5-pro (multimodal) for NSFW/violence check.
+- Surface 429/402 gateway errors as toasts.
+
+## 7. UI polish (premium minimal)
+
+- Tighten spacing, reduce gradient noise on cards, switch to mono-weight glass + single accent gradient.
+- New iconography pass on bottom nav; add subtle haptic-style spring on tab change (already present, refine timings).
+- Reels player uses pure black backdrop, edge-to-edge, captions overlaid with soft gradient mask.
+- Story rings use conic-gradient ring around avatar.
+
+---
+
+## Technical changes
+
+**Migration**
+- `ALTER TABLE posts ADD COLUMN is_reel boolean NOT NULL DEFAULT false;` + backfill `WHERE media_type='video'`.
+- `CREATE TABLE stories`, `saves`, `verification_requests` with GRANTs + RLS.
+- New private storage bucket `verification-docs` (owner-only policy via `storage.foldername(name)[1] = auth.uid()::text`).
+
+**Routes added**
+- `/reels`, `/compose/reel`, `/compose/story`, `/p/:postId`, `/tag/:tag`.
+
+**Files touched**
+- `AppShell.tsx` — add Reels tab (5 → 5, replace Activity with Reels; move bell into Feed TopBar — already there).
+- `Feed.tsx` — Stories rail, hashtag linkify.
+- `Profile.tsx` — Posts/Reels/Tagged/Saved tab strip.
+- `PostCard.tsx` — bookmark wired, share → `/p/:id`, double-tap like.
+- New: `pages/Reels.tsx`, `pages/ReelCompose.tsx`, `pages/StoryCompose.tsx`, `pages/PostDetail.tsx`, `pages/Tag.tsx`, `components/social/ReelPlayer.tsx`, `components/social/StoriesRail.tsx`, `components/social/StoryViewer.tsx`.
+- Edge functions: rewrite `ai-caption/index.ts`, `ai-moderate/index.ts` using AI SDK + gpt-5.5-pro.
+
+**Manual approval doc** appended to `.lovable/plan.md` with the exact SQL to approve a verification (one UPDATE).
+
+After build: I'll spot-check Reels playback, story expiry, save toggle, and a verification submission in the preview before handing back.
