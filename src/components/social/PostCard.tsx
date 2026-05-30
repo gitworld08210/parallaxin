@@ -13,6 +13,7 @@ import { SaveToCollectionSheet } from "@/components/social/SaveToCollectionSheet
 import { ReportSheet } from "@/components/social/ReportSheet";
 import { FounderBadge } from "@/components/founders/FounderBadge";
 import { GenesisMark } from "@/components/founders/GenesisMark";
+import { DoubleTapHeart } from "@/components/social/DoubleTapHeart";
 
 export type FeedPost = {
   id: string;
@@ -60,6 +61,7 @@ export const PostCard = ({ post, onOpenComments }: { post: FeedPost; onOpenComme
   const [collectionOpen, setCollectionOpen] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
   const [expanded, setExpanded] = useState(false);
+  const [burst, setBurst] = useState(0);
   const lastTap = useRef(0);
   const articleRef = useRef<HTMLElement>(null);
   const isOwner = user?.id === post.user_id;
@@ -117,7 +119,10 @@ export const PostCard = ({ post, onOpenComments }: { post: FeedPost; onOpenComme
 
   const onMediaTap = () => {
     const now = Date.now();
-    if (now - lastTap.current < 300) { if (!liked) toggleLike(); }
+    if (now - lastTap.current < 300) {
+      if (!liked) toggleLike();
+      setBurst((n) => n + 1);
+    }
     lastTap.current = now;
   };
 
@@ -181,12 +186,13 @@ export const PostCard = ({ post, onOpenComments }: { post: FeedPost; onOpenComme
       </header>
 
       {post.media_url && (
-        <div onClick={onMediaTap} className="relative w-full bg-muted">
+        <div onClick={onMediaTap} className="relative w-full bg-muted select-none">
           {post.media_type === "video" ? (
             <video src={post.media_url} controls playsInline className="w-full max-h-[560px] object-cover" />
           ) : (
-            <img src={post.media_url} alt="" className="w-full max-h-[560px] object-cover" />
+            <img src={post.media_url} alt="" className="w-full max-h-[560px] object-cover" draggable={false} />
           )}
+          <DoubleTapHeart trigger={burst} />
         </div>
       )}
 

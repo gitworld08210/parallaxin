@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { Heart, Compass, Plus } from "lucide-react";
 import { TopBar } from "@/components/vibe/TopBar";
@@ -6,6 +6,7 @@ import { PostCard, FeedPost } from "@/components/social/PostCard";
 import { CommentSheet } from "@/components/social/CommentSheet";
 import { StoriesRail } from "@/components/social/StoriesRail";
 import { SuggestedUsersRail } from "@/components/social/SuggestedUsersRail";
+import { FeedSkeleton } from "@/components/social/FeedSkeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthProvider";
 import { cn } from "@/lib/utils";
@@ -57,21 +58,44 @@ const Feed = () => {
 
   useEffect(() => { load(); /* eslint-disable-next-line */ }, [tab, user?.id]);
 
+  // Collapsing top bar on scroll-down, restore on scroll-up
+  const [chromeHidden, setChromeHidden] = useState(false);
+  const lastY = useRef(0);
+  useEffect(() => {
+    const onScroll = () => {
+      const y = window.scrollY;
+      if (y < 32) { setChromeHidden(false); lastY.current = y; return; }
+      const dy = y - lastY.current;
+      if (dy > 6) setChromeHidden(true);
+      else if (dy < -6) setChromeHidden(false);
+      lastY.current = y;
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
   return (
     <div>
-      <TopBar
-        title="Aurelix"
-        right={
-          <>
-            <Link to="/discover" className="p-2" aria-label="Discover">
-              <Compass className="h-6 w-6 text-foreground" strokeWidth={1.75} />
-            </Link>
-            <Link to="/notifications" className="p-2" aria-label="Notifications">
-              <Heart className="h-6 w-6 text-foreground" strokeWidth={1.75} />
-            </Link>
-          </>
-        }
-      />
+      <div
+        className={cn(
+          "sticky top-0 z-30 bg-background/95 backdrop-blur-sm transition-transform duration-300",
+          chromeHidden ? "-translate-y-full" : "translate-y-0",
+        )}
+      >
+        <TopBar
+          title="Aurelix"
+          right={
+            <>
+              <Link to="/discover" className="p-2" aria-label="Discover">
+                <Compass className="h-6 w-6 text-foreground" strokeWidth={1.75} />
+              </Link>
+              <Link to="/notifications" className="p-2" aria-label="Notifications">
+                <Heart className="h-6 w-6 text-foreground" strokeWidth={1.75} />
+              </Link>
+            </>
+          }
+        />
+      </div>
 
       <StoriesRail />
 
@@ -98,7 +122,7 @@ const Feed = () => {
       </div>
 
       <section className="pb-6">
-        {loading && <p className="text-sm text-muted-foreground text-center py-12">Loading…</p>}
+        {loading && <FeedSkeleton count={3} />}
         {!loading && posts.length === 0 && (
           <div className="text-center py-20 px-6">
             <p className="text-xl font-semibold mb-1.5">Nothing here yet</p>
