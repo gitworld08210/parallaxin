@@ -229,29 +229,25 @@ const Profile = () => {
             </div>
           )}
         </div>
-        <div className="flex-1 min-w-0 pt-10">
+        <div className="flex-1 min-w-0 pt-10 space-y-1">
           <p className="text-lg font-bold inline-flex items-center gap-1.5 leading-tight">
             <span className="truncate">{profile.display_name || profile.username}</span>
             {profile.verification_kind && <VerificationBadge kind={profile.verification_kind as any} />}
           </p>
           <p className="text-xs text-muted-foreground">@{profile.username}</p>
+          {profile.bio && <p className="text-sm whitespace-pre-wrap leading-relaxed pt-1">{profile.bio}</p>}
+          <a href={`https://aurelix.app/${profile.username}`} target="_blank" rel="noreferrer" className="text-sm text-primary inline-block">
+            aurelix.app/{profile.username}
+          </a>
+          {profile.is_founder && (
+            <div className="pt-1">
+              <Link to="/hall-of-founders" className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-gradient-to-r from-aura/30 to-primary/20 border border-aura/40 text-aura">
+                <Crown className="h-3.5 w-3.5" />
+                Hall of Founders
+              </Link>
+            </div>
+          )}
         </div>
-      </div>
-
-      {/* Bio + website + founder pill */}
-      <div className="px-4 mt-3">
-        {profile.bio && <p className="text-sm whitespace-pre-wrap leading-relaxed">{profile.bio}</p>}
-        <a href={`https://aurelix.app/${profile.username}`} target="_blank" rel="noreferrer" className="text-sm text-primary mt-1 inline-block">
-          aurelix.app/{profile.username}
-        </a>
-        {profile.is_founder && (
-          <div className="mt-2">
-            <Link to="/hall-of-founders" className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-gradient-to-r from-aura/30 to-primary/20 border border-aura/40 text-aura">
-              <Crown className="h-3.5 w-3.5" />
-              Hall of Founders
-            </Link>
-          </div>
-        )}
       </div>
 
       {/* Stats */}
