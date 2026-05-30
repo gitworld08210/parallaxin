@@ -16,7 +16,7 @@ type Profile = {
   display_name: string;
   avatar_url: string | null;
   bio: string | null;
-  verified: boolean;
+  verified: boolean; verification_kind?: string | null;
   followers_count: number;
 };
 
@@ -30,7 +30,7 @@ const Discover = () => {
     const t = setTimeout(async () => {
       let query = supabase
         .from("profiles")
-        .select("user_id, username, display_name, avatar_url, bio, verified, followers_count")
+        .select("user_id, username, display_name, avatar_url, bio, verified, verification_kind, followers_count")
         .order("followers_count", { ascending: false })
         .limit(30);
       if (q.trim()) {
@@ -103,7 +103,7 @@ const Discover = () => {
               <div className="flex-1 min-w-0">
                 <Link to={`/u/${c.username}`} className="flex items-center gap-1.5">
                   <p className="font-semibold truncate">{c.display_name || c.username}</p>
-                  {c.verified && <VerificationBadge kind="verified" />}
+                  {c.verification_kind ? <VerificationBadge kind={c.verification_kind as any} /> : c.verified && <VerificationBadge kind="verified" />}
                 </Link>
                 <p className="text-xs text-muted-foreground truncate">@{c.username}</p>
                 <p className="text-xs text-muted-foreground mt-0.5">{fmt(c.followers_count)} followers</p>

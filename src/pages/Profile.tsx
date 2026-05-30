@@ -22,6 +22,7 @@ type ProfileRow = {
   cover_url: string | null;
   bio: string | null;
   verified: boolean;
+  verification_kind: string | null;
   followers_count: number;
   following_count: number;
   posts_count: number;
@@ -52,7 +53,7 @@ const Profile = () => {
       const { data: p } = await supabase.from("profiles").select("*").eq("username", target).maybeSingle();
       setProfile(p as ProfileRow | null);
       if (p) {
-        const sel = "id, user_id, content, media_url, media_type, like_count, comment_count, created_at, profile:profiles!posts_user_profile_fkey(username, display_name, avatar_url, verified)";
+        const sel = "id, user_id, content, media_url, media_type, like_count, comment_count, created_at, profile:profiles!posts_user_profile_fkey(username, display_name, avatar_url, verified, verification_kind)";
         const { data: pdata } = await supabase.from("posts").select(sel)
           .eq("user_id", p.user_id).eq("is_reel", false).order("created_at", { ascending: false });
         const { data: rdata } = await supabase.from("posts").select(sel)
@@ -134,7 +135,7 @@ const Profile = () => {
             )}
             <div className="mt-4 flex items-center gap-2">
               <h2 className="font-display text-2xl font-semibold">{profile.display_name || profile.username}</h2>
-              {profile.verified && <VerificationBadge kind="verified" />}
+              {profile.verification_kind && <VerificationBadge kind={profile.verification_kind as any} />}
             </div>
             <p className="text-sm text-muted-foreground">@{profile.username}</p>
             {profile.bio && <p className="mt-3 text-sm max-w-xs">{profile.bio}</p>}
@@ -168,25 +169,10 @@ const Profile = () => {
                 </button>
                 <button
                   onClick={async () => {
-                    if (!user) return;
-                    const { data: convs } = await supabase.from("conversation_participants").select("conversation_id").eq("user_id", user.id);
-                    const myConvIds = (convs ?? []).map((c) => c.conversation_id);
-                    let convId: string | null = null;
-                    if (myConvIds.length) {
-                      const { data: shared } = await supabase.from("conversation_participants").select("conversation_id").eq("user_id", profile.user_id).in("conversation_id", myConvIds);
-                      convId = shared?.[0]?.conversation_id ?? null;
-                    }
-                    if (!convId) {
-                      const { data: conv } = await supabase.from("conversations").insert({ is_group: false }).select("id").single();
-                      if (conv) {
-                        await supabase.from("conversation_participants").insert([
-                          { conversation_id: conv.id, user_id: user.id },
-                          { conversation_id: conv.id, user_id: profile.user_id },
-                        ]);
-                        convId = conv.id;
-                      }
-                    }
-                    if (convId) nav(`/messages/${convId}`);
+                    if (!user || !profile) return;
+                    const { data, error } = await supabase.rpc("start_dm", { other_user_id: profile.user_id });
+                    if (error) { toast.error(error.message || "Could not start chat"); return; }
+                    if (data) nav(`/messages/${data}`);
                   }}
                   className="glass-strong rounded-xl py-2.5 text-sm font-semibold"
                 >

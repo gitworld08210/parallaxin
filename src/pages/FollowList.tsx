@@ -7,7 +7,7 @@ import { VerificationBadge } from "@/components/vibe/VerificationBadge";
 import { supabase } from "@/integrations/supabase/client";
 import { gradientFor, initialsOf, fmt } from "@/lib/format";
 
-type P = { user_id: string; username: string; display_name: string; avatar_url: string | null; verified: boolean; followers_count: number };
+type P = { user_id: string; username: string; display_name: string; avatar_url: string | null; verified: boolean; verification_kind?: string | null; followers_count: number };
 
 const FollowList = () => {
   const { username, kind = "followers" } = useParams();
@@ -26,7 +26,7 @@ const FollowList = () => {
       if (ids.length === 0) { setItems([]); return; }
       const { data: profs } = await supabase
         .from("profiles")
-        .select("user_id, username, display_name, avatar_url, verified, followers_count")
+        .select("user_id, username, display_name, avatar_url, verified, verification_kind, followers_count")
         .in("user_id", ids);
       setItems((profs ?? []) as P[]);
     })();
@@ -55,7 +55,7 @@ const FollowList = () => {
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1.5">
                 <p className="font-semibold truncate text-sm">{c.display_name || c.username}</p>
-                {c.verified && <VerificationBadge kind="verified" />}
+                {c.verification_kind ? <VerificationBadge kind={c.verification_kind as any} /> : c.verified && <VerificationBadge kind="verified" />}
               </div>
               <p className="text-xs text-muted-foreground">@{c.username} · {fmt(c.followers_count)} followers</p>
             </div>
