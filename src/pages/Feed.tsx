@@ -21,36 +21,52 @@ const Feed = () => {
 
   const load = async () => {
     setLoading(true);
-    let excluded = new Set<string>();
-    if (user) {
-      const [{ data: bOut }, { data: bIn }, { data: mu }] = await Promise.all([
-        (supabase.from("blocks" as any).select("blocked_id").eq("blocker_id", user.id) as any),
-        (supabase.from("blocks" as any).select("blocker_id").eq("blocked_id", user.id) as any),
-        (supabase.from("mutes" as any).select("muted_id").eq("muter_id", user.id) as any),
-      ]);
-      (bOut ?? []).forEach((x: any) => excluded.add(x.blocked_id));
-      (bIn ?? []).forEach((x: any) => excluded.add(x.blocker_id));
-      (mu ?? []).forEach((x: any) => excluded.add(x.muted_id));
-    }
 
-    let q = supabase
+    // Fan-out: run blocks/mutes, follows (if needed) and base posts query in parallel.
+    const blocksOut = user
+      ? (supabase.from("blocks" as any).select("blocked_id").eq("blocker_id", user.id) as any)
+      : Promise.resolve({ data: [] });
+    const blocksIn = user
+      ? (supabase.from("blocks" as any).select("blocker_id").eq("blocked_id", user.id) as any)
+      : Promise.resolve({ data: [] });
+    const mutesP = user
+      ? (supabase.from("mutes" as any).select("muted_id").eq("muter_id", user.id) as any)
+      : Promise.resolve({ data: [] });
+    const followsP = (tab === "following" && user)
+      ? supabase.from("follows").select("following_id").eq("follower_id", user.id)
+      : Promise.resolve({ data: null as any });
+
+    // Kick off a wide posts query immediately; we'll filter client-side after blocks resolve.
+    const postsP = supabase
       .from("posts")
       .select("id, user_id, content, media_url, media_type, like_count, comment_count, created_at, profile:profiles!posts_user_profile_fkey(username, display_name, avatar_url, verified, verification_kind)")
       .eq("is_reel", false)
       .order("created_at", { ascending: false })
       .limit(50);
 
+    const [{ data: bOut }, { data: bIn }, { data: mu }, followsRes, postsRes] = await Promise.all([
+      blocksOut, blocksIn, mutesP, followsP, postsP,
+    ]);
+
+    const excluded = new Set<string>();
+    (bOut ?? []).forEach((x: any) => excluded.add(x.blocked_id));
+    (bIn ?? []).forEach((x: any) => excluded.add(x.blocker_id));
+    (mu ?? []).forEach((x: any) => excluded.add(x.muted_id));
+
+    let visible = (postsRes.data ?? []).filter((d: any) => !excluded.has(d.user_id));
+
     if (tab === "following" && user) {
-      const { data: follows } = await supabase.from("follows").select("following_id").eq("follower_id", user.id);
-      const ids = (follows ?? []).map((f) => f.following_id).filter((id) => !excluded.has(id));
-      if (ids.length === 0) { setPosts([]); setLoading(false); return; }
-      q = q.in("user_id", ids);
+      const followIds = new Set(((followsRes as any).data ?? []).map((f: any) => f.following_id));
+      visible = visible.filter((d: any) => followIds.has(d.user_id));
     }
-    const { data } = await q;
-    let visible = (data ?? []).filter((d: any) => !excluded.has(d.user_id));
+
     let liked: Set<string> = new Set();
     if (user && visible.length) {
-      const { data: l } = await supabase.from("likes").select("post_id").eq("user_id", user.id).in("post_id", visible.map((d: any) => d.id));
+      const { data: l } = await supabase
+        .from("likes")
+        .select("post_id")
+        .eq("user_id", user.id)
+        .in("post_id", visible.map((d: any) => d.id));
       liked = new Set((l ?? []).map((x) => x.post_id));
     }
     setPosts(visible.map((d: any) => ({ ...d, liked: liked.has(d.id) })));

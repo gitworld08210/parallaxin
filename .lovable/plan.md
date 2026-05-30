@@ -1,138 +1,62 @@
-## Goal
+## What's already done
 
-Remove the in-app admin panel entirely. All approvals (verification + Founder Hall) happen by an admin flipping a boolean in the backend table editor. The database itself reacts: grants perks, sends notifications, and is fully reversible (admin can flip back to false to revoke).
+Admin panel is gone. Approvals now happen by toggling booleans directly in the backend tables:
 
-No `/admin` route. No admin UI. No edge functions for approval. Just: **edit row → trigger fires → user gets notified.**
+- `verification_requests.approved` → trigger flips `profiles.verified` + sends notification
+- `founder_seats.is_active` + `user_id` → trigger inducts/revokes founder + sends notification
+- Hall of Founders is a read-only 50-seat archive with perks list
 
----
+## What still needs work (3 tracks)
 
-## 1. Verification flow (rebuild around a boolean)
+### Track 1 — Fix the slow loading (highest priority)
 
-Today `verification_requests.status` is text (`pending`/`approved`/`rejected`) and nothing happens when it changes.
+The app feels slow because:
 
-New shape:
+1. **Every route is bundled into the initial JS** — first paint waits for the whole app.
+2. `**AuthProvider` blocks the UI** until session + profile both resolve, then `ProtectedRoute` shows a spinner on top of that.
+3. `**Feed.tsx` fetches posts → then authors → then likes** in sequence instead of in parallel.
+4. **No caching** — leaving Feed and coming back refetches everything.
+5. **Notifications, Messages, Profile** all do the same waterfall pattern.
 
-- Keep `verification_requests` table (users still submit).
-- Add column `approved boolean default false` (the only thing admin touches).
-- Add DB trigger `on_verification_approved`:
-  - When `approved` flips `false → true`: set `profiles.verified = true`, set `profiles.verification_kind = category`, insert a row into `notifications` (`type = 'verification_approved'`), set `reviewed_at = now()`.
-  - When `approved` flips `true → false`: set `profiles.verified = false`, clear `verification_kind`, insert `notifications` row (`type = 'verification_revoked'`).
+Fix plan:
 
-Admin workflow: Backend → Tables → `verification_requests` → toggle `approved` checkbox. Done.
+- Add `React.lazy` + `Suspense` to every route in `App.tsx` so Feed loads first, the rest stream in.
+- Split `AuthProvider`: render children as soon as session resolves; profile loads in background. Pages that need profile use a tiny `useProfile()` hook with its own skeleton.
+- Install `@tanstack/react-query` (already a Lovable default) and wrap Feed/Notifications/Messages/Profile fetches with it — 60s stale time, instant back-nav.
+- Rewrite Feed query to a single Supabase call with embedded `profiles!posts_user_id_fkey(...)` + `likes(user_id)` so it's one round trip instead of three.
+- Add `<link rel="preconnect">` to the Supabase URL in `index.html`.
+- Memoize `PostCard` and skeleton-first render so the feed shows shimmer immediately.
 
----
+Expected result: first interactive in ~1s instead of 4–6s, instant tab switches.
 
-## 2. Founder Hall flow (seed list, not applications)
+### Track 2 — UI polish (Instgram/Netflix / twitter (X)/ Telegram )
 
-Drop the application model. Founder Hall is a curated list the admin controls directly.
+Pick one cue per surface so the app feels cinematic without becoming a clone:
 
-- **Delete** `founder_applications` table.
-- **Delete** `FounderApply.tsx` page and any link to it.
-- **Delete** `admin-approve-founder` and `admin-approve-verification` edge functions.
-- **Delete** `src/pages/admin/AdminConsole.tsx`.
+- **Feed (X ):** sticky translucent top bar with blur, single-column dense list, swipe-down to refresh with a haptic-style spring. Inline media in rounded 16px tiles, no card chrome.
+- **Reels (Instagram cue):** edge-to-edge vertical player, auto-dimmed gradient overlay top + bottom, large title + subtitle bottom-left, right-rail icons fade after 2s of inactivity. "Continue watching" rail on Discover.
+- **Messages (Telegram cue):** chat list with avatar + 2-line preview + right-aligned time, unread pill in primary color, swipe-left reveals mute/archive. Conversation bubbles with tail, time inside bubble bottom-right, "typing…" animated dots.
+- **Discover (Netflix cue):** horizontal rails of categories — "Trending", "Founders you should follow", "Verified creators", "From your interests" — each rail snap-scrolling.
+- **Profile (X cue):** large header image with gradient fade into avatar, tabs (Posts / Replies / Media / Likes) sticky under the bio.
+- **Global:** unify spacing scale, replace any generic shadows with the design-system `--shadow-elegant`, ensure Hall of Founders aura frame matches the new accent.
 
-Create a new table `founder_seats`:
+No new pages — just visual rework of existing screens.
 
-```text
-founder_seats
-  id            uuid pk
-  user_id       uuid unique     -- which user holds this seat
-  seat_number   int unique      -- 1..50 (admin assigns)
-  council_role  app_role_enum   -- architect/curator/sentinel/innovator (nullable)
-  founder_title text            -- optional ceremonial title
-  is_active     boolean default true   -- admin's on/off switch
-  created_at    timestamptz
-```
+### Track 3 — Loose ends from the admin-by-boolean migration
 
-Seed rows 1–50 + 1 admin seat empty (`user_id = null, is_active = false`) so admin sees the slots ready to fill.
+- **Notifications copy** — wire the four new types (`verification_approved/revoked`, `founder_inducted/revoked`) to friendly strings + icons. For `founder_revoked`, show the admin-supplied `revoke_reason` from `founder_seats` if present (AI can also generate a kind one-liner from the reason).
+- **Verification request page** — add a small "Status: under review / approved / changes needed" banner so users know where they stand.
+- **Seat #1** — reserve for you (admin) and pre-fill it so the Hall isn't empty on day one. Confirm if you want this.
+- **Edge case:** if admin assigns a `user_id` to a seat that's already on another seat, block it at the DB level (unique constraint on `user_id` where `is_active = true`).
 
-DB trigger `on_founder_seat_change`:
+## Order I'd ship in
 
-- When `user_id` is set AND `is_active = true`: update that profile → `is_founder = true`, `founder_level = 1`, `join_era = 'founder'`, copy `council_role` + `founder_title`. Insert notification `type = 'founder_inducted'`.
-- When `is_active` flips `true → false` OR `user_id` cleared: revoke → `is_founder = false`, clear founder fields. Insert notification `type = 'founder_revoked'`.
+1. **Track 1 perf pass** — biggest user-felt win, unblocks everything else.
+2. **Track 3 loose ends** — small, closes the admin loop cleanly.
+3. **Track 2 UI polish** — surface by surface, Feed → Reels → Messages → Discover → Profile.
 
-Admin workflow: Backend → Tables → `founder_seats` → paste a `user_id` into seat #7, set `council_role`, ensure `is_active = true`. Save. User is now a founder.
+## Questions before I start
 
-To revoke: flip `is_active` to false. Perks vanish, user notified.
-
----
-
-## 3. Notifications
-
-Extend `notifications.type` accepted values (it's already free-text) to include:
-
-- `verification_approved` / `verification_revoked`
-- `founder_inducted` / `founder_revoked`
-
-Add a small UI mapper in `Notifications.tsx` so these render with the right icon + copy:
-
-- "You've been verified ✓"
-- "Welcome to the Founder Hall — Seat #7"
-- "Your founder status has been updated"
-
-No new screens — they appear in the existing notifications list.
-
----
-
-## 4. Hall of Founders screen (read-only public list + perks)
-
-`HallOfFoundersScreen.tsx` becomes a public showcase driven by `founder_seats`:
-
-- Query: `founder_seats` where `is_active = true AND user_id IS NOT NULL`, joined with `profiles`, ordered by `seat_number`.
-- Layout: cinematic grid of 50 numbered seats. Filled seats show avatar + display name + council_role badge + seat number. Empty seats show a dim "Seat awaits" placeholder.
-- Tap a founder → their profile.
-- Top of screen: **Perks of the Founder Hall** section (static, taken from prior plan):
-  1. Genesis Mark on profile + everywhere they appear
-  2. Signature Aura frame (animated gradient)
-  3. Council voting weight ×3 on platform proposals
-  4. Permanent join era `founder`
-  5. Founder-only chat ring (future)
-  6. Free Premium for life
-  7. Early access to new features
-  8. Name engraved in the Genesis Wall (settings → about)
-
-No "Apply" button anywhere. Founder Hall is invitation-only via admin.
-
----
-
-## 5. Security cleanup
-
-- Keep `user_roles` + `has_role()` (used by trigger to guard who can write to `approved`/`is_active`).
-- Add RLS on `founder_seats`:
-  - SELECT: everyone (it's a public hall).
-  - INSERT/UPDATE/DELETE: only `has_role(auth.uid(), 'admin')`.
-- Add RLS on `verification_requests.approved` column write: only admin via a `BEFORE UPDATE` trigger that rejects non-admin attempts to change `approved`.
-
----
-
-## 6. Files
-
-**Delete**
-
-- `src/pages/admin/AdminConsole.tsx`
-- `src/pages/FounderApply.tsx`
-- `supabase/functions/admin-approve-verification/`
-- `supabase/functions/admin-approve-founder/`
-
-**Migration (single file)**
-
-- Drop `founder_applications`.
-- Add `verification_requests.approved boolean default false`.
-- Create `founder_seats` + seed 50 empty rows.
-- Create both triggers + notification inserts.
-- RLS policies on `founder_seats`.
-
-**Edit**
-
-- `src/App.tsx` — remove `/admin` and `/founder-apply` routes.
-- `src/components/founders/HallOfFoundersScreen.tsx` — rewrite to read `founder_seats` + render perks section.
-- `src/pages/Notifications.tsx` — render new notification types.
-
----
-
-## Questions before I build
-
-1. **Seed count:** confirm 50 founder seats (or different number)?
-2. **Seat numbering:** should seat #1 be reserved for you (the admin), or all 50 open?
-3. **Revoking founder:** when admin flips `is_active = false`, should the user's past content (posts/comments) lose the founder badge retroactively, or only future? (Recommend: badge disappears everywhere immediately — single source of truth on `profiles.is_founder`.)
-4. **Verification revoke notification copy:** make notification brack so admin write message annual or here ai can generate message. Admin give reason for revoke hall of founders ai make notification from taking reason 
+1. Confirm I should proceed with **Track 1 first** (perf) then Track 3, then Track 2?
+2. For Track 2, want me to do **all five surfaces** or pick the top 2 (Feed + Reels) to start?
+3. Seat #1 reserved for you as admin — yes or leave all 50 open?
