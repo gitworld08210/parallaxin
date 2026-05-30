@@ -122,7 +122,7 @@ const Reels = () => {
               </button>
             </div>
 
-            <div className="absolute left-4 right-20 bottom-32">
+            <div className="absolute left-4 right-20 bottom-6">
               <Link to={r.profile ? `/u/${r.profile.username}` : "#"} className="font-semibold text-sm">
                 @{r.profile?.username ?? "unknown"}
               </Link>
