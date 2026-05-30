@@ -92,12 +92,14 @@ const StoryCompose = () => {
         <Link to="/close-friends" className="block text-xs text-primary font-semibold px-1 mt-2">Edit close friends list ›</Link>
 
         <button
+          type="button"
           onClick={submit}
           disabled={busy}
-          className="mt-6 w-full py-3 rounded-md bg-primary text-primary-foreground font-semibold text-sm disabled:opacity-60"
+          className="relative z-10 mt-6 mb-4 w-full py-3.5 rounded-xl bg-primary text-primary-foreground font-semibold text-sm disabled:opacity-60 active:scale-[0.99] transition-transform"
         >
           {busy ? "Sharing…" : "Share story"}
         </button>
+
       </div>
     </div>
   );

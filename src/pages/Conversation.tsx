@@ -12,6 +12,7 @@ type Msg = {
   sender_id: string;
   created_at: string;
   shared_post_id?: string | null;
+  read_at?: string | null;
 };
 
 type SharedPost = {
@@ -30,13 +31,23 @@ const Conversation = () => {
   const [other, setOther] = useState<{ username: string; display_name: string; avatar_url: string | null } | null>(null);
   const [text, setText] = useState("");
   const [sharedPosts, setSharedPosts] = useState<Record<string, SharedPost>>({});
+  const [otherTyping, setOtherTyping] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
+  const typingChannelRef = useRef<any>(null);
+  const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastTypingSentRef = useRef(0);
+
+  // Mark as read helper
+  const markRead = async () => {
+    if (!id) return;
+    await supabase.rpc("mark_conversation_read", { _conversation_id: id });
+  };
 
   useEffect(() => {
     if (!id || !user) return;
     (async () => {
       const { data: msgs } = await supabase
-        .from("messages").select("id, content, sender_id, created_at, shared_post_id")
+        .from("messages").select("id, content, sender_id, created_at, shared_post_id, read_at")
         .eq("conversation_id", id).order("created_at", { ascending: true });
       setMessages((msgs ?? []) as Msg[]);
 
@@ -54,24 +65,55 @@ const Conversation = () => {
         .select("user_id, profile:profiles!conv_participants_user_profile_fkey(username, display_name, avatar_url)")
         .eq("conversation_id", id).neq("user_id", user.id);
       setOther((parts?.[0] as any)?.profile ?? null);
+
+      markRead();
     })();
 
-    const channel = supabase.channel(`conv:${id}`)
+    // Postgres changes — new messages + read receipt updates
+    const dbChannel = supabase.channel(`conv-db:${id}`)
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages", filter: `conversation_id=eq.${id}` },
         async (payload) => {
           const m = payload.new as Msg;
-          setMessages((arr) => [...arr, m]);
-          if (m.shared_post_id && !sharedPosts[m.shared_post_id]) {
+          setMessages((arr) => arr.some((x) => x.id === m.id) ? arr : [...arr, m]);
+          if (m.sender_id !== user.id) markRead();
+          if (m.shared_post_id) {
             const sel = "id, media_url, media_type, content, profile:profiles!posts_user_profile_fkey(username, display_name, avatar_url)";
             const { data: p } = await supabase.from("posts").select(sel).eq("id", m.shared_post_id).maybeSingle();
             if (p) setSharedPosts((s) => ({ ...s, [(p as any).id]: p as any }));
           }
         })
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "messages", filter: `conversation_id=eq.${id}` },
+        (payload) => {
+          const m = payload.new as Msg;
+          setMessages((arr) => arr.map((x) => x.id === m.id ? { ...x, read_at: m.read_at } : x));
+        })
       .subscribe();
-    return () => { supabase.removeChannel(channel); };
+
+    // Typing presence/broadcast
+    const tChannel = supabase.channel(`conv-typing:${id}`, { config: { broadcast: { self: false } } })
+      .on("broadcast", { event: "typing" }, (payload) => {
+        if (payload.payload?.user_id && payload.payload.user_id !== user.id) {
+          setOtherTyping(true);
+          if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+          typingTimeoutRef.current = setTimeout(() => setOtherTyping(false), 3500);
+        }
+      })
+      .subscribe();
+    typingChannelRef.current = tChannel;
+
+    // Mark read when tab refocuses
+    const onVis = () => { if (document.visibilityState === "visible") markRead(); };
+    document.addEventListener("visibilitychange", onVis);
+
+    return () => {
+      supabase.removeChannel(dbChannel);
+      supabase.removeChannel(tChannel);
+      document.removeEventListener("visibilitychange", onVis);
+      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+    };
   }, [id, user?.id]);
 
-  useEffect(() => { endRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages.length]);
+  useEffect(() => { endRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages.length, otherTyping]);
 
   const send = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -81,9 +123,25 @@ const Conversation = () => {
     await supabase.from("messages").insert({ conversation_id: id, sender_id: user.id, content });
   };
 
+  const onType = (v: string) => {
+    setText(v);
+    if (!typingChannelRef.current || !user) return;
+    const now = Date.now();
+    if (now - lastTypingSentRef.current < 1500) return;
+    lastTypingSentRef.current = now;
+    typingChannelRef.current.send({ type: "broadcast", event: "typing", payload: { user_id: user.id } });
+  };
+
+  // Find last own message that's been read — to show "Seen" once
+  const lastSeenIdx = (() => {
+    for (let i = messages.length - 1; i >= 0; i--) {
+      if (messages[i].sender_id === user?.id && messages[i].read_at) return i;
+    }
+    return -1;
+  })();
+
   return (
     <div className="flex flex-col min-h-screen bg-background">
-      {/* IG-style conversation header */}
       <header className="h-14 px-2 flex items-center gap-3 border-b border-border bg-background sticky top-0 z-10">
         <button onClick={() => nav("/messages")} className="p-1" aria-label="Back">
           <ChevronLeft className="h-6 w-6 text-foreground" />
@@ -96,12 +154,16 @@ const Conversation = () => {
           )}
           <div className="min-w-0">
             <p className="text-sm font-semibold truncate leading-tight">{other?.display_name || other?.username || "Conversation"}</p>
-            {other?.username && <p className="text-[11px] text-muted-foreground truncate">@{other.username}</p>}
+            {other?.username && (
+              <p className="text-[11px] text-muted-foreground truncate">
+                {otherTyping ? <span className="text-primary">typing…</span> : `@${other.username}`}
+              </p>
+            )}
           </div>
         </Link>
       </header>
 
-      <div className="flex-1 px-3 pt-3 pb-24 space-y-1.5 overflow-y-auto">
+      <div className="flex-1 px-3 pt-3 pb-28 space-y-1.5 overflow-y-auto">
         {messages.map((m, i) => {
           const mine = m.sender_id === user?.id;
           const sp = m.shared_post_id ? sharedPosts[m.shared_post_id] : null;
@@ -110,37 +172,51 @@ const Conversation = () => {
           const groupStart = !prev || prev.sender_id !== m.sender_id;
           const groupEnd = !next || next.sender_id !== m.sender_id;
           return (
-            <div key={m.id} className={`flex ${mine ? "justify-end" : "justify-start"}`}>
-              <div
-                className={[
-                  "max-w-[78%] px-3 py-2 text-sm leading-snug",
-                  mine ? "bg-primary text-primary-foreground" : "bg-muted text-foreground",
-                  "rounded-2xl",
-                  mine ? (groupStart ? "rounded-tr-md" : "") : (groupStart ? "rounded-tl-md" : ""),
-                  mine ? (groupEnd ? "rounded-br-md" : "") : (groupEnd ? "rounded-bl-md" : ""),
-                ].join(" ")}
-              >
-                {sp && (
-                  <Link to={`/p/${sp.id}`} className="block mb-2 rounded-xl overflow-hidden bg-background/20">
-                    {sp.media_url && (sp.media_type === "video"
-                      ? <video src={sp.media_url} muted className="w-full max-h-48 object-cover" />
-                      : <img src={sp.media_url} className="w-full max-h-48 object-cover" alt="" />)}
-                    <div className="px-2 py-1.5 text-[11px] opacity-90">
-                      @{sp.profile?.username ?? "post"}{sp.content ? ` · ${sp.content.slice(0, 60)}` : ""}
-                    </div>
-                  </Link>
-                )}
-                {m.content && <p className="whitespace-pre-wrap break-words">{m.content}</p>}
+            <div key={m.id}>
+              <div className={`flex ${mine ? "justify-end" : "justify-start"}`}>
+                <div
+                  className={[
+                    "max-w-[78%] px-3 py-2 text-sm leading-snug",
+                    mine ? "bg-primary text-primary-foreground" : "bg-muted text-foreground",
+                    "rounded-2xl",
+                    mine ? (groupStart ? "rounded-tr-md" : "") : (groupStart ? "rounded-tl-md" : ""),
+                    mine ? (groupEnd ? "rounded-br-md" : "") : (groupEnd ? "rounded-bl-md" : ""),
+                  ].join(" ")}
+                >
+                  {sp && (
+                    <Link to={`/p/${sp.id}`} className="block mb-2 rounded-xl overflow-hidden bg-background/20">
+                      {sp.media_url && (sp.media_type === "video"
+                        ? <video src={sp.media_url} muted className="w-full max-h-48 object-cover" />
+                        : <img src={sp.media_url} className="w-full max-h-48 object-cover" alt="" />)}
+                      <div className="px-2 py-1.5 text-[11px] opacity-90">
+                        @{sp.profile?.username ?? "post"}{sp.content ? ` · ${sp.content.slice(0, 60)}` : ""}
+                      </div>
+                    </Link>
+                  )}
+                  {m.content && <p className="whitespace-pre-wrap break-words">{m.content}</p>}
+                </div>
               </div>
+              {i === lastSeenIdx && (
+                <p className="text-[10px] text-muted-foreground text-right pr-1 mt-0.5">Seen</p>
+              )}
             </div>
           );
         })}
+        {otherTyping && (
+          <div className="flex justify-start">
+            <div className="bg-muted text-foreground rounded-2xl rounded-bl-md px-3 py-2.5 inline-flex gap-1">
+              <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/70 animate-bounce" style={{ animationDelay: "0ms" }} />
+              <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/70 animate-bounce" style={{ animationDelay: "150ms" }} />
+              <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/70 animate-bounce" style={{ animationDelay: "300ms" }} />
+            </div>
+          </div>
+        )}
         <div ref={endRef} />
       </div>
 
       <form onSubmit={send} className="fixed bottom-14 inset-x-0 mx-auto max-w-md p-2 bg-background border-t border-border flex gap-2 items-center">
         <input
-          value={text} onChange={(e) => setText(e.target.value)}
+          value={text} onChange={(e) => onType(e.target.value)}
           placeholder="Message..."
           className="flex-1 bg-muted rounded-full px-4 py-2.5 text-sm outline-none placeholder:text-muted-foreground"
         />

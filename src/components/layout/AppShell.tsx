@@ -69,7 +69,7 @@ export const AppShell = () => {
   const onProfileRoute = pathname.startsWith("/profile") || pathname.startsWith("/u/");
 
   return (
-    <div className={cn("min-h-screen mx-auto max-w-md relative pb-[64px]", isReels ? "bg-black" : "bg-background")}>
+    <div className={cn("min-h-screen mx-auto max-w-md relative pb-[96px]", isReels ? "bg-black" : "bg-background")}>
       <RealtimeToaster />
       <main key={pathname} className="animate-fade-in">
         <Outlet />
