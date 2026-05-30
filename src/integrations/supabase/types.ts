@@ -544,10 +544,12 @@ export type Database = {
           founder_level: number
           founder_title: string | null
           id: string
+          interests: string[]
           is_founder: boolean
           is_private: boolean
           join_era: string | null
           last_seen_at: string | null
+          onboarded_at: string | null
           posts_count: number
           show_activity: boolean
           show_read_receipts: boolean
@@ -575,10 +577,12 @@ export type Database = {
           founder_level?: number
           founder_title?: string | null
           id?: string
+          interests?: string[]
           is_founder?: boolean
           is_private?: boolean
           join_era?: string | null
           last_seen_at?: string | null
+          onboarded_at?: string | null
           posts_count?: number
           show_activity?: boolean
           show_read_receipts?: boolean
@@ -606,10 +610,12 @@ export type Database = {
           founder_level?: number
           founder_title?: string | null
           id?: string
+          interests?: string[]
           is_founder?: boolean
           is_private?: boolean
           join_era?: string | null
           last_seen_at?: string | null
+          onboarded_at?: string | null
           posts_count?: number
           show_activity?: boolean
           show_read_receipts?: boolean

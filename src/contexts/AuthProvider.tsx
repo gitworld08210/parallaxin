@@ -15,6 +15,8 @@ type Profile = {
   followers_count: number;
   following_count: number;
   posts_count: number;
+  onboarded_at?: string | null;
+  interests?: string[] | null;
 };
 
 type Ctx = {

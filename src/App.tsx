@@ -41,6 +41,7 @@ import DataExportScreen from "./pages/security/DataExportScreen";
 import DeleteAccountScreen from "./pages/security/DeleteAccountScreen";
 import ChangePasswordScreen from "./pages/security/ChangePasswordScreen";
 import ChangeEmailScreen from "./pages/security/ChangeEmailScreen";
+import Onboarding from "./pages/Onboarding";
 
 import NotFound from "./pages/NotFound.tsx";
 
@@ -57,6 +58,7 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route element={<ProtectedRoute />}>
+              <Route path="/onboarding" element={<Onboarding />} />
               <Route element={<AppShell />}>
                 <Route path="/" element={<Feed />} />
                 <Route path="/reels" element={<Reels />} />
