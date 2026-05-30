@@ -112,32 +112,6 @@ const Feed = () => {
         ))}
       </section>
 
-      <Sheet>
-        <SheetTrigger asChild>
-          <button
-            className="fixed bottom-24 right-5 z-40 h-14 w-14 rounded-full bg-gradient-primary text-primary-foreground grid place-items-center shadow-glow"
-            aria-label="Create"
-          >
-            <Plus className="h-6 w-6" />
-          </button>
-        </SheetTrigger>
-        <SheetContent side="bottom" className="rounded-t-3xl">
-          <div className="grid grid-cols-3 gap-3 pt-6 pb-4">
-            <Link to="/compose" className="glass-strong rounded-2xl py-5 flex flex-col items-center gap-2">
-              <ImageIcon className="h-6 w-6 text-primary" />
-              <span className="text-xs font-semibold">Post</span>
-            </Link>
-            <Link to="/compose/reel" className="glass-strong rounded-2xl py-5 flex flex-col items-center gap-2">
-              <Film className="h-6 w-6 text-primary" />
-              <span className="text-xs font-semibold">Reel</span>
-            </Link>
-            <Link to="/compose/story" className="glass-strong rounded-2xl py-5 flex flex-col items-center gap-2">
-              <Sparkles className="h-6 w-6 text-primary" />
-              <span className="text-xs font-semibold">Story</span>
-            </Link>
-          </div>
-        </SheetContent>
-      </Sheet>
 
       <CommentSheet postId={commentPost} open={!!commentPost} onOpenChange={(b) => !b && setCommentPost(null)} />
     </div>
