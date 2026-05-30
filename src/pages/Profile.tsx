@@ -148,9 +148,23 @@ const Profile = () => {
               <LogOut className="h-5 w-5" />
             </button>
           ) : (
-            <Link to="/verification" className="glass h-11 w-11 rounded-full grid place-items-center">
-              <Settings className="h-5 w-5" />
-            </Link>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="glass h-11 w-11 rounded-full grid place-items-center" aria-label="More">
+                  <MoreHorizontal className="h-5 w-5" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-44">
+                <DropdownMenuItem onClick={toggleMute}>
+                  <VolumeX className="h-4 w-4 mr-2" />
+                  {isMuted ? "Unmute" : "Mute"} @{profile.username}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={toggleBlock} className="text-destructive focus:text-destructive">
+                  <Ban className="h-4 w-4 mr-2" />
+                  {isBlocked ? "Unblock" : "Block"} @{profile.username}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           )
         }
       />
