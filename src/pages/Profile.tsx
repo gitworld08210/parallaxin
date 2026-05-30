@@ -22,6 +22,7 @@ type ProfileRow = {
   cover_url: string | null;
   bio: string | null;
   verified: boolean;
+  verification_kind: string | null;
   followers_count: number;
   following_count: number;
   posts_count: number;
