@@ -1,8 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { Search, PenSquare, X } from "lucide-react";
-import { TopBar } from "@/components/vibe/TopBar";
+import { Search, PenSquare, X, ChevronLeft } from "lucide-react";
 import { AuraAvatar } from "@/components/vibe/AuraAvatar";
 import { VerificationBadge } from "@/components/vibe/VerificationBadge";
 import { supabase } from "@/integrations/supabase/client";
@@ -26,7 +25,7 @@ type ProfileRow = {
 };
 
 const Messages = () => {
-  const { user } = useAuth();
+  const { user, profile: me } = useAuth();
   const nav = useNavigate();
   const [convs, setConvs] = useState<Conv[]>([]);
   const [loading, setLoading] = useState(true);
@@ -68,7 +67,6 @@ const Messages = () => {
 
   useEffect(() => { load(); /* eslint-disable-next-line */ }, [user?.id]);
 
-  // search profiles when composer query changes
   useEffect(() => {
     const q = composerQuery.trim();
     if (!q) { setResults([]); return; }
@@ -113,22 +111,24 @@ const Messages = () => {
 
   return (
     <div>
-      <TopBar
-        subtitle="Realtime"
-        title="Messages"
-        right={
-          <button onClick={() => setComposerOpen(true)} className="glass h-11 w-11 rounded-full grid place-items-center" aria-label="New chat">
-            <PenSquare className="h-5 w-5" />
-          </button>
-        }
-      />
-      <div className="px-5">
-        <div className="glass rounded-full flex items-center gap-2 px-4 py-2.5 mb-4">
+      {/* IG-style messages header */}
+      <header className="h-14 px-3 flex items-center justify-between gap-3 border-b border-border">
+        <button onClick={() => nav(-1)} className="p-1" aria-label="Back">
+          <ChevronLeft className="h-6 w-6 text-foreground" />
+        </button>
+        <h1 className="text-base font-semibold truncate flex-1 text-center">{me?.username ?? "Messages"}</h1>
+        <button onClick={() => setComposerOpen(true)} className="p-1" aria-label="New chat">
+          <PenSquare className="h-6 w-6 text-foreground" strokeWidth={1.75} />
+        </button>
+      </header>
+
+      <div className="px-3 pt-3">
+        <div className="bg-muted rounded-lg flex items-center gap-2 px-3 py-2">
           <Search className="h-4 w-4 text-muted-foreground" />
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search messages"
+            placeholder="Search"
             className="flex-1 bg-transparent outline-none text-sm placeholder:text-muted-foreground"
           />
           {query && (
@@ -137,72 +137,76 @@ const Messages = () => {
             </button>
           )}
         </div>
+      </div>
 
+      <div className="px-1 mt-2">
         {loading && <p className="text-sm text-muted-foreground text-center py-10">Loading…</p>}
         {!loading && convs.length === 0 && (
-          <div className="text-center py-16 space-y-3">
-            <p className="text-sm text-muted-foreground">
-              No conversations yet. Tap the pencil to start one.
-            </p>
-            <button onClick={() => setComposerOpen(true)} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-primary text-primary-foreground text-sm font-semibold shadow-glow">
-              <PenSquare className="h-4 w-4" /> New chat
+          <div className="text-center py-20 px-6 space-y-4">
+            <p className="text-base font-semibold">Your messages</p>
+            <p className="text-sm text-muted-foreground">Send a message to start a chat.</p>
+            <button onClick={() => setComposerOpen(true)} className="px-4 py-2 rounded-md bg-primary text-primary-foreground text-sm font-semibold">
+              Send message
             </button>
           </div>
         )}
         {!loading && convs.length > 0 && filtered.length === 0 && (
           <p className="text-sm text-muted-foreground text-center py-10">No matches.</p>
         )}
-        <div className="space-y-1">
+        <ul>
           {filtered.map((c) => (
-            <Link
-              to={`/messages/${c.id}`} key={c.id}
-              className="flex items-center gap-3 rounded-2xl px-2 py-2 hover:bg-muted/40 transition-colors"
-            >
-              {c.other?.avatar_url ? (
-                <img src={c.other.avatar_url} alt="" className="h-12 w-12 rounded-full object-cover" />
-              ) : (
-                <AuraAvatar gradient={gradientFor(c.other?.username)} size="md" initials={initialsOf(c.other?.display_name || c.other?.username)} />
-              )}
-              <div className="flex-1 min-w-0">
-                <p className="font-semibold truncate text-sm flex items-center gap-1">
-                  {c.other?.display_name || c.other?.username || "Conversation"}
-                  {c.other?.verification_kind && <VerificationBadge kind={c.other.verification_kind as any} />}
-                </p>
-                <p className="text-xs text-muted-foreground truncate">{c.last ?? "Say hi ✦"}</p>
-              </div>
-              <span className="text-[10px] text-muted-foreground">{timeAgo(c.last_message_at)}</span>
-            </Link>
+            <li key={c.id}>
+              <Link
+                to={`/messages/${c.id}`}
+                className="flex items-center gap-3 px-3 py-2.5 active:bg-secondary"
+              >
+                {c.other?.avatar_url ? (
+                  <img src={c.other.avatar_url} alt="" className="h-14 w-14 rounded-full object-cover shrink-0" />
+                ) : (
+                  <AuraAvatar gradient={gradientFor(c.other?.username)} size="md" initials={initialsOf(c.other?.display_name || c.other?.username)} />
+                )}
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold truncate text-sm flex items-center gap-1">
+                    {c.other?.display_name || c.other?.username || "Conversation"}
+                    {c.other?.verification_kind && <VerificationBadge kind={c.other.verification_kind as any} />}
+                  </p>
+                  <p className="text-xs text-muted-foreground truncate mt-0.5">
+                    {c.last ?? "Tap to start chatting"} · {timeAgo(c.last_message_at)}
+                  </p>
+                </div>
+              </Link>
+            </li>
           ))}
-        </div>
+        </ul>
       </div>
 
       <Sheet open={composerOpen} onOpenChange={setComposerOpen}>
-        <SheetContent side="bottom" className="glass-strong border-border h-[80vh] rounded-t-3xl p-0 flex flex-col">
-          <SheetHeader className="p-4 border-b border-border">
-            <SheetTitle className="font-display text-xl">New message</SheetTitle>
+        <SheetContent side="bottom" className="bg-background border-t border-border h-[80vh] rounded-t-2xl p-0 flex flex-col">
+          <SheetHeader className="px-4 py-3 border-b border-border">
+            <SheetTitle className="text-base font-semibold text-foreground text-left">New message</SheetTitle>
           </SheetHeader>
-          <div className="p-4">
-            <div className="glass rounded-full flex items-center gap-2 px-4 py-2.5">
+          <div className="p-3">
+            <div className="bg-muted rounded-lg flex items-center gap-2 px-3 py-2">
               <Search className="h-4 w-4 text-muted-foreground" />
               <input
                 autoFocus
                 value={composerQuery}
                 onChange={(e) => setComposerQuery(e.target.value)}
-                placeholder="Search creators by name or @username"
+                placeholder="Search by name or @username"
                 className="flex-1 bg-transparent outline-none text-sm placeholder:text-muted-foreground"
               />
             </div>
           </div>
-          <div className="flex-1 overflow-y-auto px-2 pb-6">
+          <div className="flex-1 overflow-y-auto">
             {composerQuery.trim() && results.length === 0 && (
-              <p className="text-sm text-muted-foreground text-center py-10">No creators found.</p>
+              <p className="text-sm text-muted-foreground text-center py-10">No results.</p>
             )}
             {results.map((p) => (
               <button
                 key={p.user_id}
                 disabled={starting}
                 onClick={() => startChat(p.user_id)}
-                className="w-full flex items-center gap-3 rounded-2xl px-3 py-2.5 hover:bg-muted/40 transition-colors text-left disabled:opacity-50"
+                className="w-full flex items-center gap-3 px-3 py-2.5 active:bg-secondary text-left disabled:opacity-50"
               >
                 {p.avatar_url ? (
                   <img src={p.avatar_url} alt="" className="h-11 w-11 rounded-full object-cover" />
