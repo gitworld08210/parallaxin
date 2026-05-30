@@ -2,7 +2,7 @@ import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthProvider";
 
 export const ProtectedRoute = () => {
-  const { user, loading } = useAuth();
+  const { user, profile, loading } = useAuth();
   const loc = useLocation();
   if (loading) {
     return (
@@ -12,5 +12,12 @@ export const ProtectedRoute = () => {
     );
   }
   if (!user) return <Navigate to="/auth" state={{ from: loc.pathname }} replace />;
+
+  // Funnel new users through the first-run flow once.
+  const needsOnboarding = profile && !profile.onboarded_at;
+  if (needsOnboarding && loc.pathname !== "/onboarding") {
+    return <Navigate to="/onboarding" replace />;
+  }
+
   return <Outlet />;
 };
