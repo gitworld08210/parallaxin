@@ -40,12 +40,15 @@ type ProfileRow = {
 };
 
 
+type Tab = "all" | "primary" | "requests";
+
 const Messages = () => {
   const { user, profile: me } = useAuth();
   const nav = useNavigate();
   const [convs, setConvs] = useState<Conv[]>([]);
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");
+  const [tab, setTab] = useState<Tab>("all");
   const [composerOpen, setComposerOpen] = useState(false);
   const [composerQuery, setComposerQuery] = useState("");
   const [results, setResults] = useState<ProfileRow[]>([]);
