@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Bell, Sparkles, Plus, Film, ImageIcon } from "lucide-react";
+import { Bell, Sparkles, Plus, Film, ImageIcon, Wand2 } from "lucide-react";
 import { TopBar } from "@/components/vibe/TopBar";
 import { PostCard, FeedPost } from "@/components/social/PostCard";
 import { CommentSheet } from "@/components/social/CommentSheet";
@@ -64,9 +64,14 @@ const Feed = () => {
         subtitle="Aurelix"
         title="Feed"
         right={
-          <Link to="/notifications" className="glass h-11 w-11 rounded-full grid place-items-center">
-            <Bell className="h-5 w-5" />
-          </Link>
+          <div className="flex gap-2">
+            <Link to="/assistant" className="glass h-11 w-11 rounded-full grid place-items-center" aria-label="Aurelix AI">
+              <Wand2 className="h-5 w-5 text-primary" />
+            </Link>
+            <Link to="/notifications" className="glass h-11 w-11 rounded-full grid place-items-center">
+              <Bell className="h-5 w-5" />
+            </Link>
+          </div>
         }
       />
 
