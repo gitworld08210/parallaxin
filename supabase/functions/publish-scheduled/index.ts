@@ -1,5 +1,5 @@
 // Publish-scheduled: flips `scheduled` posts whose scheduled_for <= now() to `published`.
-// Invoked every minute by pg_cron.
+// Invoked every minute by pg_cron. Requires CRON_SECRET in Authorization header.
 import { createClient } from "npm:@supabase/supabase-js@2";
 
 const corsHeaders = {
@@ -9,6 +9,15 @@ const corsHeaders = {
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+
+  const cronSecret = Deno.env.get("CRON_SECRET");
+  const incoming = req.headers.get("Authorization")?.replace("Bearer ", "");
+  if (!cronSecret || incoming !== cronSecret) {
+    return new Response(JSON.stringify({ error: "forbidden" }), {
+      status: 403,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
 
   const supabase = createClient(
     Deno.env.get("SUPABASE_URL")!,
