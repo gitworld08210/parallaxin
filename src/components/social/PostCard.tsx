@@ -48,7 +48,7 @@ export const PostCard = ({ post, onOpenComments }: { post: FeedPost; onOpenComme
   };
 
   const share = async () => {
-    const url = `${window.location.origin}/profile/${post.profile?.username}`;
+    const url = `${window.location.origin}/u/${post.profile?.username}`;
     try { await navigator.clipboard.writeText(url); toast.success("Link copied"); } catch { toast.error("Couldn't copy"); }
   };
 

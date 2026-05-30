@@ -30,7 +30,7 @@ const Notifications = () => {
     (async () => {
       const { data } = await supabase
         .from("notifications")
-        .select("id, type, read, created_at, actor_id, post_id, actor:profiles!notifications_actor_id_fkey(username, display_name, avatar_url)")
+        .select("id, type, read, created_at, actor_id, post_id, actor:profiles!notifications_actor_profile_fkey(username, display_name, avatar_url)")
         .eq("user_id", user.id).order("created_at", { ascending: false }).limit(80);
       setItems((data ?? []) as any);
       // mark all read
@@ -67,12 +67,8 @@ const Notifications = () => {
         {items.length === 0 && <p className="text-sm text-muted-foreground text-center py-16">Nothing new yet.</p>}
         {items.map((n) => {
           const Icon = iconFor(n.type);
-          return (
-            <Link
-              to={n.actor ? `/u/${n.actor.username}` : "#"}
-              key={n.id}
-              className="flex items-center gap-3 rounded-2xl px-2 py-3 hover:bg-muted/40 transition-colors"
-            >
+          const inner = (
+            <>
               <div className="relative">
                 {n.actor?.avatar_url ? (
                   <img src={n.actor.avatar_url} alt="" className="h-12 w-12 rounded-full object-cover" />
@@ -90,7 +86,13 @@ const Notifications = () => {
                 </p>
                 <p className="text-[10px] text-muted-foreground">{timeAgo(n.created_at)}</p>
               </div>
-            </Link>
+            </>
+          );
+          const cls = "flex items-center gap-3 rounded-2xl px-2 py-3 hover:bg-muted/40 transition-colors";
+          return n.actor ? (
+            <Link to={`/u/${n.actor.username}`} key={n.id} className={cls}>{inner}</Link>
+          ) : (
+            <div key={n.id} className={cls}>{inner}</div>
           );
         })}
       </div>

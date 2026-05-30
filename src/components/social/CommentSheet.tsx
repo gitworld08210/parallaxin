@@ -27,7 +27,7 @@ export const CommentSheet = ({ postId, open, onOpenChange }: { postId: string | 
     (async () => {
       const { data } = await supabase
         .from("comments")
-        .select("id, content, created_at, user_id, profile:profiles!comments_user_id_fkey(username, display_name, avatar_url)")
+        .select("id, content, created_at, user_id, profile:profiles!comments_user_profile_fkey(username, display_name, avatar_url)")
         .eq("post_id", postId)
         .order("created_at", { ascending: true });
       setItems((data as any) ?? []);
@@ -43,7 +43,7 @@ export const CommentSheet = ({ postId, open, onOpenChange }: { postId: string | 
     const { data, error } = await supabase
       .from("comments")
       .insert({ user_id: user.id, post_id: postId, content })
-      .select("id, content, created_at, user_id, profile:profiles!comments_user_id_fkey(username, display_name, avatar_url)")
+      .select("id, content, created_at, user_id, profile:profiles!comments_user_profile_fkey(username, display_name, avatar_url)")
       .single();
     if (error) return toast.error(error.message);
     setItems((c) => [...c, data as any]);
