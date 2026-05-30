@@ -26,7 +26,7 @@ const FollowList = () => {
       if (ids.length === 0) { setItems([]); return; }
       const { data: profs } = await supabase
         .from("profiles")
-        .select("user_id, username, display_name, avatar_url, verified, followers_count")
+        .select("user_id, username, display_name, avatar_url, verified, verification_kind, followers_count")
         .in("user_id", ids);
       setItems((profs ?? []) as P[]);
     })();

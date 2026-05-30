@@ -30,7 +30,7 @@ const Discover = () => {
     const t = setTimeout(async () => {
       let query = supabase
         .from("profiles")
-        .select("user_id, username, display_name, avatar_url, bio, verified, followers_count")
+        .select("user_id, username, display_name, avatar_url, bio, verified, verification_kind, followers_count")
         .order("followers_count", { ascending: false })
         .limit(30);
       if (q.trim()) {

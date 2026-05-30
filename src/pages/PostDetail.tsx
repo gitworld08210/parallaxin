@@ -19,7 +19,7 @@ const PostDetail = () => {
     (async () => {
       const { data } = await supabase
         .from("posts")
-        .select("id, user_id, content, media_url, media_type, like_count, comment_count, created_at, profile:profiles!posts_user_profile_fkey(username, display_name, avatar_url, verified)")
+        .select("id, user_id, content, media_url, media_type, like_count, comment_count, created_at, profile:profiles!posts_user_profile_fkey(username, display_name, avatar_url, verified, verification_kind)")
         .eq("id", postId).maybeSingle();
       if (!data) return;
       let liked = false;
