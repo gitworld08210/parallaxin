@@ -122,7 +122,7 @@ const Feed = () => {
       </div>
 
       <section className="pb-6">
-        {loading && <p className="text-sm text-muted-foreground text-center py-12">Loading…</p>}
+        {loading && <FeedSkeleton count={3} />}
         {!loading && posts.length === 0 && (
           <div className="text-center py-20 px-6">
             <p className="text-xl font-semibold mb-1.5">Nothing here yet</p>
