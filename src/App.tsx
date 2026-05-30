@@ -115,6 +115,8 @@ const App = () => (
                   <Route path="/u/:username" element={<Profile />} />
                   <Route path="/u/:username/:kind" element={<FollowList />} />
                   <Route path="/premium" element={<Premium />} />
+                  <Route path="/store" element={<Store />} />
+                  <Route path="/checkout/return" element={<CheckoutReturn />} />
                   <Route path="/verification" element={<Verification />} />
                   <Route path="/assistant" element={<Assistant />} />
                   <Route path="/drafts" element={<Drafts />} />
