@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Settings, Sparkles, BadgeCheck, LogOut, Pencil } from "lucide-react";
+import { Settings, BadgeCheck, LogOut, Pencil, Grid3x3, Film, Bookmark } from "lucide-react";
 import { TopBar } from "@/components/vibe/TopBar";
 import { GlassCard } from "@/components/vibe/GlassCard";
 import { AuraAvatar } from "@/components/vibe/AuraAvatar";
@@ -12,6 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthProvider";
 import { fmt, gradientFor, initialsOf } from "@/lib/format";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 type ProfileRow = {
   user_id: string;
@@ -26,14 +27,19 @@ type ProfileRow = {
   posts_count: number;
 };
 
+type Tab = "posts" | "reels" | "saved";
+
 const Profile = () => {
   const { username } = useParams();
   const { user, profile: me, signOut } = useAuth();
   const nav = useNavigate();
   const [profile, setProfile] = useState<ProfileRow | null>(null);
   const [posts, setPosts] = useState<FeedPost[]>([]);
+  const [reels, setReels] = useState<FeedPost[]>([]);
+  const [saved, setSaved] = useState<FeedPost[]>([]);
   const [isFollowing, setIsFollowing] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [tab, setTab] = useState<Tab>("posts");
   const [commentPost, setCommentPost] = useState<string | null>(null);
 
   const isMe = !username || (me && username === me.username);
@@ -46,17 +52,26 @@ const Profile = () => {
       const { data: p } = await supabase.from("profiles").select("*").eq("username", target).maybeSingle();
       setProfile(p as ProfileRow | null);
       if (p) {
-        const { data: pdata } = await supabase
-          .from("posts")
-          .select("id, user_id, content, media_url, media_type, like_count, comment_count, created_at, profile:profiles!posts_user_profile_fkey(username, display_name, avatar_url, verified)")
-          .eq("user_id", p.user_id)
-          .order("created_at", { ascending: false });
+        const sel = "id, user_id, content, media_url, media_type, like_count, comment_count, created_at, profile:profiles!posts_user_profile_fkey(username, display_name, avatar_url, verified)";
+        const { data: pdata } = await supabase.from("posts").select(sel)
+          .eq("user_id", p.user_id).eq("is_reel", false).order("created_at", { ascending: false });
+        const { data: rdata } = await supabase.from("posts").select(sel)
+          .eq("user_id", p.user_id).eq("is_reel", true).order("created_at", { ascending: false });
+
         let liked = new Set<string>();
-        if (user && pdata?.length) {
-          const { data: l } = await supabase.from("likes").select("post_id").eq("user_id", user.id).in("post_id", pdata.map((d: any) => d.id));
+        const allIds = [...(pdata ?? []), ...(rdata ?? [])].map((d: any) => d.id);
+        if (user && allIds.length) {
+          const { data: l } = await supabase.from("likes").select("post_id").eq("user_id", user.id).in("post_id", allIds);
           liked = new Set((l ?? []).map((x) => x.post_id));
         }
         setPosts((pdata ?? []).map((d: any) => ({ ...d, liked: liked.has(d.id) })));
+        setReels((rdata ?? []).map((d: any) => ({ ...d, liked: liked.has(d.id) })));
+
+        if (user && p.user_id === user.id) {
+          const { data: sv } = await supabase.from("saves").select(`post_id, post:posts(${sel})`).eq("user_id", user.id).order("created_at", { ascending: false });
+          setSaved(((sv ?? []).map((s: any) => s.post).filter(Boolean)).map((d: any) => ({ ...d, liked: liked.has(d.id) })));
+        }
+
         if (user && p.user_id !== user.id) {
           const { data: f } = await supabase.from("follows").select("follower_id").eq("follower_id", user.id).eq("following_id", p.user_id).maybeSingle();
           setIsFollowing(!!f);
@@ -80,6 +95,8 @@ const Profile = () => {
 
   if (loading) return <div className="p-10 text-center text-sm text-muted-foreground">Loading profile…</div>;
   if (!profile) return <div className="p-10 text-center text-sm text-muted-foreground">Profile not found.</div>;
+
+  const current = tab === "posts" ? posts : tab === "reels" ? reels : saved;
 
   return (
     <div>
@@ -152,19 +169,11 @@ const Profile = () => {
                 <button
                   onClick={async () => {
                     if (!user) return;
-                    // open or create 1:1 conversation
-                    const { data: convs } = await supabase
-                      .from("conversation_participants")
-                      .select("conversation_id")
-                      .eq("user_id", user.id);
+                    const { data: convs } = await supabase.from("conversation_participants").select("conversation_id").eq("user_id", user.id);
                     const myConvIds = (convs ?? []).map((c) => c.conversation_id);
                     let convId: string | null = null;
                     if (myConvIds.length) {
-                      const { data: shared } = await supabase
-                        .from("conversation_participants")
-                        .select("conversation_id")
-                        .eq("user_id", profile.user_id)
-                        .in("conversation_id", myConvIds);
+                      const { data: shared } = await supabase.from("conversation_participants").select("conversation_id").eq("user_id", profile.user_id).in("conversation_id", myConvIds);
                       convId = shared?.[0]?.conversation_id ?? null;
                     }
                     if (!convId) {
@@ -194,20 +203,48 @@ const Profile = () => {
               <BadgeCheck className="h-6 w-6 text-verified" />
               <div className="flex-1">
                 <p className="font-semibold text-sm">Request verification</p>
-                <p className="text-xs text-muted-foreground">Creator · Brand · Government · Standard</p>
+                <p className="text-xs text-muted-foreground">Manual admin review</p>
               </div>
               <span className="text-xs text-muted-foreground">›</span>
             </GlassCard>
           </Link>
         )}
 
-        <h3 className="text-sm font-semibold tracking-wide text-muted-foreground uppercase mt-8 mb-3 flex items-center gap-2">
-          <Sparkles className="h-4 w-4 text-primary" /> Posts
-        </h3>
-        <div className="space-y-4 pb-6">
-          {posts.length === 0 && <p className="text-sm text-muted-foreground text-center py-8">No posts yet.</p>}
-          {posts.map((p) => <PostCard key={p.id} post={p} onOpenComments={setCommentPost} />)}
+        <div className="mt-8 mb-4 flex gap-1 border-b border-border">
+          {([
+            { id: "posts", icon: Grid3x3 },
+            { id: "reels", icon: Film },
+            ...(isMe ? [{ id: "saved" as Tab, icon: Bookmark }] : []),
+          ] as { id: Tab; icon: any }[]).map((t) => (
+            <button
+              key={t.id}
+              onClick={() => setTab(t.id)}
+              className={cn(
+                "flex-1 py-2.5 flex items-center justify-center gap-2 text-xs font-semibold uppercase tracking-wider border-b-2 -mb-px transition-colors",
+                tab === t.id ? "border-primary text-foreground" : "border-transparent text-muted-foreground",
+              )}
+            >
+              <t.icon className="h-4 w-4" />
+              {t.id}
+            </button>
+          ))}
         </div>
+
+        {tab === "reels" ? (
+          <div className="grid grid-cols-3 gap-1 pb-6">
+            {current.length === 0 && <p className="col-span-3 text-sm text-muted-foreground text-center py-8">No reels.</p>}
+            {current.map((r) => (
+              <Link key={r.id} to={`/p/${r.id}`} className="aspect-[9/16] bg-muted/30 overflow-hidden rounded-md">
+                {r.media_url && <video src={r.media_url} muted className="w-full h-full object-cover" />}
+              </Link>
+            ))}
+          </div>
+        ) : (
+          <div className="space-y-4 pb-6">
+            {current.length === 0 && <p className="text-sm text-muted-foreground text-center py-8">Nothing yet.</p>}
+            {current.map((p) => <PostCard key={p.id} post={p} onOpenComments={setCommentPost} />)}
+          </div>
+        )}
       </div>
 
       <CommentSheet postId={commentPost} open={!!commentPost} onOpenChange={(b) => !b && setCommentPost(null)} />
