@@ -477,14 +477,21 @@ export type Database = {
       }
       profiles: {
         Row: {
+          aura_rank: string | null
           avatar_url: string | null
           bio: string | null
+          contribution_score: number
+          council_role: Database["public"]["Enums"]["council_role"] | null
           cover_url: string | null
           created_at: string
           display_name: string
           followers_count: number
           following_count: number
+          founder_level: number
+          founder_title: string | null
           id: string
+          is_founder: boolean
+          join_era: string | null
           last_seen_at: string | null
           posts_count: number
           show_activity: boolean
@@ -495,14 +502,21 @@ export type Database = {
           verified: boolean
         }
         Insert: {
+          aura_rank?: string | null
           avatar_url?: string | null
           bio?: string | null
+          contribution_score?: number
+          council_role?: Database["public"]["Enums"]["council_role"] | null
           cover_url?: string | null
           created_at?: string
           display_name?: string
           followers_count?: number
           following_count?: number
+          founder_level?: number
+          founder_title?: string | null
           id?: string
+          is_founder?: boolean
+          join_era?: string | null
           last_seen_at?: string | null
           posts_count?: number
           show_activity?: boolean
@@ -513,14 +527,21 @@ export type Database = {
           verified?: boolean
         }
         Update: {
+          aura_rank?: string | null
           avatar_url?: string | null
           bio?: string | null
+          contribution_score?: number
+          council_role?: Database["public"]["Enums"]["council_role"] | null
           cover_url?: string | null
           created_at?: string
           display_name?: string
           followers_count?: number
           following_count?: number
+          founder_level?: number
+          founder_title?: string | null
           id?: string
+          is_founder?: boolean
+          join_era?: string | null
           last_seen_at?: string | null
           posts_count?: number
           show_activity?: boolean
@@ -529,6 +550,39 @@ export type Database = {
           username?: string
           verification_kind?: string | null
           verified?: boolean
+        }
+        Relationships: []
+      }
+      reports: {
+        Row: {
+          created_at: string
+          details: string | null
+          id: string
+          reason: string
+          reporter_id: string
+          status: string
+          target_id: string
+          target_kind: string
+        }
+        Insert: {
+          created_at?: string
+          details?: string | null
+          id?: string
+          reason: string
+          reporter_id: string
+          status?: string
+          target_id: string
+          target_kind: string
+        }
+        Update: {
+          created_at?: string
+          details?: string | null
+          id?: string
+          reason?: string
+          reporter_id?: string
+          status?: string
+          target_id?: string
+          target_kind?: string
         }
         Relationships: []
       }
@@ -688,6 +742,7 @@ export type Database = {
       start_dm: { Args: { other_user_id: string }; Returns: string }
     }
     Enums: {
+      council_role: "architect" | "curator" | "sentinel" | "innovator"
       post_status: "draft" | "scheduled" | "published"
       story_audience: "public" | "close_friends"
     }
@@ -817,6 +872,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      council_role: ["architect", "curator", "sentinel", "innovator"],
       post_status: ["draft", "scheduled", "published"],
       story_audience: ["public", "close_friends"],
     },
