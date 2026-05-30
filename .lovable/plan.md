@@ -1,46 +1,37 @@
 ## Goal
 
-You skipped the questions, so I'll start with the most visible bug from your session and do a targeted sweep of the user-facing app. The session replay shows you opened `/founders` and got a 404 — that route doesn't exist. From there I'll audit the other obvious failure points.
+Walk through the app end-to-end using the browser tool, identify what's broken, fix anything I find. You sit back — I'll narrate findings as I go.
 
-## What I'll fix
+## Test pass (in order)
 
-### 1. `/founders` 404 (confirmed bug)
+I'll use the preview at 420×765 (your current viewport). For each step: load the screen, exercise the main action, check console + network for errors.
 
-`src/App.tsx` defines `/hall-of-founders`, `/founder-council`, and `/founders/:username` — but **not** `/founders`. Anyone typing `/founders` (or following an old link) lands on NotFound.
+### A. Admin flow (logged in as adit080210@gmail.com)
+1. `/auth` → log in with `adit080210@gmail.com / admin@9756` → should land on `/admin`.
+2. **Verification requests** — list loads; if a pending row exists, open it, generate signed URLs for ID + supporting docs, click Approve and confirm profile gets `verified=true` + notification row inserted.
+3. **Reports** — list loads; flip a status open → reviewed → resolved.
+4. **Founder seats** — list loads; assign a user to a seat, edit title/role, save; check `founder_seats` row updated and `profiles.is_founder` flipped via trigger.
+5. **Users & roles** — search a username, toggle moderator role on/off; check `user_roles` row appears/disappears.
+6. Sign out from admin.
 
-Fix: add a redirect `/founders` → `/hall-of-founders` inside the `ProtectedRoute` group in `src/App.tsx`.
+### B. Regular user flow (separate signup or existing non-admin)
+1. Sign in (or sign up a fresh account).
+2. **Feed (`/`)** — stories rail + posts render; like, comment, save a post.
+3. **Compose (`/compose`)** — upload an image, publish; confirm it appears in feed and `posts_count` on profile increments.
+4. **Profile (`/profile`)** — opens; edit profile saves; verification request submit reaches `verification_requests` table.
+5. **Discover / Reels / Notifications / Messages** — each route loads without console errors; open a DM thread and send a message.
+6. **Founders pages** — `/founders` redirects to `/hall-of-founders` (just fixed), `/hall-of-founders` and `/founder-council` render.
+7. **Settings → security/privacy/blocked/export** — each subscreen opens.
 
-### 2. Audit and fix dead links in the main app
+### C. Fix as I go
+Any broken screen / failed network call / console error → I stop the test pass, fix it, then resume from that step. I'll tell you each bug as it's found, not at the end.
 
-I'll grep every `<Link to=...>`, `navigate(...)`, and `href="/..."` in `src/` and cross-check against the routes registered in `App.tsx`. Anything pointing at a non-existent route gets either:
-- pointed at the correct route, or
-- a new route + redirect added.
+## What I need from you
 
-Likely suspects to check (based on file layout): `/founders`, `/founders/:username` from menus, profile links, notifications.
+Nothing — I have the admin credentials. For step B I'll either reuse an existing non-admin account in the DB or sign up a throwaway one. I'll confirm with you before any destructive action (deleting a real user's post/report).
 
-### 3. Sanity-check the four common breakage areas
+## Out of scope
 
-Quick pass with browser + console + DB to confirm these still work end-to-end. Fix anything broken I find; otherwise leave alone.
-
-- **Feed** — `/` loads, posts render, like/comment/save buttons work.
-- **Compose** — `/compose` publishes a post; image upload to `post-media` bucket succeeds.
-- **Profile** — `/profile/:username` opens, edit profile saves, verification request submits.
-- **Messages / notifications** — `/messages` opens a conversation, `/notifications` lists recent items.
-
-For each one I find broken, I'll add the specific fix to this plan before touching code (or just fix if it's a one-liner like a wrong path).
-
-## Out of scope for this pass
-
-- New features (audit log, ban users, analytics, etc.)
-- Visual polish / redesign
-- Admin panel changes (already working per last session)
-
-## Files likely to change
-
-- `src/App.tsx` — add `/founders` redirect, any other missing routes found in the audit.
-- `src/components/layout/SideMenu.tsx` and other nav components — fix any wrong `to=` paths.
-- Specific page files only if the audit surfaces a real runtime bug.
-
-## What I need from you after approval
-
-Once you hit Implement, I'll do the audit and fix what's broken. If you actually have a *specific* page or action that's frustrating you (posting fails, profile won't save, etc.), drop one line about it and I'll prioritize that first instead of guessing.
+- Visual polish (separate pass if you want)
+- New features
+- Performance / SEO audits
