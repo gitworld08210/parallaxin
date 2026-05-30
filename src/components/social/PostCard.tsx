@@ -24,6 +24,7 @@ export type FeedPost = {
     display_name: string;
     avatar_url: string | null;
     verified: boolean;
+    verification_kind?: string | null;
   } | null;
   liked: boolean;
 };
