@@ -24,6 +24,12 @@ Deno.serve(async (req) => {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+    const allowedPrefix = `${Deno.env.get("SUPABASE_URL")}/storage/v1/object/public/`;
+    if (!imageUrl.startsWith(allowedPrefix)) {
+      return new Response(JSON.stringify({ error: "Invalid imageUrl" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
     const r = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
