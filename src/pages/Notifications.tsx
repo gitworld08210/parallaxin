@@ -169,6 +169,7 @@ const Notifications = () => {
           </>
         )}
       </div>
+      <CollabInviteSheet open={collabOpen} onOpenChange={setCollabOpen} />
     </div>
   );
 };
