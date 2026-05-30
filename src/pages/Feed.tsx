@@ -5,6 +5,7 @@ import { TopBar } from "@/components/vibe/TopBar";
 import { PostCard, FeedPost } from "@/components/social/PostCard";
 import { CommentSheet } from "@/components/social/CommentSheet";
 import { StoriesRail } from "@/components/social/StoriesRail";
+import { SuggestedUsersRail } from "@/components/social/SuggestedUsersRail";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthProvider";
 import { cn } from "@/lib/utils";
@@ -110,8 +111,11 @@ const Feed = () => {
           </div>
         )}
         <div className="divide-y divide-border">
-          {posts.map((p) => (
-            <PostCard key={p.id} post={p} onOpenComments={setCommentPost} />
+          {posts.map((p, idx) => (
+            <div key={p.id}>
+              <PostCard post={p} onOpenComments={setCommentPost} />
+              {idx === 2 && <SuggestedUsersRail />}
+            </div>
           ))}
         </div>
       </section>

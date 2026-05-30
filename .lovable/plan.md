@@ -1,86 +1,65 @@
-# Full UI overhaul — clean , Instagram-grade
+# Tier 2 + Tier 3 implementation plan
 
-## Why the current UI feels bad
+Tier 1 already shipped (story reactions, share-to-DM, realtime toasts, block/mute, AI assistant). Now building Tier 2 and Tier 3 from the original roadmap.
 
-- Theme is over-designed: heavy purple glows, blurred glass on glass, gradient borders everywhere → on a real 420px phone it reads as muddy and dark, not "premium."
-- Low contrast (`text-white/40`, `bg-white/5`) hides content. Feed looks empty even when posts exist.
-- Bottom nav is a floating arc with a raised center button — visually loud and overlaps content on short screens.
-- Inconsistent spacing, multiple font systems, decorative chrome (Wand2, Compass, Sparkles, Bell) crowding every top bar.
-- Bottom design overlap to bottom buttons 
+## Tier 2 — Creator tools
 
-## New direction: "Clean "
+### 1. Drafts & Scheduled posts
+- Migration: add `posts.status` (`draft|scheduled|published`, default `published`) and `posts.scheduled_for timestamptz`.
+- Update `posts_select_all` policy → only show `published`; add `posts_select_own_drafts` so owners see their own drafts/scheduled.
+- Composer (`CreatePost`/wherever post creation lives): add "Save draft" + "Schedule" options (datetime picker).
+- New page `/drafts` listing user's drafts + scheduled posts with edit/publish-now/delete.
+- Edge function `publish-scheduled` + `pg_cron` job every minute → flips `scheduled` rows whose `scheduled_for <= now()` to `published`.
 
-Reference quality: Instagram + Netflix . Restrained, content-first, high contrast, almost no chrome.
+### 2. Post insights
+- Migration: `post_views` table (`post_id`, `viewer_id nullable`, `created_at`). Index on `post_id`.
+- PostCard: fire one insert per post per session via IntersectionObserver.
+- New `/post/:id/insights` (owner-only): reach (distinct viewers), impressions (rows), like rate, save rate, comment rate. Simple stat cards + sparkline.
+- Add "View insights" entry to PostCard owner menu.
 
-- **Background:** flat `#0a0a0a` (no gradients, no glow halos).
-- **Surfaces:** `#141414` cards, `#1f1f1f` borders. No glassmorphism.
-- **Text:** `#fafafa` primary, `#a3a3a3` secondary, `#737373` tertiary. Real contrast.
-- **Accent:** single color — Instagram-style `#0095f6` blue for links/CTAs. No multi-stop gradients anywhere except the Stories ring and the Create gradient.
-- **Typography:** Inter throughout. Drop "Space Grotesk" display font everywhere.
-- **Spacing:** 16px base. Cards full-width edge-to-edge like IG, not pill-padded.
-- **Radius:** 12px cards, 8px buttons, full for avatars/badges only.
+### 3. Collections (saved folders)
+- Migration: `collections` (id, user_id, name, cover_url) + `collection_items` (collection_id, post_id, created_at). RLS owner-only.
+- Saves UI in Profile → "Saved" tab becomes folder grid + "All saves" default.
+- Bookmark long-press / "Save to collection…" sheet to pick or create folder.
 
-## Bottom nav redesign
+### 4. Close Friends
+- Migration: `close_friends` (owner_id, friend_id). RLS owner-only.
+- Profile → "Edit close friends" screen (toggle following list).
+- Story composer: audience toggle `public | close_friends`. Add `stories.audience` column; update `stories_select_all` to hide close-friends stories from non-members.
 
-Replace floating glass arc with a flat IG-style bar:
+## Tier 3 — Discovery & social graph
 
-```
-┌────────────────────────────────────────┐
-│  🏠      🎬      ➕       💬       👤  │
-└────────────────────────────────────────┘
-```
+### 5. Explore grid 2.0
+- Rework `/discover` (or create it) into a masonry/3-col mosaic of recent + high-engagement public posts, excluding blocks/mutes.
+- Personalized "For You" rail at top: edge function `rank-explore` calls `google/gemini-2.5-flash` with the user's recent likes/views to score 30 candidate posts.
+- Cache result for 15 min per user in a `explore_cache` table.
 
-- Fixed to bottom, full-width, `bg-[#0a0a0a]`, top border `border-t border-[#262626]`.
-- 56px tall. No floating, no raised center, no glow.
-- Active icon: filled variant (lucide `*Filled` or `fill-current`), inactive: outline.
-- Badge dots: small `#ff3040` (IG red) on DM/Profile when unread.
-- Create (+) opens the same bottom sheet (Post/Reel/Story) — but the button is flat, not elevated.
+### 6. Suggested users
+- Edge function `suggest-users`: scores candidates by (mutual follows × 3 + shared-hashtag affinity × 1), excludes already-followed/blocked/muted/self.
+- New `SuggestedUsers` rail on Feed (after first 3 posts) and on Profile empty states. Horizontal card list with Follow button.
 
-## Per-page fixes
+### 7. Activity status / last seen
+- Migration: `profiles.last_seen_at timestamptz`, `profiles.show_activity boolean default true`.
+- Heartbeat: tick `last_seen_at = now()` from `AppShell` every 60s while tab visible.
+- Green dot in Messages list + Conversation header when `now() - last_seen_at < 2min` AND `show_activity = true`.
+- Settings toggle to disable activity broadcasting.
 
-### Feed
+## Files to touch
 
-- Remove the giant gradient "For You / Following" pill — use IG-style underline tabs (text only, thin bottom border on active).
-- TopBar: brand left ("Aurelix" in clean Inter Bold), 3 icons right (Compass, DMs link to Messages, Heart for Notifications). Drop the wand.
-- Stories rail: keep, but ring becomes 2px gradient on unviewed / 1px `#262626` on viewed.
-- PostCard: edge-to-edge, square media, action row below (heart, comment, share, bookmark), then like count, caption, timestamp. Like IG exactly.
-- Empty state: simple centered text + outline button.
+- New migrations: `posts.status`/`scheduled_for`, `post_views`, `collections`, `collection_items`, `close_friends`, `stories.audience`, `profiles.last_seen_at`, `profiles.show_activity`, `explore_cache`.
+- New edge functions: `publish-scheduled` (+ cron), `rank-explore`, `suggest-users`.
+- New pages: `src/pages/Drafts.tsx`, `src/pages/PostInsights.tsx`, `src/pages/CloseFriends.tsx`. Reworked `src/pages/Discover.tsx`.
+- New components: `SaveToCollectionSheet.tsx`, `SuggestedUsersRail.tsx`, `ScheduleSheet.tsx`, `ActivityDot.tsx`.
+- Updates: `PostCard.tsx` (insights menu, view tracker, save-to-collection), `StoryViewer.tsx`/composer (audience), `Profile.tsx` (collections tab, close friends entry), `Feed.tsx` (suggested users rail), `Messages.tsx`/`Conversation.tsx` (activity dot), `AppShell.tsx` (heartbeat).
 
-### Reels
+## Out of scope (saved for Tier 4-5)
 
-- Full-screen black, overlay UI right-aligned (like IG Reels). No glass containers.
+- Read receipts, typing, voice notes, 2FA, reports, alt-text AI, story highlights generator.
 
-### Messages
+## Order of execution
 
-- IG DM style: list rows with 56px avatar, name + last message preview, timestamp right, unread dot.
-- Conversation: white bubbles on black for own, `#262626` bubbles for other. No glass.
-
-### Profile
-
-- Header: avatar 80px left, stats (posts/followers/following) row right. Display name + bio below. Edit profile / Follow button full-width.
-- 3-col image grid, 1px gaps, square crops.
-- Tabs: grid / reels / tagged (icons only with underline).
-
-## Files to change
-
-- `src/index.css` — overwrite color tokens, drop glow/shadow utilities, set Inter as the only font.
-- `tailwind.config.ts` — simplify palette.
-- `src/components/layout/AppShell.tsx` — flat bottom nav.
-- `src/components/vibe/TopBar.tsx` — clean header.
-- `src/components/social/PostCard.tsx` — IG card layout.
-- `src/components/social/StoriesRail.tsx` — refine ring.
-- `src/pages/Feed.tsx` — underline tabs, drop gradient pill, remove wand.
-- `src/pages/Reels.tsx` — full-screen layout cleanup.
-- `src/pages/Messages.tsx` — IG list rows.
-- `src/pages/Conversation.tsx` — IG bubbles.
-- `src/pages/Profile.tsx` — IG profile header + grid.
-
-## Out of scope
-
-- No feature changes (no new pages, no new backend).
-- Keeping all existing routes, data queries, auth, RLS.
-- Keeping Stories, AI Assistant, Verification flows — only their styling shifts.
-
-## Confirmation
-
-This is a styling-only sweep. After approval I'll implement in one pass and screenshot Feed + Messages + Profile to verify.
+1. All migrations in one batch.
+2. Edge functions + cron.
+3. Tier 2 UI (drafts → insights → collections → close friends).
+4. Tier 3 UI (explore → suggested users → activity).
+5. QA on mobile viewport (420×765).

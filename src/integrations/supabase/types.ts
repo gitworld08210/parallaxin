@@ -32,6 +32,69 @@ export type Database = {
         }
         Relationships: []
       }
+      close_friends: {
+        Row: {
+          created_at: string
+          friend_id: string
+          owner_id: string
+        }
+        Insert: {
+          created_at?: string
+          friend_id: string
+          owner_id: string
+        }
+        Update: {
+          created_at?: string
+          friend_id?: string
+          owner_id?: string
+        }
+        Relationships: []
+      }
+      collection_items: {
+        Row: {
+          collection_id: string
+          created_at: string
+          post_id: string
+        }
+        Insert: {
+          collection_id: string
+          created_at?: string
+          post_id: string
+        }
+        Update: {
+          collection_id?: string
+          created_at?: string
+          post_id?: string
+        }
+        Relationships: []
+      }
+      collections: {
+        Row: {
+          cover_url: string | null
+          created_at: string
+          id: string
+          name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          cover_url?: string | null
+          created_at?: string
+          id?: string
+          name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          cover_url?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       comments: {
         Row: {
           content: string
@@ -309,6 +372,27 @@ export type Database = {
           },
         ]
       }
+      post_views: {
+        Row: {
+          created_at: string
+          id: string
+          post_id: string
+          viewer_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          post_id: string
+          viewer_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          post_id?: string
+          viewer_id?: string | null
+        }
+        Relationships: []
+      }
       posts: {
         Row: {
           comment_count: number
@@ -319,6 +403,8 @@ export type Database = {
           like_count: number
           media_type: string | null
           media_url: string | null
+          scheduled_for: string | null
+          status: Database["public"]["Enums"]["post_status"]
           updated_at: string
           user_id: string
         }
@@ -331,6 +417,8 @@ export type Database = {
           like_count?: number
           media_type?: string | null
           media_url?: string | null
+          scheduled_for?: string | null
+          status?: Database["public"]["Enums"]["post_status"]
           updated_at?: string
           user_id: string
         }
@@ -343,6 +431,8 @@ export type Database = {
           like_count?: number
           media_type?: string | null
           media_url?: string | null
+          scheduled_for?: string | null
+          status?: Database["public"]["Enums"]["post_status"]
           updated_at?: string
           user_id?: string
         }
@@ -366,7 +456,9 @@ export type Database = {
           followers_count: number
           following_count: number
           id: string
+          last_seen_at: string | null
           posts_count: number
+          show_activity: boolean
           updated_at: string
           user_id: string
           username: string
@@ -382,7 +474,9 @@ export type Database = {
           followers_count?: number
           following_count?: number
           id?: string
+          last_seen_at?: string | null
           posts_count?: number
+          show_activity?: boolean
           updated_at?: string
           user_id: string
           username: string
@@ -398,7 +492,9 @@ export type Database = {
           followers_count?: number
           following_count?: number
           id?: string
+          last_seen_at?: string | null
           posts_count?: number
+          show_activity?: boolean
           updated_at?: string
           user_id?: string
           username?: string
@@ -427,6 +523,7 @@ export type Database = {
       }
       stories: {
         Row: {
+          audience: Database["public"]["Enums"]["story_audience"]
           created_at: string
           expires_at: string
           id: string
@@ -435,6 +532,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          audience?: Database["public"]["Enums"]["story_audience"]
           created_at?: string
           expires_at?: string
           id?: string
@@ -443,6 +541,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          audience?: Database["public"]["Enums"]["story_audience"]
           created_at?: string
           expires_at?: string
           id?: string
@@ -532,7 +631,8 @@ export type Database = {
       start_dm: { Args: { other_user_id: string }; Returns: string }
     }
     Enums: {
-      [_ in never]: never
+      post_status: "draft" | "scheduled" | "published"
+      story_audience: "public" | "close_friends"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -659,6 +759,9 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      post_status: ["draft", "scheduled", "published"],
+      story_audience: ["public", "close_friends"],
+    },
   },
 } as const
