@@ -1,82 +1,37 @@
-# Aurelix — Next Feature Wave
+## Build the "Fix at bottom glass arc" bottom nav (v2)
 
-Building on what's already shipped (Reels, Stories, Verification kinds, DMs with search, AI moderation). Below is a prioritized plan of new features grouped by impact. Pick any subset and I'll build.
+Rebuild `AppShell` bottom nav to match the selected prototype exactly.
 
-## Tier 1 — Engagement essentials
+### New nav layout (5 slots, ordered)
 
-1. **Story reactions & replies**
-  - `story_reactions` table (emoji), reply → auto-creates DM with story thumbnail quote.
-  - Tap-and-hold emoji bar on `StoryViewer`.
-2. **Share-to-DM**
-  - "Send" button on PostCard/Reel → bottom sheet of recent DMs + search → sends message with post preview card.
-  - New `messages.shared_post_id` column rendered as embedded card in `Conversation`.
-3. **In-app realtime toaster**
-  - Global subscription on `messages` + `notifications` → shadcn `sonner` toast with avatar, tap to open.
-4. **Block & Mute**
-  - `blocks` (hard hide both ways) + `mutes` (hide from feed only) tables.
-  - Filter applied in Feed/Reels/Discover/Comments queries.
-  - Profile menu: Block / Mute / Report.
+```
+[ Feed ]  [ Reels ]  [ + Create ]  [ DMs ]  [ Profile ]
+```
 
-## Tier 2 — Creator tools
+- **Center Create (+)** replaces the Discover tab in the bar. It's an elevated circular gradient button (`-top-7`) that opens the existing Compose sheet (Post / Reel / Story).
+- **Discover** moves to the Feed top bar as a Compass icon (next to Wand + Bell) so it stays one tap away.
 
-5. **Drafts & Scheduled posts**
-  - `posts.status` (`draft|scheduled|published`) + `scheduled_for`.
-  - Cron edge function (`pg_cron` → `publish-scheduled`) flips status hourly.
-6. **Post insights** (for verified/creator)
-  - Reach, impressions, profile visits, save rate. Lightweight `post_views` table + aggregated view.
-7. **Collections** (saved organization)
-  - `collections` + `collection_items`. Profile → Saved → folder grid.
-8. **Close Friends list**
-  - `close_friends` table. Story compose toggle → audience filter.
+### Visual spec (verbatim from chosen prototype)
 
-## Tier 3 — Discovery & social graph
+- Bar: `bg-white/5 backdrop-blur-2xl border border-white/10 rounded-[32px] px-4 py-3` with `shadow-[0_25px_50px_-12px_rgba(0,0,0,0.8)]`
+- Ambient glow blob behind bar
+- Active tab: icon wrapped in `p-2 rounded-2xl bg-gradient-to-br from-[#8b5cf6] via-[#d946ef] to-[#06b6d4] shadow-[0_0_20px_rgba(217,70,239,0.4)]`, white label
+- Inactive tab: `text-white/40` icon + label, `active:scale-95`
+- Center FAB: 56px ring with gradient stroke + inner gradient disk, big white `+`
+- DMs slot: glowing cyan dot when there are unread messages (animated pulse)
+- Profile slot: small avatar disk in place of the User icon; glowing fuchsia dot when there are unread notifications
+- Font: Space Grotesk for tab labels (already loaded via app fonts)
 
-9. **Explore grid 2.0**
-  - AI-ranked mosaic (trending posts/reels) using `openai/gpt-5.5-pro` to cluster hashtags.
-  - Personalized "For You" reel feed based on watch dwell-time (`reel_views`).
-10. **Suggested users**
-  - Mutual-follow + hashtag-affinity scoring. Card carousel on Feed + Discover.
-11. **Activity status / Last seen**
-  - `profiles.last_seen_at` updated via presence channel; green dot on avatars; per-user privacy toggle.
+### Behavior
 
-## Tier 4 — Polish & safety
+- `NavLink` drives active state for the 4 destination slots
+- Center `+` opens a bottom Sheet with Post / Reel / Story (the same one currently on Feed) — move that Sheet from `Feed.tsx` into `AppShell.tsx` so create is always reachable, and remove the floating FAB from Feed
+- Unread counts:
+  - `messages`: subscribe to inserts where I'm a participant and `sender_id != me` and `read_at is null` → dot on DMs slot
+  - `notifications`: existing query → dot on Profile slot (was on Feed slot — move it)
+- Reels keeps its black-themed nav variant (the bar already swaps when `pathname.startsWith("/reels")`)
 
-12. **Read receipts + typing indicators** in DMs (presence channel).
-13. **Voice notes** in DMs (audio upload to `chat-media` bucket, waveform UI).
-14. **Two-factor auth** (TOTP via Supabase MFA).
-15. **Report content** flow → `reports` table → AI triage with `ai-moderate`.
-16. **Accessibility**: alt text on uploads (AI-suggested), reduced-motion variants for Reels.
+### Files
 
-## Tier 5 — AI differentiators (uses `openai/gpt-5.5-pro`)
-
-17. **AI Assistant page** (`/assistant`) — growth coach: rewrite bio, suggest hashtags, analyze last 10 posts.
-18. **Smart Search on Discover** — natural language → filter chips ("reels from creators about coffee this week").
-19. **Auto-alt-text & auto-caption** at upload time (background edge function).
-20. **AI Story Highlights cover generator** (gpt image/ gemini image).
-21. Ai chat bot called Aurelix Ai
-22. Premium features for future after all above work done we will discuss about , wallet aur coin, xp , aur infinity features 
-
-## Suggested first batch (recommended)
-
-If you say "go", I'll ship **Tier 1 in full** (story reactions, share-to-DM, realtime toaster, block/mute) + **#17 AI Assistant** — these give the biggest visible jump and unblock the rest.
-
-## Pick your path
-
-Reply with any of:
-
-- `tier1` — engagement essentials
-- `tier1+assistant` — recommended
-- `all-tier1-2` — engagement + creator tools
-- Or list numbers: e.g. `2, 4, 9, 17`
----
-
-## Wave 2 — Shipped
-
-- DB: `story_reactions`, `blocks`, `mutes`, `messages.shared_post_id`
-- Story reactions (emoji bar) + reply-to-story → auto-DM
-- Share-to-DM bottom sheet on every PostCard (+ Copy link split)
-- Conversation renders shared-post preview card
-- Global in-app realtime toaster (new DMs + notifications) mounted in AppShell
-- Block & Mute from profile More menu; Feed filters both directions
-- `/assistant` page (Aurelix AI, streaming GPT-5.5 Pro) + Wand button in Feed top bar
-- Edge function `ai-assistant` streams SSE through Lovable AI Gateway
+- `src/components/layout/AppShell.tsx` — rewrite the `<nav>` block; add Sheet for Create; add DMs-unread effect; move notifications dot to Profile slot
+- `src/pages/Feed.tsx` — remove the floating `+` FAB + its Sheet; add a Compass link to `/discover` in the top-bar right cluster
