@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { Heart, MessageCircle, Send, Plus, Volume2, VolumeX, Pause } from "lucide-react";
+import { Heart, MessageCircle, Send, Plus, Volume2, VolumeX, Pause, Camera } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthProvider";
 import { CommentSheet } from "@/components/social/CommentSheet";
