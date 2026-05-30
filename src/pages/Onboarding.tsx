@@ -100,15 +100,16 @@ const Onboarding = () => {
       <div className="flex-1 flex flex-col px-6 pt-8 pb-24">
         <AnimatePresence mode="wait">
           {step === 0 && (
-            <motion.div key="welcome" {...fadeUp} className="text-center mt-12">
-              <div className="mx-auto h-16 w-16 grid place-items-center rounded-full bg-muted mb-5">
-                <Sparkles className="h-7 w-7 text-primary" />
+            <motion.div key="welcome" {...fadeUp} className="text-center mt-8 relative">
+              <div className="absolute inset-0 -top-10 bg-radial-glow pointer-events-none" />
+              <div className="mx-auto h-20 w-20 rounded-2xl bg-gradient-primary grid place-items-center shadow-glow mb-6 relative">
+                <Sparkles className="h-9 w-9 text-primary-foreground" />
               </div>
-              <h1 className="text-3xl font-semibold tracking-tight">Welcome to Aurelix</h1>
-              <p className="text-sm text-muted-foreground mt-3 max-w-xs mx-auto">
-                A premium social home for creators, founders, and the people who shape culture.
+              <h1 className="text-4xl font-black tracking-tight relative">A New Universe<br />for Creators.</h1>
+              <p className="text-sm text-muted-foreground mt-4 max-w-xs mx-auto relative">
+                Create. Connect. Earn. Grow.
               </p>
-              <p className="text-xs text-muted-foreground/70 mt-8">Hi {profile?.display_name || profile?.username || "there"} 👋</p>
+              <p className="text-xs text-muted-foreground/70 mt-10 relative">Hi {profile?.display_name || profile?.username || "there"} 👋</p>
             </motion.div>
           )}
 
