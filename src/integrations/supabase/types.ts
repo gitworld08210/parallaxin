@@ -50,6 +50,39 @@ export type Database = {
         }
         Relationships: []
       }
+      coin_transactions: {
+        Row: {
+          amount: number
+          created_at: string
+          environment: string
+          id: string
+          kind: string
+          price_id: string | null
+          stripe_session_id: string | null
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          environment?: string
+          id?: string
+          kind: string
+          price_id?: string | null
+          stripe_session_id?: string | null
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          environment?: string
+          id?: string
+          kind?: string
+          price_id?: string | null
+          stripe_session_id?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       collection_items: {
         Row: {
           collection_id: string
@@ -576,6 +609,7 @@ export type Database = {
           avatar_url: string | null
           bio: string | null
           chronicle: string | null
+          coin_balance: number
           contribution_score: number
           council_role: Database["public"]["Enums"]["council_role"] | null
           council_vote_weight: number
@@ -598,6 +632,7 @@ export type Database = {
           show_activity: boolean
           show_read_receipts: boolean
           signature_aura: string | null
+          tier: string
           updated_at: string
           user_id: string
           username: string
@@ -609,6 +644,7 @@ export type Database = {
           avatar_url?: string | null
           bio?: string | null
           chronicle?: string | null
+          coin_balance?: number
           contribution_score?: number
           council_role?: Database["public"]["Enums"]["council_role"] | null
           council_vote_weight?: number
@@ -631,6 +667,7 @@ export type Database = {
           show_activity?: boolean
           show_read_receipts?: boolean
           signature_aura?: string | null
+          tier?: string
           updated_at?: string
           user_id: string
           username: string
@@ -642,6 +679,7 @@ export type Database = {
           avatar_url?: string | null
           bio?: string | null
           chronicle?: string | null
+          coin_balance?: number
           contribution_score?: number
           council_role?: Database["public"]["Enums"]["council_role"] | null
           council_vote_weight?: number
@@ -664,6 +702,7 @@ export type Database = {
           show_activity?: boolean
           show_read_receipts?: boolean
           signature_aura?: string | null
+          tier?: string
           updated_at?: string
           user_id?: string
           username?: string
@@ -817,6 +856,54 @@ export type Database = {
         }
         Relationships: []
       }
+      subscriptions: {
+        Row: {
+          cancel_at_period_end: boolean | null
+          created_at: string
+          current_period_end: string | null
+          current_period_start: string | null
+          environment: string
+          id: string
+          price_id: string
+          product_id: string
+          status: string
+          stripe_customer_id: string
+          stripe_subscription_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          cancel_at_period_end?: boolean | null
+          created_at?: string
+          current_period_end?: string | null
+          current_period_start?: string | null
+          environment?: string
+          id?: string
+          price_id: string
+          product_id: string
+          status?: string
+          stripe_customer_id: string
+          stripe_subscription_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          cancel_at_period_end?: boolean | null
+          created_at?: string
+          current_period_end?: string | null
+          current_period_start?: string | null
+          environment?: string
+          id?: string
+          price_id?: string
+          product_id?: string
+          status?: string
+          stripe_customer_id?: string
+          stripe_subscription_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -900,6 +987,20 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      credit_coins: {
+        Args: {
+          _amount: number
+          _environment: string
+          _price_id: string
+          _session_id: string
+          _user_id: string
+        }
+        Returns: undefined
+      }
+      has_active_subscription: {
+        Args: { check_env?: string; user_uuid: string }
+        Returns: boolean
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
