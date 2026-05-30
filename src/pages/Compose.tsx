@@ -146,16 +146,35 @@ const Compose = () => {
         </div>
 
         {preview && (
-          <div className="mt-4 relative rounded-xl overflow-hidden bg-muted">
-            {file?.type.startsWith("video") ? (
-              <video src={preview} controls className="w-full max-h-[400px] object-cover" />
-            ) : (
-              <img src={preview} className="w-full max-h-[400px] object-cover" alt="" />
+          <div className="mt-4 space-y-2">
+            <div className="relative rounded-xl overflow-hidden bg-muted">
+              {file?.type.startsWith("video") ? (
+                <video src={preview} controls className="w-full max-h-[400px] object-cover" />
+              ) : (
+                <img src={preview} className="w-full max-h-[400px] object-cover" alt={altText || ""} />
+              )}
+              <button onClick={() => { setFile(null); setAltText(""); }}
+                className="absolute top-2 right-2 h-8 w-8 grid place-items-center rounded-full bg-black/60 text-white">
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            {file && !file.type.startsWith("video") && (
+              <div className="flex items-start gap-2">
+                <textarea
+                  value={altText}
+                  onChange={(e) => setAltText(e.target.value)}
+                  placeholder="Alt text (for accessibility)"
+                  rows={2}
+                  maxLength={200}
+                  className="flex-1 bg-card border border-border rounded-md px-3 py-2 text-xs outline-none resize-none"
+                />
+                <button onClick={suggestAlt} disabled={altBusy}
+                  className="shrink-0 bg-muted rounded-md px-3 py-2 text-xs font-semibold flex items-center gap-1.5 disabled:opacity-60">
+                  <Sparkles className="h-3.5 w-3.5 text-primary" />
+                  {altBusy ? "…" : "Suggest"}
+                </button>
+              </div>
             )}
-            <button onClick={() => setFile(null)}
-              className="absolute top-2 right-2 h-8 w-8 grid place-items-center rounded-full bg-black/60 text-white">
-              <X className="h-4 w-4" />
-            </button>
           </div>
         )}
 
