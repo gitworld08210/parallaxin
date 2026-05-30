@@ -14,7 +14,7 @@ const AURAS = [
 ];
 
 export const SignatureAuraPicker = () => {
-  const { user, profile, refresh } = useAuth() as any;
+  const { user, profile, refreshProfile } = useAuth() as any;
   const [current, setCurrent] = useState<string | null>(profile?.signature_aura ?? null);
   const [busy, setBusy] = useState(false);
 
@@ -28,7 +28,7 @@ export const SignatureAuraPicker = () => {
     setCurrent(id);
     const { error } = await supabase.from("profiles").update({ signature_aura: id } as any).eq("user_id", user.id);
     setBusy(false);
-    if (error) toast.error(error.message); else { toast.success("Signature aura updated"); refresh?.(); }
+    if (error) toast.error(error.message); else { toast.success("Signature aura updated"); refreshProfile?.(); }
   };
 
   return (
