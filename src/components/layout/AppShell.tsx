@@ -1,4 +1,4 @@
-import { Home, Film, MessageCircle, Plus, ImageIcon, Sparkles, User } from "lucide-react";
+import { Home, Film, MessageCircle, Plus, ImageIcon, Sparkles, User, Radio, Camera, Upload, Wand2 } from "lucide-react";
 import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
