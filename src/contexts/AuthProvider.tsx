@@ -40,11 +40,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   useEffect(() => {
-    const { data: sub } = supabase.auth.onAuthStateChange((_evt, sess) => {
+    const { data: sub } = supabase.auth.onAuthStateChange((evt, sess) => {
       setSession(sess);
       setUser(sess?.user ?? null);
       if (sess?.user) {
         setTimeout(() => loadProfile(sess.user.id), 0);
+        if (evt === "SIGNED_IN") {
+          setTimeout(() => { supabase.functions.invoke("log-login").catch(() => {}); }, 0);
+        }
       } else {
         setProfile(null);
       }

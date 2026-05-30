@@ -13,6 +13,9 @@ export default {
       },
 
       colors: {
+        aurum: "hsl(43 57% 54%)",
+        ether: "hsl(207 100% 75%)",
+        obsidian: "hsl(228 22% 4%)",
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",

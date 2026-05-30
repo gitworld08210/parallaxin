@@ -188,6 +188,24 @@ export type Database = {
         }
         Relationships: []
       }
+      data_export_requests: {
+        Row: {
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       follows: {
         Row: {
           created_at: string
@@ -282,6 +300,33 @@ export type Database = {
             referencedColumns: ["user_id"]
           },
         ]
+      }
+      login_events: {
+        Row: {
+          city: string | null
+          created_at: string
+          id: string
+          ip: string | null
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          city?: string | null
+          created_at?: string
+          id?: string
+          ip?: string | null
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          city?: string | null
+          created_at?: string
+          id?: string
+          ip?: string | null
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
       }
       messages: {
         Row: {
@@ -492,6 +537,7 @@ export type Database = {
           council_vote_weight: number
           cover_url: string | null
           created_at: string
+          deletion_scheduled_at: string | null
           display_name: string
           followers_count: number
           following_count: number
@@ -499,10 +545,12 @@ export type Database = {
           founder_title: string | null
           id: string
           is_founder: boolean
+          is_private: boolean
           join_era: string | null
           last_seen_at: string | null
           posts_count: number
           show_activity: boolean
+          show_read_receipts: boolean
           signature_aura: string | null
           updated_at: string
           user_id: string
@@ -520,6 +568,7 @@ export type Database = {
           council_vote_weight?: number
           cover_url?: string | null
           created_at?: string
+          deletion_scheduled_at?: string | null
           display_name?: string
           followers_count?: number
           following_count?: number
@@ -527,10 +576,12 @@ export type Database = {
           founder_title?: string | null
           id?: string
           is_founder?: boolean
+          is_private?: boolean
           join_era?: string | null
           last_seen_at?: string | null
           posts_count?: number
           show_activity?: boolean
+          show_read_receipts?: boolean
           signature_aura?: string | null
           updated_at?: string
           user_id: string
@@ -548,6 +599,7 @@ export type Database = {
           council_vote_weight?: number
           cover_url?: string | null
           created_at?: string
+          deletion_scheduled_at?: string | null
           display_name?: string
           followers_count?: number
           following_count?: number
@@ -555,10 +607,12 @@ export type Database = {
           founder_title?: string | null
           id?: string
           is_founder?: boolean
+          is_private?: boolean
           join_era?: string | null
           last_seen_at?: string | null
           posts_count?: number
           show_activity?: boolean
+          show_read_receipts?: boolean
           signature_aura?: string | null
           updated_at?: string
           user_id?: string

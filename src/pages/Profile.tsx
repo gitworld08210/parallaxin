@@ -243,6 +243,9 @@ const Profile = () => {
             <Link to="/profile/edit" className="flex-1 text-center py-1.5 rounded-md bg-muted text-foreground font-semibold text-sm">
               Edit profile
             </Link>
+            <Link to="/settings" className="flex-1 text-center py-1.5 rounded-md bg-muted text-foreground font-semibold text-sm">
+              Settings
+            </Link>
             <Link to="/premium" className="flex-1 text-center py-1.5 rounded-md bg-muted text-foreground font-semibold text-sm">
               Upgrade
             </Link>

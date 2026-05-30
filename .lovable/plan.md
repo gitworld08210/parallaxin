@@ -1,97 +1,134 @@
+# Tier 5 — Security, Privacy & Account Controls
 
-# Tier 4 Part 2 + Founders Deepening
+Premium, mythic-consistent security layer for Aurelix. Scaffolds production-grade account safety without breaking the obsidian/aurum aesthetic.
 
-Scope locked to option (b). Tier 5 (2FA, data export, deletion) and invite tokens / whisper channel deferred to next pass.
+## Scope
 
-## 1. Tier 4 Part 2 — Polish & Safety
+### 1. Two-Factor Authentication (TOTP)
 
-### Voice notes in DMs
-- Add mic button in `Conversation.tsx` composer.
-- Record via `MediaRecorder` → upload to `post-media/voice/{userId}/{uuid}.webm`.
-- New `messages.media_url` + `messages.media_type` columns (audio).
-- Inline waveform-style player (no heavy lib — CSS bars + `<audio>` element).
+- New `SecurityScreen.tsx` under Settings → Security
+- "Enable Two-Factor Aura" flow using Supabase `auth.mfa.enroll({ factorType: 'totp' })`
+- QR code render (via `qrcode` lib) + 6-digit verification
+- Recovery codes list (10 codes) shown once, downloadable as `.txt`
+- Disable factor flow with re-auth confirmation
+- Status pill in Settings: "Aura Shield: Active / Inactive"
 
-### Block & Report
-- Block button on Profile header (uses existing `blocks` table). Blocked users hidden from Feed/Explore/DMs via client-side filter.
-- Report sheet (`ReportSheet.tsx`) wired to existing `reports` table — reason picker (spam, harassment, impersonation, other) + details textarea.
-- Surface in PostCard "..." menu, Profile "..." menu, Message long-press.
+### 2. Login Activity & Sessions
 
-### Story Highlights UI
-- `HighlightsRail.tsx` on Profile — horizontal circle rail showing `story_highlights` covers.
-- `NewHighlightSheet.tsx` — pick from user's expired stories (`stories` where `expires_at < now()`) + cover + title.
-- Tap highlight → reuse Story viewer.
+- `LoginActivityScreen.tsx` — lists recent sign-ins
+- New table `login_events` (user_id, ip, user_agent, city, created_at)
+- Edge function `log-login` called on `SIGNED_IN` auth event (captures UA + IP from headers)
+- "Sign out everywhere" button → `supabase.auth.signOut({ scope: 'global' })`
+- Mythic styling: each session as a faint constellation node, current session glows aurum
 
-### Alt-text AI
-- Compose screen: "Suggest alt text" button → edge function `suggest-alt-text` calling Lovable AI `google/gemini-2.5-flash` with image URL.
+### 3. Data Export
 
-## 2. Hall of Founders + Council — Part 2
+- `DataExportScreen.tsx`
+- Edge function `export-user-data` — collects profile, posts, comments, messages, follows, saves, highlights into a single JSON
+- Streams as downloadable `aurelix-archive-{date}.json`
+- Rate-limited: 1 export per 24h (tracked via `data_export_requests` table)
 
-### Founder Chronicle page
-- Route `/founders/:username` → `FounderChronicle.tsx`.
-- Full-screen mythic archive entry: hero `AuraFrame` (large), era mark, founder title, chronicle prose, signature works (3 pinned posts), unique sigil.
-- New column `profiles.chronicle text`.
+### 4. Account Deletion
 
-### Council Chambers
-- Refactor `FounderCouncilScreen.tsx` into 4 wings: Architect / Curator / Sentinel / Innovator.
-- Each wing = ambient gradient hero + member constellation (no ranked list; clustered avatar nodes).
-- Tap member → Chronicle.
+- `DeleteAccountScreen.tsx` — multi-step ritual
+  - Step 1: Reason (optional textarea)
+  - Step 2: Type username to confirm
+  - Step 3: Re-enter password
+- Edge function `delete-account` using service role → `auth.admin.deleteUser()` + cascade cleanup
+- 7-day soft-delete grace: `profiles.deletion_scheduled_at` column; restore by signing back in
+- Cron-style edge function `purge-deleted-accounts` (manual trigger doc'd; not scheduled here)
 
-### Genesis Era section
-- New section in `HallOfFoundersScreen.tsx` — reverent layout for `join_era = 'genesis'`, year mark, slow rotating central sigil, members arranged in arc.
+### 5. Privacy Controls (lightweight additions)
 
-### Founder-only Aurum theme
-- New CSS class `.theme-aurum` in `index.css` (obsidian + warm gold tokens).
-- Settings toggle visible only when `profiles.is_founder = true`.
-- Persisted in `localStorage` + applied on `<html>`.
+- Private account toggle → `profiles.is_private bool default false`
+- Hide read receipts toggle → `profiles.show_read_receipts bool default true` (DM `read_at` writes skipped when off)
+- Hide last seen — already have `show_activity`; surface in Privacy panel
+- Block list viewer (`BlockedListScreen.tsx`) — reads from `blocks`, unblock action
 
-### Signature Aura
-- New column `profiles.signature_aura text` (one of: ether, ember, verdant, violet, gold, frost).
-- Picker in Settings (founders only). `AuraFrame` reads and tints rings accordingly.
+### 6. Password & Email
 
-### Genesis Mark watermark
-- Subtle SVG sigil in PostCard footer when post author `is_founder = true`.
+- "Change password" → `supabase.auth.updateUser({ password })` with current-password reauth
+- "Change email" → `supabase.auth.updateUser({ email })` triggers verification email
+-  **Ai features** 
+- **Only for premium user** sugges ai features 
+- And ai features for normal user 
 
-### Council vote weight
-- Column `profiles.council_vote_weight int default 1` (council members get 3). No UI yet — schema-ready.
+## Files
 
-## 3. Database migration
+**New:**
 
-```sql
-ALTER TABLE public.profiles
-  ADD COLUMN chronicle text,
-  ADD COLUMN signature_aura text,
-  ADD COLUMN council_vote_weight int NOT NULL DEFAULT 1;
-
-ALTER TABLE public.messages
-  ADD COLUMN media_url text,
-  ADD COLUMN media_type text;
-```
-RLS already covers these (own-row policies).
-
-## 4. Edge function
-
-`suggest-alt-text` — POST `{ imageUrl }` → returns `{ altText }` via Lovable AI Gateway. CORS enabled, JWT validated in code.
-
-## 5. Visual language (non-negotiable)
-
-- Palette: obsidian `#06070B`, aurum `#C9A24C`, ether `#7EC8FF`.
-- Founder pages use serif display (Cormorant).
-- Motion: 20s+ rotation, no bouncy springs, parallax bloom on scroll.
-- **No visible numeric scores anywhere.** Titles + eras only.
-- No leaderboard ordering — eras and constellations.
-
-## Files created
-- `src/components/social/ReportSheet.tsx`
-- `src/components/social/HighlightsRail.tsx`
-- `src/components/social/NewHighlightSheet.tsx`
-- `src/components/dm/VoiceRecorder.tsx`, `VoiceMessage.tsx`
-- `src/pages/FounderChronicle.tsx`
-- `src/components/founders/SignatureAuraPicker.tsx`
-- `src/components/founders/GenesisMark.tsx`
-- `supabase/functions/suggest-alt-text/index.ts`
+- `src/pages/security/SecurityScreen.tsx`
+- `src/pages/security/TwoFactorSetup.tsx`
+- `src/pages/security/LoginActivityScreen.tsx`
+- `src/pages/security/DataExportScreen.tsx`
+- `src/pages/security/DeleteAccountScreen.tsx`
+- `src/pages/security/BlockedListScreen.tsx`
+- `src/pages/security/PrivacyScreen.tsx`
+- `src/pages/security/ChangePasswordScreen.tsx`
+- `src/pages/security/ChangeEmailScreen.tsx`
+- `src/components/security/ConstellationSession.tsx`
+- `supabase/functions/log-login/index.ts`
+- `supabase/functions/export-user-data/index.ts`
+- `supabase/functions/delete-account/index.ts`
 - 1 migration
 
-## Files edited
-- `Profile.tsx`, `Conversation.tsx`, `Compose.tsx`, `HallOfFoundersScreen.tsx`, `FounderCouncilScreen.tsx`, `PostCard.tsx`, `Settings.tsx`, `index.css`, `App.tsx`
+**Edited:**
 
-Ready to switch to build mode.
+- `src/pages/Settings.tsx` — add Security section with entries
+- `src/App.tsx` — new routes
+- `src/pages/Conversation.tsx` — respect `show_read_receipts` before calling `mark_conversation_read`
+- `src/integrations/supabase/client.ts` — NOT touched (auto-managed)
+
+## Database Migration
+
+```sql
+-- login_events
+CREATE TABLE public.login_events (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null,
+  ip text, user_agent text, city text,
+  created_at timestamptz not null default now()
+);
+GRANT SELECT, INSERT ON public.login_events TO authenticated;
+GRANT ALL ON public.login_events TO service_role;
+ALTER TABLE public.login_events ENABLE ROW LEVEL SECURITY;
+CREATE POLICY le_select_own ON public.login_events FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY le_insert_own ON public.login_events FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+-- data_export_requests
+CREATE TABLE public.data_export_requests (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null,
+  created_at timestamptz not null default now()
+);
+GRANT SELECT, INSERT ON public.data_export_requests TO authenticated;
+GRANT ALL ON public.data_export_requests TO service_role;
+ALTER TABLE public.data_export_requests ENABLE ROW LEVEL SECURITY;
+CREATE POLICY der_own ON public.data_export_requests FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY der_insert_own ON public.data_export_requests FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+-- profile additions
+ALTER TABLE public.profiles
+  ADD COLUMN IF NOT EXISTS is_private boolean not null default false,
+  ADD COLUMN IF NOT EXISTS show_read_receipts boolean not null default true,
+  ADD COLUMN IF NOT EXISTS deletion_scheduled_at timestamptz;
+```
+
+## Visual Language
+
+- Obsidian `#06070B` base, aurum `#C9A24C` accents
+- Sessions render as constellation nodes (no aggressive red warnings — even "danger" zones use restrained ember `#B5533C`)
+- Delete account flow uses slow fade transitions, no bouncy springs
+- 2FA QR code framed inside an `AuraFrame`
+
+## Dependencies
+
+- `qrcode` (small, ~20kb) for TOTP QR rendering
+
+## Out of scope (deferred)
+
+- Hardware key (WebAuthn) — Supabase MFA doesn't natively support yet
+- Admin-side report review dashboard
+- Scheduled purge cron (function written; user wires schedule later)
+
+Proceeding to build immediately after this plan.
