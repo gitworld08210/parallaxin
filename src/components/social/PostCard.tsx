@@ -34,6 +34,7 @@ export type FeedPost = {
     join_era?: string | null;
   } | null;
   liked: boolean;
+  collaborators?: { username: string; display_name: string; avatar_url: string | null }[];
 };
 
 // Session-scoped view dedupe
