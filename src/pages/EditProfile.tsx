@@ -70,17 +70,32 @@ const EditProfile = () => {
         }
       />
       <div className="px-5 space-y-4">
-        <div className="flex flex-col items-center gap-3">
+        {/* Cover banner */}
+        <div className="relative h-32 rounded-2xl overflow-hidden bg-gradient-to-br from-primary/30 to-accent/30 border border-border">
+          {cover && <img src={cover} alt="" className="absolute inset-0 w-full h-full object-cover" />}
+          <label className="absolute bottom-2 right-2 glass-strong rounded-full px-3 py-1.5 text-xs font-semibold flex items-center gap-1.5 cursor-pointer">
+            <Upload className="h-3.5 w-3.5" /> {cover ? "Change banner" : "Add banner"}
+            <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files?.[0] && uploadImage(e.target.files[0], "cover")} />
+          </label>
+          {cover && (
+            <button onClick={() => setCover(null)} className="absolute bottom-2 left-2 glass-strong rounded-full px-3 py-1.5 text-xs font-semibold">
+              Remove
+            </button>
+          )}
+        </div>
+
+        <div className="flex flex-col items-center gap-3 -mt-12">
           {avatar ? (
-            <img src={avatar} alt="" className="h-24 w-24 rounded-full object-cover ring-2 ring-background shadow-glow" />
+            <img src={avatar} alt="" className="h-24 w-24 rounded-full object-cover ring-4 ring-background shadow-glow" />
           ) : (
             <AuraAvatar gradient={gradientFor(username)} size="lg" glow initials={initialsOf(displayName || username)} />
           )}
           <label className="glass-strong rounded-full px-4 py-2 text-xs font-semibold flex items-center gap-2 cursor-pointer">
             <Upload className="h-4 w-4" /> Change avatar
-            <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files?.[0] && uploadAvatar(e.target.files[0])} />
+            <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files?.[0] && uploadImage(e.target.files[0], "avatar")} />
           </label>
         </div>
+
 
         <Field label="Display name" value={displayName} onChange={setDisplayName} maxLength={50} />
         <Field label="Username" value={username} onChange={(v) => setUsername(v.toLowerCase().replace(/[^a-z0-9_]/g, ""))} maxLength={24} />
