@@ -121,7 +121,12 @@ const Notifications = () => {
         {!n.read && <span className="h-2 w-2 rounded-full bg-primary shadow-glow shrink-0" />}
       </>
     );
-    const cls = "flex items-center gap-3 rounded-2xl px-3 py-3 hover:bg-muted/40 transition-colors";
+    const cls = "flex items-center gap-3 rounded-2xl px-3 py-3 hover:bg-muted/40 transition-colors w-full text-left";
+    if (n.type === "collab_invite") {
+      return (
+        <button key={n.id} onClick={() => setCollabOpen(true)} className={cls}>{inner}</button>
+      );
+    }
     const to = system
       ? (n.type.startsWith("founder_") ? "/hall-of-founders" : "/profile")
       : n.post_id ? `/p/${n.post_id}` : n.actor ? `/u/${n.actor.username}` : null;
