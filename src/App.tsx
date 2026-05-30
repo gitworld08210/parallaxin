@@ -6,6 +6,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthProvider";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { AdminRoute } from "@/components/AdminRoute";
 import { AppShell } from "@/components/layout/AppShell";
 
 // Eager: critical first-paint routes
@@ -58,6 +59,11 @@ const AuraLevel = lazy(() => import("./pages/AuraLevel"));
 const Monetization = lazy(() => import("./pages/Monetization"));
 const VerificationCenter = lazy(() => import("./pages/VerificationCenter"));
 const NotFound = lazy(() => import("./pages/NotFound.tsx"));
+const AdminLayout = lazy(() => import("./pages/admin/AdminLayout"));
+const VerificationRequestsAdmin = lazy(() => import("./pages/admin/VerificationRequestsAdmin"));
+const ReportsAdmin = lazy(() => import("./pages/admin/ReportsAdmin"));
+const FounderSeatsAdmin = lazy(() => import("./pages/admin/FounderSeatsAdmin"));
+const UsersRolesAdmin = lazy(() => import("./pages/admin/UsersRolesAdmin"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -130,6 +136,14 @@ const App = () => (
                   <Route path="/aura-level" element={<AuraLevel />} />
                   <Route path="/monetization" element={<Monetization />} />
                   <Route path="/verification-center" element={<VerificationCenter />} />
+                </Route>
+              </Route>
+              <Route element={<AdminRoute />}>
+                <Route path="/admin" element={<AdminLayout />}>
+                  <Route index element={<VerificationRequestsAdmin />} />
+                  <Route path="reports" element={<ReportsAdmin />} />
+                  <Route path="founders" element={<FounderSeatsAdmin />} />
+                  <Route path="users" element={<UsersRolesAdmin />} />
                 </Route>
               </Route>
               <Route path="*" element={<NotFound />} />
