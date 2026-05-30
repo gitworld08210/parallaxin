@@ -194,6 +194,9 @@ const Conversation = () => {
             <div key={m.id}>
               <div className={`flex ${mine ? "justify-end" : "justify-start"}`}>
                 <div
+                  onPointerDown={() => startLongPress(m.id, mine)}
+                  onPointerUp={cancelLongPress}
+                  onPointerLeave={cancelLongPress}
                   className={[
                     "max-w-[78%] px-3 py-2 text-sm leading-snug",
                     mine ? "bg-primary text-primary-foreground" : "bg-muted text-foreground",
@@ -212,6 +215,7 @@ const Conversation = () => {
                       </div>
                     </Link>
                   )}
+                  {m.media_type === "audio" && m.media_url && <VoiceBubble url={m.media_url} mine={mine} />}
                   {m.content && <p className="whitespace-pre-wrap break-words">{m.content}</p>}
                 </div>
               </div>
@@ -242,11 +246,11 @@ const Conversation = () => {
         {text.trim() ? (
           <button type="submit" className="px-3 py-1 text-primary font-semibold text-sm">Send</button>
         ) : (
-          <button type="button" disabled className="h-9 w-9 grid place-items-center text-muted-foreground">
-            <Send className="h-5 w-5" />
-          </button>
+          user && <VoiceRecorder userId={user.id} onSend={sendVoice} />
         )}
       </form>
+
+      <ReportSheet open={!!reportMsg} onOpenChange={(b) => !b && setReportMsg(null)} targetKind="message" targetId={reportMsg} />
     </div>
   );
 };
