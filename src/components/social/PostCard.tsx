@@ -13,6 +13,7 @@ import { SaveToCollectionSheet } from "@/components/social/SaveToCollectionSheet
 import { ReportSheet } from "@/components/social/ReportSheet";
 import { FounderBadge } from "@/components/founders/FounderBadge";
 import { GenesisMark } from "@/components/founders/GenesisMark";
+import { DoubleTapHeart } from "@/components/social/DoubleTapHeart";
 
 export type FeedPost = {
   id: string;
