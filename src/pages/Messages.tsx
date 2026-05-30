@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { Search, PenSquare, X, ChevronLeft, MessageCircle } from "lucide-react";
+import { Search, PenSquare, X, MessageCircle } from "lucide-react";
 import { AuraAvatar } from "@/components/vibe/AuraAvatar";
 import { VerificationBadge } from "@/components/vibe/VerificationBadge";
 import { EmptyState } from "@/components/empty/EmptyState";
@@ -40,12 +40,15 @@ type ProfileRow = {
 };
 
 
+type Tab = "all" | "primary" | "requests";
+
 const Messages = () => {
   const { user, profile: me } = useAuth();
   const nav = useNavigate();
   const [convs, setConvs] = useState<Conv[]>([]);
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");
+  const [tab, setTab] = useState<Tab>("all");
   const [composerOpen, setComposerOpen] = useState(false);
   const [composerQuery, setComposerQuery] = useState("");
   const [results, setResults] = useState<ProfileRow[]>([]);
@@ -109,13 +112,20 @@ const Messages = () => {
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return convs;
-    return convs.filter((c) =>
+    let base = convs;
+    if (tab === "primary") base = base.filter((c) => c.unread > 0);
+    else if (tab === "requests") base = base.filter((c) => !c.last);
+    if (!q) return base;
+    return base.filter((c) =>
       (c.other?.username || "").toLowerCase().includes(q) ||
       (c.other?.display_name || "").toLowerCase().includes(q) ||
       (c.last || "").toLowerCase().includes(q)
     );
-  }, [convs, query]);
+  }, [convs, query, tab]);
+
+  const primaryCount = useMemo(() => convs.filter((c) => c.unread > 0).length, [convs]);
+  const requestsCount = useMemo(() => convs.filter((c) => !c.last).length, [convs]);
+
 
   const startChat = async (otherId: string) => {
     if (!user) return;
@@ -135,24 +145,21 @@ const Messages = () => {
 
   return (
     <div>
-      {/* IG-style messages header */}
-      <header className="h-14 px-3 flex items-center justify-between gap-3 border-b border-border">
-        <button onClick={() => nav(-1)} className="p-1" aria-label="Back">
-          <ChevronLeft className="h-6 w-6 text-foreground" />
-        </button>
-        <h1 className="text-base font-semibold truncate flex-1 text-center">{me?.username ?? "Messages"}</h1>
-        <button onClick={() => setComposerOpen(true)} className="p-1" aria-label="New chat">
-          <PenSquare className="h-6 w-6 text-foreground" strokeWidth={1.75} />
+      {/* Aurelix messages header */}
+      <header className="h-14 px-5 flex items-center justify-between gap-3 border-b border-border">
+        <h1 className="text-xl font-bold tracking-tight">Messages</h1>
+        <button onClick={() => setComposerOpen(true)} className="p-1.5 rounded-full hover:bg-muted/40" aria-label="New chat">
+          <PenSquare className="h-5 w-5 text-foreground" strokeWidth={1.75} />
         </button>
       </header>
 
-      <div className="px-3 pt-3">
-        <div className="bg-muted rounded-lg flex items-center gap-2 px-3 py-2">
+      <div className="px-4 pt-3">
+        <div className="bg-secondary/60 border border-border rounded-full flex items-center gap-2 px-4 py-2.5">
           <Search className="h-4 w-4 text-muted-foreground" />
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search"
+            placeholder="Search messages"
             className="flex-1 bg-transparent outline-none text-sm placeholder:text-muted-foreground"
           />
           {query && (
@@ -161,6 +168,34 @@ const Messages = () => {
             </button>
           )}
         </div>
+      </div>
+
+      {/* Segmented tabs */}
+      <div className="px-4 mt-4 flex items-center gap-2">
+        {([
+          { id: "all", label: "All", count: 0 },
+          { id: "primary", label: "Primary", count: primaryCount },
+          { id: "requests", label: "Requests", count: requestsCount },
+        ] as const).map((t) => (
+          <button
+            key={t.id}
+            onClick={() => setTab(t.id)}
+            className={cn(
+              "px-4 py-1.5 rounded-full text-xs font-semibold inline-flex items-center gap-1.5 transition-colors border",
+              tab === t.id
+                ? "bg-primary text-primary-foreground border-primary shadow-glow"
+                : "bg-secondary/40 text-foreground border-border hover:border-primary/40"
+            )}
+          >
+            {t.label}
+            {t.count > 0 && (
+              <span className={cn(
+                "min-w-[18px] h-[18px] px-1 rounded-full grid place-items-center text-[10px] font-bold",
+                tab === t.id ? "bg-primary-foreground/20 text-primary-foreground" : "bg-primary text-primary-foreground"
+              )}>{t.count}</span>
+            )}
+          </button>
+        ))}
       </div>
 
       <div className="px-1 mt-2">
