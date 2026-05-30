@@ -10,6 +10,7 @@ import { ReportSheet } from "@/components/social/ReportSheet";
 import { HighlightsRail } from "@/components/social/HighlightsRail";
 import { FounderBadge } from "@/components/founders/FounderBadge";
 import { SideMenu } from "@/components/layout/SideMenu";
+import { ProfileShowcase } from "@/components/profile/ProfileShowcase";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthProvider";
 import { fmt, gradientFor, initialsOf } from "@/lib/format";
@@ -274,6 +275,9 @@ const Profile = () => {
           <span className="text-muted-foreground">›</span>
         </Link>
       )}
+
+      {/* Showcase sections (self view only) */}
+      {isMe && <ProfileShowcase bio={profile.bio} />}
 
       {/* Tabs */}
       <div className="mt-5 flex border-t border-border">
