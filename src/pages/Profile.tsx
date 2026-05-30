@@ -151,24 +151,13 @@ const Profile = () => {
         </h1>
         <div className="flex items-center gap-1">
           {isMe ? (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
+            <SideMenu
+              trigger={
                 <button className="p-2" aria-label="Menu">
-                  <MoreHorizontal className="h-6 w-6 text-foreground" />
+                  <Menu className="h-6 w-6 text-foreground" />
                 </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
-                <DropdownMenuItem asChild>
-                  <Link to="/drafts"><FileText className="h-4 w-4 mr-2" /> Drafts &amp; scheduled</Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to="/close-friends"><Star className="h-4 w-4 mr-2" /> Close friends</Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem onSelect={() => signOut()}>
-                  <LogOut className="h-4 w-4 mr-2" /> Sign out
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+              }
+            />
           ) : (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
