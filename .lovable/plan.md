@@ -1,44 +1,33 @@
-# Aurelix Profile Suite — Scaffold with Zero Values
+# Redesign Main Profile (Screen #1 from mock)
 
-Goal: build all screens from your reference mock as **visual shells with 0 / empty values**. No fake data like "$12,450" or "52.3K". Once shells look right, we wire real data in a follow-up.
+Repaint the public profile page to match screen 1 of your Aurelix mock — cinematic cover image, neon avatar ring, Hall of Founders pill, premium stat row, highlight rail with neon labels, and a new icon-tab grid. Keep all current data wiring (Supabase, follow/block/mute, posts/reels/saved) untouched — pure visual layer change.
 
-I'm coding this with code with **openai (**gpt5.5)— that's the model running this Lovable session.
+> Note on the model: this Lovable session runs on Claude (Sonnet 4.5). GPT-5.5 isn't the session coder — it's only available inside your *app's* edge functions via the Lovable AI Gateway. I'll keep coding here on Claude; tell me if you want me to wire `openai/gpt-5.5` into an edge function instead.
 
-## Phase 1 — Side Menu polish
+## What changes in `src/pages/Profile.tsx`
 
-Update `SideMenu.tsx`:
+1. **Top bar** — left: back arrow + "AURELIX" wordmark in primary neon. Right: bell icon (with red dot when unread), kebab/menu. Replace current minimal `@username` header.
+2. **Cover banner** — full-width 180px cinematic cover (`profile.cover_url` if present, else gradient fallback). Avatar overlaps the bottom-left with a glowing neon ring (`ring-2 ring-primary shadow-[0_0_24px]`).
+3. **Identity block** — display name + verification badge inline, `@username` muted below, bio (whitespace-pre-wrap), website link styled as `aurelix.app/<username>`.
+4. **Hall of Founders pill** — small rounded pill with crown icon under the bio, only if it is approved founder from Admin `is_founder`. Gradient `from-aura/30 to-primary/20`.
+5. **Stat row** — 3 columns centered: `Posts · Followers · Following`. Numbers large + bold, label `text-xs` uppercase muted. No dividers, generous spacing.
+6. **Action row** — `Edit Profile` (gradient primary, filled), `Share Profile` (outlined), and a small square `UserPlus` icon button (invite). When viewing someone else: `Follow` / `Message` keep current logic.
+7. **Highlights rail** — keep existing `HighlightsRail` component but wrap labels with neon-tinted captions (AI Art, Travel, Reels, Projects, Life style). No data change.
+8. **Tab bar** — Posts / Reels / Spaces / Saved / Tagged as a horizontal scrolling row of text labels with an underline indicator (instead of the current icon-only row). Active tab gets `text-foreground` + 2px primary underline. "Spaces" and "Tagged" render an empty-state shell for now.
+9. **Grid** — keep 3-col grid for Posts/Reels, but tighten gap to `gap-0.5`, add subtle hover scale, rounded `rounded-sm` on tiles.
+10. **Showcase sections** — keep `ProfileShowcase` mount as-is (only on `isMe`).
 
-- Aurelix wordmark + logo mark at top
-- Rows: Home, Explore, Reels, Messages, Notifications, Bookmarks, Communities, Creator Hub, Monetization, Verification Center (NEW pill), Aura Wallet, Saved, Settings, Help & Support, Dark Mode toggle
-- Counter pills show `0` (not 8/12)
-- AURELIX PREMIUM CTA card at bottom
-- All new rows route to real pages (built in later phases) — no more "coming soon" toasts
+## What does NOT change
 
-## Phase 2 — New routes (all zero-state shells)
+- All Supabase queries, follow/block/mute, comment/report sheets, side menu wiring, routing.
+- `ProfileShowcase`, `HighlightsRail`, `PostCard` internals.
+- Other pages.
 
-Each new page: header with back arrow, neon-themed layout matching mock, **all numbers = 0, all lists empty with subtle empty-state copy**.
+## Tech notes
 
-1. `/creator-hub` — Welcome card ("Welcome back, {name}"), Total Earnings `$0.00` + flat sparkline, 3 KPI tiles (Profile Views / Content Reach / Engagement all `0`), Quick Access grid (Analytics, Monetization, Achievements, Verification, Aura Level, Creator Tools)
-2. `/analytics` — Tabs (Overview/Content/Audience/Earnings), Views `0`, empty recharts line, 4 KPI tiles at `0`, "No content yet" empty state for Top Performing Content
-3. `/achievements` — Locked badge list (Top Creator, Viral Creator, Trendsetter, Hall of Founders, Early Adopter, Community Builder), Progress `0 / 24`
-4. `/aura-level` — Circular ring at 0%, Level `0`, `0 / 1,000 XP`, Aura Benefits list (all locked)
-5. `/monetization` — Total Balance `$0.00`, Earnings Overview `$0.00` + flat chart, Revenue Sources rows all `$0`, Withdraw Earnings CTA (disabled)
-6. `/verification-center` — Hero shield, "Get Verified on Aurelix", Request Verification CTA (links to existing `/verification`), status checklist (Not Verified / Eligible / Benefits)
+- Pure JSX/Tailwind edits inside `Profile.tsx`. No new files.
+- Uses existing semantic tokens (`--primary`, `--aura`, `--muted`) — no hex colors.
+- Spaces/Tagged tabs render `EmptyState` placeholder; we'll wire data in a follow-up if you want.
+- Cover height responsive: `h-40 sm:h-48`.
 
-## Phase 3 — Polish existing screens to match mock
-
-- `Profile.tsx` — AURELIX wordmark header style, neon avatar ring, stat row uses real DB values (already wired)
-- `Notifications.tsx` — tab pills (All/Mentions/Comments/Likes), shows real data (already wired)
-- `Settings.tsx` — row layout matching mock
-- `EditProfile.tsx` — layout matching mock (already largely there)
-
-## Technical notes
-
-- All shells use existing semantic tokens from `index.css` (no new colors)
-- Charts use `recharts` with empty/zero data arrays
-- Badges/icons: lucide-react + simple SVG, no new deps
-- New routes registered in `App.tsx`
-- Zero backend changes — pure frontend scaffolding
-- After you approve the look, we discuss per-screen: what data source, what calculations, what becomes interactive
-
-Reply **"go"** to start, or tell me which phase to do first.
+Reply **go** to build it, or tell me to skip/tweak any section above.
