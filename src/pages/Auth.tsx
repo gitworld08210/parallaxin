@@ -58,6 +58,15 @@ const Auth = () => {
     }
   };
 
+  const apple = async () => {
+    setBusy(true);
+    const res = await lovable.auth.signInWithOAuth("apple", { redirect_uri: window.location.origin });
+    if (res.error) {
+      toast.error("Apple sign-in failed");
+      setBusy(false);
+    }
+  };
+
   const inputCls =
     "w-full glass rounded-2xl px-4 py-3 text-sm outline-none placeholder:text-muted-foreground";
 
@@ -137,14 +146,25 @@ const Auth = () => {
           <div className="flex-1 h-px bg-border" />
         </div>
 
-        <button
-          onClick={google}
-          disabled={busy}
-          className="w-full py-3 rounded-2xl glass-strong font-semibold text-sm flex items-center justify-center gap-2"
-        >
-          <svg width="16" height="16" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.4 29.3 35.5 24 35.5c-6.4 0-11.5-5.1-11.5-11.5S17.6 12.5 24 12.5c2.9 0 5.6 1.1 7.6 2.9l5.7-5.7C33.6 6.4 29 4.5 24 4.5 13.2 4.5 4.5 13.2 4.5 24S13.2 43.5 24 43.5c10.8 0 19.5-8.7 19.5-19.5 0-1.2-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 16 19 12.5 24 12.5c2.9 0 5.6 1.1 7.6 2.9l5.7-5.7C33.6 6.4 29 4.5 24 4.5 16.3 4.5 9.7 8.9 6.3 14.7z"/><path fill="#4CAF50" d="M24 43.5c5 0 9.5-1.9 12.9-5l-5.9-5c-2 1.4-4.4 2.2-7 2.2-5.2 0-9.6-3.1-11.3-7.5l-6.5 5C8.9 38.6 16 43.5 24 43.5z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.3 4.3-4.3 5.7l5.9 5c2.9-2.7 4.6-7 4.6-12.7 0-1.2-.1-2.4-.4-3.5z"/></svg>
-          Continue with Google
-        </button>
+        <div className="space-y-2">
+          <button
+            onClick={google}
+            disabled={busy}
+            className="w-full py-3 rounded-2xl glass-strong font-semibold text-sm flex items-center justify-center gap-2"
+          >
+            <svg width="16" height="16" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.4 29.3 35.5 24 35.5c-6.4 0-11.5-5.1-11.5-11.5S17.6 12.5 24 12.5c2.9 0 5.6 1.1 7.6 2.9l5.7-5.7C33.6 6.4 29 4.5 24 4.5 13.2 4.5 4.5 13.2 4.5 24S13.2 43.5 24 43.5c10.8 0 19.5-8.7 19.5-19.5 0-1.2-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 16 19 12.5 24 12.5c2.9 0 5.6 1.1 7.6 2.9l5.7-5.7C33.6 6.4 29 4.5 24 4.5 16.3 4.5 9.7 8.9 6.3 14.7z"/><path fill="#4CAF50" d="M24 43.5c5 0 9.5-1.9 12.9-5l-5.9-5c-2 1.4-4.4 2.2-7 2.2-5.2 0-9.6-3.1-11.3-7.5l-6.5 5C8.9 38.6 16 43.5 24 43.5z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.3 4.3-4.3 5.7l5.9 5c2.9-2.7 4.6-7 4.6-12.7 0-1.2-.1-2.4-.4-3.5z"/></svg>
+            Continue with Google
+          </button>
+
+          <button
+            onClick={apple}
+            disabled={busy}
+            className="w-full py-3 rounded-2xl bg-foreground text-background font-semibold text-sm flex items-center justify-center gap-2"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16.365 12.86c-.026-2.62 2.14-3.88 2.236-3.94-1.218-1.78-3.114-2.022-3.79-2.05-1.614-.164-3.152.95-3.972.95-.82 0-2.084-.926-3.428-.9-1.764.026-3.39 1.026-4.296 2.6-1.832 3.176-.468 7.878 1.314 10.46.87 1.262 1.906 2.68 3.264 2.628 1.31-.052 1.806-.85 3.39-.85 1.582 0 2.03.85 3.414.824 1.41-.026 2.302-1.286 3.166-2.554 1-1.464 1.412-2.886 1.436-2.96-.032-.014-2.756-1.058-2.784-4.208zM13.86 4.7c.722-.876 1.21-2.094 1.078-3.3-1.04.042-2.302.692-3.05 1.566-.67.776-1.256 2.02-1.1 3.208 1.16.09 2.348-.59 3.072-1.474z"/></svg>
+            Continue with Apple
+          </button>
+        </div>
 
         {mode === "signin" && (
           <Link to="/reset-password" className="block text-center mt-4 text-xs text-muted-foreground hover:text-foreground">
