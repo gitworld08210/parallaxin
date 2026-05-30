@@ -35,9 +35,18 @@ const Assistant = () => {
 
     try {
       const url = `https://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.supabase.co/functions/v1/ai-assistant`;
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) {
+        toast.error("Please sign in to use the assistant.");
+        setStreaming(false);
+        return;
+      }
       const resp = await fetch(url, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.access_token}`,
+        },
         body: JSON.stringify({ messages: next.slice(0, -1) }),
       });
       if (resp.status === 429) { toast.error("Rate limit hit. Try again shortly."); setStreaming(false); return; }
