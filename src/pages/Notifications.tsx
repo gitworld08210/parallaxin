@@ -55,6 +55,7 @@ const bucketOf = (iso: string): "today" | "yesterday" | "earlier" => {
 const Notifications = () => {
   const { user } = useAuth();
   const [items, setItems] = useState<N[]>([]);
+  const [collabOpen, setCollabOpen] = useState(false);
 
   useEffect(() => {
     if (!user) return;
