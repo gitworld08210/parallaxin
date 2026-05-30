@@ -3,6 +3,7 @@ import { X, Send } from "lucide-react";
 import { timeAgo } from "@/lib/format";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthProvider";
+import { StoryStickersLayer } from "@/components/social/StoryStickersLayer";
 import { toast } from "sonner";
 
 type Story = {
@@ -107,6 +108,7 @@ export const StoryViewer = ({ stories, startIdx, onClose }: { stories: Story[]; 
         ) : (
           <img src={current.media_url} className="max-h-full max-w-full" alt="" />
         )}
+        <StoryStickersLayer storyId={current.id} isOwner={current.user_id === user?.id} onPauseChange={setPaused} />
       </div>
 
       {current.user_id !== user?.id && (

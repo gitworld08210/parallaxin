@@ -34,6 +34,7 @@ export type FeedPost = {
     join_era?: string | null;
   } | null;
   liked: boolean;
+  collaborators?: { username: string; display_name: string; avatar_url: string | null }[];
 };
 
 // Session-scoped view dedupe
@@ -62,6 +63,7 @@ export const PostCard = ({ post, onOpenComments }: { post: FeedPost; onOpenComme
   const [reportOpen, setReportOpen] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [burst, setBurst] = useState(0);
+  const [collabs, setCollabs] = useState<NonNullable<FeedPost["collaborators"]>>(post.collaborators ?? []);
   const lastTap = useRef(0);
   const articleRef = useRef<HTMLElement>(null);
   const isOwner = user?.id === post.user_id;
@@ -75,6 +77,23 @@ export const PostCard = ({ post, onOpenComments }: { post: FeedPost; onOpenComme
     supabase.from("saves").select("post_id").eq("user_id", user.id).eq("post_id", post.id).maybeSingle()
       .then(({ data }) => setSaved(!!data));
   }, [user?.id, post.id]);
+
+  useEffect(() => {
+    if (post.collaborators) return;
+    (async () => {
+      const { data } = await supabase
+        .from("post_collaborators" as any)
+        .select("user_id")
+        .eq("post_id", post.id).eq("status", "accepted");
+      const ids = (data ?? []).map((r: any) => r.user_id);
+      if (!ids.length) { setCollabs([]); return; }
+      const { data: profs } = await supabase.from("profiles")
+        .select("username, display_name, avatar_url").in("user_id", ids);
+      setCollabs((profs ?? []) as any);
+    })();
+  }, [post.id]);
+
+
 
   // View tracker — fires once per session when card crosses 60% visible
   useEffect(() => {
@@ -140,11 +159,18 @@ export const PostCard = ({ post, onOpenComments }: { post: FeedPost; onOpenComme
   return (
     <article ref={articleRef} className="bg-background">
       <header className="flex items-center gap-3 px-3 py-2.5">
-        <Link to={`/u/${handle}`} className="shrink-0">
+        <Link to={`/u/${handle}`} className="shrink-0 flex -space-x-2">
           {post.profile?.avatar_url ? (
-            <img src={post.profile.avatar_url} alt={name} className="h-8 w-8 rounded-full object-cover" />
+            <img src={post.profile.avatar_url} alt={name} className="h-8 w-8 rounded-full object-cover ring-2 ring-background" />
           ) : (
             <AuraAvatar gradient={gradientFor(handle)} size="sm" initials={initialsOf(name)} />
+          )}
+          {collabs.slice(0, 2).map((c) =>
+            c.avatar_url ? (
+              <img key={c.username} src={c.avatar_url} alt="" className="h-8 w-8 rounded-full object-cover ring-2 ring-background" />
+            ) : (
+              <AuraAvatar key={c.username} gradient={gradientFor(c.username)} size="sm" initials={initialsOf(c.display_name || c.username)} />
+            )
           )}
         </Link>
         <div className="flex-1 min-w-0">
@@ -155,7 +181,19 @@ export const PostCard = ({ post, onOpenComments }: { post: FeedPost; onOpenComme
               ? <VerificationBadge kind={post.profile.verification_kind as any} />
               : post.profile?.verified && <VerificationBadge kind="verified" />}
           </Link>
+          {collabs.length > 0 && (
+            <p className="text-[11px] text-muted-foreground truncate leading-tight">
+              with {collabs.slice(0, 2).map((c, i) => (
+                <span key={c.username}>
+                  {i > 0 && " & "}
+                  <Link to={`/u/${c.username}`} className="text-foreground/80 font-medium">@{c.username}</Link>
+                </span>
+              ))}
+              {collabs.length > 2 && ` +${collabs.length - 2}`}
+            </p>
+          )}
         </div>
+
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button className="text-foreground p-1" aria-label="More"><MoreHorizontal className="h-5 w-5" /></button>

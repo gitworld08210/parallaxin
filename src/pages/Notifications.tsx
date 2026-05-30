@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { Heart, MessageCircle, UserPlus, Mail, Bell, BadgeCheck, Crown, SlidersHorizontal } from "lucide-react";
+import { Heart, MessageCircle, UserPlus, Mail, Bell, BadgeCheck, Crown, SlidersHorizontal, Users } from "lucide-react";
+import { CollabInviteSheet } from "@/components/social/CollabInviteSheet";
 import { AuraAvatar } from "@/components/vibe/AuraAvatar";
 import { EmptyState } from "@/components/empty/EmptyState";
 import { supabase } from "@/integrations/supabase/client";
@@ -21,6 +22,7 @@ const iconFor = (t: string) =>
   t === "like" ? Heart :
   t === "comment" ? MessageCircle :
   t === "follow" ? UserPlus :
+  t === "collab_invite" || t === "collab_accepted" ? Users :
   t === "verification_approved" || t === "verification_revoked" ? BadgeCheck :
   t === "founder_inducted" || t === "founder_revoked" ? Crown :
   Mail;
@@ -30,6 +32,8 @@ const textFor = (t: string) =>
   t === "comment" ? "commented on your post." :
   t === "follow" ? "started following you." :
   t === "mention" ? "mentioned you in a post." :
+  t === "collab_invite" ? "invited you to collaborate on a post." :
+  t === "collab_accepted" ? "accepted your collab invite." :
   t === "verification_approved" ? "Your account has been verified." :
   t === "verification_revoked" ? "Your verification has been removed." :
   t === "founder_inducted" ? "Welcome to the Hall of Founders." :
@@ -51,6 +55,7 @@ const bucketOf = (iso: string): "today" | "yesterday" | "earlier" => {
 const Notifications = () => {
   const { user } = useAuth();
   const [items, setItems] = useState<N[]>([]);
+  const [collabOpen, setCollabOpen] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -116,7 +121,12 @@ const Notifications = () => {
         {!n.read && <span className="h-2 w-2 rounded-full bg-primary shadow-glow shrink-0" />}
       </>
     );
-    const cls = "flex items-center gap-3 rounded-2xl px-3 py-3 hover:bg-muted/40 transition-colors";
+    const cls = "flex items-center gap-3 rounded-2xl px-3 py-3 hover:bg-muted/40 transition-colors w-full text-left";
+    if (n.type === "collab_invite") {
+      return (
+        <button key={n.id} onClick={() => setCollabOpen(true)} className={cls}>{inner}</button>
+      );
+    }
     const to = system
       ? (n.type.startsWith("founder_") ? "/hall-of-founders" : "/profile")
       : n.post_id ? `/p/${n.post_id}` : n.actor ? `/u/${n.actor.username}` : null;
@@ -159,6 +169,7 @@ const Notifications = () => {
           </>
         )}
       </div>
+      <CollabInviteSheet open={collabOpen} onOpenChange={setCollabOpen} />
     </div>
   );
 };
