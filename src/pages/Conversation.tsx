@@ -37,6 +37,8 @@ const Conversation = () => {
   const [sharedPosts, setSharedPosts] = useState<Record<string, SharedPost>>({});
   const [otherTyping, setOtherTyping] = useState(false);
   const [reportMsg, setReportMsg] = useState<string | null>(null);
+  const [aiSuggestions, setAiSuggestions] = useState<string[]>([]);
+  const [aiBusy, setAiBusy] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
   const typingChannelRef = useRef<any>(null);
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
