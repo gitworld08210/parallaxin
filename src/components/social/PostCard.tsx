@@ -112,7 +112,9 @@ export const PostCard = ({ post, onOpenComments }: { post: FeedPost; onOpenComme
           <div className="flex-1 min-w-0">
             <Link to={`/u/${handle}`} className="flex items-center gap-1.5">
               <p className="font-semibold truncate text-sm">{name}</p>
-              {post.profile?.verified && <VerificationBadge kind="verified" />}
+              {post.profile?.verification_kind
+                ? <VerificationBadge kind={post.profile.verification_kind as any} />
+                : post.profile?.verified && <VerificationBadge kind="verified" />}
             </Link>
             <p className="text-xs text-muted-foreground">@{handle} · {timeAgo(post.created_at)}</p>
           </div>
