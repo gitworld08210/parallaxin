@@ -30,7 +30,7 @@ const Messages = () => {
 
     const [{ data: conversations }, { data: others }, { data: lastMsgs }] = await Promise.all([
       supabase.from("conversations").select("id, last_message_at").in("id", ids).order("last_message_at", { ascending: false }),
-      supabase.from("conversation_participants").select("conversation_id, user_id, profile:profiles!conversation_participants_user_id_fkey(user_id, username, display_name, avatar_url)").in("conversation_id", ids).neq("user_id", user.id),
+      supabase.from("conversation_participants").select("conversation_id, user_id, profile:profiles!conv_participants_user_profile_fkey(user_id, username, display_name, avatar_url)").in("conversation_id", ids).neq("user_id", user.id),
       supabase.from("messages").select("conversation_id, content, created_at").in("conversation_id", ids).order("created_at", { ascending: false }),
     ]);
 

@@ -27,7 +27,7 @@ const Conversation = () => {
       setMessages((msgs ?? []) as Msg[]);
       const { data: parts } = await supabase
         .from("conversation_participants")
-        .select("user_id, profile:profiles!conversation_participants_user_id_fkey(username, display_name, avatar_url)")
+        .select("user_id, profile:profiles!conv_participants_user_profile_fkey(username, display_name, avatar_url)")
         .eq("conversation_id", id).neq("user_id", user.id);
       setOther((parts?.[0] as any)?.profile ?? null);
     })();
