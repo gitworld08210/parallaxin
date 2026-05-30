@@ -1,64 +1,77 @@
-## Goal
+# Get Verified — Backend + UI plan
 
-The mockup shows several features that don't yet exist in the app. Add them as **visible but non-clickable placeholders** (with a "Coming soon" hint on tap) so the UI matches the vision. We'll wire real functionality later.
+Scope: rebuild the verification flow to match screens 6 (Verification Center) and 7 (5-step Request wizard). Backend extended to support 5 categories. Eligibility = always eligible (any logged-in user can apply). Badges image is design reference only — not implemented as a system.
 
-## Missing features identified
+## 1. Database changes (one migration)
 
-Comparing mockup vs current app:
+Extend the existing `verification_requests` table — no new tables needed.
 
+```sql
+-- Allow the 5 wizard categories
+ALTER TABLE public.verification_requests
+  DROP CONSTRAINT IF EXISTS verification_requests_category_check;
 
-| Feature                                                                                                                                                                 | In app?              | Action                           |
-| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------- | -------------------------------- |
-| Home, Explore, Reels, Messages, Notifications, Hall of Founders, Saved, Settings, Premium, Wallet, Verification, Profile                                                | Yes                  | skip                             |
-| **Communities**                                                                                                                                                         | No                   | add placeholder                  |
-| **Creator Hub**                                                                                                                                                         | No                   | add placeholder                  |
-| **Analytics** (global, not per-post)                                                                                                                                    | No                   | add placeholder                  |
-| **Help & Support**                                                                                                                                                      | No                   | add placeholder                  |
-| **Achievements** card (Top Creator, Viral Creator, Trendsetter, Hall of Founders badges)                                                                                | No                   | add to Profile as static section |
-| **Performance Overview** (Views / Engagement / Profile Visits / New Followers with sparkline-style stats)                                                               | No                   | add to Profile as static section |
-| **Top Supporters** list                                                                                                                                                 | No                   | add to Profile as static section |
-| **Aura Level** ring (level 12 Legendary, XP progress)                                                                                                                   | No                   | add to Profile as static section |
-| **About** card (interests chips: AI Enthusiast, Cyberpunk Lover, Web3 Believer, Content Creator)**Note:-** All feature button add show on side menu of profile section | Partial (bio exists) | add interests chips card         |
+ALTER TABLE public.verification_requests
+  ADD CONSTRAINT verification_requests_category_check
+  CHECK (category IN ('government','founder','public_figure','business','media'));
 
+-- New fields the wizard collects
+ALTER TABLE public.verification_requests
+  ADD COLUMN IF NOT EXISTS organization text,
+  ADD COLUMN IF NOT EXISTS official_email text,
+  ADD COLUMN IF NOT EXISTS reason text,
+  ADD COLUMN IF NOT EXISTS supporting_doc_url text;
+```
 
-## Implementation
+Existing trigger `on_verification_approved_trg` keeps working — it writes `profiles.verified = true` and `profiles.verification_kind = category` on admin approval, and creates a notification. Nothing to change there.
 
-### 1. Side menu entries (non-clickable)
+Storage bucket `verification-docs` (private) is reused for both the ID doc and the optional supporting doc, under `<user_id>/...`.
 
-In `src/components/layout/SideMenu.tsx`, add new rows for **Communities**, **Creator Hub**, **Analytics**, **Help & Support**. Render them styled identically to the active rows but:
+## 2. UI — two new screens replacing current `/verification`
 
-- Use a `<button>` (not a `<Link>`)
-- On click → `toast({ title: "Coming soon", description: "<feature> is launching shortly." })`
-- Add a subtle "Soon" pill on the right
+### Screen A — `/verification` (Verification Center, matches screen 6)
+- Header: back button + "Verification Center" + bell
+- Hero card: shield illustration, "Get Verified on Aurelix", subtitle, **Request Verification** CTA → `/verification/request`
+- "Your Verification" status list:
+  - **Status** — `Not Verified` / `Pending` / `Verified` (read from `verification_requests` + `profiles.verified`)
+  - **Eligibility** — always "You are eligible to apply" (per your choice)
+  - **Benefits** — static line "Stand out, get discovered"
+- "Learn more about verification" link at bottom (static info sheet, no route change)
+- If user already has `status='pending'` → CTA becomes disabled "Under review", request screen blocks resubmit
+- If `profiles.verified=true` → hero shows verified state with their badge kind
 
-### 2. Profile page additions (static, non-clickable)
+### Screen B — `/verification/request` (5-step wizard, matches screen 7)
+Step indicator pills `1 2 3 4 5` at top. Back button cancels to Center.
 
-In `src/pages/Profile.tsx`, add four new presentational sections below the existing profile header, each wrapped in a card matching the mockup's dark glass aesthetic:
+1. **Select Type** — 5 cards: Government / Official, Founder, Public Figure, Business / Brand, Media / Journalist. Radio selection.
+2. **Identity** — full legal name, country (text), date of birth (optional)
+3. **Proof** — upload ID document (required, image/PDF) → `verification-docs/<uid>/id-<uuid>.<ext>`
+4. **Context** — organization (optional), official email (optional), reason textarea, reference links (one per line), optional supporting doc → `verification-docs/<uid>/support-<uuid>.<ext>`
+5. **Review & submit** — read-only summary + Submit button → `INSERT` into `verification_requests` with `status='pending'`, then redirect to Center showing "Under review"
 
-- **About card** — bio text + 4 interest chips with icons
-- **Achievements** — 2×2 grid of badge tiles (icon + title + subtitle)
-- **Performance Overview** — 4 stat tiles (label, big number, % change, faux sparkline SVG)
-- **Top Supporters** — list of 4 mock supporters with avatar + handle + Aura amount
-- **Aura Level** — circular progress ring with level number, label, and XP
+Each step has Next / Back. Validation per step; Next disabled until required fields filled.
 
-All data is hardcoded mock data for now. All "See All" / "View …" buttons render but on click show the same "Coming soon" toast.
+## 3. Files
 
-### 3. Visual style
+**New**
+- `src/pages/VerificationCenter.tsx` — screen 6
+- `src/pages/VerificationRequest.tsx` — screen 7 wizard (single file, internal step state)
 
-- Reuse existing semantic tokens (`bg-card`, `border-border`, `text-primary`, `shadow-glow`)
-- New sections use the same red-glow accent already defined in `index.css`
-- No new colors added
+**Edit**
+- `src/App.tsx` — replace `/verification` route, add `/verification/request`
+- `src/components/layout/SideMenu.tsx` — "Verification Center" row → real route (remove "Soon")
+- `src/lib/mock.ts` — extend `VerificationKind` enum if used elsewhere
 
-## Non-goals
+**Delete / archive**
+- Old `src/pages/Verification.tsx` — replaced by Center + Request
 
-- No new routes, no backend changes, no schema changes
-- No real analytics, communities, or achievements logic
-- Existing pages (Feed, Reels, Messages, etc.) untouched
+## 4. Out of scope (explicitly)
 
-## Files touched
+- The 13-badge artwork system from the second image (design reference only)
+- Aura Level, Achievements, Monetization, Analytics, Creator Hub pages (separate phase)
+- Admin approval UI (admin still approves via DB / existing flow)
+- Eligibility rules — always eligible for now
 
-- `src/components/layout/SideMenu.tsx` — add 4 non-clickable rows
-- `src/pages/Profile.tsx` — add 5 new presentational sections
-- (maybe) `src/components/profile/` — small new folder for the section components if Profile.tsx gets long
+---
 
-Ready to build when you approve.
+Reply **"go"** to start. Migration runs first (needs your approval), then UI.

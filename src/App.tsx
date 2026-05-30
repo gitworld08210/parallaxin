@@ -28,7 +28,8 @@ const Wallet = lazy(() => import("./pages/Wallet"));
 const Profile = lazy(() => import("./pages/Profile"));
 const EditProfile = lazy(() => import("./pages/EditProfile"));
 const Premium = lazy(() => import("./pages/Premium"));
-const Verification = lazy(() => import("./pages/Verification"));
+const VerificationCenter = lazy(() => import("./pages/VerificationCenter"));
+const VerificationRequest = lazy(() => import("./pages/VerificationRequest"));
 const FollowList = lazy(() => import("./pages/FollowList"));
 const Assistant = lazy(() => import("./pages/Assistant"));
 const Drafts = lazy(() => import("./pages/Drafts"));
@@ -101,7 +102,8 @@ const App = () => (
                   <Route path="/u/:username" element={<Profile />} />
                   <Route path="/u/:username/:kind" element={<FollowList />} />
                   <Route path="/premium" element={<Premium />} />
-                  <Route path="/verification" element={<Verification />} />
+                  <Route path="/verification" element={<VerificationCenter />} />
+                  <Route path="/verification/request" element={<VerificationRequest />} />
                   <Route path="/assistant" element={<Assistant />} />
                   <Route path="/drafts" element={<Drafts />} />
                   <Route path="/p/:postId/insights" element={<PostInsights />} />
