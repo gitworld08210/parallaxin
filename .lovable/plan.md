@@ -1,39 +1,38 @@
-## Problem
+## Issue found
 
-The `verification_requests` table has RLS:
+You are admin. The update is failing because the approval trigger tries to create this notification type:
 
-- `vr_admin_update` — UPDATE allowed only if `has_role(auth.uid(), 'admin')`
-- `vr_update_own` — user can only update their own row while `status = 'pending'`
+- `verification_approved`
 
-When you flip `approved = true` from the Cloud table editor, the request runs as your authenticated user. Since you have no `admin` row in `user_roles`, the UPDATE is rejected → "Failed to update row".
+But the `notifications` table currently only allows:
 
-Once you're an admin, the existing `on_verification_approved_trg` trigger will automatically:
-- set `profiles.verified = true` and `verification_kind`
-- set `status = 'approved'` and `reviewed_at = now()`
-- send a `verification_approved` notification
+- `like`
+- `comment`
+- `follow`
+- `message`
+- `mention`
 
-So you only need to toggle `approved` — don't manually type "Approve" into `status` (the trigger sets it).
+So when you turn `approved` on, the trigger updates the profile and then fails at the notification step because `verification_approved` is blocked by the table rule. That makes the whole row save fail.
 
-## Fix
+## Plan
 
-Insert one row into `public.user_roles` granting `admin` to your account:
+1. **Fix notification type rules**
+   - Update the `notifications` table rule to also allow the app’s existing system notifications:
+     - `verification_approved`
+     - `verification_revoked`
+     - `founder_inducted`
+     - `founder_revoked`
 
-```sql
-INSERT INTO public.user_roles (user_id, role)
-VALUES ('52acf2d9-d278-40ad-ab26-5c65fb52ac88', 'admin')
-ON CONFLICT (user_id, role) DO NOTHING;
-```
+2. **Keep the existing approval trigger**
+   - Leave the current approval automation in place:
+     - turning `approved` on sets profile verified badge
+     - sets request `status = approved`
+     - sets `reviewed_at = now()`
+     - creates the notification
 
-This uses the `supabase--insert` tool (data change, not a schema migration).
+3. **Approve the pending request that failed**
+   - After the schema fix, update the pending verification request for `66e6ebe2-f61c-4cb1-beb6-3081faa41e69` to `approved = true`.
 
-## After applying
-
-1. Reopen the row in the table editor.
-2. Toggle **approved** to on. Leave `status` and `reviewed_at` alone — the trigger fills them.
-3. Click **Save**. The profile's verified badge will turn on automatically.
-
-## Out of scope
-
-- No schema or RLS changes.
-- No frontend changes.
-- Not building an in-app admin moderation screen (can be a follow-up if you want to stop using the raw table editor).
+4. **Verify**
+   - Confirm the request is approved.
+   - Confirm the profile has `verified = true` and `verification_kind = gov`.
