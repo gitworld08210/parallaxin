@@ -169,7 +169,7 @@ const NavSlot = ({
   to: string;
   end?: boolean;
   label: string;
-  icon: React.ComponentType<{ className?: string; strokeWidth?: number }>;
+  icon: any;
   dot?: "cyan" | "magenta" | null;
 }) => (
   <NavLink to={to} end={end} className="flex flex-col items-center gap-1 group px-2 active:scale-95 transition-transform">
