@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ChevronLeft, Heart, MessageCircle, UserPlus, Mail, Bell } from "lucide-react";
+import { ChevronLeft, Heart, MessageCircle, UserPlus, Mail, Bell, BadgeCheck, Crown } from "lucide-react";
 import { TopBar } from "@/components/vibe/TopBar";
 import { AuraAvatar } from "@/components/vibe/AuraAvatar";
 import { EmptyState } from "@/components/empty/EmptyState";
@@ -10,7 +10,7 @@ import { gradientFor, initialsOf, timeAgo } from "@/lib/format";
 
 type N = {
   id: string;
-  type: "like" | "comment" | "follow" | "message" | "mention";
+  type: string;
   read: boolean;
   created_at: string;
   actor_id: string | null;
@@ -18,8 +18,26 @@ type N = {
   actor: { username: string; display_name: string; avatar_url: string | null } | null;
 };
 
-const iconFor = (t: N["type"]) => t === "like" ? Heart : t === "comment" ? MessageCircle : t === "follow" ? UserPlus : Mail;
-const textFor = (t: N["type"]) => t === "like" ? "liked your post" : t === "comment" ? "commented on your post" : t === "follow" ? "started following you" : t === "mention" ? "mentioned you" : "sent you a message";
+const iconFor = (t: string) =>
+  t === "like" ? Heart :
+  t === "comment" ? MessageCircle :
+  t === "follow" ? UserPlus :
+  t === "verification_approved" || t === "verification_revoked" ? BadgeCheck :
+  t === "founder_inducted" || t === "founder_revoked" ? Crown :
+  Mail;
+
+const textFor = (t: string) =>
+  t === "like" ? "liked your post" :
+  t === "comment" ? "commented on your post" :
+  t === "follow" ? "started following you" :
+  t === "mention" ? "mentioned you" :
+  t === "verification_approved" ? "Your account has been verified" :
+  t === "verification_revoked" ? "Your verification has been removed" :
+  t === "founder_inducted" ? "Welcome to the Hall of Founders" :
+  t === "founder_revoked" ? "Your founder status has been updated" :
+  "sent you a message";
+
+const isSystem = (t: string) => t.startsWith("verification_") || t.startsWith("founder_");
 
 const Notifications = () => {
   const { user } = useAuth();
@@ -74,29 +92,44 @@ const Notifications = () => {
         )}
         {items.map((n) => {
           const Icon = iconFor(n.type);
+          const system = isSystem(n.type);
           const inner = (
             <>
               <div className="relative">
-                {n.actor?.avatar_url ? (
+                {system ? (
+                  <div className="h-12 w-12 rounded-full bg-gradient-primary grid place-items-center">
+                    <Icon className="h-5 w-5 text-primary-foreground" />
+                  </div>
+                ) : n.actor?.avatar_url ? (
                   <img src={n.actor.avatar_url} alt="" className="h-12 w-12 rounded-full object-cover" />
                 ) : (
                   <AuraAvatar gradient={gradientFor(n.actor?.username)} size="md" initials={initialsOf(n.actor?.display_name || n.actor?.username)} />
                 )}
-                <span className="absolute -bottom-1 -right-1 h-6 w-6 rounded-full bg-gradient-primary grid place-items-center shadow-glow">
-                  <Icon className="h-3 w-3 text-primary-foreground" />
-                </span>
+                {!system && (
+                  <span className="absolute -bottom-1 -right-1 h-6 w-6 rounded-full bg-gradient-primary grid place-items-center shadow-glow">
+                    <Icon className="h-3 w-3 text-primary-foreground" />
+                  </span>
+                )}
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm">
-                  <span className="font-semibold">{n.actor?.display_name || n.actor?.username || "Someone"}</span>{" "}
-                  <span className="text-muted-foreground">{textFor(n.type)}</span>
+                  {system ? (
+                    <span className="font-semibold">{textFor(n.type)}</span>
+                  ) : (
+                    <>
+                      <span className="font-semibold">{n.actor?.display_name || n.actor?.username || "Someone"}</span>{" "}
+                      <span className="text-muted-foreground">{textFor(n.type)}</span>
+                    </>
+                  )}
                 </p>
                 <p className="text-[10px] text-muted-foreground">{timeAgo(n.created_at)}</p>
               </div>
             </>
           );
           const cls = "flex items-center gap-3 rounded-2xl px-2 py-3 hover:bg-muted/40 transition-colors";
-          const to = n.post_id ? `/p/${n.post_id}` : n.actor ? `/u/${n.actor.username}` : null;
+          const to = system
+            ? (n.type.startsWith("founder_") ? "/hall-of-founders" : "/profile")
+            : n.post_id ? `/p/${n.post_id}` : n.actor ? `/u/${n.actor.username}` : null;
           return to ? (
             <Link to={to} key={n.id} className={cls}>{inner}</Link>
           ) : (
