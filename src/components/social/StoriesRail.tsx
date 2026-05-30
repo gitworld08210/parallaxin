@@ -27,9 +27,17 @@ export const StoriesRail = () => {
   const [viewingIdx, setViewingIdx] = useState<number | null>(null);
 
   const load = async () => {
+    if (!user?.id) { setGroups([]); return; }
+    const { data: f } = await supabase
+      .from("follows")
+      .select("following_id")
+      .eq("follower_id", user.id);
+    const ids = (f ?? []).map((r: any) => r.following_id);
+    if (ids.length === 0) { setGroups([]); return; }
     const { data } = await supabase
       .from("stories")
       .select("id, user_id, media_url, media_type, created_at, profile:profiles!stories_user_profile_fkey(username, display_name, avatar_url)")
+      .in("user_id", ids)
       .gt("expires_at", new Date().toISOString())
       .order("created_at", { ascending: true });
     const map = new Map<string, Group>();
