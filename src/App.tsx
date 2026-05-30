@@ -25,6 +25,8 @@ import EditProfile from "./pages/EditProfile";
 import Premium from "./pages/Premium";
 import Verification from "./pages/Verification";
 import FollowList from "./pages/FollowList";
+import Assistant from "./pages/Assistant";
+import { RealtimeToaster } from "@/components/social/RealtimeToaster";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -40,6 +42,7 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route element={<ProtectedRoute />}>
+              <RealtimeToaster />
               <Route element={<AppShell />}>
                 <Route path="/" element={<Feed />} />
                 <Route path="/reels" element={<Reels />} />
@@ -59,6 +62,7 @@ const App = () => (
                 <Route path="/u/:username/:kind" element={<FollowList />} />
                 <Route path="/premium" element={<Premium />} />
                 <Route path="/verification" element={<Verification />} />
+                <Route path="/assistant" element={<Assistant />} />
               </Route>
             </Route>
             <Route path="*" element={<NotFound />} />
