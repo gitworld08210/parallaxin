@@ -1,13 +1,12 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Bell, Sparkles, Plus, Film, ImageIcon, Wand2 } from "lucide-react";
+import { Bell, Sparkles, Plus, Wand2, Compass } from "lucide-react";
 import { TopBar } from "@/components/vibe/TopBar";
 import { PostCard, FeedPost } from "@/components/social/PostCard";
 import { CommentSheet } from "@/components/social/CommentSheet";
 import { StoriesRail } from "@/components/social/StoriesRail";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthProvider";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 const Feed = () => {
   const { user } = useAuth();
