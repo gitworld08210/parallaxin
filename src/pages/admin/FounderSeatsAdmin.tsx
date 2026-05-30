@@ -25,6 +25,14 @@ const FounderSeatsAdmin = () => {
   };
   useEffect(() => { load(); }, []);
 
+  const createSeat = async () => {
+    const next = (rows.reduce((m, r) => Math.max(m, r.seat_number), 0) || 0) + 1;
+    const { error } = await supabase.from("founder_seats").insert({ seat_number: next, is_active: false });
+    if (error) return toast.error(error.message);
+    toast.success(`Created seat #${next}`);
+    load();
+  };
+
   const save = async (s: Seat) => {
     const { error } = await supabase
       .from("founder_seats")
@@ -43,11 +51,15 @@ const FounderSeatsAdmin = () => {
 
   return (
     <div>
-      <header className="mb-6">
-        <h1 className="text-2xl font-bold">Founder Seats</h1>
-        <p className="text-sm text-muted-foreground">Assign founders, set titles, and manage council roles.</p>
+      <header className="mb-6 flex items-start justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold">Founder Seats</h1>
+          <p className="text-sm text-muted-foreground">Assign founders, set titles, and manage council roles.</p>
+        </div>
+        <button onClick={createSeat} className="px-4 py-2 rounded-xl bg-primary text-primary-foreground text-sm font-semibold whitespace-nowrap">+ New seat</button>
       </header>
       {loading ? <p className="text-sm text-muted-foreground">Loading…</p>
+      : rows.length === 0 ? <p className="text-sm text-muted-foreground">No seats yet. Click “New seat” to add one.</p>
       : (
         <div className="space-y-3">
           {rows.map((s) => (
