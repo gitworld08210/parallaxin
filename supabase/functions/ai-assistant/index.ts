@@ -52,7 +52,7 @@ Deno.serve(async (req) => {
       body: JSON.stringify({
         model: 'openai/gpt-5.5-pro',
         stream: true,
-        messages: [system, ...messages],
+        messages: [system, ...safeMessages],
       }),
     });
 
