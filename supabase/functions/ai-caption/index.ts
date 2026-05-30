@@ -16,7 +16,11 @@ Deno.serve(async (req) => {
     const claims = await requireAuth(req);
     if (!claims) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
-    const { hint } = await req.json();
+    const body = await req.json().catch(() => ({}));
+    const rawHint = body?.hint;
+    const hint = typeof rawHint === "string"
+      ? rawHint.replace(/[\r\n\t]+/g, " ").slice(0, 500)
+      : "creator post";
     const apiKey = Deno.env.get("LOVABLE_API_KEY");
     if (!apiKey) throw new Error("Missing LOVABLE_API_KEY");
 
