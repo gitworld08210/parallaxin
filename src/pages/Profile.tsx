@@ -233,81 +233,28 @@ const Profile = () => {
           <p className="text-lg font-bold inline-flex items-center gap-1.5 leading-tight">
             <span className="truncate">{profile.display_name || profile.username}</span>
             {profile.verification_kind && <VerificationBadge kind={profile.verification_kind as any} />}
+            {profile.is_founder && (
+              <Link to="/hall-of-founders" aria-label="Hall of Founders" className="inline-flex items-center justify-center h-5 w-5 rounded-full text-aura">
+                <Crown className="h-4 w-4" />
+              </Link>
+            )}
           </p>
           <p className="text-xs text-muted-foreground">@{profile.username}</p>
-          {profile.bio && <p className="text-sm whitespace-pre-wrap leading-relaxed pt-1">{profile.bio}</p>}
-          <a href={`https://aurelix.app/${profile.username}`} target="_blank" rel="noreferrer" className="text-sm text-primary inline-block">
-            aurelix.app/{profile.username}
-          </a>
-          {profile.is_founder && (
-            <div className="pt-1">
-              <Link to="/hall-of-founders" className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-gradient-to-r from-aura/30 to-primary/20 border border-aura/40 text-aura">
-                <Crown className="h-3.5 w-3.5" />
-                Hall of Founders
-              </Link>
-            </div>
-          )}
         </div>
       </div>
 
-      {/* Stats */}
-      <div className="px-4 mt-5 grid grid-cols-3 gap-2 text-left">
-        <Stat value={profile.posts_count} label="Posts" />
-        <Stat value={profile.followers_count} label="Followers" to={`/u/${profile.username}/followers`} />
-        <Stat value={profile.following_count} label="Following" to={`/u/${profile.username}/following`} />
+      {/* About strip — bio + website link, full width */}
+      <div className="px-4 mt-3 space-y-1">
+        {profile.bio && <p className="text-sm whitespace-pre-wrap leading-relaxed">{profile.bio}</p>}
+        <a href={`https://aurelix.app/${profile.username}`} target="_blank" rel="noreferrer" className="text-sm text-primary inline-block">
+          aurelix.app/{profile.username}
+        </a>
       </div>
 
-      {/* Actions */}
-      <div className="px-4 mt-5 flex gap-2">
-        {isMe ? (
-          <>
-            <Link to="/profile/edit" className="flex-1 text-center py-2.5 rounded-xl bg-gradient-to-r from-primary to-aura text-primary-foreground font-semibold text-sm shadow-[0_0_20px_hsl(var(--primary)/0.4)]">
-              Edit Profile
-            </Link>
-            <button onClick={shareProfile} className="flex-1 text-center py-2.5 rounded-xl border border-border bg-muted/30 text-foreground font-semibold text-sm">
-              Share Profile
-            </button>
-            <button onClick={shareProfile} aria-label="Invite" className="h-10 w-10 grid place-items-center rounded-xl border border-border bg-muted/30">
-              <UserPlus className="h-4 w-4" />
-            </button>
-          </>
-        ) : (
-          <>
-            <button
-              onClick={toggleFollow}
-              className={cn(
-                "flex-1 py-2.5 rounded-xl font-semibold text-sm",
-                isFollowing ? "bg-muted text-foreground" : "bg-gradient-to-r from-primary to-aura text-primary-foreground shadow-[0_0_20px_hsl(var(--primary)/0.4)]",
-              )}
-            >
-              {isFollowing ? "Following" : "Follow"}
-            </button>
-            <button
-              onClick={async () => {
-                if (!user || !profile) return;
-                const { data, error } = await supabase.rpc("start_dm", { other_user_id: profile.user_id });
-                if (error) { toast.error(error.message || "Could not start chat"); return; }
-                if (data) nav(`/messages/${data}`);
-              }}
-              className="flex-1 py-2.5 rounded-xl border border-border bg-muted/30 text-foreground font-semibold text-sm"
-            >
-              Message
-            </button>
-            <button onClick={shareProfile} aria-label="Share" className="h-10 w-10 grid place-items-center rounded-xl border border-border bg-muted/30">
-              <Share2 className="h-4 w-4" />
-            </button>
-          </>
+      {/* Stats */}
+...
         )}
       </div>
-
-      {/* Verification CTA */}
-      {isMe && !profile.verified && (
-        <Link to="/verification-center" className="block mx-4 mt-4 px-3 py-2.5 rounded-xl border border-primary/30 bg-primary/5 flex items-center gap-2 text-sm">
-          <BadgeCheck className="h-4 w-4 text-primary" />
-          <span className="flex-1 text-foreground">Request verification</span>
-          <span className="text-muted-foreground">›</span>
-        </Link>
-      )}
 
       {/* Highlights */}
       {profile && <HighlightsRail userId={profile.user_id} isMe={!!isMe} />}

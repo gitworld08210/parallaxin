@@ -1,40 +1,46 @@
+## Goal
 
-# Match Profile to Mock — fix what's actually broken
+Make `/profile` match the attached reference 1:1. Remove elements that aren't in the reference; reflow the header so bio + website sit full-width below the avatar row instead of inside the identity column.
 
-Inspected the live `/profile` page next to mock screen 1. Three concrete mismatches:
+## Changes — `src/pages/Profile.tsx` only
 
-## Issue 1 — ProfileShowcase still ships mock data ❌
-The block under your bio shows `3.2M views`, `289K engagement`, `$12,450 supporters`, `Aura Level 12 Legendary 12,450/15,000 XP`. You explicitly asked for zero values. This is the real source of the frustration.
+### 1. Identity column (avatar+name row)
 
-**Fix in `src/components/profile/ProfileShowcase.tsx`:**
-- About: keep section, drop the hardcoded "AI Enthusiast / Cyberpunk Lover / Web3 Believer / Content Creator" chips (or render only what's in `profile.interests`)
-- Achievements (4 tiles): keep names but render as **locked** (muted icon, no neon color, small lock icon corner)
-- Performance Overview: Views `0`, Engagement `0`, Profile Visits `0`, New Followers `0`. Replace the fake sparklines with a flat baseline.
-- Top Supporters: empty state "No supporters yet" instead of NovaX/CyberZ/Dreamy/Stellar
-- Aura Level: ring at `0%`, Level `0`, label `Beginner`, `0 / 1,000 XP`
-- "View Analytics" → routes to `/analytics`, "View Aura Benefits" → `/aura-level` (real pages, not toast)
+Keep only the display name (+ verified tick if approved by admin in backend) and `@username`. Remove from this column:
 
-## Issue 2 — Profile header layout doesn't match mock ❌
-Mock: avatar sits **top-left overlapping the cover**, with display name + verified tick + handle + bio + website all stacked **to the right of the avatar** on the same row. Currently the avatar is centered-left and name/bio sit underneath.
+- the bio paragraph
+- the Hall of Founders inline pill if approved by admin in backend then only appear here
 
-**Fix in `src/pages/Profile.tsx`:**
-- Wrap avatar + identity in a `flex gap-4` row
-- Avatar `h-20 w-20`, neon gradient ring stays
-- Identity column on the right gets name, `@handle`, bio, `aurelix.app/<username>` link
-- Hall of Founders pill moves below this row (full width, left-aligned)
-- Stats row stays as-is below
+### 2. New full-width "About strip" between avatar row and Stats
 
-## Issue 3 — Empty cover looks broken ❌
-When `profile.cover_url` is null the banner area just shows dark gradient with no content. Mock has a rich cinematic cover.
+Render directly after the avatar row, before Stats:
 
-**Fix:** when no cover, render a layered fallback — radial gradient using `--primary` + `--aura` with subtle noise, instead of the flat dark gradient. (No image asset added.)
+- `{profile.bio}` as a left-aligned `<p>` (only if present)
+- `aurelix.app/{username}` as a primary-colored link on its own line
 
-## Out of scope (not touching)
-- HighlightsRail (renders empty state correctly when user has no highlights — matches mock once user adds them)
-- Bottom nav (the floating row in my screenshot was a full-page screenshot artifact, not a real bug)
-- Tabs row (already matches mock layout: text + small icon + underline)
+This matches the reference, where `Gg` and `aurelix.app/ad876` start from the left edge under the avatar — not next to the name.
 
-## Verification step
-After edits I will re-screenshot `/profile` at 414×896 and compare against the mock crop. If anything still doesn't match, I keep iterating before handing back.
+### 3. Delete the Verification CTA banner
 
-Reply **go**.
+Remove the entire block currently between Actions and Highlights:
+
+```
+{isMe && !profile.verified && (<Link to="/verification-center" …>Request verification</Link>)}
+```
+
+This feature lives in the side menu; it shouldn't appear on the profile screen.
+
+## Out of scope (already matches reference)
+
+- Top bar (AURELIX wordmark, back, bell, menu)
+- Cover banner gradient fallback
+- Avatar treatment (gradient ring, size, overlap)
+- Stats row (Posts / Followers / Following)
+- Action buttons (Edit Profile / Share Profile / invite)
+- HighlightsRail "New" tile
+- ProfileShowcase (About, Achievements, Performance, Top Supporters, Aura Level)
+- Tabs row and empty "No posts yet" state
+
+## Verification
+
+After edit, navigate to `/profile` at 414×896 and screenshot. Compare side-by-side with the reference and confirm: bio+link sit full-width under the avatar row, no "Request verification" banner appears, no Hall of Founders pill in header.
