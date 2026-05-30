@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ChevronLeft, Heart, MessageCircle, UserPlus, Mail } from "lucide-react";
+import { ChevronLeft, Heart, MessageCircle, UserPlus, Mail, Bell } from "lucide-react";
 import { TopBar } from "@/components/vibe/TopBar";
 import { AuraAvatar } from "@/components/vibe/AuraAvatar";
+import { EmptyState } from "@/components/empty/EmptyState";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthProvider";
 import { gradientFor, initialsOf, timeAgo } from "@/lib/format";
@@ -64,7 +65,13 @@ const Notifications = () => {
         }
       />
       <div className="px-5 space-y-1 pb-6">
-        {items.length === 0 && <p className="text-sm text-muted-foreground text-center py-16">Nothing new yet.</p>}
+        {items.length === 0 && (
+          <EmptyState
+            icon={Bell}
+            title="Nothing new yet"
+            subtitle="Likes, comments, follows, and mentions will show up here."
+          />
+        )}
         {items.map((n) => {
           const Icon = iconFor(n.type);
           const inner = (

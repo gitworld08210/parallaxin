@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { Search, PenSquare, X, ChevronLeft } from "lucide-react";
+import { Search, PenSquare, X, ChevronLeft, MessageCircle } from "lucide-react";
 import { AuraAvatar } from "@/components/vibe/AuraAvatar";
 import { VerificationBadge } from "@/components/vibe/VerificationBadge";
+import { EmptyState } from "@/components/empty/EmptyState";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthProvider";
 import { gradientFor, initialsOf, timeAgo } from "@/lib/format";
@@ -142,13 +143,13 @@ const Messages = () => {
       <div className="px-1 mt-2">
         {loading && <p className="text-sm text-muted-foreground text-center py-10">Loading…</p>}
         {!loading && convs.length === 0 && (
-          <div className="text-center py-20 px-6 space-y-4">
-            <p className="text-base font-semibold">Your messages</p>
-            <p className="text-sm text-muted-foreground">Send a message to start a chat.</p>
-            <button onClick={() => setComposerOpen(true)} className="px-4 py-2 rounded-md bg-primary text-primary-foreground text-sm font-semibold">
-              Send message
-            </button>
-          </div>
+          <EmptyState
+            icon={MessageCircle}
+            title="Your messages"
+            subtitle="Send a private message to start a conversation."
+            cta={{ label: "New message", onClick: () => setComposerOpen(true) }}
+            size="lg"
+          />
         )}
         {!loading && convs.length > 0 && filtered.length === 0 && (
           <p className="text-sm text-muted-foreground text-center py-10">No matches.</p>
