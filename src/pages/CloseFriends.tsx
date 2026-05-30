@@ -27,9 +27,14 @@ const CloseFriends = () => {
     (async () => {
       setLoading(true);
       const { data: f } = await supabase.from("follows")
-        .select("following_id, profile:profiles!follows_following_profile_fkey(user_id, username, display_name, avatar_url)" as any)
-        .eq("follower_id", user.id);
-      const rows = ((f ?? []) as any[]).map((r) => r.profile).filter(Boolean) as Row[];
+        .select("following_id").eq("follower_id", user.id);
+      const ids = (f ?? []).map((x: any) => x.following_id);
+      let rows: Row[] = [];
+      if (ids.length) {
+        const { data: ps } = await supabase.from("profiles")
+          .select("user_id, username, display_name, avatar_url").in("user_id", ids);
+        rows = (ps ?? []) as Row[];
+      }
       setFollowing(rows);
       const { data: cf } = await (supabase.from("close_friends" as any)
         .select("friend_id").eq("owner_id", user.id) as any);
