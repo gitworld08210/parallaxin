@@ -1,11 +1,14 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { BadgeCheck, LogOut, Grid3x3, Film, Bookmark, MoreHorizontal, Ban, VolumeX, FileText, Star } from "lucide-react";
+import { BadgeCheck, LogOut, Grid3x3, Film, Bookmark, MoreHorizontal, Ban, VolumeX, FileText, Star, Flag, Crown } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { AuraAvatar } from "@/components/vibe/AuraAvatar";
 import { VerificationBadge } from "@/components/vibe/VerificationBadge";
 import { PostCard, FeedPost } from "@/components/social/PostCard";
 import { CommentSheet } from "@/components/social/CommentSheet";
+import { ReportSheet } from "@/components/social/ReportSheet";
+import { HighlightsRail } from "@/components/social/HighlightsRail";
+import { FounderBadge } from "@/components/founders/FounderBadge";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthProvider";
 import { fmt, gradientFor, initialsOf } from "@/lib/format";
@@ -24,6 +27,10 @@ type ProfileRow = {
   followers_count: number;
   following_count: number;
   posts_count: number;
+  is_founder?: boolean | null;
+  join_era?: string | null;
+  founder_title?: string | null;
+  council_role?: string | null;
 };
 
 type Tab = "posts" | "reels" | "saved";
@@ -42,6 +49,7 @@ const Profile = () => {
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<Tab>("posts");
   const [commentPost, setCommentPost] = useState<string | null>(null);
+  const [reportOpen, setReportOpen] = useState(false);
 
   const isMe = !username || (me && username === me.username);
 
@@ -172,6 +180,10 @@ const Profile = () => {
                   <VolumeX className="h-4 w-4 mr-2" />
                   {isMuted ? "Unmute" : "Mute"} @{profile.username}
                 </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setReportOpen(true)} className="text-destructive focus:text-destructive">
+                  <Flag className="h-4 w-4 mr-2" />
+                  Report @{profile.username}
+                </DropdownMenuItem>
                 <DropdownMenuItem onClick={toggleBlock} className="text-destructive focus:text-destructive">
                   <Ban className="h-4 w-4 mr-2" />
                   {isBlocked ? "Unblock" : "Block"} @{profile.username}
@@ -198,9 +210,31 @@ const Profile = () => {
 
       {/* Display name + bio */}
       <div className="px-4 mt-3">
-        <p className="text-sm font-semibold">{profile.display_name || profile.username}</p>
+        <p className="text-sm font-semibold inline-flex items-center gap-1.5">
+          {profile.display_name || profile.username}
+          {profile.is_founder && (
+            <Link to={`/founders/${profile.username}`} aria-label="Founder">
+              <FounderBadge tier={profile.join_era === "genesis" ? "genesis" : profile.council_role ? "council" : "founder"} size={13} />
+            </Link>
+          )}
+        </p>
+        {profile.founder_title && (
+          <p className="text-[10px] uppercase tracking-[0.25em] text-aura/80 mt-0.5">{profile.founder_title}</p>
+        )}
         {profile.bio && <p className="text-sm mt-0.5 whitespace-pre-wrap">{profile.bio}</p>}
       </div>
+
+      {/* Highlights rail */}
+      {profile && <HighlightsRail userId={profile.user_id} isMe={!!isMe} />}
+
+      {/* Founder hall entry */}
+      {profile.is_founder && (
+        <Link to="/hall-of-founders" className="mx-4 mt-4 block px-3 py-2.5 rounded-md border border-aura/30 bg-aura/5 flex items-center gap-2 text-sm">
+          <Crown className="h-4 w-4 text-aura" />
+          <span className="flex-1 text-foreground">Enter Hall of Founders</span>
+          <span className="text-muted-foreground">›</span>
+        </Link>
+      )}
 
       {/* Actions */}
       <div className="px-4 mt-4 flex gap-2">
@@ -303,6 +337,7 @@ const Profile = () => {
       )}
 
       <CommentSheet postId={commentPost} open={!!commentPost} onOpenChange={(b) => !b && setCommentPost(null)} />
+      <ReportSheet open={reportOpen} onOpenChange={setReportOpen} targetKind="profile" targetId={profile?.user_id ?? null} />
     </div>
   );
 };

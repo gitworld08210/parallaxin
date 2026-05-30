@@ -150,3 +150,30 @@
 @keyframes aura-spin { to { transform: rotate(360deg); } }
 @keyframes float-soft { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
 @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+@keyframes founder-pulse {
+  0%, 100% { opacity: 0.35; transform: scale(0.9); }
+  50%      { opacity: 0.75; transform: scale(1.25); }
+}
+
+/* Aurum — founder-only theme. Obsidian + warm gold. */
+.theme-aurum {
+  --background: 30 12% 4%;
+  --foreground: 45 30% 96%;
+  --card: 30 10% 7%;
+  --card-foreground: 45 30% 96%;
+  --popover: 30 10% 7%;
+  --popover-foreground: 45 30% 96%;
+  --primary: 42 90% 58%;
+  --primary-foreground: 30 30% 6%;
+  --primary-glow: 42 100% 70%;
+  --secondary: 30 8% 12%;
+  --secondary-foreground: 45 30% 96%;
+  --muted: 30 8% 12%;
+  --muted-foreground: 42 15% 65%;
+  --accent: 42 90% 58%;
+  --accent-foreground: 30 30% 6%;
+  --aura: 42 90% 58%;
+  --border: 42 30% 18%;
+  --input: 30 8% 12%;
+  --ring: 42 90% 58%;
+}

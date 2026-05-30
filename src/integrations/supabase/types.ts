@@ -289,6 +289,8 @@ export type Database = {
           conversation_id: string
           created_at: string
           id: string
+          media_type: string | null
+          media_url: string | null
           read_at: string | null
           sender_id: string
           shared_post_id: string | null
@@ -298,6 +300,8 @@ export type Database = {
           conversation_id: string
           created_at?: string
           id?: string
+          media_type?: string | null
+          media_url?: string | null
           read_at?: string | null
           sender_id: string
           shared_post_id?: string | null
@@ -307,6 +311,8 @@ export type Database = {
           conversation_id?: string
           created_at?: string
           id?: string
+          media_type?: string | null
+          media_url?: string | null
           read_at?: string | null
           sender_id?: string
           shared_post_id?: string | null
@@ -480,8 +486,10 @@ export type Database = {
           aura_rank: string | null
           avatar_url: string | null
           bio: string | null
+          chronicle: string | null
           contribution_score: number
           council_role: Database["public"]["Enums"]["council_role"] | null
+          council_vote_weight: number
           cover_url: string | null
           created_at: string
           display_name: string
@@ -495,6 +503,7 @@ export type Database = {
           last_seen_at: string | null
           posts_count: number
           show_activity: boolean
+          signature_aura: string | null
           updated_at: string
           user_id: string
           username: string
@@ -505,8 +514,10 @@ export type Database = {
           aura_rank?: string | null
           avatar_url?: string | null
           bio?: string | null
+          chronicle?: string | null
           contribution_score?: number
           council_role?: Database["public"]["Enums"]["council_role"] | null
+          council_vote_weight?: number
           cover_url?: string | null
           created_at?: string
           display_name?: string
@@ -520,6 +531,7 @@ export type Database = {
           last_seen_at?: string | null
           posts_count?: number
           show_activity?: boolean
+          signature_aura?: string | null
           updated_at?: string
           user_id: string
           username: string
@@ -530,8 +542,10 @@ export type Database = {
           aura_rank?: string | null
           avatar_url?: string | null
           bio?: string | null
+          chronicle?: string | null
           contribution_score?: number
           council_role?: Database["public"]["Enums"]["council_role"] | null
+          council_vote_weight?: number
           cover_url?: string | null
           created_at?: string
           display_name?: string
@@ -545,6 +559,7 @@ export type Database = {
           last_seen_at?: string | null
           posts_count?: number
           show_activity?: boolean
+          signature_aura?: string | null
           updated_at?: string
           user_id?: string
           username?: string

@@ -5,6 +5,8 @@ import { AuraAvatar } from "@/components/vibe/AuraAvatar";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthProvider";
 import { gradientFor, initialsOf } from "@/lib/format";
+import { VoiceBubble, VoiceRecorder } from "@/components/dm/VoiceMessage";
+import { ReportSheet } from "@/components/social/ReportSheet";
 
 type Msg = {
   id: string;
@@ -13,6 +15,8 @@ type Msg = {
   created_at: string;
   shared_post_id?: string | null;
   read_at?: string | null;
+  media_url?: string | null;
+  media_type?: string | null;
 };
 
 type SharedPost = {
@@ -32,10 +36,12 @@ const Conversation = () => {
   const [text, setText] = useState("");
   const [sharedPosts, setSharedPosts] = useState<Record<string, SharedPost>>({});
   const [otherTyping, setOtherTyping] = useState(false);
+  const [reportMsg, setReportMsg] = useState<string | null>(null);
   const endRef = useRef<HTMLDivElement>(null);
   const typingChannelRef = useRef<any>(null);
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastTypingSentRef = useRef(0);
+  const longPressRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Mark as read helper
   const markRead = async () => {
@@ -47,7 +53,7 @@ const Conversation = () => {
     if (!id || !user) return;
     (async () => {
       const { data: msgs } = await supabase
-        .from("messages").select("id, content, sender_id, created_at, shared_post_id, read_at")
+        .from("messages").select("id, content, sender_id, created_at, shared_post_id, read_at, media_url, media_type")
         .eq("conversation_id", id).order("created_at", { ascending: true });
       setMessages((msgs ?? []) as Msg[]);
 
@@ -123,6 +129,19 @@ const Conversation = () => {
     await supabase.from("messages").insert({ conversation_id: id, sender_id: user.id, content });
   };
 
+  const sendVoice = async (mediaUrl: string) => {
+    if (!user || !id) return;
+    await (supabase.from("messages").insert({
+      conversation_id: id, sender_id: user.id, content: "", media_url: mediaUrl, media_type: "audio",
+    } as any) as any);
+  };
+
+  const startLongPress = (msgId: string, mine: boolean) => {
+    if (mine) return;
+    longPressRef.current = setTimeout(() => setReportMsg(msgId), 600);
+  };
+  const cancelLongPress = () => { if (longPressRef.current) { clearTimeout(longPressRef.current); longPressRef.current = null; } };
+
   const onType = (v: string) => {
     setText(v);
     if (!typingChannelRef.current || !user) return;
@@ -175,6 +194,9 @@ const Conversation = () => {
             <div key={m.id}>
               <div className={`flex ${mine ? "justify-end" : "justify-start"}`}>
                 <div
+                  onPointerDown={() => startLongPress(m.id, mine)}
+                  onPointerUp={cancelLongPress}
+                  onPointerLeave={cancelLongPress}
                   className={[
                     "max-w-[78%] px-3 py-2 text-sm leading-snug",
                     mine ? "bg-primary text-primary-foreground" : "bg-muted text-foreground",
@@ -193,6 +215,7 @@ const Conversation = () => {
                       </div>
                     </Link>
                   )}
+                  {m.media_type === "audio" && m.media_url && <VoiceBubble url={m.media_url} mine={mine} />}
                   {m.content && <p className="whitespace-pre-wrap break-words">{m.content}</p>}
                 </div>
               </div>
@@ -223,11 +246,11 @@ const Conversation = () => {
         {text.trim() ? (
           <button type="submit" className="px-3 py-1 text-primary font-semibold text-sm">Send</button>
         ) : (
-          <button type="button" disabled className="h-9 w-9 grid place-items-center text-muted-foreground">
-            <Send className="h-5 w-5" />
-          </button>
+          user && <VoiceRecorder userId={user.id} onSend={sendVoice} />
         )}
       </form>
+
+      <ReportSheet open={!!reportMsg} onOpenChange={(b) => !b && setReportMsg(null)} targetKind="message" targetId={reportMsg} />
     </div>
   );
 };

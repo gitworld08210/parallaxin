@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { Heart, MessageCircle, Send, Bookmark, MoreHorizontal, BarChart3, FolderPlus, Trash2 } from "lucide-react";
+import { Heart, MessageCircle, Send, Bookmark, MoreHorizontal, BarChart3, FolderPlus, Trash2, Flag } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthProvider";
@@ -10,6 +10,9 @@ import { fmt, gradientFor, initialsOf, timeAgo } from "@/lib/format";
 import { toast } from "sonner";
 import { ShareToDM } from "@/components/social/ShareToDM";
 import { SaveToCollectionSheet } from "@/components/social/SaveToCollectionSheet";
+import { ReportSheet } from "@/components/social/ReportSheet";
+import { FounderBadge } from "@/components/founders/FounderBadge";
+import { GenesisMark } from "@/components/founders/GenesisMark";
 
 export type FeedPost = {
   id: string;
@@ -26,6 +29,8 @@ export type FeedPost = {
     avatar_url: string | null;
     verified: boolean;
     verification_kind?: string | null;
+    is_founder?: boolean | null;
+    join_era?: string | null;
   } | null;
   liked: boolean;
 };
@@ -53,10 +58,13 @@ export const PostCard = ({ post, onOpenComments }: { post: FeedPost; onOpenComme
   const [saved, setSaved] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
   const [collectionOpen, setCollectionOpen] = useState(false);
+  const [reportOpen, setReportOpen] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const lastTap = useRef(0);
   const articleRef = useRef<HTMLElement>(null);
   const isOwner = user?.id === post.user_id;
+  const isFounder = !!post.profile?.is_founder;
+  const tier: "genesis" | "founder" = post.profile?.join_era === "genesis" ? "genesis" : "founder";
 
   useEffect(() => { setLiked(post.liked); setLikes(post.like_count); }, [post.liked, post.like_count]);
 
@@ -137,6 +145,7 @@ export const PostCard = ({ post, onOpenComments }: { post: FeedPost; onOpenComme
         <div className="flex-1 min-w-0">
           <Link to={`/u/${handle}`} className="inline-flex items-center gap-1">
             <p className="font-semibold text-sm truncate leading-tight">{handle}</p>
+            {isFounder && <FounderBadge tier={tier} size={12} />}
             {post.profile?.verification_kind
               ? <VerificationBadge kind={post.profile.verification_kind as any} />
               : post.profile?.verified && <VerificationBadge kind="verified" />}
@@ -155,6 +164,11 @@ export const PostCard = ({ post, onOpenComments }: { post: FeedPost; onOpenComme
                 <Link to={`/p/${post.id}/insights`}>
                   <BarChart3 className="h-4 w-4 mr-2" /> View insights
                 </Link>
+              </DropdownMenuItem>
+            )}
+            {!isOwner && (
+              <DropdownMenuItem onSelect={() => setReportOpen(true)} className="text-destructive focus:text-destructive">
+                <Flag className="h-4 w-4 mr-2" /> Report
               </DropdownMenuItem>
             )}
             {isOwner && (
@@ -214,12 +228,16 @@ export const PostCard = ({ post, onOpenComments }: { post: FeedPost; onOpenComme
         </button>
       )}
 
-      <p className="px-3 mt-1 pb-4 text-[11px] uppercase tracking-wider text-muted-foreground">
-        {timeAgo(post.created_at)}
-      </p>
+      <div className="flex items-center justify-between px-3 mt-1 pb-4">
+        <p className="text-[11px] uppercase tracking-wider text-muted-foreground">
+          {timeAgo(post.created_at)}
+        </p>
+        {isFounder && <GenesisMark />}
+      </div>
 
       <ShareToDM postId={post.id} open={shareOpen} onOpenChange={setShareOpen} />
       <SaveToCollectionSheet postId={post.id} open={collectionOpen} onOpenChange={setCollectionOpen} />
+      <ReportSheet open={reportOpen} onOpenChange={setReportOpen} targetKind="post" targetId={post.id} />
     </article>
   );
 };

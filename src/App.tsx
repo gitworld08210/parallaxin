@@ -29,6 +29,9 @@ import Assistant from "./pages/Assistant";
 import Drafts from "./pages/Drafts";
 import PostInsights from "./pages/PostInsights";
 import CloseFriends from "./pages/CloseFriends";
+import FounderChronicle from "./pages/FounderChronicle";
+import { HallOfFoundersScreen } from "./components/founders/HallOfFoundersScreen";
+import { FounderCouncilScreen } from "./components/founders/FounderCouncilScreen";
 
 import NotFound from "./pages/NotFound.tsx";
 
@@ -68,6 +71,9 @@ const App = () => (
                 <Route path="/drafts" element={<Drafts />} />
                 <Route path="/p/:postId/insights" element={<PostInsights />} />
                 <Route path="/close-friends" element={<CloseFriends />} />
+                <Route path="/hall-of-founders" element={<HallOfFoundersScreen />} />
+                <Route path="/founder-council" element={<FounderCouncilScreen />} />
+                <Route path="/founders/:username" element={<FounderChronicle />} />
               </Route>
             </Route>
             <Route path="*" element={<NotFound />} />

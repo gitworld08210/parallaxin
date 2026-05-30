@@ -15,6 +15,8 @@ const Compose = () => {
   const [preview, setPreview] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [aiBusy, setAiBusy] = useState(false);
+  const [altBusy, setAltBusy] = useState(false);
+  const [altText, setAltText] = useState("");
   const [scheduleOpen, setScheduleOpen] = useState(false);
   const [scheduledFor, setScheduledFor] = useState<string>(""); // datetime-local
 
@@ -36,6 +38,26 @@ const Compose = () => {
     } catch (e: any) {
       toast.error(e.message || "AI failed");
     } finally { setAiBusy(false); }
+  };
+
+  const suggestAlt = async () => {
+    if (!file || !user) return toast.error("Add an image first");
+    if (file.type.startsWith("video")) return toast.error("Alt text is for images");
+    setAltBusy(true);
+    try {
+      // Upload to a temp public URL so the model can read it
+      const ext = file.name.split(".").pop() || "jpg";
+      const path = `alt-tmp/${user.id}/${crypto.randomUUID()}.${ext}`;
+      const { error: upErr } = await supabase.storage.from("post-media").upload(path, file, { upsert: false });
+      if (upErr) throw upErr;
+      const { data: pub } = supabase.storage.from("post-media").getPublicUrl(path);
+      const { data, error } = await supabase.functions.invoke("suggest-alt-text", { body: { imageUrl: pub.publicUrl } });
+      if (error) throw error;
+      if (data?.altText) setAltText(data.altText);
+      else toast.error("No suggestion returned");
+    } catch (e: any) {
+      toast.error(e.message || "Alt text failed");
+    } finally { setAltBusy(false); }
   };
 
   const uploadMedia = async () => {
@@ -124,16 +146,35 @@ const Compose = () => {
         </div>
 
         {preview && (
-          <div className="mt-4 relative rounded-xl overflow-hidden bg-muted">
-            {file?.type.startsWith("video") ? (
-              <video src={preview} controls className="w-full max-h-[400px] object-cover" />
-            ) : (
-              <img src={preview} className="w-full max-h-[400px] object-cover" alt="" />
+          <div className="mt-4 space-y-2">
+            <div className="relative rounded-xl overflow-hidden bg-muted">
+              {file?.type.startsWith("video") ? (
+                <video src={preview} controls className="w-full max-h-[400px] object-cover" />
+              ) : (
+                <img src={preview} className="w-full max-h-[400px] object-cover" alt={altText || ""} />
+              )}
+              <button onClick={() => { setFile(null); setAltText(""); }}
+                className="absolute top-2 right-2 h-8 w-8 grid place-items-center rounded-full bg-black/60 text-white">
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            {file && !file.type.startsWith("video") && (
+              <div className="flex items-start gap-2">
+                <textarea
+                  value={altText}
+                  onChange={(e) => setAltText(e.target.value)}
+                  placeholder="Alt text (for accessibility)"
+                  rows={2}
+                  maxLength={200}
+                  className="flex-1 bg-card border border-border rounded-md px-3 py-2 text-xs outline-none resize-none"
+                />
+                <button onClick={suggestAlt} disabled={altBusy}
+                  className="shrink-0 bg-muted rounded-md px-3 py-2 text-xs font-semibold flex items-center gap-1.5 disabled:opacity-60">
+                  <Sparkles className="h-3.5 w-3.5 text-primary" />
+                  {altBusy ? "…" : "Suggest"}
+                </button>
+              </div>
             )}
-            <button onClick={() => setFile(null)}
-              className="absolute top-2 right-2 h-8 w-8 grid place-items-center rounded-full bg-black/60 text-white">
-              <X className="h-4 w-4" />
-            </button>
           </div>
         )}
 
