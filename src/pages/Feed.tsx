@@ -98,19 +98,20 @@ const Feed = () => {
           chromeHidden ? "-translate-y-full" : "translate-y-0",
         )}
       >
-        <TopBar
-          title="Aurelix"
-          right={
-            <>
-              <Link to="/discover" className="p-2" aria-label="Discover">
-                <Compass className="h-6 w-6 text-foreground" strokeWidth={1.75} />
-              </Link>
-              <Link to="/notifications" className="p-2" aria-label="Notifications">
-                <Heart className="h-6 w-6 text-foreground" strokeWidth={1.75} />
-              </Link>
-            </>
-          }
-        />
+        <header className="h-14 px-5 flex items-center justify-between gap-3 border-b border-border">
+          <button className="flex items-center gap-1.5">
+            <span className="font-display text-2xl font-black tracking-wide text-primary">AURELIX</span>
+            <ChevronDown className="h-4 w-4 text-foreground" />
+          </button>
+          <div className="flex items-center gap-1">
+            <Link to="/discover" className="p-2" aria-label="Search">
+              <Search className="h-6 w-6 text-foreground" strokeWidth={1.75} />
+            </Link>
+            <Link to="/notifications" className="p-2" aria-label="Notifications">
+              <Bell className="h-6 w-6 text-foreground" strokeWidth={1.75} />
+            </Link>
+          </div>
+        </header>
       </div>
 
       <StoriesRail />
