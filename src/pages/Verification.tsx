@@ -24,8 +24,14 @@ const Verification = () => {
   const [loading, setLoading] = useState(true);
   const [category, setCategory] = useState("public_figure");
   const [fullName, setFullName] = useState("");
+  const [organization, setOrganization] = useState("");
+  const [officialEmail, setOfficialEmail] = useState("");
+  const [country, setCountry] = useState("");
+  const [dob, setDob] = useState("");
+  const [reason, setReason] = useState("");
   const [links, setLinks] = useState("");
   const [file, setFile] = useState<File | null>(null);
+  const [supportFile, setSupportFile] = useState<File | null>(null);
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
@@ -37,19 +43,36 @@ const Verification = () => {
     })();
   }, [user?.id]);
 
+  const uploadDoc = async (f: File) => {
+    const ext = f.name.split(".").pop() || "jpg";
+    const path = `${user!.id}/${crypto.randomUUID()}.${ext}`;
+    const { error } = await supabase.storage.from("verification-docs").upload(path, f, { upsert: false });
+    if (error) throw error;
+    return path;
+  };
+
   const submit = async () => {
     if (!user) return;
     if (!fullName.trim()) return toast.error("Add your full legal name");
     if (!file) return toast.error("Upload an ID document");
     setBusy(true);
     try {
-      const ext = file.name.split(".").pop() || "jpg";
-      const path = `${user.id}/${crypto.randomUUID()}.${ext}`;
-      const { error: upErr } = await supabase.storage.from("verification-docs").upload(path, file, { upsert: false });
-      if (upErr) throw upErr;
+      const idPath = await uploadDoc(file);
+      const supportPath = supportFile ? await uploadDoc(supportFile) : null;
       const linkArr = links.split(/[\n,]/).map((s) => s.trim()).filter(Boolean);
       const { error } = await supabase.from("verification_requests").insert({
-        user_id: user.id, full_name: fullName.trim(), category, links: linkArr, id_doc_url: path, status: "pending",
+        user_id: user.id,
+        full_name: fullName.trim(),
+        category,
+        links: linkArr,
+        id_doc_url: idPath,
+        status: "pending",
+        organization: organization.trim() || null,
+        official_email: officialEmail.trim() || null,
+        country: country.trim() || null,
+        dob: dob || null,
+        reason: reason.trim() || null,
+        supporting_doc_url: supportPath,
       });
       if (error) throw error;
       toast.success("Submitted · review within 48h");
