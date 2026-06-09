@@ -1,12 +1,16 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
-import { ChevronLeft, Send } from "lucide-react";
+import { ChevronLeft, Send, Search, Phone, MoreVertical, Paperclip, Smile, Check, CheckCheck } from "lucide-react";
 import { AuraAvatar } from "@/components/vibe/AuraAvatar";
+import { VerificationBadge } from "@/components/vibe/VerificationBadge";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthProvider";
 import { gradientFor, initialsOf } from "@/lib/format";
 import { VoiceBubble, VoiceRecorder } from "@/components/dm/VoiceMessage";
 import { ReportSheet } from "@/components/social/ReportSheet";
+
+const RED = "#E50914";
+const GREEN = "#46d369";
 
 type Msg = {
   id: string;
@@ -27,12 +31,26 @@ type SharedPost = {
   profile: { username: string; display_name: string; avatar_url: string | null } | null;
 };
 
+type Other = { username: string; display_name: string; avatar_url: string | null; verification_kind?: string | null } | null;
+
+const fmtTime = (iso: string) =>
+  new Date(iso).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+
+const dayLabel = (iso: string) => {
+  const d = new Date(iso); const now = new Date();
+  const sameDay = d.toDateString() === now.toDateString();
+  if (sameDay) return "Today";
+  const y = new Date(now); y.setDate(now.getDate() - 1);
+  if (d.toDateString() === y.toDateString()) return "Yesterday";
+  return d.toLocaleDateString([], { day: "numeric", month: "long", year: "numeric" });
+};
+
 const Conversation = () => {
   const { id } = useParams();
   const { user } = useAuth();
   const nav = useNavigate();
   const [messages, setMessages] = useState<Msg[]>([]);
-  const [other, setOther] = useState<{ username: string; display_name: string; avatar_url: string | null } | null>(null);
+  const [other, setOther] = useState<Other>(null);
   const [text, setText] = useState("");
   const [sharedPosts, setSharedPosts] = useState<Record<string, SharedPost>>({});
   const [otherTyping, setOtherTyping] = useState(false);
@@ -45,7 +63,6 @@ const Conversation = () => {
   const lastTypingSentRef = useRef(0);
   const longPressRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Mark as read helper
   const markRead = async () => {
     if (!id) return;
     await supabase.rpc("mark_conversation_read", { _conversation_id: id });
@@ -70,14 +87,13 @@ const Conversation = () => {
 
       const { data: parts } = await supabase
         .from("conversation_participants")
-        .select("user_id, profile:profiles!conv_participants_user_profile_fkey(username, display_name, avatar_url)")
+        .select("user_id, profile:profiles!conv_participants_user_profile_fkey(username, display_name, avatar_url, verification_kind)")
         .eq("conversation_id", id).neq("user_id", user.id);
       setOther((parts?.[0] as any)?.profile ?? null);
 
       markRead();
     })();
 
-    // Postgres changes — new messages + read receipt updates
     const dbChannel = supabase.channel(`conv-db:${id}`)
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages", filter: `conversation_id=eq.${id}` },
         async (payload) => {
@@ -97,7 +113,6 @@ const Conversation = () => {
         })
       .subscribe();
 
-    // Typing presence/broadcast
     const tChannel = supabase.channel(`conv-typing:${id}`, { config: { broadcast: { self: false } } })
       .on("broadcast", { event: "typing" }, (payload) => {
         if (payload.payload?.user_id && payload.payload.user_id !== user.id) {
@@ -109,7 +124,6 @@ const Conversation = () => {
       .subscribe();
     typingChannelRef.current = tChannel;
 
-    // Mark read when tab refocuses
     const onVis = () => { if (document.visibilityState === "visible") markRead(); };
     document.addEventListener("visibilitychange", onVis);
 
@@ -123,8 +137,8 @@ const Conversation = () => {
 
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages.length, otherTyping]);
 
-  const send = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const send = async (e?: React.FormEvent) => {
+    e?.preventDefault();
     if (!user || !id || !text.trim()) return;
     const content = text.trim().slice(0, 2000);
     setText("");
@@ -151,7 +165,6 @@ const Conversation = () => {
     // eslint-disable-next-line
   }, [messages.length, user?.id]);
 
-
   const sendVoice = async (mediaUrl: string) => {
     if (!user || !id) return;
     await (supabase.from("messages").insert({
@@ -174,93 +187,169 @@ const Conversation = () => {
     typingChannelRef.current.send({ type: "broadcast", event: "typing", payload: { user_id: user.id } });
   };
 
-  // Find last own message that's been read — to show "Seen" once
-  const lastSeenIdx = (() => {
-    for (let i = messages.length - 1; i >= 0; i--) {
-      if (messages[i].sender_id === user?.id && messages[i].read_at) return i;
-    }
-    return -1;
-  })();
+  // Render rows with day-dividers and grouping flags
+  const rows = useMemo(() => {
+    const out: Array<
+      | { kind: "day"; key: string; label: string }
+      | { kind: "msg"; key: string; m: Msg; mine: boolean; groupStart: boolean; groupEnd: boolean }
+    > = [];
+    let lastDay = "";
+    messages.forEach((m, i) => {
+      const day = new Date(m.created_at).toDateString();
+      if (day !== lastDay) {
+        out.push({ kind: "day", key: `d-${day}`, label: dayLabel(m.created_at) });
+        lastDay = day;
+      }
+      const prev = messages[i - 1];
+      const next = messages[i + 1];
+      const sameSenderAsPrev = prev && prev.sender_id === m.sender_id && new Date(m.created_at).toDateString() === new Date(prev.created_at).toDateString();
+      const sameSenderAsNext = next && next.sender_id === m.sender_id && new Date(m.created_at).toDateString() === new Date(next.created_at).toDateString();
+      out.push({
+        kind: "msg",
+        key: m.id,
+        m,
+        mine: m.sender_id === user?.id,
+        groupStart: !sameSenderAsPrev,
+        groupEnd: !sameSenderAsNext,
+      });
+    });
+    return out;
+  }, [messages, user?.id]);
+
+  const otherName = other?.display_name || other?.username || "Conversation";
 
   return (
-    <div className="flex flex-col min-h-screen bg-background">
-      <header className="h-14 px-2 flex items-center gap-3 border-b border-border bg-background sticky top-0 z-10">
-        <button onClick={() => nav("/messages")} className="p-1" aria-label="Back">
-          <ChevronLeft className="h-6 w-6 text-foreground" />
+    <div className="flex flex-col min-h-screen" style={{ background: "#0a0a0a", color: "white" }}>
+      {/* Header */}
+      <header
+        className="h-16 px-2 flex items-center gap-2 sticky top-0 z-20 backdrop-blur"
+        style={{ background: "rgba(10,10,10,0.85)", borderBottom: "1px solid rgba(255,255,255,0.06)" }}
+      >
+        <button onClick={() => nav("/messages")} className="h-10 w-10 grid place-items-center rounded-full hover:bg-white/5" aria-label="Back">
+          <ChevronLeft className="h-6 w-6 text-white" />
         </button>
-        <Link to={other ? `/u/${other.username}` : "#"} className="flex items-center gap-2.5 flex-1 min-w-0">
-          {other?.avatar_url ? (
-            <img src={other.avatar_url} className="h-8 w-8 rounded-full object-cover" alt="" />
-          ) : (
-            <AuraAvatar gradient={gradientFor(other?.username)} size="sm" initials={initialsOf(other?.display_name || other?.username)} />
-          )}
-          <div className="min-w-0">
-            <p className="text-sm font-semibold truncate leading-tight">{other?.display_name || other?.username || "Conversation"}</p>
-            {other?.username && (
-              <p className="text-[11px] text-muted-foreground truncate">
-                {otherTyping ? <span className="text-primary">typing…</span> : `@${other.username}`}
-              </p>
+        <Link to={other ? `/u/${other.username}` : "#"} className="flex items-center gap-3 flex-1 min-w-0">
+          <div className="rounded-full p-[2px] shrink-0" style={{ background: `linear-gradient(135deg, ${RED}, #ff3b47)` }}>
+            {other?.avatar_url ? (
+              <img src={other.avatar_url} className="h-9 w-9 rounded-full object-cover" style={{ border: "2px solid #0a0a0a" }} alt="" />
+            ) : (
+              <div className="h-9 w-9 rounded-full overflow-hidden" style={{ border: "2px solid #0a0a0a" }}>
+                <AuraAvatar gradient={gradientFor(other?.username)} size="sm" initials={initialsOf(otherName)} />
+              </div>
             )}
           </div>
+          <div className="min-w-0">
+            <p className="text-[15px] font-semibold truncate leading-tight text-white inline-flex items-center gap-1">
+              {otherName}
+              {other?.verification_kind && <VerificationBadge kind={other.verification_kind as any} />}
+            </p>
+            <p className="text-[11px] leading-tight" style={{ color: otherTyping ? RED : GREEN }}>
+              {otherTyping ? "typing…" : "online"}
+            </p>
+          </div>
         </Link>
+        <button className="h-10 w-10 grid place-items-center rounded-full hover:bg-white/5" aria-label="Search">
+          <Search className="h-5 w-5" style={{ color: "rgba(255,255,255,0.85)" }} />
+        </button>
+        <button className="h-10 w-10 grid place-items-center rounded-full hover:bg-white/5" aria-label="Call">
+          <Phone className="h-5 w-5" style={{ color: "rgba(255,255,255,0.85)" }} />
+        </button>
+        <button className="h-10 w-10 grid place-items-center rounded-full hover:bg-white/5" aria-label="More">
+          <MoreVertical className="h-5 w-5" style={{ color: "rgba(255,255,255,0.85)" }} />
+        </button>
       </header>
 
-      <div className="flex-1 px-3 pt-3 pb-28 space-y-1.5 overflow-y-auto">
-        {messages.map((m, i) => {
-          const mine = m.sender_id === user?.id;
-          const sp = m.shared_post_id ? sharedPosts[m.shared_post_id] : null;
-          const prev = messages[i - 1];
-          const next = messages[i + 1];
-          const groupStart = !prev || prev.sender_id !== m.sender_id;
-          const groupEnd = !next || next.sender_id !== m.sender_id;
-          return (
-            <div key={m.id}>
-              <div className={`flex ${mine ? "justify-end" : "justify-start"}`}>
-                <div
-                  onPointerDown={() => startLongPress(m.id, mine)}
-                  onPointerUp={cancelLongPress}
-                  onPointerLeave={cancelLongPress}
-                  className={[
-                    "max-w-[78%] px-3 py-2 text-sm leading-snug",
-                    mine ? "bg-primary text-primary-foreground" : "bg-muted text-foreground",
-                    "rounded-2xl",
-                    mine ? (groupStart ? "rounded-tr-md" : "") : (groupStart ? "rounded-tl-md" : ""),
-                    mine ? (groupEnd ? "rounded-br-md" : "") : (groupEnd ? "rounded-bl-md" : ""),
-                  ].join(" ")}
+      {/* Messages */}
+      <div className="flex-1 px-3 pt-4 pb-36 space-y-1 overflow-y-auto">
+        {rows.map((r) => {
+          if (r.kind === "day") {
+            return (
+              <div key={r.key} className="flex justify-center my-3">
+                <span
+                  className="text-[11px] font-medium px-3 py-1 rounded-full"
+                  style={{ background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.7)" }}
                 >
-                  {sp && (
-                    <Link to={`/p/${sp.id}`} className="block mb-2 rounded-xl overflow-hidden bg-background/20">
-                      {sp.media_url && (sp.media_type === "video"
-                        ? <video src={sp.media_url} muted className="w-full max-h-48 object-cover" />
-                        : <img src={sp.media_url} className="w-full max-h-48 object-cover" alt="" />)}
-                      <div className="px-2 py-1.5 text-[11px] opacity-90">
-                        @{sp.profile?.username ?? "post"}{sp.content ? ` · ${sp.content.slice(0, 60)}` : ""}
-                      </div>
-                    </Link>
+                  {r.label}
+                </span>
+              </div>
+            );
+          }
+          const { m, mine, groupStart, groupEnd } = r;
+          const sp = m.shared_post_id ? sharedPosts[m.shared_post_id] : null;
+
+          const radius = {
+            borderTopLeftRadius: mine ? 20 : groupStart ? 20 : 6,
+            borderTopRightRadius: mine ? (groupStart ? 20 : 6) : 20,
+            borderBottomLeftRadius: mine ? 20 : groupEnd ? 6 : 20,
+            borderBottomRightRadius: mine ? (groupEnd ? 6 : 20) : 20,
+          };
+
+          const bubbleStyle: React.CSSProperties = mine
+            ? {
+                background: `linear-gradient(135deg, #7a1014 0%, ${RED} 100%)`,
+                color: "white",
+                boxShadow: `0 4px 16px ${RED}33`,
+                ...radius,
+              }
+            : {
+                background: "#1f1f1f",
+                color: "white",
+                ...radius,
+              };
+
+          return (
+            <div key={r.key} className={`flex ${mine ? "justify-end" : "justify-start"} ${groupEnd ? "mb-1.5" : ""}`}>
+              <div
+                onPointerDown={() => startLongPress(m.id, mine)}
+                onPointerUp={cancelLongPress}
+                onPointerLeave={cancelLongPress}
+                className="max-w-[78%] px-3.5 py-2 text-[14px] leading-snug animate-fade-in"
+                style={bubbleStyle}
+              >
+                {sp && (
+                  <Link to={`/p/${sp.id}`} className="block mb-2 rounded-xl overflow-hidden" style={{ background: "rgba(0,0,0,0.25)" }}>
+                    {sp.media_url && (sp.media_type === "video"
+                      ? <video src={sp.media_url} muted className="w-full max-h-48 object-cover" />
+                      : <img src={sp.media_url} className="w-full max-h-48 object-cover" alt="" />)}
+                    <div className="px-2 py-1.5 text-[11px] opacity-90">
+                      @{sp.profile?.username ?? "post"}{sp.content ? ` · ${sp.content.slice(0, 60)}` : ""}
+                    </div>
+                  </Link>
+                )}
+                {m.media_type === "audio" && m.media_url && <VoiceBubble url={m.media_url} mine={mine} />}
+                {m.content && <p className="whitespace-pre-wrap break-words">{m.content}</p>}
+                <div className="flex items-center justify-end gap-1 mt-0.5 -mb-0.5">
+                  <span className="text-[10px]" style={{ color: mine ? "rgba(255,255,255,0.75)" : "rgba(255,255,255,0.45)" }}>
+                    {fmtTime(m.created_at)}
+                  </span>
+                  {mine && (
+                    m.read_at
+                      ? <CheckCheck className="h-3.5 w-3.5" style={{ color: "#ffd1d3" }} />
+                      : <Check className="h-3.5 w-3.5" style={{ color: "rgba(255,255,255,0.75)" }} />
                   )}
-                  {m.media_type === "audio" && m.media_url && <VoiceBubble url={m.media_url} mine={mine} />}
-                  {m.content && <p className="whitespace-pre-wrap break-words">{m.content}</p>}
                 </div>
               </div>
-              {i === lastSeenIdx && (
-                <p className="text-[10px] text-muted-foreground text-right pr-1 mt-0.5">Seen</p>
-              )}
             </div>
           );
         })}
         {otherTyping && (
           <div className="flex justify-start">
-            <div className="bg-muted text-foreground rounded-2xl rounded-bl-md px-3 py-2.5 inline-flex gap-1">
-              <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/70 animate-bounce" style={{ animationDelay: "0ms" }} />
-              <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/70 animate-bounce" style={{ animationDelay: "150ms" }} />
-              <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/70 animate-bounce" style={{ animationDelay: "300ms" }} />
+            <div className="rounded-2xl rounded-bl-md px-3.5 py-3 inline-flex gap-1" style={{ background: "#1f1f1f" }}>
+              <span className="h-1.5 w-1.5 rounded-full animate-bounce" style={{ background: "rgba(255,255,255,0.6)", animationDelay: "0ms" }} />
+              <span className="h-1.5 w-1.5 rounded-full animate-bounce" style={{ background: "rgba(255,255,255,0.6)", animationDelay: "150ms" }} />
+              <span className="h-1.5 w-1.5 rounded-full animate-bounce" style={{ background: "rgba(255,255,255,0.6)", animationDelay: "300ms" }} />
             </div>
           </div>
         )}
         <div ref={endRef} />
       </div>
 
-      <form onSubmit={send} className="fixed bottom-14 inset-x-0 mx-auto max-w-md p-2 bg-background border-t border-border flex flex-col gap-2">
+      {/* Composer */}
+      <form
+        onSubmit={send}
+        className="fixed bottom-14 inset-x-0 mx-auto max-w-md p-3 flex flex-col gap-2"
+        style={{ background: "#0a0a0a", borderTop: "1px solid rgba(255,255,255,0.06)" }}
+      >
         {aiSuggestions.length > 0 && (
           <div className="flex gap-1.5 overflow-x-auto -mx-1 px-1 pb-1">
             {aiSuggestions.map((s, i) => (
@@ -268,7 +357,8 @@ const Conversation = () => {
                 key={i}
                 type="button"
                 onClick={() => { setText(s); setAiSuggestions([]); }}
-                className="shrink-0 text-xs bg-primary/10 text-primary px-3 py-1.5 rounded-full font-medium hover:bg-primary/20 transition-colors"
+                className="shrink-0 text-xs px-3 py-1.5 rounded-full font-medium transition-colors"
+                style={{ background: "rgba(229,9,20,0.12)", color: RED, border: `1px solid ${RED}55` }}
               >
                 ✨ {s}
               </button>
@@ -276,16 +366,40 @@ const Conversation = () => {
           </div>
         )}
         <div className="flex gap-2 items-center">
-          <input
-            value={text} onChange={(e) => onType(e.target.value)}
-            placeholder="Message..."
-            className="flex-1 bg-muted rounded-full px-4 py-2.5 text-sm outline-none placeholder:text-muted-foreground"
-          />
+          <div
+            className="flex items-center gap-2 flex-1 rounded-full px-3"
+            style={{ background: "#1a1a1a", border: "1px solid rgba(255,255,255,0.06)" }}
+          >
+            <button type="button" className="h-9 w-9 grid place-items-center -ml-1" aria-label="Attach">
+              <Paperclip className="h-5 w-5" style={{ color: "rgba(255,255,255,0.6)" }} />
+            </button>
+            <input
+              value={text}
+              onChange={(e) => onType(e.target.value)}
+              placeholder={`Message ${other?.display_name || other?.username || ""}…`}
+              className="flex-1 bg-transparent outline-none text-sm py-2.5 text-white placeholder:text-white/40"
+            />
+            <button type="button" className="h-9 w-9 grid place-items-center" aria-label="Emoji">
+              <Smile className="h-5 w-5" style={{ color: "rgba(255,255,255,0.6)" }} />
+            </button>
+          </div>
           {text.trim() ? (
-            <button type="submit" className="px-3 py-1 text-primary font-semibold text-sm">Send</button>
-          ) : (
-            user && <VoiceRecorder userId={user.id} onSend={sendVoice} />
-          )}
+            <button
+              type="submit"
+              className="h-11 w-11 grid place-items-center rounded-full transition-transform active:scale-90"
+              style={{ background: RED, boxShadow: `0 6px 20px ${RED}66` }}
+              aria-label="Send"
+            >
+              <Send className="h-5 w-5 text-white" />
+            </button>
+          ) : user ? (
+            <div
+              className="h-11 w-11 grid place-items-center rounded-full"
+              style={{ background: RED, boxShadow: `0 6px 20px ${RED}66` }}
+            >
+              <VoiceRecorder userId={user.id} onSend={sendVoice} />
+            </div>
+          ) : null}
         </div>
       </form>
 

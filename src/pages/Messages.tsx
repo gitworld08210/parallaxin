@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { Search, PenSquare, X, MessageCircle } from "lucide-react";
+import { Search, SlidersHorizontal, SquarePen, X, MessageCircle, Archive, ChevronRight } from "lucide-react";
 import { AuraAvatar } from "@/components/vibe/AuraAvatar";
 import { VerificationBadge } from "@/components/vibe/VerificationBadge";
 import { EmptyState } from "@/components/empty/EmptyState";
@@ -11,17 +11,17 @@ import { gradientFor, initialsOf } from "@/lib/format";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
-// Telegram-style timestamp: HH:mm today, weekday this week, dd/mm older.
+const RED = "#E50914";
+
 const chatTime = (iso: string) => {
   const d = new Date(iso);
   const now = new Date();
   const sameDay = d.toDateString() === now.toDateString();
-  if (sameDay) return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  if (sameDay) return d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
   const diffDays = Math.floor((now.getTime() - d.getTime()) / 86_400_000);
   if (diffDays < 7) return d.toLocaleDateString([], { weekday: "short" });
   return d.toLocaleDateString([], { day: "2-digit", month: "2-digit" });
 };
-
 
 type Conv = {
   id: string;
@@ -39,14 +39,14 @@ type ProfileRow = {
   verification_kind: string | null;
 };
 
-
-type Tab = "all" | "primary" | "requests";
+type Tab = "all" | "unread" | "requests";
 
 const Messages = () => {
-  const { user, profile: me } = useAuth();
+  const { user } = useAuth();
   const nav = useNavigate();
   const [convs, setConvs] = useState<Conv[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showSearch, setShowSearch] = useState(false);
   const [query, setQuery] = useState("");
   const [tab, setTab] = useState<Tab>("all");
   const [composerOpen, setComposerOpen] = useState(false);
@@ -91,7 +91,6 @@ const Messages = () => {
     setLoading(false);
   };
 
-
   useEffect(() => { load(); /* eslint-disable-next-line */ }, [user?.id]);
 
   useEffect(() => {
@@ -113,7 +112,7 @@ const Messages = () => {
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     let base = convs;
-    if (tab === "primary") base = base.filter((c) => c.unread > 0);
+    if (tab === "unread") base = base.filter((c) => c.unread > 0);
     else if (tab === "requests") base = base.filter((c) => !c.last);
     if (!q) return base;
     return base.filter((c) =>
@@ -123,9 +122,8 @@ const Messages = () => {
     );
   }, [convs, query, tab]);
 
-  const primaryCount = useMemo(() => convs.filter((c) => c.unread > 0).length, [convs]);
+  const unreadCount = useMemo(() => convs.filter((c) => c.unread > 0).length, [convs]);
   const requestsCount = useMemo(() => convs.filter((c) => !c.last).length, [convs]);
-
 
   const startChat = async (otherId: string) => {
     if (!user) return;
@@ -143,63 +141,91 @@ const Messages = () => {
     }
   };
 
+  const tabs: { id: Tab; label: string; count: number }[] = [
+    { id: "all", label: "All", count: 0 },
+    { id: "unread", label: "Unread", count: unreadCount },
+    { id: "requests", label: "Requests", count: requestsCount },
+  ];
+
   return (
-    <div>
-      {/* Aurelix messages header */}
-      <header className="h-14 px-5 flex items-center justify-between gap-3 border-b border-border">
-        <h1 className="text-xl font-bold tracking-tight">Messages</h1>
-        <button onClick={() => setComposerOpen(true)} className="p-1.5 rounded-full hover:bg-muted/40" aria-label="New chat">
-          <PenSquare className="h-5 w-5 text-foreground" strokeWidth={1.75} />
-        </button>
+    <div style={{ background: "#0a0a0a", color: "white" }} className="min-h-screen">
+      {/* Header */}
+      <header className="h-16 px-5 flex items-center justify-between">
+        <h1 className="text-2xl font-bold tracking-tight text-white">Messages</h1>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowSearch((s) => !s)}
+            className="h-9 w-9 grid place-items-center rounded-lg hover:bg-white/5 transition-colors"
+            aria-label="Search"
+          >
+            <SlidersHorizontal className="h-5 w-5" style={{ color: showSearch ? RED : "rgba(255,255,255,0.85)" }} />
+          </button>
+          <button
+            onClick={() => setComposerOpen(true)}
+            className="h-9 w-9 grid place-items-center rounded-lg transition-transform active:scale-95"
+            style={{ background: RED, boxShadow: `0 6px 20px ${RED}55` }}
+            aria-label="New chat"
+          >
+            <SquarePen className="h-4.5 w-4.5 text-white" strokeWidth={2.25} />
+          </button>
+        </div>
       </header>
 
-      <div className="px-4 pt-3">
-        <div className="bg-secondary/60 border border-border rounded-full flex items-center gap-2 px-4 py-2.5">
-          <Search className="h-4 w-4 text-muted-foreground" />
-          <input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search messages"
-            className="flex-1 bg-transparent outline-none text-sm placeholder:text-muted-foreground"
-          />
-          {query && (
-            <button onClick={() => setQuery("")} aria-label="Clear">
-              <X className="h-4 w-4 text-muted-foreground" />
-            </button>
-          )}
+      {/* Search (collapsible) */}
+      {showSearch && (
+        <div className="px-5 pb-2 animate-fade-in">
+          <div className="flex items-center gap-2 rounded-full px-4 py-2.5" style={{ background: "#1a1a1a", border: "1px solid rgba(255,255,255,0.06)" }}>
+            <Search className="h-4 w-4" style={{ color: "rgba(255,255,255,0.5)" }} />
+            <input
+              autoFocus
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search messages"
+              className="flex-1 bg-transparent outline-none text-sm text-white placeholder:text-white/40"
+            />
+            {query && (
+              <button onClick={() => setQuery("")} aria-label="Clear">
+                <X className="h-4 w-4" style={{ color: "rgba(255,255,255,0.5)" }} />
+              </button>
+            )}
+          </div>
         </div>
+      )}
+
+      {/* Tabs */}
+      <div className="px-5 flex items-center gap-6 border-b" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
+        {tabs.map((t) => {
+          const active = tab === t.id;
+          return (
+            <button
+              key={t.id}
+              onClick={() => setTab(t.id)}
+              className="relative py-3 inline-flex items-center gap-1.5 text-sm font-semibold transition-colors"
+              style={{ color: active ? RED : "rgba(255,255,255,0.55)" }}
+            >
+              {t.label}
+              {t.count > 0 && (
+                <span
+                  className="min-w-[20px] h-5 px-1.5 rounded-full grid place-items-center text-[11px] font-bold text-white"
+                  style={{ background: RED }}
+                >
+                  {t.count > 99 ? "99+" : t.count}
+                </span>
+              )}
+              {active && (
+                <span
+                  className="absolute left-0 right-0 -bottom-px h-[2px] rounded-full"
+                  style={{ background: RED }}
+                />
+              )}
+            </button>
+          );
+        })}
       </div>
 
-      {/* Segmented tabs */}
-      <div className="px-4 mt-4 flex items-center gap-2">
-        {([
-          { id: "all", label: "All", count: 0 },
-          { id: "primary", label: "Primary", count: primaryCount },
-          { id: "requests", label: "Requests", count: requestsCount },
-        ] as const).map((t) => (
-          <button
-            key={t.id}
-            onClick={() => setTab(t.id)}
-            className={cn(
-              "px-4 py-1.5 rounded-full text-xs font-semibold inline-flex items-center gap-1.5 transition-colors border",
-              tab === t.id
-                ? "bg-primary text-primary-foreground border-primary shadow-glow"
-                : "bg-secondary/40 text-foreground border-border hover:border-primary/40"
-            )}
-          >
-            {t.label}
-            {t.count > 0 && (
-              <span className={cn(
-                "min-w-[18px] h-[18px] px-1 rounded-full grid place-items-center text-[10px] font-bold",
-                tab === t.id ? "bg-primary-foreground/20 text-primary-foreground" : "bg-primary text-primary-foreground"
-              )}>{t.count}</span>
-            )}
-          </button>
-        ))}
-      </div>
-
-      <div className="px-1 mt-2">
-        {loading && <p className="text-sm text-muted-foreground text-center py-10">Loading…</p>}
+      {/* List */}
+      <div className="pt-2">
+        {loading && <p className="text-sm text-white/50 text-center py-10">Loading…</p>}
         {!loading && convs.length === 0 && (
           <EmptyState
             icon={MessageCircle}
@@ -210,75 +236,115 @@ const Messages = () => {
           />
         )}
         {!loading && convs.length > 0 && filtered.length === 0 && (
-          <p className="text-sm text-muted-foreground text-center py-10">No matches.</p>
+          <p className="text-sm text-white/50 text-center py-10">No matches.</p>
         )}
         <ul>
-          {filtered.map((c) => (
-            <li key={c.id}>
-              <Link
-                to={`/messages/${c.id}`}
-                className="flex items-center gap-3 px-3 py-2.5 active:bg-secondary"
-              >
-                {c.other?.avatar_url ? (
-                  <img src={c.other.avatar_url} alt="" className="h-14 w-14 rounded-full object-cover shrink-0" />
-                ) : (
-                  <AuraAvatar gradient={gradientFor(c.other?.username)} size="md" initials={initialsOf(c.other?.display_name || c.other?.username)} />
-                )}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <p className={cn("truncate text-sm flex items-center gap-1", c.unread > 0 ? "font-semibold text-foreground" : "font-medium text-foreground")}>
-                      {c.other?.display_name || c.other?.username || "Conversation"}
+          {filtered.map((c) => {
+            const unread = c.unread > 0;
+            const name = c.other?.display_name || c.other?.username || "Conversation";
+            return (
+              <li key={c.id}>
+                <Link
+                  to={`/messages/${c.id}`}
+                  className="flex items-center gap-3 px-4 py-3 transition-colors active:scale-[0.99]"
+                  style={{ background: unread ? "rgba(229,9,20,0.04)" : "transparent" }}
+                >
+                  <div className="relative shrink-0">
+                    <div
+                      className="rounded-full p-[2px]"
+                      style={unread ? { background: `linear-gradient(135deg, ${RED}, #ff3b47)` } : { background: "transparent", padding: 0 }}
+                    >
+                      {c.other?.avatar_url ? (
+                        <img src={c.other.avatar_url} alt="" className="h-12 w-12 rounded-full object-cover" style={{ border: unread ? "2px solid #0a0a0a" : "none" }} />
+                      ) : (
+                        <div className="h-12 w-12 rounded-full overflow-hidden" style={{ border: unread ? "2px solid #0a0a0a" : "none" }}>
+                          <AuraAvatar gradient={gradientFor(c.other?.username)} size="md" initials={initialsOf(name)} />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1.5">
+                      <p className="truncate text-[15px] font-semibold text-white">{name}</p>
                       {c.other?.verification_kind && <VerificationBadge kind={c.other.verification_kind as any} />}
-                    </p>
-                    <span className={cn("ml-auto text-[11px] shrink-0", c.unread > 0 ? "text-primary font-semibold" : "text-muted-foreground")}>
-                      {chatTime(c.last_message_at)}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2 mt-0.5">
-                    <p className={cn("text-xs truncate flex-1", c.unread > 0 ? "text-foreground" : "text-muted-foreground")}>
-                      {c.last ?? "Tap to start chatting"}
-                    </p>
-                    {c.unread > 0 && (
-                      <span className="shrink-0 inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-primary-foreground text-[11px] font-semibold">
-                        {c.unread > 99 ? "99+" : c.unread}
+                      <span className="ml-auto text-[11px] shrink-0" style={{ color: unread ? RED : "rgba(255,255,255,0.45)" }}>
+                        {chatTime(c.last_message_at)}
                       </span>
-                    )}
+                    </div>
+                    <div className="flex items-center gap-2 mt-1">
+                      <p
+                        className="text-[13px] truncate flex-1"
+                        style={{ color: unread ? "rgba(255,255,255,0.9)" : "rgba(255,255,255,0.5)" }}
+                      >
+                        {c.last ?? "Tap to start chatting"}
+                      </p>
+                      {unread && (
+                        <span
+                          className="shrink-0 inline-flex items-center justify-center min-w-[22px] h-[22px] px-1.5 rounded-full text-[11px] font-bold text-white"
+                          style={{ background: RED }}
+                        >
+                          {c.unread > 99 ? "99+" : c.unread}
+                        </span>
+                      )}
+                    </div>
                   </div>
-                </div>
-              </Link>
-            </li>
-          ))}
+                </Link>
+              </li>
+            );
+          })}
         </ul>
 
+        {/* Archived chats footer */}
+        {!loading && convs.length > 0 && (
+          <button
+            className="w-full flex items-center gap-3 px-4 py-4 mt-2 transition-colors hover:bg-white/[0.02]"
+            style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}
+            onClick={() => toast.info("Archive coming soon")}
+          >
+            <div className="h-12 w-12 rounded-full grid place-items-center shrink-0" style={{ background: "#1a1a1a" }}>
+              <Archive className="h-5 w-5" style={{ color: "rgba(255,255,255,0.7)" }} />
+            </div>
+            <div className="flex-1 text-left">
+              <p className="text-[15px] font-semibold text-white">Archived Chats</p>
+              <p className="text-[12px]" style={{ color: "rgba(255,255,255,0.5)" }}>Saved for later</p>
+            </div>
+            <ChevronRight className="h-5 w-5" style={{ color: "rgba(255,255,255,0.35)" }} />
+          </button>
+        )}
       </div>
 
+      {/* New chat sheet */}
       <Sheet open={composerOpen} onOpenChange={setComposerOpen}>
-        <SheetContent side="bottom" className="bg-background border-t border-border h-[80vh] rounded-t-2xl p-0 flex flex-col">
-          <SheetHeader className="px-4 py-3 border-b border-border">
-            <SheetTitle className="text-base font-semibold text-foreground text-left">New message</SheetTitle>
+        <SheetContent
+          side="bottom"
+          className="border-t h-[80vh] rounded-t-3xl p-0 flex flex-col"
+          style={{ background: "#0a0a0a", borderColor: "rgba(255,255,255,0.08)", color: "white" }}
+        >
+          <SheetHeader className="px-5 py-4" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+            <SheetTitle className="text-base font-semibold text-white text-left">New message</SheetTitle>
           </SheetHeader>
-          <div className="p-3">
-            <div className="bg-muted rounded-lg flex items-center gap-2 px-3 py-2">
-              <Search className="h-4 w-4 text-muted-foreground" />
+          <div className="p-4">
+            <div className="flex items-center gap-2 rounded-full px-4 py-2.5" style={{ background: "#1a1a1a", border: "1px solid rgba(255,255,255,0.06)" }}>
+              <Search className="h-4 w-4" style={{ color: "rgba(255,255,255,0.5)" }} />
               <input
                 autoFocus
                 value={composerQuery}
                 onChange={(e) => setComposerQuery(e.target.value)}
                 placeholder="Search by name or @username"
-                className="flex-1 bg-transparent outline-none text-sm placeholder:text-muted-foreground"
+                className="flex-1 bg-transparent outline-none text-sm text-white placeholder:text-white/40"
               />
             </div>
           </div>
           <div className="flex-1 overflow-y-auto">
             {composerQuery.trim() && results.length === 0 && (
-              <p className="text-sm text-muted-foreground text-center py-10">No results.</p>
+              <p className="text-sm text-white/50 text-center py-10">No results.</p>
             )}
             {results.map((p) => (
               <button
                 key={p.user_id}
                 disabled={starting}
                 onClick={() => startChat(p.user_id)}
-                className="w-full flex items-center gap-3 px-3 py-2.5 active:bg-secondary text-left disabled:opacity-50"
+                className="w-full flex items-center gap-3 px-4 py-3 text-left disabled:opacity-50 hover:bg-white/[0.03]"
               >
                 {p.avatar_url ? (
                   <img src={p.avatar_url} alt="" className="h-11 w-11 rounded-full object-cover" />
@@ -286,11 +352,11 @@ const Messages = () => {
                   <AuraAvatar gradient={gradientFor(p.username)} size="md" initials={initialsOf(p.display_name || p.username)} />
                 )}
                 <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-sm flex items-center gap-1 truncate">
+                  <p className="font-semibold text-sm flex items-center gap-1 truncate text-white">
                     {p.display_name || p.username}
                     {p.verification_kind && <VerificationBadge kind={p.verification_kind as any} />}
                   </p>
-                  <p className="text-xs text-muted-foreground truncate">@{p.username}</p>
+                  <p className="text-xs truncate" style={{ color: "rgba(255,255,255,0.5)" }}>@{p.username}</p>
                 </div>
               </button>
             ))}
