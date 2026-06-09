@@ -4,8 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Coins, Sparkles } from "lucide-react";
-import { StripeEmbeddedCheckout } from "@/components/StripeEmbeddedCheckout";
-import { getStripeEnvironment } from "@/lib/stripe";
+import { EmbeddedCheckoutProvider, EmbeddedCheckout } from "@stripe/react-stripe-js";
+import { getStripe, getStripeEnvironment } from "@/lib/stripe";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthProvider";
 import { toast } from "sonner";
@@ -72,11 +72,10 @@ export function TipSheet({ open, onOpenChange, recipientId, recipientName, postI
         </SheetHeader>
 
         {clientSecret ? (
-          <div className="mt-4">
-            <StripeEmbeddedCheckout
-              priceId="__tip__"
-              returnUrl={`${window.location.origin}/checkout/return?session_id={CHECKOUT_SESSION_ID}`}
-            />
+          <div className="mt-4 rounded-2xl overflow-hidden bg-background">
+            <EmbeddedCheckoutProvider stripe={getStripe()} options={{ fetchClientSecret: async () => clientSecret }}>
+              <EmbeddedCheckout />
+            </EmbeddedCheckoutProvider>
           </div>
         ) : (
           <div className="space-y-5 py-4">
