@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { Heart, MessageCircle, Send, Bookmark, MoreHorizontal, BarChart3, FolderPlus, Trash2, Flag } from "lucide-react";
+import { Heart, MessageCircle, Send, Bookmark, MoreHorizontal, BarChart3, FolderPlus, Trash2, Flag, Sparkles } from "lucide-react";
+import { TipSheet } from "@/components/social/TipSheet";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthProvider";
@@ -61,6 +62,7 @@ export const PostCard = ({ post, onOpenComments }: { post: FeedPost; onOpenComme
   const [shareOpen, setShareOpen] = useState(false);
   const [collectionOpen, setCollectionOpen] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
+  const [tipOpen, setTipOpen] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [burst, setBurst] = useState(0);
   const [collabs, setCollabs] = useState<NonNullable<FeedPost["collaborators"]>>(post.collaborators ?? []);
@@ -244,6 +246,11 @@ export const PostCard = ({ post, onOpenComments }: { post: FeedPost; onOpenComme
         <button onClick={() => setShareOpen(true)} aria-label="Share" className="p-2 active:scale-90 transition-transform">
           <Send className="h-7 w-7 text-foreground" strokeWidth={1.75} />
         </button>
+        {!isOwner && (
+          <button onClick={() => setTipOpen(true)} aria-label="Send Aura" className="p-2 active:scale-90 transition-transform">
+            <Sparkles className="h-7 w-7 text-primary" strokeWidth={1.75} />
+          </button>
+        )}
         <button onClick={toggleSave} aria-label="Save" className="ml-auto p-2 active:scale-90 transition-transform">
           <Bookmark className={`h-7 w-7 ${saved ? "fill-foreground text-foreground" : "text-foreground"}`} strokeWidth={1.75} />
         </button>
@@ -282,6 +289,13 @@ export const PostCard = ({ post, onOpenComments }: { post: FeedPost; onOpenComme
       <ShareToDM postId={post.id} open={shareOpen} onOpenChange={setShareOpen} />
       <SaveToCollectionSheet postId={post.id} open={collectionOpen} onOpenChange={setCollectionOpen} />
       <ReportSheet open={reportOpen} onOpenChange={setReportOpen} targetKind="post" targetId={post.id} />
+      <TipSheet
+        open={tipOpen}
+        onOpenChange={setTipOpen}
+        recipientId={post.user_id}
+        recipientName={handle}
+        postId={post.id}
+      />
     </article>
   );
 };
