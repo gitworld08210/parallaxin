@@ -1,13 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Sparkles, QrCode, Copy, Check, ExternalLink, ShieldCheck } from "lucide-react";
+import { Sparkles, QrCode, Copy, Check, ExternalLink, ShieldCheck, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthProvider";
 import { toast } from "sonner";
-import { useEffect } from "react";
 
 const PRESETS = [49, 99, 199, 499, 999, 2499];
 
@@ -21,10 +20,10 @@ interface Props {
   postId?: string;
 }
 
-interface RecipientPayInfo {
-  upi_id: string | null;
-  payment_qr_url: string | null;
-  display_name: string | null;
+interface PlatformPay {
+  upi: string;
+  qr: string;
+  payee: string;
 }
 
 export function TipSheet({ open, onOpenChange, recipientId, recipientName, postId }: Props) {
@@ -34,7 +33,7 @@ export function TipSheet({ open, onOpenChange, recipientId, recipientName, postI
   const [custom, setCustom] = useState("");
   const [message, setMessage] = useState("");
   const [utr, setUtr] = useState("");
-  const [info, setInfo] = useState<RecipientPayInfo | null>(null);
+  const [pay, setPay] = useState<PlatformPay | null>(null);
   const [tipId, setTipId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -47,32 +46,39 @@ export function TipSheet({ open, onOpenChange, recipientId, recipientName, postI
     let cancelled = false;
     (async () => {
       const { data } = await supabase
-        .from("profiles")
-        .select("upi_id, payment_qr_url, display_name")
-        .eq("user_id", recipientId)
-        .maybeSingle();
-      if (!cancelled) setInfo(data as RecipientPayInfo | null);
+        .from("app_config")
+        .select("key, value")
+        .in("key", ["platform_upi_id", "platform_qr_url", "platform_payee_name"]);
+      if (cancelled) return;
+      const map = Object.fromEntries((data ?? []).map((r: any) => [r.key, r.value])) as Record<string, string>;
+      setPay({
+        upi: (map.platform_upi_id || "").toString(),
+        qr: (map.platform_qr_url || "").toString(),
+        payee: (map.platform_payee_name || "Aurelix").toString(),
+      });
     })();
     return () => { cancelled = true; };
-  }, [open, recipientId]);
+  }, [open]);
 
-  const upiLink = info?.upi_id
-    ? `upi://pay?pa=${encodeURIComponent(info.upi_id)}&pn=${encodeURIComponent(info.display_name || recipientName)}&am=${finalAmount}&cu=INR&tn=${encodeURIComponent("Aura tip from @" + (user?.email?.split("@")[0] || "fan"))}`
+  const upiLink = pay?.upi
+    ? `upi://pay?pa=${encodeURIComponent(pay.upi)}&pn=${encodeURIComponent(pay.payee)}&am=${finalAmount}&cu=INR&tn=${encodeURIComponent(`Tip-${recipientName.slice(0,12)}`)}`
     : null;
 
   const startPay = async () => {
     if (!user) return toast.error("Sign in to tip");
     if (cents < 4900) return toast.error("Minimum tip is ₹49");
-    if (!info?.upi_id && !info?.payment_qr_url) return toast.error("This creator hasn't added a UPI QR yet");
+    if (!pay?.upi && !pay?.qr) return toast.error("Payments are not configured yet. Try again later.");
     setLoading(true);
     try {
+      const fee = Math.floor(cents * 0.15);
+      const net = cents - fee;
       const { data, error } = await supabase.from("tips").insert({
         sender_id: user.id,
         recipient_id: recipientId,
         post_id: postId ?? null,
         amount_cents: cents,
-        platform_fee_cents: 0,
-        net_cents: cents,
+        platform_fee_cents: fee,
+        net_cents: net,
         currency: "inr",
         environment: "live",
         message: message.trim() || null,
@@ -91,20 +97,18 @@ export function TipSheet({ open, onOpenChange, recipientId, recipientName, postI
   const submitUtr = async () => {
     if (!tipId) return;
     const cleaned = utr.trim().replace(/\s+/g, "");
-    if (cleaned.length < 6) return toast.error("Enter the 12-digit UTR / transaction ref");
+    if (!/^[0-9]{12}$/.test(cleaned)) return toast.error("Enter your 12-digit UPI UTR");
     setLoading(true);
-    const { error } = await supabase
-      .from("tips")
-      .update({ utr: cleaned, status: "submitted" })
-      .eq("id", tipId);
+    const { data, error } = await supabase.rpc("verify_tip_with_utr", { _tip_id: tipId, _utr: cleaned });
     setLoading(false);
     if (error) return toast.error(error.message);
-    setStep("done");
+    if ((data as any)?.status === "verified") setStep("done");
+    else toast.error("Could not verify — please try again");
   };
 
   const copyUpi = async () => {
-    if (!info?.upi_id) return;
-    await navigator.clipboard.writeText(info.upi_id);
+    if (!pay?.upi) return;
+    await navigator.clipboard.writeText(pay.upi);
     setCopied(true);
     setTimeout(() => setCopied(false), 1500);
   };
@@ -125,7 +129,7 @@ export function TipSheet({ open, onOpenChange, recipientId, recipientName, postI
         <SheetHeader>
           <SheetTitle className="flex items-center gap-2">
             <Sparkles className="h-5 w-5 text-primary" />
-            {step === "done" ? "Tip submitted" : `Send Aura to @${recipientName}`}
+            {step === "done" ? "Tip delivered" : `Send Aura to @${recipientName}`}
           </SheetTitle>
         </SheetHeader>
 
@@ -163,32 +167,31 @@ export function TipSheet({ open, onOpenChange, recipientId, recipientName, postI
               />
             </div>
 
-            {info && !info.upi_id && !info.payment_qr_url && (
-              <div className="rounded-xl bg-amber-500/10 border border-amber-500/30 px-4 py-3 text-xs text-amber-200">
-                @{recipientName} hasn't added a UPI QR yet. Ask them to set one up in Edit Profile.
-              </div>
-            )}
+            <div className="flex items-center justify-between rounded-xl bg-muted/30 px-4 py-3 text-sm">
+              <span className="text-muted-foreground">Creator receives</span>
+              <span className="font-semibold">₹{Math.floor(finalAmount * 0.85)}</span>
+            </div>
 
-            <Button onClick={startPay} disabled={loading || cents < 4900 || (!info?.upi_id && !info?.payment_qr_url)} className="w-full" size="lg">
+            <Button onClick={startPay} disabled={loading || cents < 4900} className="w-full" size="lg">
               {loading ? "Preparing…" : `Continue · ₹${finalAmount}`}
             </Button>
             <p className="text-[11px] text-muted-foreground text-center">
-              You'll pay @{recipientName} directly via UPI. Aurelix takes no cut.
+              Aurelix collects via UPI and instantly credits @{recipientName}'s creator wallet.
             </p>
           </div>
         )}
 
-        {step === "pay" && info && (
+        {step === "pay" && pay && (
           <div className="space-y-5 py-4">
-            <div className="rounded-2xl bg-gradient-to-br from-primary/10 via-card to-accent/10 p-5 text-center space-y-3 border border-primary/20">
-              <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Paying</p>
+            <div className="rounded-2xl bg-gradient-to-br from-primary/10 via-card to-accent/10 p-5 text-center space-y-2 border border-primary/20">
+              <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Pay exactly</p>
               <p className="font-display text-4xl font-bold">₹{finalAmount}</p>
-              <p className="text-xs text-muted-foreground">to @{recipientName}</p>
+              <p className="text-xs text-muted-foreground">to {pay.payee}</p>
             </div>
 
-            {info.payment_qr_url ? (
+            {pay.qr ? (
               <div className="mx-auto w-fit rounded-2xl bg-white p-4 shadow-soft">
-                <img src={info.payment_qr_url} alt="UPI QR" className="h-56 w-56 object-contain" />
+                <img src={pay.qr} alt="UPI QR" className="h-56 w-56 object-contain" />
               </div>
             ) : (
               <div className="rounded-2xl border border-dashed border-border p-8 text-center text-muted-foreground text-sm flex flex-col items-center gap-2">
@@ -197,14 +200,14 @@ export function TipSheet({ open, onOpenChange, recipientId, recipientName, postI
               </div>
             )}
 
-            {info.upi_id && (
+            {pay.upi && (
               <button
                 onClick={copyUpi}
                 className="w-full flex items-center justify-between rounded-xl bg-muted/40 px-4 py-3 text-sm"
               >
                 <span className="text-muted-foreground">UPI ID</span>
                 <span className="font-semibold flex items-center gap-2">
-                  {info.upi_id}
+                  {pay.upi}
                   {copied ? <Check className="h-4 w-4 text-emerald-400" /> : <Copy className="h-4 w-4" />}
                 </span>
               </button>
@@ -220,20 +223,21 @@ export function TipSheet({ open, onOpenChange, recipientId, recipientName, postI
             )}
 
             <div className="pt-2 space-y-2">
-              <label className="text-xs text-muted-foreground">After paying, enter your 12-digit UTR / Transaction ID</label>
+              <label className="text-xs text-muted-foreground">Enter your 12-digit UPI UTR (transaction ID)</label>
               <Input
-                value={utr} onChange={(e) => setUtr(e.target.value)}
-                placeholder="e.g. 412334567890" inputMode="numeric" maxLength={32}
+                value={utr} onChange={(e) => setUtr(e.target.value.replace(/\D/g, "").slice(0, 12))}
+                placeholder="412334567890" inputMode="numeric" maxLength={12}
+                className="font-mono tracking-wider text-center text-lg"
               />
               <p className="text-[10px] text-muted-foreground flex items-center gap-1">
-                <ShieldCheck className="h-3 w-3" /> Find this in your UPI app under transaction details.
+                <ShieldCheck className="h-3 w-3" /> Open your UPI app → tap the transaction → copy the UTR. Each UTR works once.
               </p>
             </div>
 
             <div className="flex gap-2">
               <Button variant="outline" onClick={() => setStep("amount")} className="flex-1">Back</Button>
-              <Button onClick={submitUtr} disabled={loading || utr.trim().length < 6} className="flex-1">
-                {loading ? "Submitting…" : "I've paid"}
+              <Button onClick={submitUtr} disabled={loading || utr.length !== 12} className="flex-1">
+                {loading ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Verifying…</> : "Verify & send"}
               </Button>
             </div>
           </div>
@@ -244,9 +248,9 @@ export function TipSheet({ open, onOpenChange, recipientId, recipientName, postI
             <div className="mx-auto h-16 w-16 rounded-full bg-emerald-500/20 grid place-items-center">
               <Check className="h-8 w-8 text-emerald-400" />
             </div>
-            <p className="font-semibold">Sent ₹{finalAmount} to @{recipientName}</p>
+            <p className="font-semibold">₹{Math.floor(finalAmount * 0.85)} credited to @{recipientName}</p>
             <p className="text-sm text-muted-foreground px-4">
-              They'll verify the UTR and your tip will appear on their profile shortly.
+              Verified instantly. They'll see your Aura tip in their wallet.
             </p>
             <Button onClick={() => handleClose(false)} className="w-full" size="lg">Done</Button>
           </div>

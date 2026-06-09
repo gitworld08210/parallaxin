@@ -16,8 +16,6 @@ const EditProfile = () => {
   const [bio, setBio] = useState("");
   const [avatar, setAvatar] = useState<string | null>(null);
   const [cover, setCover] = useState<string | null>(null);
-  const [upiId, setUpiId] = useState("");
-  const [qrUrl, setQrUrl] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
@@ -27,24 +25,9 @@ const EditProfile = () => {
       setBio(profile.bio || "");
       setAvatar(profile.avatar_url);
       setCover((profile as any).cover_url ?? null);
-      setUpiId(((profile as any).upi_id as string | null) ?? "");
-      setQrUrl(((profile as any).payment_qr_url as string | null) ?? null);
     }
   }, [profile]);
 
-  const uploadQr = async (file: File) => {
-    if (!user) return;
-    setBusy(true);
-    try {
-      const ext = file.name.split(".").pop() || "png";
-      const path = `${user.id}/upi-qr-${Date.now()}.${ext}`;
-      const { error } = await supabase.storage.from("avatars").upload(path, file, { upsert: true });
-      if (error) throw error;
-      const { data } = supabase.storage.from("avatars").getPublicUrl(path);
-      setQrUrl(data.publicUrl);
-    } catch (e: any) { toast.error(e.message); }
-    finally { setBusy(false); }
-  };
 
   const uploadImage = async (file: File, kind: "avatar" | "cover") => {
     if (!user) return;
@@ -63,14 +46,9 @@ const EditProfile = () => {
 
   const save = async () => {
     if (!user) return;
-    const cleanedUpi = upiId.trim();
-    if (cleanedUpi && !/^[a-zA-Z0-9.\-_]{2,256}@[a-zA-Z]{2,64}$/.test(cleanedUpi)) {
-      return toast.error("UPI ID looks invalid (example: name@paytm)");
-    }
     setBusy(true);
     const { error } = await supabase.from("profiles").update({
       display_name: displayName, username, bio, avatar_url: avatar, cover_url: cover,
-      upi_id: cleanedUpi || null, payment_qr_url: qrUrl,
     } as any).eq("user_id", user.id);
     setBusy(false);
     if (error) return toast.error(error.message);
@@ -130,50 +108,8 @@ const EditProfile = () => {
           />
         </div>
 
-        {/* Payments / UPI */}
-        <div className="glass rounded-2xl p-4 space-y-3 border border-primary/20">
-          <div className="flex items-center gap-2">
-            <span className="h-8 w-8 rounded-lg bg-gradient-primary grid place-items-center">
-              <Upload className="h-4 w-4 text-primary-foreground" />
-            </span>
-            <div>
-              <p className="text-sm font-semibold">Accept tips via UPI</p>
-              <p className="text-[11px] text-muted-foreground">Fans scan your QR to send you Aura tips directly.</p>
-            </div>
-          </div>
 
-          <div>
-            <label className="text-[10px] uppercase tracking-widest text-muted-foreground">UPI ID</label>
-            <input
-              value={upiId} onChange={(e) => setUpiId(e.target.value)} placeholder="yourname@paytm"
-              className="mt-1 w-full glass rounded-2xl px-4 py-3 text-sm outline-none"
-            />
-          </div>
 
-          <div>
-            <label className="text-[10px] uppercase tracking-widest text-muted-foreground">UPI QR image</label>
-            <div className="mt-1 flex items-center gap-3">
-              {qrUrl ? (
-                <img src={qrUrl} alt="Your UPI QR" className="h-24 w-24 rounded-xl object-contain bg-white p-1" />
-              ) : (
-                <div className="h-24 w-24 rounded-xl border border-dashed border-border grid place-items-center text-[10px] text-muted-foreground text-center px-2">
-                  No QR uploaded
-                </div>
-              )}
-              <div className="flex-1 flex flex-col gap-2">
-                <label className="glass-strong rounded-full px-4 py-2 text-xs font-semibold flex items-center gap-2 cursor-pointer w-fit">
-                  <Upload className="h-4 w-4" /> {qrUrl ? "Replace QR" : "Upload QR"}
-                  <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files?.[0] && uploadQr(e.target.files[0])} />
-                </label>
-                {qrUrl && (
-                  <button onClick={() => setQrUrl(null)} className="text-[11px] text-muted-foreground hover:text-foreground text-left">
-                    Remove QR
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
 
 
 
