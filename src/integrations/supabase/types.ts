@@ -14,6 +14,24 @@ export type Database = {
   }
   public: {
     Tables: {
+      app_config: {
+        Row: {
+          key: string
+          updated_at: string
+          value: Json
+        }
+        Insert: {
+          key: string
+          updated_at?: string
+          value: Json
+        }
+        Update: {
+          key?: string
+          updated_at?: string
+          value?: Json
+        }
+        Relationships: []
+      }
       blocks: {
         Row: {
           blocked_id: string
@@ -229,6 +247,36 @@ export type Database = {
         }
         Relationships: []
       }
+      creator_balance: {
+        Row: {
+          available_cents: number
+          currency: string
+          environment: string
+          lifetime_earned_cents: number
+          pending_cents: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          available_cents?: number
+          currency?: string
+          environment?: string
+          lifetime_earned_cents?: number
+          pending_cents?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          available_cents?: number
+          currency?: string
+          environment?: string
+          lifetime_earned_cents?: number
+          pending_cents?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       data_export_requests: {
         Row: {
           created_at: string
@@ -244,6 +292,51 @@ export type Database = {
           created_at?: string
           id?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      dm_unlocks: {
+        Row: {
+          amount_cents: number
+          created_at: string
+          currency: string
+          environment: string
+          id: string
+          net_cents: number
+          paid_at: string | null
+          platform_fee_cents: number
+          recipient_id: string
+          sender_id: string
+          status: string
+          stripe_session_id: string | null
+        }
+        Insert: {
+          amount_cents: number
+          created_at?: string
+          currency?: string
+          environment?: string
+          id?: string
+          net_cents?: number
+          paid_at?: string | null
+          platform_fee_cents?: number
+          recipient_id: string
+          sender_id: string
+          status?: string
+          stripe_session_id?: string | null
+        }
+        Update: {
+          amount_cents?: number
+          created_at?: string
+          currency?: string
+          environment?: string
+          id?: string
+          net_cents?: number
+          paid_at?: string | null
+          platform_fee_cents?: number
+          recipient_id?: string
+          sender_id?: string
+          status?: string
+          stripe_session_id?: string | null
         }
         Relationships: []
       }
@@ -529,6 +622,48 @@ export type Database = {
           },
         ]
       }
+      payout_requests: {
+        Row: {
+          admin_note: string | null
+          amount_cents: number
+          created_at: string
+          currency: string
+          environment: string
+          id: string
+          method: string
+          payout_detail: Json
+          processed_at: string | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          admin_note?: string | null
+          amount_cents: number
+          created_at?: string
+          currency?: string
+          environment?: string
+          id?: string
+          method: string
+          payout_detail?: Json
+          processed_at?: string | null
+          status?: string
+          user_id: string
+        }
+        Update: {
+          admin_note?: string | null
+          amount_cents?: number
+          created_at?: string
+          currency?: string
+          environment?: string
+          id?: string
+          method?: string
+          payout_detail?: Json
+          processed_at?: string | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       post_collaborators: {
         Row: {
           invited_at: string
@@ -590,6 +725,62 @@ export type Database = {
           },
         ]
       }
+      post_unlocks: {
+        Row: {
+          amount_cents: number
+          created_at: string
+          creator_id: string
+          currency: string
+          environment: string
+          id: string
+          net_cents: number
+          paid_at: string | null
+          platform_fee_cents: number
+          post_id: string
+          status: string
+          stripe_session_id: string | null
+          user_id: string
+        }
+        Insert: {
+          amount_cents: number
+          created_at?: string
+          creator_id: string
+          currency?: string
+          environment?: string
+          id?: string
+          net_cents?: number
+          paid_at?: string | null
+          platform_fee_cents?: number
+          post_id: string
+          status?: string
+          stripe_session_id?: string | null
+          user_id: string
+        }
+        Update: {
+          amount_cents?: number
+          created_at?: string
+          creator_id?: string
+          currency?: string
+          environment?: string
+          id?: string
+          net_cents?: number
+          paid_at?: string | null
+          platform_fee_cents?: number
+          post_id?: string
+          status?: string
+          stripe_session_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_unlocks_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       post_views: {
         Row: {
           created_at: string
@@ -617,10 +808,12 @@ export type Database = {
           content: string
           created_at: string
           id: string
+          is_paid: boolean
           is_reel: boolean
           like_count: number
           media_type: string | null
           media_url: string | null
+          price_cents: number
           scheduled_for: string | null
           status: Database["public"]["Enums"]["post_status"]
           updated_at: string
@@ -631,10 +824,12 @@ export type Database = {
           content?: string
           created_at?: string
           id?: string
+          is_paid?: boolean
           is_reel?: boolean
           like_count?: number
           media_type?: string | null
           media_url?: string | null
+          price_cents?: number
           scheduled_for?: string | null
           status?: Database["public"]["Enums"]["post_status"]
           updated_at?: string
@@ -645,10 +840,12 @@ export type Database = {
           content?: string
           created_at?: string
           id?: string
+          is_paid?: boolean
           is_reel?: boolean
           like_count?: number
           media_type?: string | null
           media_url?: string | null
+          price_cents?: number
           scheduled_for?: string | null
           status?: Database["public"]["Enums"]["post_status"]
           updated_at?: string
@@ -679,6 +876,7 @@ export type Database = {
           created_at: string
           deletion_scheduled_at: string | null
           display_name: string
+          dm_price_cents: number
           followers_count: number
           following_count: number
           founder_level: number
@@ -715,6 +913,7 @@ export type Database = {
           created_at?: string
           deletion_scheduled_at?: string | null
           display_name?: string
+          dm_price_cents?: number
           followers_count?: number
           following_count?: number
           founder_level?: number
@@ -751,6 +950,7 @@ export type Database = {
           created_at?: string
           deletion_scheduled_at?: string | null
           display_name?: string
+          dm_price_cents?: number
           followers_count?: number
           following_count?: number
           founder_level?: number
@@ -1035,6 +1235,65 @@ export type Database = {
         }
         Relationships: []
       }
+      tips: {
+        Row: {
+          amount_cents: number
+          created_at: string
+          currency: string
+          environment: string
+          id: string
+          message: string | null
+          net_cents: number
+          paid_at: string | null
+          platform_fee_cents: number
+          post_id: string | null
+          recipient_id: string
+          sender_id: string
+          status: string
+          stripe_session_id: string | null
+        }
+        Insert: {
+          amount_cents: number
+          created_at?: string
+          currency?: string
+          environment?: string
+          id?: string
+          message?: string | null
+          net_cents?: number
+          paid_at?: string | null
+          platform_fee_cents?: number
+          post_id?: string | null
+          recipient_id: string
+          sender_id: string
+          status?: string
+          stripe_session_id?: string | null
+        }
+        Update: {
+          amount_cents?: number
+          created_at?: string
+          currency?: string
+          environment?: string
+          id?: string
+          message?: string | null
+          net_cents?: number
+          paid_at?: string | null
+          platform_fee_cents?: number
+          post_id?: string | null
+          recipient_id?: string
+          sender_id?: string
+          status?: string
+          stripe_session_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tips_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_interest_vectors: {
         Row: {
           embedding: string
@@ -1146,6 +1405,15 @@ export type Database = {
         }
         Returns: undefined
       }
+      credit_creator: {
+        Args: {
+          _currency?: string
+          _environment: string
+          _net_cents: number
+          _user_id: string
+        }
+        Returns: undefined
+      }
       has_active_subscription: {
         Args: { check_env?: string; user_uuid: string }
         Returns: boolean
@@ -1171,6 +1439,15 @@ export type Database = {
           post_id: string
           similarity: number
         }[]
+      }
+      request_payout: {
+        Args: {
+          _amount_cents: number
+          _environment: string
+          _method: string
+          _payout_detail: Json
+        }
+        Returns: string
       }
       start_dm: { Args: { other_user_id: string }; Returns: string }
     }
