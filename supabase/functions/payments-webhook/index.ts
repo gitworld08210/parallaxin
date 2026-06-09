@@ -78,8 +78,40 @@ async function handleSubscriptionDeleted(subscription: any, env: StripeEnv) {
   if (userId) await applyTierForUser(userId, env);
 }
 
+async function handleTipPaid(session: any, env: StripeEnv) {
+  const tipId = session.metadata?.tip_id;
+  if (!tipId) { console.log("tip session missing tip_id"); return; }
+  const sb = getSupabase();
+  const { data: tip, error: tErr } = await sb.from("tips")
+    .select("id, recipient_id, net_cents, currency, status, environment")
+    .eq("id", tipId).maybeSingle();
+  if (tErr || !tip) { console.error("tip not found", tipId, tErr); return; }
+  if (tip.status === 'paid') return; // idempotent
+  const { error: uErr } = await sb.from("tips")
+    .update({ status: 'paid', paid_at: new Date().toISOString() })
+    .eq("id", tipId).eq("status", "pending");
+  if (uErr) { console.error("tip update failed", uErr); return; }
+  const { error: cErr } = await sb.rpc("credit_creator", {
+    _user_id: tip.recipient_id,
+    _environment: tip.environment ?? env,
+    _net_cents: tip.net_cents,
+    _currency: tip.currency ?? 'inr',
+  });
+  if (cErr) console.error("credit_creator failed", cErr);
+  // notify recipient
+  await sb.from("notifications").insert({
+    user_id: tip.recipient_id,
+    actor_id: session.metadata?.userId ?? null,
+    type: 'tip_received',
+    entity_id: tipId,
+  } as any);
+}
+
 async function handleCheckoutCompleted(session: any, env: StripeEnv) {
   if (session.mode !== "payment") return; // subscriptions handled via customer.subscription.*
+  const purpose = session.metadata?.purpose;
+  if (purpose === 'tip') { await handleTipPaid(session, env); return; }
+
   const userId = session.metadata?.userId;
   const priceId = session.metadata?.priceId;
   if (!userId || !priceId) { console.log("checkout.session.completed missing metadata", { userId, priceId }); return; }
