@@ -888,12 +888,14 @@ export type Database = {
           join_era: string | null
           last_seen_at: string | null
           onboarded_at: string | null
+          payment_qr_url: string | null
           posts_count: number
           show_activity: boolean
           show_read_receipts: boolean
           signature_aura: string | null
           tier: string
           updated_at: string
+          upi_id: string | null
           user_id: string
           username: string
           verification_kind: string | null
@@ -925,12 +927,14 @@ export type Database = {
           join_era?: string | null
           last_seen_at?: string | null
           onboarded_at?: string | null
+          payment_qr_url?: string | null
           posts_count?: number
           show_activity?: boolean
           show_read_receipts?: boolean
           signature_aura?: string | null
           tier?: string
           updated_at?: string
+          upi_id?: string | null
           user_id: string
           username: string
           verification_kind?: string | null
@@ -962,12 +966,14 @@ export type Database = {
           join_era?: string | null
           last_seen_at?: string | null
           onboarded_at?: string | null
+          payment_qr_url?: string | null
           posts_count?: number
           show_activity?: boolean
           show_read_receipts?: boolean
           signature_aura?: string | null
           tier?: string
           updated_at?: string
+          upi_id?: string | null
           user_id?: string
           username?: string
           verification_kind?: string | null
@@ -1240,6 +1246,7 @@ export type Database = {
           amount_cents: number
           created_at: string
           currency: string
+          dispute_reason: string | null
           environment: string
           id: string
           message: string | null
@@ -1251,11 +1258,14 @@ export type Database = {
           sender_id: string
           status: string
           stripe_session_id: string | null
+          utr: string | null
+          verified_at: string | null
         }
         Insert: {
           amount_cents: number
           created_at?: string
           currency?: string
+          dispute_reason?: string | null
           environment?: string
           id?: string
           message?: string | null
@@ -1267,11 +1277,14 @@ export type Database = {
           sender_id: string
           status?: string
           stripe_session_id?: string | null
+          utr?: string | null
+          verified_at?: string | null
         }
         Update: {
           amount_cents?: number
           created_at?: string
           currency?: string
+          dispute_reason?: string | null
           environment?: string
           id?: string
           message?: string | null
@@ -1283,6 +1296,8 @@ export type Database = {
           sender_id?: string
           status?: string
           stripe_session_id?: string | null
+          utr?: string | null
+          verified_at?: string | null
         }
         Relationships: [
           {
