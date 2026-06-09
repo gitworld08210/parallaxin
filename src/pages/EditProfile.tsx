@@ -16,8 +16,6 @@ const EditProfile = () => {
   const [bio, setBio] = useState("");
   const [avatar, setAvatar] = useState<string | null>(null);
   const [cover, setCover] = useState<string | null>(null);
-  const [upiId, setUpiId] = useState("");
-  const [qrUrl, setQrUrl] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
@@ -27,24 +25,9 @@ const EditProfile = () => {
       setBio(profile.bio || "");
       setAvatar(profile.avatar_url);
       setCover((profile as any).cover_url ?? null);
-      setUpiId(((profile as any).upi_id as string | null) ?? "");
-      setQrUrl(((profile as any).payment_qr_url as string | null) ?? null);
     }
   }, [profile]);
 
-  const uploadQr = async (file: File) => {
-    if (!user) return;
-    setBusy(true);
-    try {
-      const ext = file.name.split(".").pop() || "png";
-      const path = `${user.id}/upi-qr-${Date.now()}.${ext}`;
-      const { error } = await supabase.storage.from("avatars").upload(path, file, { upsert: true });
-      if (error) throw error;
-      const { data } = supabase.storage.from("avatars").getPublicUrl(path);
-      setQrUrl(data.publicUrl);
-    } catch (e: any) { toast.error(e.message); }
-    finally { setBusy(false); }
-  };
 
   const uploadImage = async (file: File, kind: "avatar" | "cover") => {
     if (!user) return;
