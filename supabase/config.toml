@@ -1,13 +1,1 @@
 project_id = "xmztbdaupkvezhhokmwx"
-
-[functions.create-checkout]
-verify_jwt = false
-
-[functions.payments-webhook]
-verify_jwt = false
-
-[functions.create-portal-session]
-verify_jwt = false
-
-[functions.create-tip-checkout]
-verify_jwt = false
