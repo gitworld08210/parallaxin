@@ -1,79 +1,61 @@
-# Next Features Plan
+## Goal
+Rebuild **Messages** (inbox) and **Conversation** (thread) to match the attached mockup — pitch-black background, red `#E50914` accents, Telegram-style ergonomics, cinematic Netflix feel. Mobile-first (preview is 420px); the screenshot's two-pane look is the desktop layout.
 
-Two phases. Phase 1 closes the open UI work. Phase 2 is the big creator-monetization push you picked.
+## Messages (inbox) — `src/pages/Messages.tsx`
+- Header: "Messages" bold title, filter icon + new-chat icon (red square button)
+- Tab pills under header: **All · Unread (n) · Requests** — active tab gets red underline + red label, counter in red circle
+- Chat rows:
+  - 48px circular avatar (red ring if unread)
+  - Bold name + verified red checkmark
+  - Preview line (muted); when typing → "Typing…" in red
+  - Right: timestamp (top), unread count in red pill (bottom)
+  - Active/selected row: subtle red-tinted card background
+- Bottom row: **Archived Chats** with archive icon + chevron
+- Long-press → action sheet: Pin, Mute, Archive, Delete
+- Search appears when tapping filter icon (collapses by default to match mockup)
 
-## Phase 1 — Finish the leftover UI (from `.lovable/plan.md`)
+## Conversation (thread) — `src/pages/Conversation.tsx`
+- Sticky header: back arrow, avatar with red ring, name + verified, "online / typing…" in green/red below, search + call + more icons on the right
+- **Pinned message banner**: red left bar, "Pinned Message" red label, preview text, tiny thumbnail, dismiss × 
+- Date divider chip ("Today", "Yesterday") centered, dark gray pill
+- Bubbles:
+  - Theirs: dark graphite `#1f1f1f`, left-aligned, rounded with tail on last in group
+  - Mine: red gradient `#7a1014 → #b8141a`, right-aligned, white text, ✓✓ read receipt in lighter red
+  - Grouped by sender within 2 min; avatar shown only on first of group
+  - Time inside bubble bottom-right (small, muted)
+- Voice message bubble: red play button + red waveform + duration + sent time
+- Long-press bubble → floating action bar: Reply, Copy, Forward, React, Delete + emoji row
+- Swipe-right to reply; reply preview chip above composer
+- Composer (sticky bottom, safe-area):
+  - Pill input, attach 📎 (left), emoji 😊 + mic 🎙 (right, red mic)
+  - Mic morphs into red send button when text present
+  - Hold mic → slide-to-cancel voice recording (existing recorder logic preserved)
 
-Backend tables already exist; this is wiring only.
+## Visual tokens (scoped inline, not global)
+- Surfaces: page `#0a0a0a`, header/composer `#141414`, theirs bubble `#1f1f1f`, mine bubble red gradient
+- Accent red: `#E50914` (primary CTAs, unread, mine bubbles, active tab)
+- Online dot: `#46d369`
+- Text: white / `rgba(255,255,255,0.6)` muted / `rgba(255,255,255,0.4)` faint
+- Dividers: `rgba(255,255,255,0.06)`
+- Motion: 200ms ease-out hovers, 180ms bubble pop-in, scale-on-press for rows + buttons
 
-1. **Story stickers**
-   - `StoryCompose`: "Stickers" sheet → Poll (Q + 2–4 options) and Q&A (prompt). Draggable chip on canvas, position normalized 0–1. Insert into `story_stickers` after story insert.
-   - `StoryViewer`: render stickers at saved positions. Poll = tap option → upsert `story_sticker_responses`, live % bars via realtime. Q&A = text input → insert response. Author sees an "Insights" tab listing all responders.
+## Functional additions wired to existing schema
+- **Pinned messages**: read `messages.is_pinned` if present, else skip the banner (no schema change this slice)
+- **Typing indicator**: subscribe to Realtime `typing` channel per conversation (presence-based, no table)
+- **Read receipts**: already in `messages.read_at` → render ✓ vs ✓✓
+- **Unread count per chat**: count messages where `read_at IS NULL AND sender_id <> me`
 
-2. **Collaborative posts**
-   - `PostCard`: stacked avatars + "@author with @user1 and @user2" header from `post_collaborators` (status=accepted).
-   - Profile grid: include posts where I'm an accepted collaborator.
-   - Inline accept/decline in `Notifications` for `collab_invite` rows.
+## Files I'll touch
+- `src/pages/Messages.tsx` — full rewrite
+- `src/pages/Conversation.tsx` — full rewrite
+- `src/components/dm/MessageBubble.tsx` — **new** (extracted)
+- `src/components/dm/VoiceMessage.tsx` — restyle (red waveform + play button)
+- `src/components/dm/ChatRow.tsx` — **new** (extracted inbox row)
 
-3. **Notifications renderer**
-   - Handle `collab_invite` and `collab_accepted` types.
-   - Migration: `ALTER PUBLICATION supabase_realtime ADD TABLE public.story_sticker_responses;`
+## Out of scope
+- Paid DMs paywall (separate slice you previously rejected — can revisit)
+- Group chat creation, message search inside thread, scheduled messages, secret chats
+- No backend / RLS / edge function changes
+- No global theme token changes (scoped colors only)
 
-## Phase 2 — Creator monetization
-
-Goal: give creators 3 distinct ways to earn, plus a clean wallet/payout UX. All payments via the existing Stripe Embedded Checkout setup. Platform takes a configurable cut (default 15%).
-
-### 2A. Creator Tips ("Send Aura")
-- Any viewer can tip a creator from a profile or post (pay-what-you-want, min ₹49).
-- New table `tips` (sender_id, recipient_id, post_id?, amount_cents, currency, platform_fee_cents, net_cents, stripe_session_id, status, environment).
-- New edge function `create-tip-checkout` using `price_data` (donation pattern). On webhook `checkout.session.completed`, insert `tips` row + credit recipient's `creator_balance`.
-- UI: "Send tip" button on `PostCard` and `Profile`. Tip sheet with preset amounts (₹49 / ₹199 / ₹499 / custom). Toast + notification (`tip_received`) to recipient.
-
-### 2B. Paid DMs (DM unlock fee)
-- Creator sets a "DM price" in `EditProfile` (₹0 = free, default). Stored on `profiles.dm_price_cents`.
-- When a non-follower tries to open a new conversation with that creator, show a paywall: "Unlock DM for ₹X".
-- One-time checkout → on success, insert row into new `dm_unlocks` table (sender_id, recipient_id, paid_at). `Conversation` and `Messages` check this table before allowing send.
-
-### 2C. Paywalled posts ("Premium content")
-- Compose toggle: "Make this post paid" → sets `posts.price_cents`, `posts.is_paid=true`.
-- `PostCard` for paid posts: blurred media + "Unlock for ₹X" CTA unless viewer is author or has unlocked.
-- New table `post_unlocks` (user_id, post_id, paid_at, amount_cents). Checkout flow mirrors tips.
-- Feed/explore: still show the post; gate just the media + full caption.
-
-### 2D. Creator Wallet & Payouts
-- `creator_balance` table: user_id, available_cents, pending_cents, lifetime_earned_cents, currency, environment.
-- Extend `Wallet.tsx`: show real earnings, breakdown by source (tips / DM unlocks / paid posts), recent transactions, "Withdraw" CTA.
-- `payout_requests` table: user_id, amount_cents, status (pending/paid/rejected), method (upi/bank), payout_detail (jsonb), created_at, processed_at.
-- Withdraw flow: minimum ₹500, collects UPI ID / bank, deducts from `available_cents` to `pending_cents`. Admin processes manually for v1 (no Stripe Connect yet — keeps scope tight).
-- Admin page `PayoutsAdmin` to mark requests paid/rejected.
-
-### 2E. Notifications + Analytics
-- New notification types: `tip_received`, `dm_unlocked`, `post_purchased`, `payout_paid`.
-- Extend `Analytics`: earnings line chart, top earning posts, tip leaderboard among your followers.
-
-## Technical details
-
-- All money in integer cents; store `currency` and `environment` on every payment row.
-- Webhook handler (`payments-webhook`) extended with a `metadata.purpose` switch: `tip` | `dm_unlock` | `post_unlock`. Each branch writes its domain table and increments `creator_balance.available_cents` by `net_cents` atomically (RPC).
-- Platform fee = `floor(amount * 0.15)`; configurable via `app_config` table.
-- RLS: tips/unlocks readable by sender + recipient + admin. `creator_balance` readable by owner only. `payout_requests` insert/select by owner, update by admin (`has_role`).
-- Reuse existing `useStripeCheckout` hook; add `purpose` and `recipientId` to checkout body.
-- Reuse `PaymentTestModeBanner` on all new checkout screens.
-- No new third-party deps.
-
-## Build order
-
-1. Phase 1 wiring (small, low risk).
-2. Schema migration: `tips`, `dm_unlocks`, `post_unlocks`, `creator_balance`, `payout_requests`, `app_config`, plus `profiles.dm_price_cents` and `posts.price_cents` / `is_paid`.
-3. Webhook extension + balance RPC.
-4. Stripe products: register tip / DM / post-unlock as dynamic `price_data` (no fixed products needed).
-5. Tips → DM paywall → Paywalled posts (parallel-able UI).
-6. Wallet UI + payout request flow.
-7. Admin payouts screen.
-8. Notifications + analytics polish.
-
-## Out of scope (call out for later)
-
-- Stripe Connect / automatic payouts (manual admin payouts for v1).
-- Subscriptions to individual creators (separate from existing platform Premium/Pro).
-- Live streaming, gifts during streams, NFT-style collectibles.
+Reply **approve** to build, or tell me what to change (e.g. "drop the red, use blue", "skip voice", "also redo the call screen").
