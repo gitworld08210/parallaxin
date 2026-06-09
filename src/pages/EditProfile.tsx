@@ -46,14 +46,9 @@ const EditProfile = () => {
 
   const save = async () => {
     if (!user) return;
-    const cleanedUpi = upiId.trim();
-    if (cleanedUpi && !/^[a-zA-Z0-9.\-_]{2,256}@[a-zA-Z]{2,64}$/.test(cleanedUpi)) {
-      return toast.error("UPI ID looks invalid (example: name@paytm)");
-    }
     setBusy(true);
     const { error } = await supabase.from("profiles").update({
       display_name: displayName, username, bio, avatar_url: avatar, cover_url: cover,
-      upi_id: cleanedUpi || null, payment_qr_url: qrUrl,
     } as any).eq("user_id", user.id);
     setBusy(false);
     if (error) return toast.error(error.message);
