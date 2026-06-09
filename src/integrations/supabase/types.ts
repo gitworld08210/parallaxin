@@ -1465,6 +1465,10 @@ export type Database = {
         Returns: string
       }
       start_dm: { Args: { other_user_id: string }; Returns: string }
+      verify_tip_with_utr: {
+        Args: { _tip_id: string; _utr: string }
+        Returns: Json
+      }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
