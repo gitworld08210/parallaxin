@@ -66,6 +66,7 @@ const VerificationRequestsAdmin = lazy(() => import("./pages/admin/VerificationR
 const ReportsAdmin = lazy(() => import("./pages/admin/ReportsAdmin"));
 const FounderSeatsAdmin = lazy(() => import("./pages/admin/FounderSeatsAdmin"));
 const UsersRolesAdmin = lazy(() => import("./pages/admin/UsersRolesAdmin"));
+const PaymentsAdmin = lazy(() => import("./pages/admin/PaymentsAdmin"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -149,6 +150,7 @@ const App = () => (
                   <Route path="reports" element={<ReportsAdmin />} />
                   <Route path="founders" element={<FounderSeatsAdmin />} />
                   <Route path="users" element={<UsersRolesAdmin />} />
+                  <Route path="payments" element={<PaymentsAdmin />} />
                 </Route>
               </Route>
               <Route path="*" element={<NotFound />} />

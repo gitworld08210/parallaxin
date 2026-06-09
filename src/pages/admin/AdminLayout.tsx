@@ -1,12 +1,13 @@
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthProvider";
-import { BadgeCheck, Flag, Crown, Users, LogOut, Shield } from "lucide-react";
+import { BadgeCheck, Flag, Crown, Users, LogOut, Shield, QrCode } from "lucide-react";
 
 const items = [
   { to: "/admin", label: "Verification", icon: BadgeCheck, end: true },
   { to: "/admin/reports", label: "Reports", icon: Flag },
   { to: "/admin/founders", label: "Founder Seats", icon: Crown },
   { to: "/admin/users", label: "Users & Roles", icon: Users },
+  { to: "/admin/payments", label: "Payments", icon: QrCode },
 ];
 
 const AdminLayout = () => {
