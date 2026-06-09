@@ -65,10 +65,24 @@ const Profile = () => {
       setProfile(p as ProfileRow | null);
       if (p) {
         const sel = "id, user_id, content, media_url, media_type, like_count, comment_count, created_at, profile:profiles!posts_user_profile_fkey(username, display_name, avatar_url, verified, verification_kind)";
-        const { data: pdata } = await supabase.from("posts").select(sel)
+        const { data: ownPosts } = await supabase.from("posts").select(sel)
           .eq("user_id", p.user_id).eq("is_reel", false).order("created_at", { ascending: false });
+        const { data: collabRows } = await supabase.from("post_collaborators" as any)
+          .select("post_id").eq("user_id", p.user_id).eq("status", "accepted");
+        const collabIds = (collabRows ?? []).map((r: any) => r.post_id);
+        let collabPosts: any[] = [];
+        if (collabIds.length) {
+          const { data } = await supabase.from("posts").select(sel)
+            .in("id", collabIds).eq("is_reel", false).order("created_at", { ascending: false });
+          collabPosts = data ?? [];
+        }
+        const seen = new Set<string>();
+        const pdata = [...(ownPosts ?? []), ...collabPosts]
+          .filter((d: any) => { if (seen.has(d.id)) return false; seen.add(d.id); return true; })
+          .sort((a: any, b: any) => +new Date(b.created_at) - +new Date(a.created_at));
         const { data: rdata } = await supabase.from("posts").select(sel)
           .eq("user_id", p.user_id).eq("is_reel", true).order("created_at", { ascending: false });
+
 
         let liked = new Set<string>();
         const allIds = [...(pdata ?? []), ...(rdata ?? [])].map((d: any) => d.id);
