@@ -50,11 +50,21 @@ export function TipSheet({ open, onOpenChange, recipientId, recipientName, postI
         .select("key, value")
         .in("key", ["platform_upi_id", "platform_qr_url", "platform_payee_name"]);
       if (cancelled) return;
-      const map = Object.fromEntries((data ?? []).map((r: any) => [r.key, r.value])) as Record<string, string>;
+      const unwrap = (v: any): string => {
+        let s = typeof v === "string" ? v : v == null ? "" : String(v);
+        // strip up to two layers of JSON-string wrapping (legacy double-encoded rows)
+        for (let i = 0; i < 2; i++) {
+          if (s.length >= 2 && s.startsWith('"') && s.endsWith('"')) {
+            try { s = JSON.parse(s); } catch { break; }
+          } else break;
+        }
+        return s;
+      };
+      const map = Object.fromEntries((data ?? []).map((r: any) => [r.key, r.value]));
       setPay({
-        upi: (map.platform_upi_id || "").toString(),
-        qr: (map.platform_qr_url || "").toString(),
-        payee: (map.platform_payee_name || "Aurelix").toString(),
+        upi: unwrap(map.platform_upi_id),
+        qr: unwrap(map.platform_qr_url),
+        payee: unwrap(map.platform_payee_name) || "Aurelix",
       });
     })();
     return () => { cancelled = true; };

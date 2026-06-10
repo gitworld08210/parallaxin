@@ -32,7 +32,7 @@ Deno.serve(async (req) => {
         "X-Lovable-AIG-SDK": "vercel-ai-sdk",
       },
       body: JSON.stringify({
-        model: "openai/gpt-5.5-pro",
+        model: "google/gemini-2.5-flash",
         messages: [
           { role: "system", content: "You write short, evocative, premium social-media captions for Aurelix, a luxury creator app. 1-2 sentences, no hashtags unless asked, at most one tasteful emoji. Never start with 'Here is' or 'Caption:'." },
           { role: "user", content: `Write a caption. Hint: ${hint}` },

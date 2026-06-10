@@ -49,9 +49,9 @@ const PaymentsAdmin = () => {
     }
     setSaving(true);
     const rows = [
-      { key: "platform_upi_id", value: JSON.stringify(cleanUpi) },
-      { key: "platform_qr_url", value: JSON.stringify(qr.trim()) },
-      { key: "platform_payee_name", value: JSON.stringify(payee.trim() || "Aurelix") },
+      { key: "platform_upi_id", value: cleanUpi },
+      { key: "platform_qr_url", value: qr.trim() },
+      { key: "platform_payee_name", value: payee.trim() || "Aurelix" },
     ];
     const { error } = await supabase.from("app_config").upsert(rows as any, { onConflict: "key" });
     setSaving(false);
