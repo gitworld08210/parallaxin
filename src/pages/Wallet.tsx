@@ -5,6 +5,7 @@ import { useAuth } from "@/contexts/AuthProvider";
 import { Coins, Gift, ShieldCheck, Sparkles, Trophy } from "lucide-react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
+import { CreatorEarnings } from "@/components/wallet/CreatorEarnings";
 
 const XP_PER_LEVEL = 10_000;
 
@@ -24,6 +25,8 @@ const Wallet = () => {
       <TopBar subtitle="Aura economy" title="Wallet" />
 
       <div className="px-5 space-y-5">
+        <CreatorEarnings />
+
         {/* Balance hero */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
