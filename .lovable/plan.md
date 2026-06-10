@@ -1,49 +1,39 @@
-Three separate bugs are causing the failures in your screenshots. Here's what's wrong and the fix for each.
+## Plan: Admin-approved QR payment verification
 
-## 1. UTR verification fails — "notifications_type_check"
+Random UTRs currently get auto-verified and credit creators instantly. We'll change this so UTR submission only queues a tip for **admin review**, and creator balance is credited only after you confirm the payment in your Paytm Business account.
 
-The `verify_tip_with_utr` RPC inserts a notification with `type = 'tip'`, but the `notifications.type` CHECK constraint only allows `like, comment, follow, message, mention, verification_approved, verification_revoked, founder_inducted, founder_revoked`. Insert is rejected, the whole transaction rolls back, and the tip never gets marked verified.
+### 1. Database (one migration)
 
-**Fix:** migration to drop and recreate the check constraint with `'tip'` added.
+- Replace `verify_tip_with_utr` so it:
+  - stores the UTR
+  - sets tip `status = 'pending_review'`
+  - records `submitted_at`
+  - does NOT call `credit_creator`, does NOT notify recipient
+  - still rejects duplicate UTRs and non-12-digit input
+- Add admin-only RPCs (protected by `has_role(auth.uid(),'admin')`):
+  - `admin_approve_tip(_tip_id)` → mark verified, credit creator atomically, notify recipient
+  - `admin_reject_tip(_tip_id, _reason)` → mark rejected, store reason, no credit
+  - `admin_revoke_tip(_tip_id, _reason)` → for already-verified tips paid by fake UTR: debit the creator balance back and mark rejected
+- Allow `'pending_review'` and `'rejected'` in the tips status check constraint if needed.
 
-## 2. QR image broken + UPI ID shown with quotes
+### 2. Payer UI (`TipSheet.tsx`)
 
-The admin save in `PaymentsAdmin.tsx` calls `JSON.stringify(value)` before upserting into `app_config.value` (a `jsonb` column). The Supabase client serializes again, so values are double-encoded:
+- After UTR submit, show **"Submitted for review"** state (not "Verified"), explaining admin will confirm shortly.
+- Update copy on the QR/payment screen to make this expectation clear.
 
-```
-platform_upi_id  = "\"paytmqrqsds0x5sfe@paytm\""
-platform_qr_url  = "\"\\\"\\\"\""           ← empty string wrapped twice
-```
+### 3. Admin UI (`/admin/payments`)
 
-That's why the tip sheet shows `"paytmqrqsds0x5sfe@paytm"` (with literal quotes) and the QR image is broken (URL is a stringified empty string).
+- New "Pending QR Payments" section listing tips with `status = 'pending_review'`:
+  - sender, recipient, amount, UTR, submitted time
+  - Approve / Reject buttons (reject asks for reason)
+- New "Recently Verified" section with a **Revoke** action for tips wrongly verified earlier (uses `admin_revoke_tip`).
 
-**Fix:**
-- `PaymentsAdmin.tsx`: pass raw strings to upsert, no `JSON.stringify`.
-- Migration: rewrite the three existing rows to clean string values.
-- Re-upload your QR after the fix (the previous upload saved an empty URL).
+### 4. Cleanup of bad data
 
-## 3. AI caption / moderation — "Edge Function returned a non-2xx status code"
+- Provide a one-time admin action in the same UI to revoke any prior tips that were verified by random UTR test entries (using the revoke RPC), so creator balances are corrected.
+- Amount goes to creator aura wallet from where he request the payment for account credit 💳 before requesting payment user need to do kyc with Bank account details and and photos id uploaded with Bank passbook this is verify by admin panel after is user can request their payment for withdrawal from wallet is rejected by admin then send notification our team found documents is not proper do kyc again 
 
-`ai-caption`, `ai-moderate`, and `ai-assistant` all use `model: "openai/gpt-5.5-pro"`, which is not a valid Lovable AI Gateway model. The gateway returns an error, the function returns non-2xx, and `supabase.functions.invoke` throws.
+### Out of scope
 
-**Fix:**
-- Switch those three functions to `google/gemini-2.5-flash` (the standard free default; the same model already used in `suggest-alt-text` and `ai-post-suggestions`).
-- Make moderation non-blocking on errors in `Compose.tsx` so a flaky AI call can never stop a user from posting.
-
-## Technical changes
-
-**Migration**
-- `ALTER TABLE notifications DROP CONSTRAINT notifications_type_check`, recreate with `'tip'` added.
-- `UPDATE app_config` to set `platform_upi_id`, `platform_qr_url`, `platform_payee_name` to clean string values (strip the extra JSON wrapping).
-
-**Edge functions**
-- `supabase/functions/ai-caption/index.ts` — model → `google/gemini-2.5-flash`.
-- `supabase/functions/ai-moderate/index.ts` — model → `google/gemini-2.5-flash`.
-- `supabase/functions/ai-assistant/index.ts` — model → `google/gemini-2.5-flash`.
-
-**Frontend**
-- `src/pages/admin/PaymentsAdmin.tsx` — upsert plain strings (no `JSON.stringify`).
-- `src/components/social/TipSheet.tsx` — defensively strip surrounding quotes when reading current (possibly still cached) values.
-- `src/pages/Compose.tsx` — wrap the `ai-moderate` call so it never blocks publishing if the function errors.
-
-After these land you'll need to re-open `/admin/payments` and re-upload your QR image once (the old upload stored an empty URL).
+- No Paytm API/webhook integration (your account only allows QR).
+- No change to coin purchase or subscription flows.

@@ -3,7 +3,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Sparkles, QrCode, Copy, Check, ExternalLink, ShieldCheck, Loader2 } from "lucide-react";
+import { Sparkles, QrCode, Copy, Check, ExternalLink, ShieldCheck, Loader2, Clock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthProvider";
 import { toast } from "sonner";
@@ -112,8 +112,9 @@ export function TipSheet({ open, onOpenChange, recipientId, recipientName, postI
     const { data, error } = await supabase.rpc("verify_tip_with_utr", { _tip_id: tipId, _utr: cleaned });
     setLoading(false);
     if (error) return toast.error(error.message);
-    if ((data as any)?.status === "verified") setStep("done");
-    else toast.error("Could not verify — please try again");
+    const s = (data as any)?.status;
+    if (s === "pending_review" || s === "verified") setStep("done");
+    else toast.error("Could not submit — please try again");
   };
 
   const copyUpi = async () => {
@@ -139,7 +140,7 @@ export function TipSheet({ open, onOpenChange, recipientId, recipientName, postI
         <SheetHeader>
           <SheetTitle className="flex items-center gap-2">
             <Sparkles className="h-5 w-5 text-primary" />
-            {step === "done" ? "Tip delivered" : `Send Aura to @${recipientName}`}
+            {step === "done" ? "Submitted for review" : `Send Aura to @${recipientName}`}
           </SheetTitle>
         </SheetHeader>
 
@@ -186,7 +187,7 @@ export function TipSheet({ open, onOpenChange, recipientId, recipientName, postI
               {loading ? "Preparing…" : `Continue · ₹${finalAmount}`}
             </Button>
             <p className="text-[11px] text-muted-foreground text-center">
-              Aurelix collects via UPI and instantly credits @{recipientName}'s creator wallet.
+              Aurelix collects via UPI. Our team manually confirms each payment before crediting @{recipientName}'s wallet.
             </p>
           </div>
         )}
@@ -247,7 +248,7 @@ export function TipSheet({ open, onOpenChange, recipientId, recipientName, postI
             <div className="flex gap-2">
               <Button variant="outline" onClick={() => setStep("amount")} className="flex-1">Back</Button>
               <Button onClick={submitUtr} disabled={loading || utr.length !== 12} className="flex-1">
-                {loading ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Verifying…</> : "Verify & send"}
+                {loading ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Submitting…</> : "Submit for review"}
               </Button>
             </div>
           </div>
@@ -255,12 +256,12 @@ export function TipSheet({ open, onOpenChange, recipientId, recipientName, postI
 
         {step === "done" && (
           <div className="space-y-4 py-8 text-center">
-            <div className="mx-auto h-16 w-16 rounded-full bg-emerald-500/20 grid place-items-center">
-              <Check className="h-8 w-8 text-emerald-400" />
+            <div className="mx-auto h-16 w-16 rounded-full bg-amber-500/20 grid place-items-center">
+              <Clock className="h-8 w-8 text-amber-400" />
             </div>
-            <p className="font-semibold">₹{Math.floor(finalAmount * 0.85)} credited to @{recipientName}</p>
+            <p className="font-semibold">₹{finalAmount} submitted for verification</p>
             <p className="text-sm text-muted-foreground px-4">
-              Verified instantly. They'll see your Aura tip in their wallet.
+              Our team is confirming your UPI payment. @{recipientName} will be credited ₹{Math.floor(finalAmount * 0.85)} once approved — usually within a few hours.
             </p>
             <Button onClick={() => handleClose(false)} className="w-full" size="lg">Done</Button>
           </div>
