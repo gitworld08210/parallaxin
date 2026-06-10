@@ -1,52 +1,49 @@
+Three separate bugs are causing the failures in your screenshots. Here's what's wrong and the fix for each.
 
-## Switch from Stripe → Paytm Business
+## 1. UTR verification fails — "notifications_type_check"
 
-Lovable has no built-in Paytm connector, so this is a custom integration using your Paytm Business merchant credentials. Paytm supports UPI, cards, netbanking, wallets — all rupee-native, India-first, no MOR fees.
+The `verify_tip_with_utr` RPC inserts a notification with `type = 'tip'`, but the `notifications.type` CHECK constraint only allows `like, comment, follow, message, mention, verification_approved, verification_revoked, founder_inducted, founder_revoked`. Insert is rejected, the whole transaction rolls back, and the tip never gets marked verified.
 
-### What you'll need from Paytm Business dashboard
-1. **MID** (Merchant ID)
-2. **Merchant Key** (server-side signing key — secret)
-3. **Website name** (e.g. `DEFAULT` for staging, your registered site for prod)
-4. Staging vs Production toggle
+**Fix:** migration to drop and recreate the check constraint with `'tip'` added.
 
-I'll add these as secrets: `PAYTM_MID`, `PAYTM_MERCHANT_KEY`, `PAYTM_WEBSITE`, `PAYTM_ENV` (`staging` | `production`).
+## 2. QR image broken + UPI ID shown with quotes
 
-### Scope of changes
+The admin save in `PaymentsAdmin.tsx` calls `JSON.stringify(value)` before upserting into `app_config.value` (a `jsonb` column). The Supabase client serializes again, so values are double-encoded:
 
-**Remove (Stripe):**
-- `src/lib/stripe.ts`, `src/components/StripeEmbeddedCheckout.tsx`, `src/components/PaymentTestModeBanner.tsx`, `src/hooks/useStripeCheckout.tsx`
-- `supabase/functions/create-checkout`, `create-portal-session`, `create-tip-checkout`, `payments-webhook`, `_shared/stripe.ts`
-- `@stripe/*` packages, `VITE_PAYMENTS_CLIENT_TOKEN`
-- Stripe blocks from `supabase/config.toml`
-
-**Add (Paytm):**
-- `supabase/functions/paytm-initiate-txn` — auth user, insert pending `tips` row, call Paytm `initiateTransaction` API with checksum, return `txnToken` + `orderId` + `mid`
-- `supabase/functions/paytm-callback` — public webhook, verify checksum, mark `tips.status='paid'`, run `credit_creator`, create notification (idempotent on `orderId`)
-- `supabase/functions/_shared/paytm.ts` — checksum generate/verify (AES-128-CBC + SHA256, per Paytm spec)
-- `src/lib/paytm.ts` — loads Paytm JS Checkout (`https://securegw{-stage}.paytm.in/merchantpgpui/checkoutjs/merchants/{MID}.js`), opens drop-in
-- `src/components/PaytmCheckout.tsx` — replaces embedded Stripe checkout
-- `src/pages/CheckoutReturn.tsx` — re-point to Paytm order status
-
-**Update:**
-- `src/components/social/TipSheet.tsx` — call `paytm-initiate-txn` then open Paytm drop-in
-- Currency forced to `INR`, min ₹49 (already), platform fee 15% kept
-- `tips` table: rename Stripe-specific columns or just repurpose `stripe_session_id` → store Paytm `orderId` (one migration to add `paytm_order_id text unique` + drop unused; or keep column, just store orderId there — I'll add a clean column)
-
-**DB migration:** add `paytm_order_id text unique` to `tips`; index on it. Same for any future `coin_transactions` / `subscriptions` migrations if you ever add those back. Subscriptions are out of scope for now (Paytm subscriptions need a separate "Subscription Payments" approval from Paytm — flag for later).
-
-### Webhook URL you'll paste into Paytm dashboard
 ```
-https://xmztbdaupkvezhhokmwx.supabase.co/functions/v1/paytm-callback
+platform_upi_id  = "\"paytmqrqsds0x5sfe@paytm\""
+platform_qr_url  = "\"\\\"\\\"\""           ← empty string wrapped twice
 ```
 
-### Out of scope
-- Recurring subscriptions (Paytm requires separate merchant approval)
-- Payouts to creators (Paytm Payouts API needs separate KYC; keep current manual `payout_requests` flow)
-- Coin packs (no UI currently wired; skip until needed)
+That's why the tip sheet shows `"paytmqrqsds0x5sfe@paytm"` (with literal quotes) and the QR image is broken (URL is a stringified empty string).
 
-### Confirm to proceed
-Reply "go" and I'll:
-1. Request the 4 Paytm secrets
-2. Delete Stripe code + functions
-3. Run the `tips` migration
-4. Build Paytm integration + redeploy functions
+**Fix:**
+- `PaymentsAdmin.tsx`: pass raw strings to upsert, no `JSON.stringify`.
+- Migration: rewrite the three existing rows to clean string values.
+- Re-upload your QR after the fix (the previous upload saved an empty URL).
+
+## 3. AI caption / moderation — "Edge Function returned a non-2xx status code"
+
+`ai-caption`, `ai-moderate`, and `ai-assistant` all use `model: "openai/gpt-5.5-pro"`, which is not a valid Lovable AI Gateway model. The gateway returns an error, the function returns non-2xx, and `supabase.functions.invoke` throws.
+
+**Fix:**
+- Switch those three functions to `google/gemini-2.5-flash` (the standard free default; the same model already used in `suggest-alt-text` and `ai-post-suggestions`).
+- Make moderation non-blocking on errors in `Compose.tsx` so a flaky AI call can never stop a user from posting.
+
+## Technical changes
+
+**Migration**
+- `ALTER TABLE notifications DROP CONSTRAINT notifications_type_check`, recreate with `'tip'` added.
+- `UPDATE app_config` to set `platform_upi_id`, `platform_qr_url`, `platform_payee_name` to clean string values (strip the extra JSON wrapping).
+
+**Edge functions**
+- `supabase/functions/ai-caption/index.ts` — model → `google/gemini-2.5-flash`.
+- `supabase/functions/ai-moderate/index.ts` — model → `google/gemini-2.5-flash`.
+- `supabase/functions/ai-assistant/index.ts` — model → `google/gemini-2.5-flash`.
+
+**Frontend**
+- `src/pages/admin/PaymentsAdmin.tsx` — upsert plain strings (no `JSON.stringify`).
+- `src/components/social/TipSheet.tsx` — defensively strip surrounding quotes when reading current (possibly still cached) values.
+- `src/pages/Compose.tsx` — wrap the `ai-moderate` call so it never blocks publishing if the function errors.
+
+After these land you'll need to re-open `/admin/payments` and re-upload your QR image once (the old upload stored an empty URL).
