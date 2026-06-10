@@ -438,6 +438,60 @@ export type Database = {
           },
         ]
       }
+      kyc_submissions: {
+        Row: {
+          bank_account_number: string
+          bank_ifsc: string
+          bank_name: string | null
+          created_at: string
+          full_name: string
+          id: string
+          id_photo_url: string
+          pan_number: string | null
+          passbook_photo_url: string
+          review_note: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          bank_account_number: string
+          bank_ifsc: string
+          bank_name?: string | null
+          created_at?: string
+          full_name: string
+          id?: string
+          id_photo_url: string
+          pan_number?: string | null
+          passbook_photo_url: string
+          review_note?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          bank_account_number?: string
+          bank_ifsc?: string
+          bank_name?: string | null
+          created_at?: string
+          full_name?: string
+          id?: string
+          id_photo_url?: string
+          pan_number?: string | null
+          passbook_photo_url?: string
+          review_note?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       likes: {
         Row: {
           created_at: string
@@ -1255,9 +1309,13 @@ export type Database = {
           platform_fee_cents: number
           post_id: string | null
           recipient_id: string
+          review_note: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
           sender_id: string
           status: string
           stripe_session_id: string | null
+          submitted_at: string | null
           utr: string | null
           verified_at: string | null
         }
@@ -1274,9 +1332,13 @@ export type Database = {
           platform_fee_cents?: number
           post_id?: string | null
           recipient_id: string
+          review_note?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
           sender_id: string
           status?: string
           stripe_session_id?: string | null
+          submitted_at?: string | null
           utr?: string | null
           verified_at?: string | null
         }
@@ -1293,9 +1355,13 @@ export type Database = {
           platform_fee_cents?: number
           post_id?: string | null
           recipient_id?: string
+          review_note?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
           sender_id?: string
           status?: string
           stripe_session_id?: string | null
+          submitted_at?: string | null
           utr?: string | null
           verified_at?: string | null
         }
@@ -1410,6 +1476,28 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_approve_kyc: { Args: { _kyc_id: string }; Returns: undefined }
+      admin_approve_payout: {
+        Args: { _note?: string; _payout_id: string }
+        Returns: undefined
+      }
+      admin_approve_tip: { Args: { _tip_id: string }; Returns: undefined }
+      admin_reject_kyc: {
+        Args: { _kyc_id: string; _reason: string }
+        Returns: undefined
+      }
+      admin_reject_payout: {
+        Args: { _payout_id: string; _reason: string }
+        Returns: undefined
+      }
+      admin_reject_tip: {
+        Args: { _reason: string; _tip_id: string }
+        Returns: undefined
+      }
+      admin_revoke_tip: {
+        Args: { _reason: string; _tip_id: string }
+        Returns: undefined
+      }
       credit_coins: {
         Args: {
           _amount: number
@@ -1433,6 +1521,7 @@ export type Database = {
         Args: { check_env?: string; user_uuid: string }
         Returns: boolean
       }
+      has_approved_kyc: { Args: { _user_id: string }; Returns: boolean }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
