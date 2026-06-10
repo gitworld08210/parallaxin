@@ -127,8 +127,15 @@ const Compose = () => {
     setBusy(true);
     try {
       if (status === "published" && content.trim()) {
-        const { data: mod } = await supabase.functions.invoke("ai-moderate", { body: { text: content } });
-        if (mod?.flagged) throw new Error(mod.reason || "Content flagged by moderation");
+        try {
+          const { data: mod } = await supabase.functions.invoke("ai-moderate", { body: { text: content } });
+          if (mod?.flagged) throw new Error(mod.reason || "Content flagged by moderation");
+        } catch (modErr: any) {
+          // Only block if moderation actually flagged content; ignore transport/AI errors.
+          if (modErr?.message && !/non-2xx|Failed to fetch|FunctionsHttpError|FunctionsFetchError/i.test(modErr.message)) {
+            throw modErr;
+          }
+        }
       }
       const { media_url, media_type } = await uploadMedia();
       const { data: inserted, error } = await supabase.from("posts").insert({

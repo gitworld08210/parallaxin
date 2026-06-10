@@ -31,7 +31,7 @@ Deno.serve(async (req) => {
         "X-Lovable-AIG-SDK": "vercel-ai-sdk",
       },
       body: JSON.stringify({
-        model: "openai/gpt-5.5-pro",
+        model: "google/gemini-2.5-flash",
         response_format: { type: "json_object" },
         messages: [
           { role: "system", content: 'You are a strict content moderator. Decide if the text contains hate, harassment, sexual content involving minors, explicit violence, doxxing, or illegal content. Respond ONLY as JSON: {"flagged": boolean, "reason": string, "severity": "low"|"medium"|"high"}. Reason should be short and user-friendly when flagged; empty when not flagged.' },

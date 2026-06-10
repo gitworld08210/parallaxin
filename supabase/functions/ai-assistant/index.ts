@@ -50,7 +50,7 @@ Deno.serve(async (req) => {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
       body: JSON.stringify({
-        model: 'openai/gpt-5.5-pro',
+        model: 'google/gemini-2.5-flash',
         stream: true,
         messages: [system, ...safeMessages],
       }),
