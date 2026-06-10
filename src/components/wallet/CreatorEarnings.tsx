@@ -4,7 +4,7 @@ import { useAuth } from "@/contexts/AuthProvider";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Banknote, ShieldCheck, Upload, Clock, CheckCircle2, XCircle, Loader2 } from "lucide-react";
+import { Banknote, ShieldCheck, Upload, Clock, Loader2 } from "lucide-react";
 
 const rupees = (c: number) => `₹${(c / 100).toLocaleString("en-IN")}`;
 
