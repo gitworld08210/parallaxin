@@ -64,7 +64,7 @@ const Profile = () => {
       const { data: p } = await supabase.from("profiles").select("*").eq("username", target).maybeSingle();
       setProfile(p as ProfileRow | null);
       if (p) {
-        const sel = "id, user_id, content, media_url, media_type, like_count, comment_count, created_at, profile:profiles!posts_user_profile_fkey(username, display_name, avatar_url, verified, verification_kind)";
+        const sel = "id, user_id, content, media_url, media_type, like_count, comment_count, created_at, has_certificate, profile:profiles!posts_user_profile_fkey(username, display_name, avatar_url, verified, verification_kind)";
         const { data: ownPosts } = await supabase.from("posts").select(sel)
           .eq("user_id", p.user_id).eq("is_reel", false).order("created_at", { ascending: false });
         const { data: collabRows } = await supabase.from("post_collaborators" as any)

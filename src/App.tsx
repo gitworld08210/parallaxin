@@ -61,6 +61,7 @@ const VerificationCenter = lazy(() => import("./pages/VerificationCenter"));
 const Store = lazy(() => import("./pages/Store"));
 const CheckoutReturn = lazy(() => import("./pages/CheckoutReturn"));
 const NotFound = lazy(() => import("./pages/NotFound.tsx"));
+const Certificate = lazy(() => import("./pages/Certificate"));
 const AdminLayout = lazy(() => import("./pages/admin/AdminLayout"));
 const VerificationRequestsAdmin = lazy(() => import("./pages/admin/VerificationRequestsAdmin"));
 const ReportsAdmin = lazy(() => import("./pages/admin/ReportsAdmin"));
@@ -96,6 +97,7 @@ const App = () => (
             <Routes>
               <Route path="/auth" element={<Auth />} />
               <Route path="/reset-password" element={<ResetPassword />} />
+              <Route path="/certificate/:postId" element={<Certificate />} />
               <Route element={<ProtectedRoute />}>
                 <Route path="/onboarding" element={<Onboarding />} />
                 <Route element={<AppShell />}>
