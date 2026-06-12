@@ -684,6 +684,62 @@ export type Database = {
           },
         ]
       }
+      ownership_certificates: {
+        Row: {
+          bitcoin_block_height: number | null
+          content_hash: string
+          created_at: string
+          creator_id: string
+          id: string
+          media_type: string
+          media_url: string
+          ots_confirmed_at: string | null
+          ots_last_attempt_at: string | null
+          ots_proof: string | null
+          ots_status: string
+          post_id: string
+          updated_at: string
+        }
+        Insert: {
+          bitcoin_block_height?: number | null
+          content_hash: string
+          created_at?: string
+          creator_id: string
+          id?: string
+          media_type: string
+          media_url: string
+          ots_confirmed_at?: string | null
+          ots_last_attempt_at?: string | null
+          ots_proof?: string | null
+          ots_status?: string
+          post_id: string
+          updated_at?: string
+        }
+        Update: {
+          bitcoin_block_height?: number | null
+          content_hash?: string
+          created_at?: string
+          creator_id?: string
+          id?: string
+          media_type?: string
+          media_url?: string
+          ots_confirmed_at?: string | null
+          ots_last_attempt_at?: string | null
+          ots_proof?: string | null
+          ots_status?: string
+          post_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ownership_certificates_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: true
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       payout_requests: {
         Row: {
           admin_note: string | null
@@ -877,6 +933,7 @@ export type Database = {
           comment_count: number
           content: string
           created_at: string
+          has_certificate: boolean
           id: string
           is_paid: boolean
           is_reel: boolean
@@ -893,6 +950,7 @@ export type Database = {
           comment_count?: number
           content?: string
           created_at?: string
+          has_certificate?: boolean
           id?: string
           is_paid?: boolean
           is_reel?: boolean
@@ -909,6 +967,7 @@ export type Database = {
           comment_count?: number
           content?: string
           created_at?: string
+          has_certificate?: boolean
           id?: string
           is_paid?: boolean
           is_reel?: boolean
@@ -1546,6 +1605,22 @@ export type Database = {
           _user_id: string
         }
         Returns: undefined
+      }
+      get_certificate_by_hash: {
+        Args: { _hash: string }
+        Returns: {
+          bitcoin_block_height: number
+          content_hash: string
+          created_at: string
+          creator_id: string
+          creator_username: string
+          id: string
+          media_type: string
+          media_url: string
+          ots_confirmed_at: string
+          ots_status: string
+          post_id: string
+        }[]
       }
       has_active_subscription: {
         Args: { check_env?: string; user_uuid: string }
