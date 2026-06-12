@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { Heart, MessageCircle, Send, Bookmark, MoreHorizontal, BarChart3, FolderPlus, Trash2, Flag, Sparkles } from "lucide-react";
+import { Heart, MessageCircle, Send, Bookmark, MoreHorizontal, BarChart3, FolderPlus, Trash2, Flag, Sparkles, ShieldCheck } from "lucide-react";
 import { TipSheet } from "@/components/social/TipSheet";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { supabase } from "@/integrations/supabase/client";
@@ -25,6 +25,7 @@ export type FeedPost = {
   like_count: number;
   comment_count: number;
   created_at: string;
+  has_certificate?: boolean | null;
   profile: {
     username: string;
     display_name: string;
@@ -182,6 +183,11 @@ export const PostCard = ({ post, onOpenComments }: { post: FeedPost; onOpenComme
             {post.profile?.verification_kind
               ? <VerificationBadge kind={post.profile.verification_kind as any} />
               : post.profile?.verified && <VerificationBadge kind="verified" />}
+            {post.has_certificate && (
+              <Link to={`/certificate/${post.id}`} aria-label="Ownership certificate" className="inline-flex">
+                <ShieldCheck className="h-3.5 w-3.5 text-primary" />
+              </Link>
+            )}
           </Link>
           {collabs.length > 0 && (
             <p className="text-[11px] text-muted-foreground truncate leading-tight">
@@ -200,10 +206,27 @@ export const PostCard = ({ post, onOpenComments }: { post: FeedPost; onOpenComme
           <DropdownMenuTrigger asChild>
             <button className="text-foreground p-1" aria-label="More"><MoreHorizontal className="h-5 w-5" /></button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-44">
+          <DropdownMenuContent align="end" className="w-52">
             <DropdownMenuItem onSelect={() => setCollectionOpen(true)}>
               <FolderPlus className="h-4 w-4 mr-2" /> Save to collection
             </DropdownMenuItem>
+            {post.has_certificate && (
+              <DropdownMenuItem asChild>
+                <Link to={`/certificate/${post.id}`}>
+                  <ShieldCheck className="h-4 w-4 mr-2" /> View certificate
+                </Link>
+              </DropdownMenuItem>
+            )}
+            {isOwner && !post.has_certificate && post.media_url && (
+              <DropdownMenuItem onSelect={async () => {
+                toast.loading("Generating certificate…", { id: "cert" });
+                const { data, error } = await supabase.functions.invoke("ownership-certify", { body: { post_id: post.id } });
+                if (error) toast.error(error.message, { id: "cert" });
+                else { toast.success("Certificate created", { id: "cert" }); window.location.href = `/certificate/${post.id}`; }
+              }}>
+                <ShieldCheck className="h-4 w-4 mr-2" /> Generate certificate
+              </DropdownMenuItem>
+            )}
             {isOwner && (
               <DropdownMenuItem asChild>
                 <Link to={`/p/${post.id}/insights`}>

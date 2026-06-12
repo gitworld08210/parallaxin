@@ -19,7 +19,7 @@ const Tag = () => {
     (async () => {
       const { data } = await supabase
         .from("posts")
-        .select("id, user_id, content, media_url, media_type, like_count, comment_count, created_at, profile:profiles!posts_user_profile_fkey(username, display_name, avatar_url, verified, verification_kind)")
+        .select("id, user_id, content, media_url, media_type, like_count, comment_count, created_at, has_certificate, profile:profiles!posts_user_profile_fkey(username, display_name, avatar_url, verified, verification_kind)")
         .ilike("content", `%#${tag}%`)
         .order("created_at", { ascending: false }).limit(50);
       let liked = new Set<string>();

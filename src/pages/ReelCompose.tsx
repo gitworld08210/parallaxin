@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Film, Sparkles, X } from "lucide-react";
+import { Film, Sparkles, X, ShieldCheck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthProvider";
 import { TopBar } from "@/components/vibe/TopBar";
@@ -14,6 +14,7 @@ const ReelCompose = () => {
   const [preview, setPreview] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [aiBusy, setAiBusy] = useState(false);
+  const [certify, setCertify] = useState(false);
 
   useEffect(() => {
     if (!file) { setPreview(null); return; }
@@ -45,14 +46,19 @@ const ReelCompose = () => {
       const { error: upErr } = await supabase.storage.from("post-media").upload(path, file, { cacheControl: "3600", upsert: false });
       if (upErr) throw upErr;
       const { data } = supabase.storage.from("post-media").getPublicUrl(path);
-      const { error } = await supabase.from("posts").insert({
+      const { data: inserted, error } = await supabase.from("posts").insert({
         user_id: user.id,
         content: content.trim(),
         media_url: data.publicUrl,
         media_type: "video",
         is_reel: true,
-      });
+      }).select("id").single();
       if (error) throw error;
+      if (certify && inserted?.id) {
+        supabase.functions.invoke("ownership-certify", { body: { post_id: inserted.id } })
+          .then(({ error: cErr }) => { if (cErr) toast.error("Certificate failed: " + cErr.message); })
+          .catch(() => {});
+      }
       toast.success("Reel posted ✦");
       nav("/reels");
     } catch (e: any) { toast.error(e.message || "Failed"); } finally { setBusy(false); }
@@ -104,6 +110,18 @@ const ReelCompose = () => {
             {aiBusy ? "Generating…" : "AI caption"}
           </button>
         </div>
+
+        <label className="mt-3 flex items-start gap-3 p-3 rounded-2xl glass cursor-pointer">
+          <input type="checkbox" checked={certify} onChange={(e) => setCertify(e.target.checked)} className="mt-0.5 h-4 w-4 accent-primary" />
+          <div className="flex-1">
+            <p className="text-sm font-semibold flex items-center gap-1.5">
+              <ShieldCheck className="h-4 w-4 text-primary" /> Generate ownership certificate
+            </p>
+            <p className="text-[11px] text-muted-foreground mt-0.5">
+              SHA-256 + OpenTimestamps proof. Not a copyright filing.
+            </p>
+          </div>
+        </label>
 
         <button
           onClick={submit}

@@ -36,7 +36,7 @@ const Feed = () => {
       } catch { /* fallback to chronological */ }
     }
 
-    const sel = "id, user_id, content, media_url, media_type, like_count, comment_count, created_at, profile:profiles!posts_user_profile_fkey(username, display_name, avatar_url, verified, verification_kind)";
+    const sel = "id, user_id, content, media_url, media_type, like_count, comment_count, created_at, has_certificate, profile:profiles!posts_user_profile_fkey(username, display_name, avatar_url, verified, verification_kind)";
     const postsP = foryouIds
       ? supabase.from("posts").select(sel).in("id", foryouIds)
       : supabase.from("posts").select(sel).eq("is_reel", false).order("created_at", { ascending: false }).limit(50);

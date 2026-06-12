@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ImagePlus, Sparkles, X, FileText, Calendar, Users, Hash, Clock } from "lucide-react";
+import { ImagePlus, Sparkles, X, FileText, Calendar, Users, Hash, Clock, ShieldCheck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthProvider";
 import { TopBar } from "@/components/vibe/TopBar";
@@ -21,6 +21,7 @@ const Compose = () => {
   const [altText, setAltText] = useState("");
   const [scheduleOpen, setScheduleOpen] = useState(false);
   const [scheduledFor, setScheduledFor] = useState<string>("");
+  const [certify, setCertify] = useState(false);
 
   // AI suggest
   const [suggestOpen, setSuggestOpen] = useState(false);
@@ -160,6 +161,13 @@ const Compose = () => {
         supabase.functions.invoke("embed-post", { body: { post_id: newId } }).catch(() => {});
       }
 
+      // Ownership certificate (only when published with media)
+      if (newId && status === "published" && certify && file) {
+        supabase.functions.invoke("ownership-certify", { body: { post_id: newId } })
+          .then(({ error }) => { if (error) toast.error("Certificate failed: " + error.message); })
+          .catch(() => {});
+      }
+
       if (status === "published") { toast.success("Posted ✦"); nav("/"); }
       else if (status === "draft") { toast.success("Draft saved"); nav("/drafts"); }
       else { toast.success(`Scheduled for ${new Date(scheduled_for!).toLocaleString()}`); nav("/drafts"); }
@@ -247,6 +255,20 @@ const Compose = () => {
               </div>
             )}
           </div>
+        )}
+
+        {file && (
+          <label className="mt-4 flex items-start gap-3 p-3 rounded-xl border border-border bg-card cursor-pointer">
+            <input type="checkbox" checked={certify} onChange={(e) => setCertify(e.target.checked)} className="mt-0.5 h-4 w-4 accent-primary" />
+            <div className="flex-1">
+              <p className="text-sm font-semibold flex items-center gap-1.5">
+                <ShieldCheck className="h-4 w-4 text-primary" /> Generate ownership certificate
+              </p>
+              <p className="text-[11px] text-muted-foreground mt-0.5">
+                Anchors a SHA-256 hash of your media to Bitcoin via OpenTimestamps. Proof of timestamp, not a copyright filing.
+              </p>
+            </div>
+          </label>
         )}
 
         <div className="mt-6 grid grid-cols-3 gap-2">
