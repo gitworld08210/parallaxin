@@ -732,6 +732,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "ownership_certificates_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
             foreignKeyName: "ownership_certificates_post_id_fkey"
             columns: ["post_id"]
             isOneToOne: true
