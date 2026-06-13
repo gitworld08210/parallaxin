@@ -6,11 +6,17 @@ import { Coins, Gift, ShieldCheck, Sparkles, Trophy } from "lucide-react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { CreatorEarnings } from "@/components/wallet/CreatorEarnings";
+import { useIsCreator } from "@/hooks/useIsCreator";
+import { useState } from "react";
+import { BecomeCreatorSheet } from "@/components/creator/BecomeCreatorSheet";
+import { Sparkles } from "lucide-react";
 
 const XP_PER_LEVEL = 10_000;
 
 const Wallet = () => {
   const { profile } = useAuth();
+  const { isCreator } = useIsCreator();
+  const [becomeOpen, setBecomeOpen] = useState(false);
   const xp = (profile?.posts_count ?? 0) * 100 + (profile?.followers_count ?? 0) * 10;
   const auraCoins = Math.floor(xp / 4);
   const trustScore = profile?.verified ? 95 : 70;
@@ -25,7 +31,24 @@ const Wallet = () => {
       <TopBar subtitle="Aura economy" title="Wallet" />
 
       <div className="px-5 space-y-5">
-        <CreatorEarnings />
+        {isCreator ? (
+          <CreatorEarnings />
+        ) : (
+          <button
+            onClick={() => setBecomeOpen(true)}
+            className="w-full text-left rounded-3xl p-5 border border-primary/30 bg-gradient-to-r from-primary/10 to-aura/10 flex items-center gap-3"
+          >
+            <span className="h-11 w-11 rounded-2xl bg-primary/20 grid place-items-center">
+              <Sparkles className="h-5 w-5 text-primary" />
+            </span>
+            <span className="flex-1">
+              <span className="block text-sm font-bold">Become a Creator to earn</span>
+              <span className="block text-xs text-muted-foreground">Receive tips & request payouts. 85/15 split.</span>
+            </span>
+            <span className="text-xs font-semibold px-3 py-2 rounded-full bg-gradient-primary text-primary-foreground shadow-glow">Start</span>
+          </button>
+        )}
+        <BecomeCreatorSheet open={becomeOpen} onOpenChange={setBecomeOpen} />
 
         {/* Balance hero */}
         <motion.div
