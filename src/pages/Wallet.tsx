@@ -2,7 +2,7 @@ import { TopBar } from "@/components/vibe/TopBar";
 import { GlassCard } from "@/components/vibe/GlassCard";
 import { fmt } from "@/lib/format";
 import { useAuth } from "@/contexts/AuthProvider";
-import { Coins, Gift, ShieldCheck, Sparkles, Trophy } from "lucide-react";
+import { Coins, Gift, ShieldCheck, Trophy } from "lucide-react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { CreatorEarnings } from "@/components/wallet/CreatorEarnings";
