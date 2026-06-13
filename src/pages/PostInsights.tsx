@@ -83,6 +83,26 @@ const PostInsights = () => {
         <Stat icon={Bookmark} label="Saves" value={stats.saves} />
         <Stat icon={Heart} label="Engagement" value={`${engagementRate.toFixed(1)}%`} sub="of reach" />
       </div>
+
+      <div className="px-4 pb-8">
+        <AuthenticityMeter score={post.authenticity_score} breakdown={post.authenticity_breakdown} />
+        {post.authenticity_score == null && (
+          <button
+            disabled={scoring}
+            onClick={async () => {
+              setScoring(true);
+              const { data, error } = await supabase.functions.invoke("authenticity-score", { body: { post_id: postId } });
+              setScoring(false);
+              if (error) { toast.error("Couldn't score: " + error.message); return; }
+              setPost((prev) => prev ? { ...prev, authenticity_score: data?.score ?? null, authenticity_breakdown: data?.breakdown ?? null } : prev);
+              toast.success("Authenticity scored");
+            }}
+            className="mt-3 w-full rounded-xl border border-border bg-card py-3 text-sm font-medium flex items-center justify-center gap-2 hover:bg-muted/40 disabled:opacity-50"
+          >
+            <Sparkles className="h-4 w-4" /> {scoring ? "Scoring…" : "Generate authenticity score"}
+          </button>
+        )}
+      </div>
     </div>
   );
 };
