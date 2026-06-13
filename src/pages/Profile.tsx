@@ -54,6 +54,7 @@ const Profile = () => {
   const [tab, setTab] = useState<Tab>("posts");
   const [commentPost, setCommentPost] = useState<string | null>(null);
   const [reportOpen, setReportOpen] = useState(false);
+  const [becomeOpen, setBecomeOpen] = useState(false);
 
   const isMe = !username || (me && username === me.username);
 
