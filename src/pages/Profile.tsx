@@ -17,6 +17,7 @@ import { useAuth } from "@/contexts/AuthProvider";
 import { fmt, gradientFor, initialsOf } from "@/lib/format";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { BecomeCreatorSheet } from "@/components/creator/BecomeCreatorSheet";
 
 type ProfileRow = {
   user_id: string;
@@ -279,6 +280,11 @@ const Profile = () => {
             <Link to="/profile/edit" className="flex-1 text-center py-2.5 rounded-xl bg-gradient-to-r from-primary to-aura text-primary-foreground font-semibold text-sm shadow-[0_0_20px_hsl(var(--primary)/0.4)]">
               Edit Profile
             </Link>
+            {!(me as any)?.is_creator && (
+              <button onClick={() => setBecomeOpen(true)} className="flex-1 text-center py-2.5 rounded-xl border border-primary/40 bg-primary/10 text-primary font-semibold text-sm">
+                Become Creator
+              </button>
+            )}
             <button onClick={shareProfile} className="flex-1 text-center py-2.5 rounded-xl border border-border bg-muted/30 text-foreground font-semibold text-sm">
               Share Profile
             </button>
