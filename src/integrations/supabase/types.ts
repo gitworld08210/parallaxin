@@ -1019,6 +1019,9 @@ export type Database = {
           council_vote_weight: number
           cover_url: string | null
           created_at: string
+          creator_since: string | null
+          creator_terms_accepted_at: string | null
+          creator_terms_version: string | null
           deletion_scheduled_at: string | null
           display_name: string
           dm_price_cents: number
@@ -1028,6 +1031,7 @@ export type Database = {
           founder_title: string | null
           id: string
           interests: string[]
+          is_creator: boolean
           is_founder: boolean
           is_private: boolean
           join_era: string | null
@@ -1058,6 +1062,9 @@ export type Database = {
           council_vote_weight?: number
           cover_url?: string | null
           created_at?: string
+          creator_since?: string | null
+          creator_terms_accepted_at?: string | null
+          creator_terms_version?: string | null
           deletion_scheduled_at?: string | null
           display_name?: string
           dm_price_cents?: number
@@ -1067,6 +1074,7 @@ export type Database = {
           founder_title?: string | null
           id?: string
           interests?: string[]
+          is_creator?: boolean
           is_founder?: boolean
           is_private?: boolean
           join_era?: string | null
@@ -1097,6 +1105,9 @@ export type Database = {
           council_vote_weight?: number
           cover_url?: string | null
           created_at?: string
+          creator_since?: string | null
+          creator_terms_accepted_at?: string | null
+          creator_terms_version?: string | null
           deletion_scheduled_at?: string | null
           display_name?: string
           dm_price_cents?: number
@@ -1106,6 +1117,7 @@ export type Database = {
           founder_title?: string | null
           id?: string
           interests?: string[]
+          is_creator?: boolean
           is_founder?: boolean
           is_private?: boolean
           join_era?: string | null
@@ -1603,6 +1615,7 @@ export type Database = {
         Args: { _reason: string; _tip_id: string }
         Returns: undefined
       }
+      become_creator: { Args: { _terms_version: string }; Returns: undefined }
       credit_coins: {
         Args: {
           _amount: number
@@ -1654,6 +1667,7 @@ export type Database = {
         Args: { _conv: string; _user: string }
         Returns: boolean
       }
+      is_creator: { Args: { _user_id: string }; Returns: boolean }
       mark_conversation_read: {
         Args: { _conversation_id: string }
         Returns: undefined
