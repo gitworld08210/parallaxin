@@ -1,81 +1,65 @@
-## Phase 24 — Content Ownership Certificates
+# Creator Mode Opt-In
 
-Give creators verifiable, timestamped proof of ownership for their posts and reels — without crypto wallets. Hashes are anchored to Bitcoin via OpenTimestamps (free, open standard). Clear disclaimer: this is proof-of-timestamp, not legal copyright registration.
+Right now every account sees Creator Hub, Monetization, Analytics, Compose, Reels Compose, Tips, Payouts, etc. We'll split accounts into **Users** (consumers) and **Creators** (uploaders/earners). A user must explicitly upgrade to a creator before they can publish content or earn.
 
-### 1. Database (one migration)
+## Concept
 
-New table `ownership_certificates`:
-- `id` uuid PK
-- `post_id` uuid → posts(id) on delete cascade, unique
-- `creator_id` uuid → auth.users
-- `content_hash` text (SHA-256 hex, 64 chars) — indexed
-- `media_url` text (the hashed file URL at time of cert)
-- `media_type` text ('image' | 'video')
-- `ots_proof` bytea nullable (raw OpenTimestamps .ots file)
-- `ots_status` text default 'pending' ('pending' | 'confirmed' | 'failed')
-- `ots_confirmed_at` timestamptz
-- `bitcoin_block_height` int nullable
-- `created_at`, `updated_at`
+- All accounts start as **User**: can browse, like, comment, follow, save, DM, tip others, buy coins.
+- A user becomes a **Creator** by tapping **"Become a Creator"** in the profile side menu, reading the Creator Agreement, and accepting the **85% creator / 15% platform** revenue split + payout/KYC terms.
+- Creators get: Compose, Reel Compose, Story Compose, Creator Hub, Analytics, Monetization, Wallet → Earnings tab, Payout requests, Tip-receive, Authenticity score, Ownership certificates.
+- Users who try to access creator-only screens see a friendly upsell card → "Become a Creator".
 
-Plus:
-- index on `content_hash` for duplicate lookup
-- GRANTs (authenticated select/insert; service_role all; anon select for public verify page)
-- RLS: anyone can read (public verify); only creator can insert their own for their own post; only service_role can update OTS fields
-- Helper RPC `get_certificate_by_hash(_hash text)` for public verify
-- Add `has_certificate boolean default false` to `posts` (denormalized flag for badge rendering)
+## Data changes (1 migration)
 
-### 2. Edge functions (three new)
+`profiles` table — add:
+- `is_creator boolean not null default false`
+- `creator_since timestamptz`
+- `creator_terms_version text` (e.g. `'2026-06-13'`)
+- `creator_terms_accepted_at timestamptz`
 
-**`ownership-certify`** (called from composer/post-detail when creator opts in)
-- Input: `post_id`
-- Verifies caller owns post, fetches media URL, downloads file, computes SHA-256
-- Checks for existing cert with same hash → returns "similar content" warning but still creates
-- Inserts row, sets `posts.has_certificate = true`
-- Calls OpenTimestamps `stamp` (via public OTS calendar HTTP API: `https://a.pool.opentimestamps.org`) to get initial `.ots` proof, stores in `ots_proof`
-- Returns cert id
+`app_config` — add row `creator_revenue_split = {"creator": 85, "platform": 15}` and `creator_terms_version = "2026-06-13"` so the split & version are server-controlled.
 
-**`ownership-upgrade`** (scheduled, hourly cron with `CRON_SECRET`)
-- Finds certs with `ots_status='pending'` older than 1 hour
-- Calls OTS `upgrade` to fetch Bitcoin attestation; if confirmed, stores block height + flips status
+RPC `become_creator(_terms_version text)` (SECURITY DEFINER): flips `is_creator=true`, stamps `creator_since`, records accepted version + timestamp for the calling `auth.uid()`.
 
-**`ownership-pdf`** (called from cert detail page)
-- Generates a downloadable PDF certificate (hash, timestamp, creator, post link, plain-English explanation, OTS proof note)
-- Returns PDF blob
+RLS update on `posts`: `INSERT` policy requires `is_creator = true` on the author's profile (in addition to current auth check). Same for `tips` recipient must be creator. Compose UI already blocks, but DB enforces it too.
 
-### 3. Frontend
+## Frontend changes
 
-- **Composer (`Compose.tsx` / `ReelCompose.tsx`)**: optional toggle "Generate Ownership Certificate" with one-line disclaimer; on publish, calls `ownership-certify` after post insert.
-- **PostCard / Post detail**: small shield badge when `has_certificate=true`, links to cert page.
-- **New route `/certificate/:postId`** (public, no auth required):
-  - Hash, timestamp, creator, media preview
-  - OTS status pill (Pending / Confirmed + block height)
-  - "Download PDF" button → calls `ownership-pdf`
-  - Shareable URL for third parties
-  - Plain-language "what this proves / does not prove" section
-- **Post detail (own posts)**: if no cert yet, "Generate certificate" button.
+**New files**
+- `src/hooks/useIsCreator.ts` — reads `profiles.is_creator` for the current user, exposes `{ isCreator, loading, refresh }`.
+- `src/components/creator/BecomeCreatorSheet.tsx` — bottom sheet with:
+  - What you unlock (compose, monetization, tips, payouts)
+  - **Revenue split**: 85% you / 15% platform, rendered from `app_config`
+  - Scrollable Creator Agreement (payout eligibility, KYC, content ownership, takedown, tax responsibility, no refunds on tips, age 18+ for monetization)
+  - Required checkbox: "I agree to the Creator Agreement and 85/15 revenue split"
+  - Confirm button → calls `become_creator` RPC → toast + refresh.
+- `src/components/creator/CreatorGate.tsx` — wrapper used by creator-only routes. If `!isCreator`, render an upsell card with a CTA that opens `BecomeCreatorSheet`. Otherwise render `children`.
+- `src/pages/CreatorTerms.tsx` (`/creator/terms`) — full legal page version of the agreement, linked from the sheet and from Settings.
 
-### 4. Originality check
-- After hash computed in `ownership-certify`, lookup existing certs with same hash
-- If found and different creator + earlier date, return `{ similarTo: { creator, createdAt } }`; UI shows informational toast — does not block
+**Edited files**
+- `src/components/layout/SideMenu.tsx` — add "Become a Creator" entry (only when `!isCreator`); show a small "Creator" chip next to the user when they are one.
+- `src/components/layout/AppShell.tsx` — bottom-nav Compose (+) button: if not creator, intercept and open `BecomeCreatorSheet` instead of navigating to `/compose`.
+- `src/App.tsx` — wrap creator-only routes with `<CreatorGate>`: `/compose`, `/reel/compose`, `/story/compose`, `/drafts`, `/creator-hub`, `/analytics`, `/monetization`, `/post/:id/insights`.
+- `src/pages/Wallet.tsx` — only show the **Earnings / Payouts** section for creators; users see "Become a creator to earn" card. Coins/spending stays for everyone.
+- `src/pages/Profile.tsx` — on own profile, show a subtle "Become a Creator" button above Edit Profile when `!isCreator`; hide creator-only tabs/CTAs otherwise.
+- `src/components/social/TipSheet.tsx` — already targets a recipient; no change to UX, but the DB policy will reject tips to non-creators (defensive only; tip buttons already only appear on posts which require creator).
+- `src/pages/Settings.tsx` — add "Creator Agreement" link → `/creator/terms`, plus current accepted version display for creators.
 
-### Out of scope
-- Perceptual hashing (only exact SHA-256 in v1; informational note in UI that re-encoded copies won't match)
-- Pre-upload originality scanning
-- Legal copyright filing
+## Revenue split — single source of truth
 
-### Technical notes
+Read split from `app_config.creator_revenue_split` in:
+- `BecomeCreatorSheet` display
+- `CreatorTerms` page
+- Edge function that computes `net_cents` for tips/unlocks (already centralized — verify it uses 85/15; if hardcoded elsewhere, update to read from `app_config`).
 
-```text
-flow: publish post
-  → insert posts row (existing)
-  → if certify toggle on:
-      invoke('ownership-certify', { post_id })
-        ↓ fetch media, sha256
-        ↓ insert ownership_certificates (ots_status='pending')
-        ↓ POST hash to OTS calendar → store .ots
-        ↓ UPDATE posts.has_certificate=true
-  cron hourly:
-      ownership-upgrade → OTS upgrade → confirmed + block height
-```
+## Out of scope (call out, don't build)
 
-Disclaimer copy used throughout: *"This certificate proves the exact file existed under your account at the timestamp shown. It is not a substitute for official copyright registration."*
+- Downgrading creator → user (needs payout reconciliation flow).
+- Editing the Creator Agreement copy after launch (versioning column is in place; re-acceptance flow can be added later).
+- Razorpay wiring (still deferred per earlier decision).
+
+## Acceptance checks
+
+- Brand-new account: side menu shows "Become a Creator"; tapping (+) opens the sheet; `/compose` redirected to upsell; Wallet hides Earnings.
+- After accepting: `profiles.is_creator=true`, `creator_terms_accepted_at` set; Compose opens; Creator Hub/Analytics/Monetization render; Earnings tab visible.
+- DB-level: attempting to insert a `posts` row for a non-creator user fails RLS.
