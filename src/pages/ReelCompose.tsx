@@ -59,6 +59,9 @@ const ReelCompose = () => {
           .then(({ error: cErr }) => { if (cErr) toast.error("Certificate failed: " + cErr.message); })
           .catch(() => {});
       }
+      if (inserted?.id) {
+        supabase.functions.invoke("authenticity-score", { body: { post_id: inserted.id } }).catch(() => {});
+      }
       toast.success("Reel posted ✦");
       nav("/reels");
     } catch (e: any) { toast.error(e.message || "Failed"); } finally { setBusy(false); }

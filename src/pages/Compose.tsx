@@ -168,6 +168,11 @@ const Compose = () => {
           .catch(() => {});
       }
 
+      // Authenticity score (fire-and-forget for every published post)
+      if (newId && status === "published") {
+        supabase.functions.invoke("authenticity-score", { body: { post_id: newId } }).catch(() => {});
+      }
+
       if (status === "published") { toast.success("Posted ✦"); nav("/"); }
       else if (status === "draft") { toast.success("Draft saved"); nav("/drafts"); }
       else { toast.success(`Scheduled for ${new Date(scheduled_for!).toLocaleString()}`); nav("/drafts"); }

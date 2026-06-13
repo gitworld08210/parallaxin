@@ -937,6 +937,9 @@ export type Database = {
       }
       posts: {
         Row: {
+          authenticity_breakdown: Json | null
+          authenticity_checked_at: string | null
+          authenticity_score: number | null
           comment_count: number
           content: string
           created_at: string
@@ -954,6 +957,9 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          authenticity_breakdown?: Json | null
+          authenticity_checked_at?: string | null
+          authenticity_score?: number | null
           comment_count?: number
           content?: string
           created_at?: string
@@ -971,6 +977,9 @@ export type Database = {
           user_id: string
         }
         Update: {
+          authenticity_breakdown?: Json | null
+          authenticity_checked_at?: string | null
+          authenticity_score?: number | null
           comment_count?: number
           content?: string
           created_at?: string
