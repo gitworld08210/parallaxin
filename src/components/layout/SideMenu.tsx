@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import {
   User as UserIcon, LayoutGrid, Wallet, Bookmark, BarChart3, Settings, HelpCircle, BadgeCheck, LogOut, X, Users,
-  Home, Compass, Film, MessageCircle, Bell, DollarSign, Gem, Crown, Moon,
+  Home, Compass, Film, MessageCircle, Bell, DollarSign, Gem, Crown, Moon, Sparkles,
 } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useAuth } from "@/contexts/AuthProvider";
@@ -9,10 +9,14 @@ import { AuraAvatar } from "@/components/vibe/AuraAvatar";
 import { gradientFor, initialsOf } from "@/lib/format";
 import { Switch } from "@/components/ui/switch";
 import { useState } from "react";
+import { useIsCreator } from "@/hooks/useIsCreator";
+import { BecomeCreatorSheet } from "@/components/creator/BecomeCreatorSheet";
 
 export const SideMenu = ({ trigger }: { trigger: React.ReactNode }) => {
   const { profile, signOut } = useAuth();
+  const { isCreator } = useIsCreator();
   const [dark, setDark] = useState(true);
+  const [becomeOpen, setBecomeOpen] = useState(false);
 
   type Row = {
     to?: string;
@@ -30,8 +34,10 @@ export const SideMenu = ({ trigger }: { trigger: React.ReactNode }) => {
     { to: "/notifications", icon: Bell, label: "Notifications", trailing: <Pill>0</Pill> },
     { to: "/profile?tab=saved", icon: Bookmark, label: "Bookmarks" },
     { to: "/discover", icon: Users, label: "Communities" },
-    { to: "/creator-hub", icon: LayoutGrid, label: "Creator Hub" },
-    { to: "/monetization", icon: DollarSign, label: "Monetization" },
+    ...(isCreator ? [
+      { to: "/creator-hub", icon: LayoutGrid, label: "Creator Hub" },
+      { to: "/monetization", icon: DollarSign, label: "Monetization" },
+    ] as Row[] : []),
     { to: "/verification-center", icon: BadgeCheck, label: "Verification Center", badge: "NEW" },
     { to: "/wallet", icon: Wallet, label: "Aura Wallet", trailing: <span className="text-xs font-bold text-primary">0</span> },
     { to: "/profile?tab=saved", icon: Bookmark, label: "Saved" },
@@ -51,7 +57,12 @@ export const SideMenu = ({ trigger }: { trigger: React.ReactNode }) => {
             <AuraAvatar gradient={gradientFor(profile?.username)} size="md" initials={initialsOf(profile?.display_name || profile?.username)} />
           )}
           <div className="flex-1 min-w-0">
-            <p className="text-base font-bold tracking-tight text-primary">AURELIX</p>
+            <p className="text-base font-bold tracking-tight text-primary inline-flex items-center gap-2">
+              AURELIX
+              {isCreator && (
+                <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-primary/20 text-primary">Creator</span>
+              )}
+            </p>
             <p className="text-xs text-muted-foreground truncate">@{profile?.username || "—"}</p>
           </div>
           <button className="p-1.5" aria-label="Close">
@@ -61,6 +72,24 @@ export const SideMenu = ({ trigger }: { trigger: React.ReactNode }) => {
 
         {/* Rows */}
         <nav className="px-2 py-3">
+          {!isCreator && (
+            <button
+              onClick={() => setBecomeOpen(true)}
+              className="w-full mb-2 flex items-center gap-3 px-3 py-3 rounded-2xl bg-gradient-to-r from-primary/15 to-aura/15 border border-primary/30"
+            >
+              <span className="h-9 w-9 rounded-xl bg-primary/20 grid place-items-center">
+                <Sparkles className="h-5 w-5 text-primary" />
+              </span>
+              <span className="flex-1 text-left">
+                <span className="block text-sm font-bold">Become a Creator</span>
+                <span className="block text-[11px] text-muted-foreground">Publish, earn & access analytics</span>
+              </span>
+              <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-primary text-primary-foreground">
+                85/15
+              </span>
+            </button>
+          )}
+
           {rows.map((r) => (
             <Link key={r.label} to={r.to!} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl hover:bg-muted/40 transition-colors">
               <r.icon className="h-5 w-5 text-foreground" strokeWidth={1.75} />
@@ -100,6 +129,7 @@ export const SideMenu = ({ trigger }: { trigger: React.ReactNode }) => {
             <LogOut className="h-4 w-4" /> Log Out
           </button>
         </nav>
+        <BecomeCreatorSheet open={becomeOpen} onOpenChange={setBecomeOpen} />
       </SheetContent>
     </Sheet>
   );

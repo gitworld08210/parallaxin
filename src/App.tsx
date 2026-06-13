@@ -62,6 +62,8 @@ const Store = lazy(() => import("./pages/Store"));
 const CheckoutReturn = lazy(() => import("./pages/CheckoutReturn"));
 const NotFound = lazy(() => import("./pages/NotFound.tsx"));
 const Certificate = lazy(() => import("./pages/Certificate"));
+const CreatorTerms = lazy(() => import("./pages/CreatorTerms"));
+import { CreatorGate } from "@/components/creator/CreatorGate";
 const AdminLayout = lazy(() => import("./pages/admin/AdminLayout"));
 const VerificationRequestsAdmin = lazy(() => import("./pages/admin/VerificationRequestsAdmin"));
 const ReportsAdmin = lazy(() => import("./pages/admin/ReportsAdmin"));
@@ -107,9 +109,10 @@ const App = () => (
                   <Route path="/messages" element={<Messages />} />
                   <Route path="/messages/:id" element={<Conversation />} />
                   <Route path="/notifications" element={<Notifications />} />
-                  <Route path="/compose" element={<Compose />} />
-                  <Route path="/compose/reel" element={<ReelCompose />} />
-                  <Route path="/compose/story" element={<StoryCompose />} />
+                  <Route path="/compose" element={<CreatorGate><Compose /></CreatorGate>} />
+                  <Route path="/compose/reel" element={<CreatorGate><ReelCompose /></CreatorGate>} />
+                  <Route path="/compose/story" element={<CreatorGate><StoryCompose /></CreatorGate>} />
+                  <Route path="/creator/terms" element={<CreatorTerms />} />
                   <Route path="/p/:postId" element={<PostDetail />} />
                   <Route path="/tag/:tag" element={<Tag />} />
                   <Route path="/wallet" element={<Wallet />} />
@@ -122,8 +125,8 @@ const App = () => (
                   <Route path="/checkout/return" element={<CheckoutReturn />} />
                   <Route path="/verification" element={<Verification />} />
                   <Route path="/assistant" element={<Assistant />} />
-                  <Route path="/drafts" element={<Drafts />} />
-                  <Route path="/p/:postId/insights" element={<PostInsights />} />
+                  <Route path="/drafts" element={<CreatorGate><Drafts /></CreatorGate>} />
+                  <Route path="/p/:postId/insights" element={<CreatorGate><PostInsights /></CreatorGate>} />
                   <Route path="/close-friends" element={<CloseFriends />} />
                   <Route path="/founders" element={<Navigate to="/hall-of-founders" replace />} />
                   <Route path="/hall-of-founders" element={<HallOfFoundersScreen />} />
@@ -138,11 +141,11 @@ const App = () => (
                   <Route path="/settings/delete" element={<DeleteAccountScreen />} />
                   <Route path="/settings/password" element={<ChangePasswordScreen />} />
                   <Route path="/settings/email" element={<ChangeEmailScreen />} />
-                  <Route path="/creator-hub" element={<CreatorHub />} />
-                  <Route path="/analytics" element={<Analytics />} />
+                  <Route path="/creator-hub" element={<CreatorGate><CreatorHub /></CreatorGate>} />
+                  <Route path="/analytics" element={<CreatorGate><Analytics /></CreatorGate>} />
                   <Route path="/achievements" element={<Achievements />} />
                   <Route path="/aura-level" element={<AuraLevel />} />
-                  <Route path="/monetization" element={<Monetization />} />
+                  <Route path="/monetization" element={<CreatorGate><Monetization /></CreatorGate>} />
                   <Route path="/verification-center" element={<VerificationCenter />} />
                 </Route>
               </Route>

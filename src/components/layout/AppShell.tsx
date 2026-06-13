@@ -6,6 +6,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthProvider";
 import { RealtimeToaster } from "@/components/social/RealtimeToaster";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { useIsCreator } from "@/hooks/useIsCreator";
+import { BecomeCreatorSheet } from "@/components/creator/BecomeCreatorSheet";
 
 export const AppShell = () => {
   const { pathname } = useLocation();
@@ -13,6 +15,8 @@ export const AppShell = () => {
   const [unreadNotif, setUnreadNotif] = useState(0);
   const [unreadDm, setUnreadDm] = useState(0);
   const [createOpen, setCreateOpen] = useState(false);
+  const [becomeOpen, setBecomeOpen] = useState(false);
+  const { isCreator } = useIsCreator();
 
   useEffect(() => {
     if (!user) return;
@@ -86,6 +90,8 @@ export const AppShell = () => {
         <NavSlot to="/reels" label="Reels" icon={Film} />
 
         {/* Create — flat center button */}
+        {/* Create — flat center button */}
+        {isCreator ? (
         <Sheet open={createOpen} onOpenChange={setCreateOpen}>
           <SheetTrigger asChild>
             <button aria-label="Create" className="h-full w-full flex items-center justify-center active:scale-95 transition-transform">
@@ -121,6 +127,18 @@ export const AppShell = () => {
             </div>
           </SheetContent>
         </Sheet>
+        ) : (
+          <>
+            <button
+              aria-label="Become a Creator to post"
+              onClick={() => setBecomeOpen(true)}
+              className="h-full w-full flex items-center justify-center active:scale-95 transition-transform"
+            >
+              <Plus className={cn("h-7 w-7", isReels ? "text-white" : "text-foreground")} strokeWidth={2.25} />
+            </button>
+            <BecomeCreatorSheet open={becomeOpen} onOpenChange={setBecomeOpen} />
+          </>
+        )}
 
         <NavSlot to="/messages" label="DMs" icon={MessageCircle} badge={unreadDm > 0} isReels={isReels} />
 
