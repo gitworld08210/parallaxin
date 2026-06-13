@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ChevronLeft, Eye, Heart, MessageCircle, Bookmark, Users } from "lucide-react";
+import { ChevronLeft, Eye, Heart, MessageCircle, Bookmark, Users, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthProvider";
 import { fmt, timeAgo } from "@/lib/format";
+import { AuthenticityMeter } from "@/components/social/AuthenticityMeter";
+import { toast } from "sonner";
 
 const PostInsights = () => {
   const { postId } = useParams();
@@ -13,7 +15,8 @@ const PostInsights = () => {
   const [stats, setStats] = useState({
     impressions: 0, reach: 0, likes: 0, comments: 0, saves: 0,
   });
-  const [post, setPost] = useState<{ content: string; media_url: string | null; media_type: string | null; created_at: string; user_id: string } | null>(null);
+  const [post, setPost] = useState<{ content: string; media_url: string | null; media_type: string | null; created_at: string; user_id: string; authenticity_score: number | null; authenticity_breakdown: any } | null>(null);
+  const [scoring, setScoring] = useState(false);
   const [denied, setDenied] = useState(false);
 
   useEffect(() => {
@@ -21,7 +24,7 @@ const PostInsights = () => {
     (async () => {
       setLoading(true);
       const { data: p } = await supabase.from("posts")
-        .select("content, media_url, media_type, like_count, comment_count, created_at, user_id")
+        .select("content, media_url, media_type, like_count, comment_count, created_at, user_id, authenticity_score, authenticity_breakdown")
         .eq("id", postId).maybeSingle();
       if (!p || p.user_id !== user.id) { setDenied(true); setLoading(false); return; }
       setPost(p as any);
