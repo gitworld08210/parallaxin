@@ -73,17 +73,17 @@ export const AppShell = () => {
   const onProfileRoute = pathname.startsWith("/profile") || pathname.startsWith("/u/");
 
   return (
-    <div className={cn("min-h-screen mx-auto max-w-md relative pb-[96px]", isReels ? "bg-black" : "bg-background")}>
+    <div className={cn("min-h-screen mx-auto max-w-md relative pb-[112px]", isReels ? "bg-black" : "bg-background")}>
       <RealtimeToaster />
       <main key={pathname} className="animate-fade-in">
         <Outlet />
       </main>
 
-      {/* Flat Instagram-style bottom nav */}
+      {/* Floating Liquid-Glass bottom nav */}
       <nav
         className={cn(
-          "fixed bottom-0 inset-x-0 z-50 mx-auto max-w-md h-14 grid grid-cols-5 items-center",
-          isReels ? "bg-black border-t border-white/10" : "bg-background border-t border-border",
+          "fixed bottom-3 inset-x-3 z-50 mx-auto max-w-[420px] h-16 grid grid-cols-5 items-center rounded-[28px] liquid-nav",
+          isReels && "bg-black/60",
         )}
       >
         <NavSlot to="/" end label="Home" icon={Home} />
