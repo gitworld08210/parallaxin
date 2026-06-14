@@ -83,6 +83,104 @@
 
   .dark { color-scheme: dark; }
 
+  /* ===== iOS Liquid-Glass Light Theme =====
+     Translucent surfaces, soft frosted blur, crisp content. */
+  .light {
+    color-scheme: light;
+    --background: 220 30% 97%;
+    --foreground: 222 30% 10%;
+
+    --surface: 0 0% 100%;
+    --surface-elevated: 0 0% 100%;
+    --surface-glass: 0 0% 100%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222 30% 10%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 30% 10%;
+
+    --primary: 0 84% 55%;
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 0 95% 65%;
+
+    --secondary: 220 20% 94%;
+    --secondary-foreground: 222 30% 12%;
+
+    --accent: 0 84% 55%;
+    --accent-foreground: 0 0% 100%;
+
+    --aura: 0 84% 55%;
+    --aura-foreground: 0 0% 100%;
+
+    --verified: 204 100% 45%;
+    --creator: 280 60% 55%;
+    --gov: 142 60% 42%;
+    --brand: 28 90% 52%;
+    --founder: 38 95% 50%;
+
+    --muted: 220 20% 94%;
+    --muted-foreground: 220 10% 40%;
+
+    --destructive: 0 84% 55%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 220 20% 88%;
+    --input: 220 20% 94%;
+    --ring: 0 84% 55%;
+
+    --gradient-primary: linear-gradient(135deg, hsl(0 90% 55%), hsl(0 95% 65%));
+    --gradient-aura: conic-gradient(from 180deg at 50% 50%, hsl(0 90% 55%), hsl(20 95% 60%), hsl(340 85% 55%), hsl(0 90% 55%));
+    --gradient-gold: linear-gradient(135deg, hsl(48 100% 60%), hsl(28 100% 55%));
+    --gradient-infinity: radial-gradient(ellipse at top, hsl(220 60% 92% / 0.8), hsl(220 30% 97%) 60%);
+    --gradient-glass: linear-gradient(135deg, hsl(0 0% 100% / 0.7), hsl(220 40% 98% / 0.55));
+    --gradient-radial-glow: radial-gradient(circle at 50% 0%, hsl(0 90% 65% / 0.10), transparent 60%);
+
+    --shadow-glow: 0 8px 32px -8px hsl(0 90% 50% / 0.25);
+    --shadow-aura: 0 4px 24px -6px hsl(0 90% 50% / 0.18);
+    --shadow-gold: 0 4px 24px -6px hsl(48 100% 55% / 0.25);
+    --shadow-elevated: 0 10px 30px -12px hsl(220 40% 30% / 0.18);
+    --shadow-soft: 0 1px 0 hsl(220 30% 20% / 0.04);
+  }
+
+  .light body {
+    background-image:
+      radial-gradient(60rem 40rem at 10% -10%, hsl(0 90% 70% / 0.10), transparent 60%),
+      radial-gradient(50rem 36rem at 110% 10%, hsl(220 90% 70% / 0.10), transparent 60%),
+      linear-gradient(180deg, hsl(220 40% 98%), hsl(220 25% 95%));
+    background-attachment: fixed;
+  }
+
+  /* Liquid-glass surfaces only in light mode */
+  .light .glass {
+    background: linear-gradient(135deg, hsl(0 0% 100% / 0.72), hsl(220 40% 98% / 0.5));
+    backdrop-filter: blur(22px) saturate(180%);
+    -webkit-backdrop-filter: blur(22px) saturate(180%);
+    border: 1px solid hsl(0 0% 100% / 0.6);
+    box-shadow:
+      inset 0 1px 0 hsl(0 0% 100% / 0.7),
+      0 8px 24px -10px hsl(220 40% 20% / 0.18);
+  }
+
+  .light .glass-strong {
+    background: linear-gradient(135deg, hsl(0 0% 100% / 0.85), hsl(220 30% 96% / 0.7));
+    backdrop-filter: blur(28px) saturate(200%);
+    -webkit-backdrop-filter: blur(28px) saturate(200%);
+    border: 1px solid hsl(0 0% 100% / 0.75);
+    box-shadow:
+      inset 0 1px 0 hsl(0 0% 100% / 0.85),
+      0 14px 40px -16px hsl(220 40% 20% / 0.22);
+  }
+
+  /* Make sticky/translucent app chrome read as frosted in light */
+  .light header.sticky,
+  .light nav.sticky,
+  .light [class*="backdrop-blur"] {
+    backdrop-filter: blur(22px) saturate(180%);
+    -webkit-backdrop-filter: blur(22px) saturate(180%);
+  }
+
+
   html, body, #root { height: 100%; }
 
   * { @apply border-border; }
