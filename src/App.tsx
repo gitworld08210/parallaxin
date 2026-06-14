@@ -8,6 +8,7 @@ import { AuthProvider } from "@/contexts/AuthProvider";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AdminRoute } from "@/components/AdminRoute";
 import { AppShell } from "@/components/layout/AppShell";
+import { ThemeProvider } from "@/contexts/ThemeProvider";
 
 // Eager: critical first-paint routes
 import Feed from "./pages/Feed";
@@ -90,6 +91,7 @@ const RouteFallback = () => (
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
+    <ThemeProvider>
     <TooltipProvider>
       <Toaster />
       <Sonner />
@@ -164,6 +166,7 @@ const App = () => (
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
+    </ThemeProvider>
   </QueryClientProvider>
 );
 

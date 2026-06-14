@@ -11,11 +11,14 @@ import { Switch } from "@/components/ui/switch";
 import { useState } from "react";
 import { useIsCreator } from "@/hooks/useIsCreator";
 import { BecomeCreatorSheet } from "@/components/creator/BecomeCreatorSheet";
+import { useTheme } from "@/contexts/ThemeProvider";
 
 export const SideMenu = ({ trigger }: { trigger: React.ReactNode }) => {
   const { profile, signOut } = useAuth();
   const { isCreator } = useIsCreator();
-  const [dark, setDark] = useState(true);
+  const { theme, setTheme } = useTheme();
+  const dark = theme === "dark";
+  const setDark = (v: boolean) => setTheme(v ? "dark" : "light");
   const [becomeOpen, setBecomeOpen] = useState(false);
 
   type Row = {
