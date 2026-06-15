@@ -1,65 +1,105 @@
-# Creator Mode Opt-In
+# Theme switcher row + WhatsApp/Instagram-style voice & video calls
 
-Right now every account sees Creator Hub, Monetization, Analytics, Compose, Reels Compose, Tips, Payouts, etc. We'll split accounts into **Users** (consumers) and **Creators** (uploaders/earners). A user must explicitly upgrade to a creator before they can publish content or earn.
+Two independent changes, shipped together.
 
-## Concept
+---
 
-- All accounts start as **User**: can browse, like, comment, follow, save, DM, tip others, buy coins.
-- A user becomes a **Creator** by tapping **"Become a Creator"** in the profile side menu, reading the Creator Agreement, and accepting the **85% creator / 15% platform** revenue split + payout/KYC terms.
-- Creators get: Compose, Reel Compose, Story Compose, Creator Hub, Analytics, Monetization, Wallet → Earnings tab, Payout requests, Tip-receive, Authenticity score, Ownership certificates.
-- Users who try to access creator-only screens see a friendly upsell card → "Become a Creator".
+## Part 1 — Replace the toggle with a real fixed navigation at bottom 
 
-## Data changes (1 migration)
+The current row uses a `<Switch>`, which is why it doesn't feel like the rest of the menu. Replace it with a tappable navigation row that opens a small **Appearance** sheet with two clear options.
 
-`profiles` table — add:
-- `is_creator boolean not null default false`
-- `creator_since timestamptz`
-- `creator_terms_version text` (e.g. `'2026-06-13'`)
-- `creator_terms_accepted_at timestamptz`
+### UX
 
-`app_config` — add row `creator_revenue_split = {"creator": 85, "platform": 15}` and `creator_terms_version = "2026-06-13"` so the split & version are server-controlled.
+- Remove the `Switch`-based row in `SideMenu.tsx`.
+- Add a normal nav row: icon = sun/moon (reflects current), label = **Appearance**, trailing text = current theme name (`Dark` / `Liquid Glass`).
+- Tapping opens a bottom sheet with two large pickable cards:
+  1. **Dark** — current red-on-black look (Moon icon, dark preview swatch).
+  2. **Liquid Glass** — iOS-style frosted light theme (Sun/Sparkles icon, frosted light preview swatch).
+- Selecting one calls `setTheme(...)` from `ThemeProvider`, closes the sheet, shows a toast "Switched to Liquid Glass / Dark".
+- Selected card shows a checkmark + primary ring; tap-and-hold scale feedback.
 
-RPC `become_creator(_terms_version text)` (SECURITY DEFINER): flips `is_creator=true`, stamps `creator_since`, records accepted version + timestamp for the calling `auth.uid()`.
+### Files
 
-RLS update on `posts`: `INSERT` policy requires `is_creator = true` on the author's profile (in addition to current auth check). Same for `tips` recipient must be creator. Compose UI already blocks, but DB enforces it too.
+- `src/components/layout/SideMenu.tsx` — drop Switch row, add Appearance row.
+- `src/components/layout/AppearanceSheet.tsx` (new) — sheet with the two visual cards.
 
-## Frontend changes
+No theme logic changes — `ThemeProvider` already works. Light tokens already exist in `index.css`.
 
-**New files**
-- `src/hooks/useIsCreator.ts` — reads `profiles.is_creator` for the current user, exposes `{ isCreator, loading, refresh }`.
-- `src/components/creator/BecomeCreatorSheet.tsx` — bottom sheet with:
-  - What you unlock (compose, monetization, tips, payouts)
-  - **Revenue split**: 85% you / 15% platform, rendered from `app_config`
-  - Scrollable Creator Agreement (payout eligibility, KYC, content ownership, takedown, tax responsibility, no refunds on tips, age 18+ for monetization)
-  - Required checkbox: "I agree to the Creator Agreement and 85/15 revenue split"
-  - Confirm button → calls `become_creator` RPC → toast + refresh.
-- `src/components/creator/CreatorGate.tsx` — wrapper used by creator-only routes. If `!isCreator`, render an upsell card with a CTA that opens `BecomeCreatorSheet`. Otherwise render `children`.
-- `src/pages/CreatorTerms.tsx` (`/creator/terms`) — full legal page version of the agreement, linked from the sheet and from Settings.
+---
 
-**Edited files**
-- `src/components/layout/SideMenu.tsx` — add "Become a Creator" entry (only when `!isCreator`); show a small "Creator" chip next to the user when they are one.
-- `src/components/layout/AppShell.tsx` — bottom-nav Compose (+) button: if not creator, intercept and open `BecomeCreatorSheet` instead of navigating to `/compose`.
-- `src/App.tsx` — wrap creator-only routes with `<CreatorGate>`: `/compose`, `/reel/compose`, `/story/compose`, `/drafts`, `/creator-hub`, `/analytics`, `/monetization`, `/post/:id/insights`.
-- `src/pages/Wallet.tsx` — only show the **Earnings / Payouts** section for creators; users see "Become a creator to earn" card. Coins/spending stays for everyone.
-- `src/pages/Profile.tsx` — on own profile, show a subtle "Become a Creator" button above Edit Profile when `!isCreator`; hide creator-only tabs/CTAs otherwise.
-- `src/components/social/TipSheet.tsx` — already targets a recipient; no change to UX, but the DB policy will reject tips to non-creators (defensive only; tip buttons already only appear on posts which require creator).
-- `src/pages/Settings.tsx` — add "Creator Agreement" link → `/creator/terms`, plus current accepted version display for creators.
+## Part 2 — 1:1 Voice & Video calling in DMs (WhatsApp / Instagram style)
 
-## Revenue split — single source of truth
+Stack: **WebRTC peer-to-peer** + **Supabase Realtime** for signaling. No third-party (Twilio/Agora) needed for 1:1 — keeps it free and fully inside Lovable Cloud. Public Google STUN servers handle NAT traversal for ~80% of networks; a TURN server can be added later if reliability across strict NATs becomes an issue (would require an external paid service like Twilio Network Traversal or Metered.ca — out of scope for this phase).
 
-Read split from `app_config.creator_revenue_split` in:
-- `BecomeCreatorSheet` display
-- `CreatorTerms` page
-- Edge function that computes `net_cents` for tips/unlocks (already centralized — verify it uses 85/15; if hardcoded elsewhere, update to read from `app_config`).
+### What the user gets
 
-## Out of scope (call out, don't build)
+- In any 1:1 conversation header: **phone** and **video** icons (right side, next to the existing menu).
+- Tap → outgoing call screen (full-screen, frosted, large avatar, "Calling…", Cancel button).
+- Callee sees a full-screen **incoming call** overlay anywhere in the app (global listener), with Accept (green) / Decline (red) buttons + ringtone.
+- On accept → full-screen in-call UI:
+  - Voice: large avatar, name, live timer, mute, speaker toggle, end-call.
+  - Video: remote video full-screen, local self-view picture-in-picture (draggable), mute, camera flip, video on/off, end-call.
+- End or decline → call ends for both sides, summary message inserted into the conversation ("📞 Voice call · 2:14" or "📵 Missed call").
 
-- Downgrading creator → user (needs payout reconciliation flow).
-- Editing the Creator Agreement copy after launch (versioning column is in place; re-acceptance flow can be added later).
-- Razorpay wiring (still deferred per earlier decision).
+### Database (one migration)
 
-## Acceptance checks
+`calls` table — one row per call, holds signaling state and history:
 
-- Brand-new account: side menu shows "Become a Creator"; tapping (+) opens the sheet; `/compose` redirected to upsell; Wallet hides Earnings.
-- After accepting: `profiles.is_creator=true`, `creator_terms_accepted_at` set; Compose opens; Creator Hub/Analytics/Monetization render; Earnings tab visible.
-- DB-level: attempting to insert a `posts` row for a non-creator user fails RLS.
+- `conversation_id`, `caller_id`, `callee_id`, `kind` ('voice'|'video'), `status` ('ringing'|'accepted'|'declined'|'ended'|'missed'|'cancelled'), `started_at`, `accepted_at`, `ended_at`, `duration_sec`.
+- RLS: caller and callee can read/update their own calls.
+- GRANTs for `authenticated` + `service_role`.
+- Realtime enabled (`alter publication supabase_realtime add table calls`).
+
+`call_signals` table — ephemeral SDP/ICE exchange:
+
+- `call_id`, `from_user`, `to_user`, `kind` ('offer'|'answer'|'ice'|'bye'), `payload` jsonb.
+- RLS: only participants. Auto-cleanup older than 1 hour via a simple `delete` policy run on insert (or skip and let it grow — tiny).
+
+### Signaling flow (Supabase Realtime channels)
+
+1. Caller inserts a `calls` row (`status='ringing'`).
+2. Caller creates RTCPeerConnection, generates **offer**, inserts into `call_signals`.
+3. Both sides subscribe to `call_signals` filtered by `call_id`.
+4. Callee receives offer → creates peer connection → answers → inserts **answer** signal.
+5. Both exchange **ice** candidates as they're gathered.
+6. Either side ending sends **bye** and updates `calls.status`.
+
+A global `<IncomingCallListener>` mounted in `AppShell` subscribes to:
+
+- `postgres_changes` on `calls` where `callee_id=auth.uid()` and `status='ringing'`.
+- Opens incoming-call overlay, plays ringtone (small mp3 in `/public/ringtone.mp3` — or use Web Audio synthesis to avoid asset).
+
+### Files
+
+- `supabase/migrations/<ts>_calls.sql` — tables, RLS, grants, realtime publication.
+- `src/lib/webrtc.ts` (new) — thin wrapper around RTCPeerConnection + signaling helpers.
+- `src/hooks/useCall.ts` (new) — state machine: idle → ringing → connected → ended; exposes start/accept/decline/end + media stream refs.
+- `src/components/call/IncomingCallOverlay.tsx` (new) — global ringing UI with Accept/Decline.
+- `src/components/call/CallScreen.tsx` (new) — full-screen in-call UI (voice + video variants).
+- `src/components/call/IncomingCallListener.tsx` (new) — global realtime subscriber, mounted in `AppShell`.
+- `src/pages/Conversation.tsx` (edit) — add phone + video icon buttons in the conversation header that invoke `startCall(kind)`.
+- `src/components/layout/AppShell.tsx` (edit) — mount `<IncomingCallListener />` once.
+
+### Edge cases handled
+
+- Already on a call → second incoming auto-declines as "busy".
+- Browser denies mic/camera → toast + cancel call.
+- Callee offline → caller auto-cancels after 30s ring timeout → row marked `missed`, summary DM inserted.
+- Page navigation during call → call state persists via a context provider so the in-call UI stays mounted across routes.
+
+### Out of scope (this phase)
+
+- Group calls (3+).
+- TURN server for strict-NAT users (works on most networks via STUN only; add later if needed).
+- Call recording.
+- Push notifications when app is closed (would need OneSignal/web-push setup).
+- Screen sharing.
+
+---
+
+## Technical notes
+
+- WebRTC works in all modern mobile browsers (Safari iOS 11+, Chrome Android). No native wrapper needed.
+- STUN config: `[{ urls: 'stun:stun.l.google.com:19302' }, { urls: 'stun:stun1.l.google.com:19302' }]`.
+- Ringtone: synthesized via WebAudio (two oscillators, 0.5s on / 0.5s off, looped) — avoids shipping an mp3.
+- Local stream cleanup on `ended` to release mic/camera indicator.

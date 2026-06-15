@@ -50,6 +50,97 @@ export type Database = {
         }
         Relationships: []
       }
+      call_signals: {
+        Row: {
+          call_id: string
+          created_at: string
+          from_user: string
+          id: string
+          kind: string
+          payload: Json
+          to_user: string
+        }
+        Insert: {
+          call_id: string
+          created_at?: string
+          from_user: string
+          id?: string
+          kind: string
+          payload: Json
+          to_user: string
+        }
+        Update: {
+          call_id?: string
+          created_at?: string
+          from_user?: string
+          id?: string
+          kind?: string
+          payload?: Json
+          to_user?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "call_signals_call_id_fkey"
+            columns: ["call_id"]
+            isOneToOne: false
+            referencedRelation: "calls"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      calls: {
+        Row: {
+          accepted_at: string | null
+          callee_id: string
+          caller_id: string
+          conversation_id: string
+          created_at: string
+          duration_sec: number
+          ended_at: string | null
+          id: string
+          kind: string
+          started_at: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          callee_id: string
+          caller_id: string
+          conversation_id: string
+          created_at?: string
+          duration_sec?: number
+          ended_at?: string | null
+          id?: string
+          kind: string
+          started_at?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          accepted_at?: string | null
+          callee_id?: string
+          caller_id?: string
+          conversation_id?: string
+          created_at?: string
+          duration_sec?: number
+          ended_at?: string | null
+          id?: string
+          kind?: string
+          started_at?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "calls_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       close_friends: {
         Row: {
           created_at: string
