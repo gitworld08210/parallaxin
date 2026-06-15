@@ -31,7 +31,7 @@ type SharedPost = {
   profile: { username: string; display_name: string; avatar_url: string | null } | null;
 };
 
-type Other = { username: string; display_name: string; avatar_url: string | null; verification_kind?: string | null } | null;
+type Other = { user_id: string; username: string; display_name: string; avatar_url: string | null; verification_kind?: string | null } | null;
 
 const fmtTime = (iso: string) =>
   new Date(iso).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
@@ -49,6 +49,7 @@ const Conversation = () => {
   const { id } = useParams();
   const { user } = useAuth();
   const nav = useNavigate();
+  const { startCall } = useCall();
   const [messages, setMessages] = useState<Msg[]>([]);
   const [other, setOther] = useState<Other>(null);
   const [text, setText] = useState("");
@@ -89,7 +90,8 @@ const Conversation = () => {
         .from("conversation_participants")
         .select("user_id, profile:profiles!conv_participants_user_profile_fkey(username, display_name, avatar_url, verification_kind)")
         .eq("conversation_id", id).neq("user_id", user.id);
-      setOther((parts?.[0] as any)?.profile ?? null);
+      const row: any = parts?.[0];
+      setOther(row?.profile ? { user_id: row.user_id, ...row.profile } : null);
 
       markRead();
     })();
