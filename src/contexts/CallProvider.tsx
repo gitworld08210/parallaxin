@@ -247,7 +247,8 @@ export const CallProvider = ({ children }: { children: React.ReactNode }) => {
 
       // 6. Ring timeout (30s)
       ringTimerRef.current = setTimeout(async () => {
-        if (status !== "connected") {
+        const pcNow = pcRef.current;
+        if (!pcNow || pcNow.connectionState !== "connected") {
           await supabase.from("calls").update({ status: "missed", ended_at: new Date().toISOString() } as any).eq("id", callId);
           await sendSignal(callId, peer.user_id, "bye", { reason: "timeout" });
           await insertSummaryMessage(conversationId, kind, "missed", 0);
