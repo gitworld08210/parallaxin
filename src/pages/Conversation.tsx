@@ -251,8 +251,23 @@ const Conversation = () => {
         <button className="h-10 w-10 grid place-items-center rounded-full hover:bg-white/5" aria-label="Search">
           <Search className="h-5 w-5" style={{ color: "rgba(255,255,255,0.85)" }} />
         </button>
-        <button className="h-10 w-10 grid place-items-center rounded-full hover:bg-white/5" aria-label="Call">
+        <button
+          onClick={() => other && startCall(id!, {
+            user_id: other.user_id, username: other.username, display_name: other.display_name, avatar_url: other.avatar_url,
+          }, "voice")}
+          className="h-10 w-10 grid place-items-center rounded-full hover:bg-white/5"
+          aria-label="Voice call"
+        >
           <Phone className="h-5 w-5" style={{ color: "rgba(255,255,255,0.85)" }} />
+        </button>
+        <button
+          onClick={() => other && startCall(id!, {
+            user_id: other.user_id, username: other.username, display_name: other.display_name, avatar_url: other.avatar_url,
+          }, "video")}
+          className="h-10 w-10 grid place-items-center rounded-full hover:bg-white/5"
+          aria-label="Video call"
+        >
+          <Video className="h-5 w-5" style={{ color: "rgba(255,255,255,0.85)" }} />
         </button>
         <button className="h-10 w-10 grid place-items-center rounded-full hover:bg-white/5" aria-label="More">
           <MoreVertical className="h-5 w-5" style={{ color: "rgba(255,255,255,0.85)" }} />

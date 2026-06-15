@@ -8,6 +8,9 @@ import { RealtimeToaster } from "@/components/social/RealtimeToaster";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useIsCreator } from "@/hooks/useIsCreator";
 import { BecomeCreatorSheet } from "@/components/creator/BecomeCreatorSheet";
+import { IncomingCallListener } from "@/components/call/IncomingCallListener";
+import { IncomingCallOverlay } from "@/components/call/IncomingCallOverlay";
+import { CallScreen } from "@/components/call/CallScreen";
 
 export const AppShell = () => {
   const { pathname } = useLocation();
@@ -75,6 +78,9 @@ export const AppShell = () => {
   return (
     <div className={cn("min-h-screen mx-auto max-w-md relative pb-[112px]", isReels ? "bg-black" : "bg-background")}>
       <RealtimeToaster />
+      <IncomingCallListener />
+      <IncomingCallOverlay />
+      <CallScreen />
       <main key={pathname} className="animate-fade-in">
         <Outlet />
       </main>
