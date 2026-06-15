@@ -1,25 +1,25 @@
 import { Link } from "react-router-dom";
 import {
   User as UserIcon, LayoutGrid, Wallet, Bookmark, BarChart3, Settings, HelpCircle, BadgeCheck, LogOut, X, Users,
-  Home, Compass, Film, MessageCircle, Bell, DollarSign, Gem, Crown, Moon, Sparkles,
+  Home, Compass, Film, MessageCircle, Bell, DollarSign, Gem, Crown, Moon, Sun, Sparkles, ChevronRight,
 } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useAuth } from "@/contexts/AuthProvider";
 import { AuraAvatar } from "@/components/vibe/AuraAvatar";
 import { gradientFor, initialsOf } from "@/lib/format";
-import { Switch } from "@/components/ui/switch";
 import { useState } from "react";
 import { useIsCreator } from "@/hooks/useIsCreator";
 import { BecomeCreatorSheet } from "@/components/creator/BecomeCreatorSheet";
 import { useTheme } from "@/contexts/ThemeProvider";
+import { AppearanceSheet } from "@/components/layout/AppearanceSheet";
 
 export const SideMenu = ({ trigger }: { trigger: React.ReactNode }) => {
   const { profile, signOut } = useAuth();
   const { isCreator } = useIsCreator();
-  const { theme, setTheme } = useTheme();
+  const { theme } = useTheme();
   const dark = theme === "dark";
-  const setDark = (v: boolean) => setTheme(v ? "dark" : "light");
   const [becomeOpen, setBecomeOpen] = useState(false);
+  const [appearanceOpen, setAppearanceOpen] = useState(false);
 
   type Row = {
     to?: string;
@@ -106,12 +106,16 @@ export const SideMenu = ({ trigger }: { trigger: React.ReactNode }) => {
             </Link>
           ))}
 
-          {/* Dark mode */}
-          <div className="w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl">
-            <Moon className="h-5 w-5" strokeWidth={1.75} />
-            <span className="flex-1 text-sm font-medium">Dark Mode</span>
-            <Switch checked={dark} onCheckedChange={setDark} />
-          </div>
+          {/* Appearance — opens picker sheet (Dark / Liquid Glass) */}
+          <button
+            onClick={() => setAppearanceOpen(true)}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl hover:bg-muted/40 transition-colors"
+          >
+            {dark ? <Moon className="h-5 w-5" strokeWidth={1.75} /> : <Sun className="h-5 w-5" strokeWidth={1.75} />}
+            <span className="flex-1 text-sm font-medium text-left">Appearance</span>
+            <span className="text-xs text-muted-foreground">{dark ? "Dark" : "Liquid Glass"}</span>
+            <ChevronRight className="h-4 w-4 text-muted-foreground" />
+          </button>
 
           {/* Premium CTA */}
           <Link to="/premium" className="mt-3 mx-1 flex items-center gap-3 p-3 rounded-2xl bg-gradient-to-r from-primary/20 to-primary/5 border border-primary/30">
@@ -133,6 +137,7 @@ export const SideMenu = ({ trigger }: { trigger: React.ReactNode }) => {
           </button>
         </nav>
         <BecomeCreatorSheet open={becomeOpen} onOpenChange={setBecomeOpen} />
+        <AppearanceSheet open={appearanceOpen} onOpenChange={setAppearanceOpen} />
       </SheetContent>
     </Sheet>
   );

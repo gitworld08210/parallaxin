@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
-import { ChevronLeft, Send, Search, Phone, MoreVertical, Paperclip, Smile, Check, CheckCheck } from "lucide-react";
+import { ChevronLeft, Send, Search, Phone, Video, MoreVertical, Paperclip, Smile, Check, CheckCheck } from "lucide-react";
 import { AuraAvatar } from "@/components/vibe/AuraAvatar";
 import { VerificationBadge } from "@/components/vibe/VerificationBadge";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,6 +8,7 @@ import { useAuth } from "@/contexts/AuthProvider";
 import { gradientFor, initialsOf } from "@/lib/format";
 import { VoiceBubble, VoiceRecorder } from "@/components/dm/VoiceMessage";
 import { ReportSheet } from "@/components/social/ReportSheet";
+import { useCall } from "@/contexts/CallProvider";
 
 const RED = "#E50914";
 const GREEN = "#46d369";
@@ -31,7 +32,7 @@ type SharedPost = {
   profile: { username: string; display_name: string; avatar_url: string | null } | null;
 };
 
-type Other = { username: string; display_name: string; avatar_url: string | null; verification_kind?: string | null } | null;
+type Other = { user_id: string; username: string; display_name: string; avatar_url: string | null; verification_kind?: string | null } | null;
 
 const fmtTime = (iso: string) =>
   new Date(iso).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
@@ -49,6 +50,7 @@ const Conversation = () => {
   const { id } = useParams();
   const { user } = useAuth();
   const nav = useNavigate();
+  const { startCall } = useCall();
   const [messages, setMessages] = useState<Msg[]>([]);
   const [other, setOther] = useState<Other>(null);
   const [text, setText] = useState("");
@@ -89,7 +91,8 @@ const Conversation = () => {
         .from("conversation_participants")
         .select("user_id, profile:profiles!conv_participants_user_profile_fkey(username, display_name, avatar_url, verification_kind)")
         .eq("conversation_id", id).neq("user_id", user.id);
-      setOther((parts?.[0] as any)?.profile ?? null);
+      const row: any = parts?.[0];
+      setOther(row?.profile ? { user_id: row.user_id, ...row.profile } : null);
 
       markRead();
     })();
@@ -251,8 +254,23 @@ const Conversation = () => {
         <button className="h-10 w-10 grid place-items-center rounded-full hover:bg-white/5" aria-label="Search">
           <Search className="h-5 w-5" style={{ color: "rgba(255,255,255,0.85)" }} />
         </button>
-        <button className="h-10 w-10 grid place-items-center rounded-full hover:bg-white/5" aria-label="Call">
+        <button
+          onClick={() => other && startCall(id!, {
+            user_id: other.user_id, username: other.username, display_name: other.display_name, avatar_url: other.avatar_url,
+          }, "voice")}
+          className="h-10 w-10 grid place-items-center rounded-full hover:bg-white/5"
+          aria-label="Voice call"
+        >
           <Phone className="h-5 w-5" style={{ color: "rgba(255,255,255,0.85)" }} />
+        </button>
+        <button
+          onClick={() => other && startCall(id!, {
+            user_id: other.user_id, username: other.username, display_name: other.display_name, avatar_url: other.avatar_url,
+          }, "video")}
+          className="h-10 w-10 grid place-items-center rounded-full hover:bg-white/5"
+          aria-label="Video call"
+        >
+          <Video className="h-5 w-5" style={{ color: "rgba(255,255,255,0.85)" }} />
         </button>
         <button className="h-10 w-10 grid place-items-center rounded-full hover:bg-white/5" aria-label="More">
           <MoreVertical className="h-5 w-5" style={{ color: "rgba(255,255,255,0.85)" }} />

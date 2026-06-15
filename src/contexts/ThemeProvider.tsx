@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 
-type Theme = "dark" | "light";
+export type Theme = "dark" | "light";
 type Ctx = { theme: Theme; setTheme: (t: Theme) => void; toggle: () => void };
 
 const ThemeCtx = createContext<Ctx>({ theme: "dark", setTheme: () => {}, toggle: () => {} });

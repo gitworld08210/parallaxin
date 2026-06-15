@@ -9,6 +9,7 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AdminRoute } from "@/components/AdminRoute";
 import { AppShell } from "@/components/layout/AppShell";
 import { ThemeProvider } from "@/contexts/ThemeProvider";
+import { CallProvider } from "@/contexts/CallProvider";
 
 // Eager: critical first-paint routes
 import Feed from "./pages/Feed";
@@ -97,6 +98,7 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
+          <CallProvider>
           <Suspense fallback={<RouteFallback />}>
             <Routes>
               <Route path="/auth" element={<Auth />} />
@@ -163,6 +165,7 @@ const App = () => (
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>
+          </CallProvider>
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
