@@ -165,6 +165,7 @@ const App = () => (
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>
+          </CallProvider>
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
