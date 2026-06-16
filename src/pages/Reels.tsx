@@ -4,6 +4,7 @@ import { Heart, MessageCircle, Send, Plus, Volume2, VolumeX, Pause, Camera } fro
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthProvider";
 import { CommentSheet } from "@/components/social/CommentSheet";
+import { ShareToDM } from "@/components/social/ShareToDM";
 import { fmt } from "@/lib/format";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -24,6 +25,7 @@ const Reels = () => {
   const [reels, setReels] = useState<Reel[]>([]);
   const [muted, setMuted] = useState(true);
   const [commentPost, setCommentPost] = useState<string | null>(null);
+  const [sharePost, setSharePost] = useState<string | null>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [pausedIds, setPausedIds] = useState<Set<string>>(new Set());
   const [chromeDim, setChromeDim] = useState(false);
@@ -96,9 +98,9 @@ const Reels = () => {
     bumpChrome();
   };
 
-  const share = async (r: Reel) => {
-    const url = `${window.location.origin}/p/${r.id}`;
-    try { await navigator.clipboard.writeText(url); toast.success("Link copied"); } catch {}
+  const share = (r: Reel) => {
+    setSharePost(r.id);
+    bumpChrome();
   };
 
   return (
@@ -146,6 +148,7 @@ const Reels = () => {
       </div>
 
       <CommentSheet postId={commentPost} open={!!commentPost} onOpenChange={(b) => !b && setCommentPost(null)} />
+      <ShareToDM postId={sharePost} open={!!sharePost} onOpenChange={(b) => !b && setSharePost(null)} />
     </div>
   );
 };

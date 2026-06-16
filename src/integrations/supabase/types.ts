@@ -50,6 +50,44 @@ export type Database = {
         }
         Relationships: []
       }
+      call_participants: {
+        Row: {
+          call_id: string
+          created_at: string
+          id: string
+          joined_at: string | null
+          left_at: string | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          call_id: string
+          created_at?: string
+          id?: string
+          joined_at?: string | null
+          left_at?: string | null
+          status?: string
+          user_id: string
+        }
+        Update: {
+          call_id?: string
+          created_at?: string
+          id?: string
+          joined_at?: string | null
+          left_at?: string | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "call_participants_call_id_fkey"
+            columns: ["call_id"]
+            isOneToOne: false
+            referencedRelation: "calls"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       call_signals: {
         Row: {
           call_id: string
@@ -98,6 +136,7 @@ export type Database = {
           duration_sec: number
           ended_at: string | null
           id: string
+          is_group: boolean
           kind: string
           started_at: string
           status: string
@@ -112,6 +151,7 @@ export type Database = {
           duration_sec?: number
           ended_at?: string | null
           id?: string
+          is_group?: boolean
           kind: string
           started_at?: string
           status?: string
@@ -126,6 +166,7 @@ export type Database = {
           duration_sec?: number
           ended_at?: string | null
           id?: string
+          is_group?: boolean
           kind?: string
           started_at?: string
           status?: string
@@ -288,16 +329,19 @@ export type Database = {
         Row: {
           conversation_id: string
           joined_at: string
+          role: string
           user_id: string
         }
         Insert: {
           conversation_id: string
           joined_at?: string
+          role?: string
           user_id: string
         }
         Update: {
           conversation_id?: string
           joined_at?: string
+          role?: string
           user_id?: string
         }
         Relationships: [
@@ -319,22 +363,31 @@ export type Database = {
       }
       conversations: {
         Row: {
+          avatar_url: string | null
           created_at: string
+          created_by: string | null
           id: string
           is_group: boolean
           last_message_at: string
+          title: string | null
         }
         Insert: {
+          avatar_url?: string | null
           created_at?: string
+          created_by?: string | null
           id?: string
           is_group?: boolean
           last_message_at?: string
+          title?: string | null
         }
         Update: {
+          avatar_url?: string | null
           created_at?: string
+          created_by?: string | null
           id?: string
           is_group?: boolean
           last_message_at?: string
+          title?: string | null
         }
         Relationships: []
       }
@@ -657,33 +710,39 @@ export type Database = {
           conversation_id: string
           created_at: string
           id: string
+          kind: string
           media_type: string | null
           media_url: string | null
           read_at: string | null
           sender_id: string
           shared_post_id: string | null
+          shared_story_id: string | null
         }
         Insert: {
           content: string
           conversation_id: string
           created_at?: string
           id?: string
+          kind?: string
           media_type?: string | null
           media_url?: string | null
           read_at?: string | null
           sender_id: string
           shared_post_id?: string | null
+          shared_story_id?: string | null
         }
         Update: {
           content?: string
           conversation_id?: string
           created_at?: string
           id?: string
+          kind?: string
           media_type?: string | null
           media_url?: string | null
           read_at?: string | null
           sender_id?: string
           shared_post_id?: string | null
+          shared_story_id?: string | null
         }
         Relationships: [
           {
@@ -1684,6 +1743,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      add_group_member: {
+        Args: { _conv: string; _user: string }
+        Returns: undefined
+      }
       admin_approve_kyc: { Args: { _kyc_id: string }; Returns: undefined }
       admin_approve_payout: {
         Args: { _note?: string; _payout_id: string }
@@ -1707,6 +1770,10 @@ export type Database = {
         Returns: undefined
       }
       become_creator: { Args: { _terms_version: string }; Returns: undefined }
+      create_group: {
+        Args: { _member_ids: string[]; _title: string }
+        Returns: string
+      }
       credit_coins: {
         Args: {
           _amount: number
@@ -1759,6 +1826,7 @@ export type Database = {
         Returns: boolean
       }
       is_creator: { Args: { _user_id: string }; Returns: boolean }
+      leave_group: { Args: { _conv: string }; Returns: undefined }
       mark_conversation_read: {
         Args: { _conversation_id: string }
         Returns: undefined
@@ -1769,6 +1837,10 @@ export type Database = {
           post_id: string
           similarity: number
         }[]
+      }
+      remove_group_member: {
+        Args: { _conv: string; _user: string }
+        Returns: undefined
       }
       request_payout: {
         Args: {

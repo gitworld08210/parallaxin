@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { Search, SlidersHorizontal, SquarePen, X, MessageCircle, Archive, ChevronRight } from "lucide-react";
+import { Search, SlidersHorizontal, SquarePen, X, MessageCircle, Archive, ChevronRight, Users } from "lucide-react";
 import { AuraAvatar } from "@/components/vibe/AuraAvatar";
 import { VerificationBadge } from "@/components/vibe/VerificationBadge";
 import { EmptyState } from "@/components/empty/EmptyState";
@@ -10,6 +10,7 @@ import { useAuth } from "@/contexts/AuthProvider";
 import { gradientFor, initialsOf } from "@/lib/format";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { NewGroupSheet } from "@/components/dm/NewGroupSheet";
 
 const RED = "#E50914";
 
@@ -26,7 +27,10 @@ const chatTime = (iso: string) => {
 type Conv = {
   id: string;
   last_message_at: string;
-  other: { user_id: string; username: string; display_name: string; avatar_url: string | null; verification_kind?: string | null } | null;
+  is_group: boolean;
+  title: string | null;
+  avatar_url: string | null;
+  members: { user_id: string; username: string; display_name: string; avatar_url: string | null; verification_kind?: string | null }[];
   last: string | null;
   unread: number;
 };
@@ -53,6 +57,7 @@ const Messages = () => {
   const [composerQuery, setComposerQuery] = useState("");
   const [results, setResults] = useState<ProfileRow[]>([]);
   const [starting, setStarting] = useState(false);
+  const [groupOpen, setGroupOpen] = useState(false);
 
   const load = async () => {
     if (!user) return;
@@ -65,13 +70,17 @@ const Messages = () => {
     if (ids.length === 0) { setConvs([]); setLoading(false); return; }
 
     const [{ data: conversations }, { data: others }, { data: lastMsgs }] = await Promise.all([
-      supabase.from("conversations").select("id, last_message_at").in("id", ids).order("last_message_at", { ascending: false }),
+      supabase.from("conversations").select("id, last_message_at, is_group, title, avatar_url").in("id", ids).order("last_message_at", { ascending: false }),
       supabase.from("conversation_participants").select("conversation_id, user_id, profile:profiles!conv_participants_user_profile_fkey(user_id, username, display_name, avatar_url, verification_kind)").in("conversation_id", ids).neq("user_id", user.id),
       supabase.from("messages").select("conversation_id, content, created_at, sender_id, read_at").in("conversation_id", ids).order("created_at", { ascending: false }),
     ]);
 
-    const otherByConv = new Map<string, any>();
-    (others ?? []).forEach((o: any) => { if (!otherByConv.has(o.conversation_id)) otherByConv.set(o.conversation_id, o.profile); });
+    const membersByConv = new Map<string, any[]>();
+    (others ?? []).forEach((o: any) => {
+      const arr = membersByConv.get(o.conversation_id) ?? [];
+      if (o.profile) arr.push(o.profile);
+      membersByConv.set(o.conversation_id, arr);
+    });
     const lastByConv = new Map<string, string>();
     const unreadByConv = new Map<string, number>();
     (lastMsgs ?? []).forEach((m: any) => {
@@ -81,10 +90,13 @@ const Messages = () => {
       }
     });
 
-    setConvs((conversations ?? []).map((c) => ({
+    setConvs((conversations ?? []).map((c: any) => ({
       id: c.id,
       last_message_at: c.last_message_at,
-      other: otherByConv.get(c.id) ?? null,
+      is_group: !!c.is_group,
+      title: c.title ?? null,
+      avatar_url: c.avatar_url ?? null,
+      members: membersByConv.get(c.id) ?? [],
       last: lastByConv.get(c.id) ?? null,
       unread: unreadByConv.get(c.id) ?? 0,
     })));
@@ -115,11 +127,11 @@ const Messages = () => {
     if (tab === "unread") base = base.filter((c) => c.unread > 0);
     else if (tab === "requests") base = base.filter((c) => !c.last);
     if (!q) return base;
-    return base.filter((c) =>
-      (c.other?.username || "").toLowerCase().includes(q) ||
-      (c.other?.display_name || "").toLowerCase().includes(q) ||
-      (c.last || "").toLowerCase().includes(q)
-    );
+    return base.filter((c) => {
+      const other = c.members[0];
+      const name = c.is_group ? (c.title || "Group") : (other?.display_name || other?.username || "");
+      return name.toLowerCase().includes(q) || (c.last || "").toLowerCase().includes(q);
+    });
   }, [convs, query, tab]);
 
   const unreadCount = useMemo(() => convs.filter((c) => c.unread > 0).length, [convs]);
@@ -159,6 +171,13 @@ const Messages = () => {
             aria-label="Search"
           >
             <SlidersHorizontal className="h-5 w-5" style={{ color: showSearch ? RED : "rgba(255,255,255,0.85)" }} />
+          </button>
+          <button
+            onClick={() => setGroupOpen(true)}
+            className="h-9 w-9 grid place-items-center rounded-lg hover:bg-white/5 transition-colors"
+            aria-label="New group"
+          >
+            <Users className="h-5 w-5" style={{ color: "rgba(255,255,255,0.85)" }} />
           </button>
           <button
             onClick={() => setComposerOpen(true)}
@@ -241,7 +260,10 @@ const Messages = () => {
         <ul>
           {filtered.map((c) => {
             const unread = c.unread > 0;
-            const name = c.other?.display_name || c.other?.username || "Conversation";
+            const other = c.members[0];
+            const name = c.is_group ? (c.title || c.members.map((m) => m.display_name || m.username).slice(0, 3).join(", ") || "Group") : (other?.display_name || other?.username || "Conversation");
+            const avatarUrl = c.is_group ? (c.avatar_url || other?.avatar_url || null) : (other?.avatar_url || null);
+            const handleSeed = c.is_group ? (c.title || c.id) : (other?.username);
             return (
               <li key={c.id}>
                 <Link
@@ -254,11 +276,16 @@ const Messages = () => {
                       className="rounded-full p-[2px]"
                       style={unread ? { background: `linear-gradient(135deg, ${RED}, #ff3b47)` } : { background: "transparent", padding: 0 }}
                     >
-                      {c.other?.avatar_url ? (
-                        <img src={c.other.avatar_url} alt="" className="h-12 w-12 rounded-full object-cover" style={{ border: unread ? "2px solid #0a0a0a" : "none" }} />
+                      {avatarUrl ? (
+                        <img src={avatarUrl} alt="" className="h-12 w-12 rounded-full object-cover" style={{ border: unread ? "2px solid #0a0a0a" : "none" }} />
                       ) : (
-                        <div className="h-12 w-12 rounded-full overflow-hidden" style={{ border: unread ? "2px solid #0a0a0a" : "none" }}>
-                          <AuraAvatar gradient={gradientFor(c.other?.username)} size="md" initials={initialsOf(name)} />
+                        <div className="h-12 w-12 rounded-full overflow-hidden relative" style={{ border: unread ? "2px solid #0a0a0a" : "none" }}>
+                          <AuraAvatar gradient={gradientFor(handleSeed)} size="md" initials={initialsOf(name)} />
+                          {c.is_group && (
+                            <span className="absolute -bottom-0.5 -right-0.5 h-5 w-5 grid place-items-center rounded-full" style={{ background: RED, border: "2px solid #0a0a0a" }}>
+                              <Users className="h-2.5 w-2.5 text-white" />
+                            </span>
+                          )}
                         </div>
                       )}
                     </div>
@@ -266,7 +293,7 @@ const Messages = () => {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5">
                       <p className="truncate text-[15px] font-semibold text-white">{name}</p>
-                      {c.other?.verification_kind && <VerificationBadge kind={c.other.verification_kind as any} />}
+                      {!c.is_group && other?.verification_kind && <VerificationBadge kind={other.verification_kind as any} />}
                       <span className="ml-auto text-[11px] shrink-0" style={{ color: unread ? RED : "rgba(255,255,255,0.45)" }}>
                         {chatTime(c.last_message_at)}
                       </span>
@@ -363,6 +390,8 @@ const Messages = () => {
           </div>
         </SheetContent>
       </Sheet>
+
+      <NewGroupSheet open={groupOpen} onOpenChange={setGroupOpen} />
     </div>
   );
 };
