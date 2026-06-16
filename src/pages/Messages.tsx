@@ -57,6 +57,7 @@ const Messages = () => {
   const [composerQuery, setComposerQuery] = useState("");
   const [results, setResults] = useState<ProfileRow[]>([]);
   const [starting, setStarting] = useState(false);
+  const [groupOpen, setGroupOpen] = useState(false);
 
   const load = async () => {
     if (!user) return;
@@ -69,13 +70,17 @@ const Messages = () => {
     if (ids.length === 0) { setConvs([]); setLoading(false); return; }
 
     const [{ data: conversations }, { data: others }, { data: lastMsgs }] = await Promise.all([
-      supabase.from("conversations").select("id, last_message_at").in("id", ids).order("last_message_at", { ascending: false }),
+      supabase.from("conversations").select("id, last_message_at, is_group, title, avatar_url").in("id", ids).order("last_message_at", { ascending: false }),
       supabase.from("conversation_participants").select("conversation_id, user_id, profile:profiles!conv_participants_user_profile_fkey(user_id, username, display_name, avatar_url, verification_kind)").in("conversation_id", ids).neq("user_id", user.id),
       supabase.from("messages").select("conversation_id, content, created_at, sender_id, read_at").in("conversation_id", ids).order("created_at", { ascending: false }),
     ]);
 
-    const otherByConv = new Map<string, any>();
-    (others ?? []).forEach((o: any) => { if (!otherByConv.has(o.conversation_id)) otherByConv.set(o.conversation_id, o.profile); });
+    const membersByConv = new Map<string, any[]>();
+    (others ?? []).forEach((o: any) => {
+      const arr = membersByConv.get(o.conversation_id) ?? [];
+      if (o.profile) arr.push(o.profile);
+      membersByConv.set(o.conversation_id, arr);
+    });
     const lastByConv = new Map<string, string>();
     const unreadByConv = new Map<string, number>();
     (lastMsgs ?? []).forEach((m: any) => {
@@ -85,10 +90,13 @@ const Messages = () => {
       }
     });
 
-    setConvs((conversations ?? []).map((c) => ({
+    setConvs((conversations ?? []).map((c: any) => ({
       id: c.id,
       last_message_at: c.last_message_at,
-      other: otherByConv.get(c.id) ?? null,
+      is_group: !!c.is_group,
+      title: c.title ?? null,
+      avatar_url: c.avatar_url ?? null,
+      members: membersByConv.get(c.id) ?? [],
       last: lastByConv.get(c.id) ?? null,
       unread: unreadByConv.get(c.id) ?? 0,
     })));
