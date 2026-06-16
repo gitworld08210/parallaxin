@@ -253,7 +253,10 @@ const Messages = () => {
         <ul>
           {filtered.map((c) => {
             const unread = c.unread > 0;
-            const name = c.other?.display_name || c.other?.username || "Conversation";
+            const other = c.members[0];
+            const name = c.is_group ? (c.title || c.members.map((m) => m.display_name || m.username).slice(0, 3).join(", ") || "Group") : (other?.display_name || other?.username || "Conversation");
+            const avatarUrl = c.is_group ? (c.avatar_url || other?.avatar_url || null) : (other?.avatar_url || null);
+            const handleSeed = c.is_group ? (c.title || c.id) : (other?.username);
             return (
               <li key={c.id}>
                 <Link
@@ -266,11 +269,16 @@ const Messages = () => {
                       className="rounded-full p-[2px]"
                       style={unread ? { background: `linear-gradient(135deg, ${RED}, #ff3b47)` } : { background: "transparent", padding: 0 }}
                     >
-                      {c.other?.avatar_url ? (
-                        <img src={c.other.avatar_url} alt="" className="h-12 w-12 rounded-full object-cover" style={{ border: unread ? "2px solid #0a0a0a" : "none" }} />
+                      {avatarUrl ? (
+                        <img src={avatarUrl} alt="" className="h-12 w-12 rounded-full object-cover" style={{ border: unread ? "2px solid #0a0a0a" : "none" }} />
                       ) : (
-                        <div className="h-12 w-12 rounded-full overflow-hidden" style={{ border: unread ? "2px solid #0a0a0a" : "none" }}>
-                          <AuraAvatar gradient={gradientFor(c.other?.username)} size="md" initials={initialsOf(name)} />
+                        <div className="h-12 w-12 rounded-full overflow-hidden relative" style={{ border: unread ? "2px solid #0a0a0a" : "none" }}>
+                          <AuraAvatar gradient={gradientFor(handleSeed)} size="md" initials={initialsOf(name)} />
+                          {c.is_group && (
+                            <span className="absolute -bottom-0.5 -right-0.5 h-5 w-5 grid place-items-center rounded-full" style={{ background: RED, border: "2px solid #0a0a0a" }}>
+                              <Users className="h-2.5 w-2.5 text-white" />
+                            </span>
+                          )}
                         </div>
                       )}
                     </div>
@@ -278,7 +286,7 @@ const Messages = () => {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5">
                       <p className="truncate text-[15px] font-semibold text-white">{name}</p>
-                      {c.other?.verification_kind && <VerificationBadge kind={c.other.verification_kind as any} />}
+                      {!c.is_group && other?.verification_kind && <VerificationBadge kind={other.verification_kind as any} />}
                       <span className="ml-auto text-[11px] shrink-0" style={{ color: unread ? RED : "rgba(255,255,255,0.45)" }}>
                         {chatTime(c.last_message_at)}
                       </span>
