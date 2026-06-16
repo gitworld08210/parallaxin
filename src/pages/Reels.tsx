@@ -4,6 +4,7 @@ import { Heart, MessageCircle, Send, Plus, Volume2, VolumeX, Pause, Camera } fro
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthProvider";
 import { CommentSheet } from "@/components/social/CommentSheet";
+import { ShareToDM } from "@/components/social/ShareToDM";
 import { fmt } from "@/lib/format";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
