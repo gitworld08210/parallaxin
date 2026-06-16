@@ -27,7 +27,10 @@ const chatTime = (iso: string) => {
 type Conv = {
   id: string;
   last_message_at: string;
-  other: { user_id: string; username: string; display_name: string; avatar_url: string | null; verification_kind?: string | null } | null;
+  is_group: boolean;
+  title: string | null;
+  avatar_url: string | null;
+  members: { user_id: string; username: string; display_name: string; avatar_url: string | null; verification_kind?: string | null }[];
   last: string | null;
   unread: number;
 };
