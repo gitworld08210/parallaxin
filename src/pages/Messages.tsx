@@ -173,6 +173,13 @@ const Messages = () => {
             <SlidersHorizontal className="h-5 w-5" style={{ color: showSearch ? RED : "rgba(255,255,255,0.85)" }} />
           </button>
           <button
+            onClick={() => setGroupOpen(true)}
+            className="h-9 w-9 grid place-items-center rounded-lg hover:bg-white/5 transition-colors"
+            aria-label="New group"
+          >
+            <Users className="h-5 w-5" style={{ color: "rgba(255,255,255,0.85)" }} />
+          </button>
+          <button
             onClick={() => setComposerOpen(true)}
             className="h-9 w-9 grid place-items-center rounded-lg transition-transform active:scale-95"
             style={{ background: RED, boxShadow: `0 6px 20px ${RED}55` }}
