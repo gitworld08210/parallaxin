@@ -25,6 +25,7 @@ const Reels = () => {
   const [reels, setReels] = useState<Reel[]>([]);
   const [muted, setMuted] = useState(true);
   const [commentPost, setCommentPost] = useState<string | null>(null);
+  const [sharePost, setSharePost] = useState<string | null>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [pausedIds, setPausedIds] = useState<Set<string>>(new Set());
   const [chromeDim, setChromeDim] = useState(false);
