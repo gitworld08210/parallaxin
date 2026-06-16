@@ -127,11 +127,11 @@ const Messages = () => {
     if (tab === "unread") base = base.filter((c) => c.unread > 0);
     else if (tab === "requests") base = base.filter((c) => !c.last);
     if (!q) return base;
-    return base.filter((c) =>
-      (c.other?.username || "").toLowerCase().includes(q) ||
-      (c.other?.display_name || "").toLowerCase().includes(q) ||
-      (c.last || "").toLowerCase().includes(q)
-    );
+    return base.filter((c) => {
+      const other = c.members[0];
+      const name = c.is_group ? (c.title || "Group") : (other?.display_name || other?.username || "");
+      return name.toLowerCase().includes(q) || (c.last || "").toLowerCase().includes(q);
+    });
   }, [convs, query, tab]);
 
   const unreadCount = useMemo(() => convs.filter((c) => c.unread > 0).length, [convs]);
