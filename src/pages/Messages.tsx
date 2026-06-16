@@ -390,6 +390,8 @@ const Messages = () => {
           </div>
         </SheetContent>
       </Sheet>
+
+      <NewGroupSheet open={groupOpen} onOpenChange={setGroupOpen} />
     </div>
   );
 };
