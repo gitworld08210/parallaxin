@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
-import { ChevronLeft, Send, Search, Phone, Video, MoreVertical, Paperclip, Smile, Check, CheckCheck } from "lucide-react";
+import { ChevronLeft, Send, Search, Phone, Video, MoreVertical, Paperclip, Smile, Check, CheckCheck, Users } from "lucide-react";
 import { AuraAvatar } from "@/components/vibe/AuraAvatar";
 import { VerificationBadge } from "@/components/vibe/VerificationBadge";
 import { supabase } from "@/integrations/supabase/client";
@@ -9,6 +9,7 @@ import { gradientFor, initialsOf } from "@/lib/format";
 import { VoiceBubble, VoiceRecorder } from "@/components/dm/VoiceMessage";
 import { ReportSheet } from "@/components/social/ReportSheet";
 import { useCall } from "@/contexts/CallProvider";
+import { GroupInfoSheet } from "@/components/dm/GroupInfoSheet";
 
 const RED = "#E50914";
 const GREEN = "#46d369";
