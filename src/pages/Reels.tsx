@@ -98,9 +98,9 @@ const Reels = () => {
     bumpChrome();
   };
 
-  const share = async (r: Reel) => {
-    const url = `${window.location.origin}/p/${r.id}`;
-    try { await navigator.clipboard.writeText(url); toast.success("Link copied"); } catch {}
+  const share = (r: Reel) => {
+    setSharePost(r.id);
+    bumpChrome();
   };
 
   return (
