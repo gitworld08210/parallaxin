@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { Search, SlidersHorizontal, SquarePen, X, MessageCircle, Archive, ChevronRight } from "lucide-react";
+import { Search, SlidersHorizontal, SquarePen, X, MessageCircle, Archive, ChevronRight, Users } from "lucide-react";
 import { AuraAvatar } from "@/components/vibe/AuraAvatar";
 import { VerificationBadge } from "@/components/vibe/VerificationBadge";
 import { EmptyState } from "@/components/empty/EmptyState";
@@ -10,6 +10,7 @@ import { useAuth } from "@/contexts/AuthProvider";
 import { gradientFor, initialsOf } from "@/lib/format";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { NewGroupSheet } from "@/components/dm/NewGroupSheet";
 
 const RED = "#E50914";
 
