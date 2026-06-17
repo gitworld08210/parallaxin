@@ -1175,10 +1175,12 @@ export type Database = {
           deletion_scheduled_at: string | null
           display_name: string
           dm_price_cents: number
+          dob: string | null
           followers_count: number
           following_count: number
           founder_level: number
           founder_title: string | null
+          gender: string | null
           id: string
           interests: string[]
           is_creator: boolean
@@ -1218,10 +1220,12 @@ export type Database = {
           deletion_scheduled_at?: string | null
           display_name?: string
           dm_price_cents?: number
+          dob?: string | null
           followers_count?: number
           following_count?: number
           founder_level?: number
           founder_title?: string | null
+          gender?: string | null
           id?: string
           interests?: string[]
           is_creator?: boolean
@@ -1261,10 +1265,12 @@ export type Database = {
           deletion_scheduled_at?: string | null
           display_name?: string
           dm_price_cents?: number
+          dob?: string | null
           followers_count?: number
           following_count?: number
           founder_level?: number
           founder_title?: string | null
+          gender?: string | null
           id?: string
           interests?: string[]
           is_creator?: boolean
