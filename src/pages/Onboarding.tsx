@@ -18,10 +18,13 @@ const Onboarding = () => {
   const { user, profile, refreshProfile } = useAuth();
   const nav = useNavigate();
   const [step, setStep] = useState(0);
+  const [dob, setDob] = useState("");
+  const [gender, setGender] = useState<string>("");
   const [interests, setInterests] = useState<string[]>([]);
   const [founders, setFounders] = useState<{ user_id: string; username: string; display_name: string; avatar_url: string | null }[]>([]);
   const [followed, setFollowed] = useState<Set<string>>(new Set());
   const [saving, setSaving] = useState(false);
+
 
   useEffect(() => {
     (async () => {
