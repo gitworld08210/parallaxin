@@ -50,10 +50,14 @@ const Onboarding = () => {
     });
   };
 
+  const today = new Date();
+  const maxDob = new Date(today.getFullYear() - 13, today.getMonth(), today.getDate()).toISOString().slice(0, 10);
+
   const canAdvance = useMemo(() => {
-    if (step === 1) return interests.length >= 3;
+    if (step === 1) return !!dob;
+    if (step === 2) return interests.length >= 3;
     return true;
-  }, [step, interests]);
+  }, [step, interests, dob]);
 
   const finish = async () => {
     if (!user) return;
@@ -61,7 +65,12 @@ const Onboarding = () => {
     try {
       await supabase
         .from("profiles")
-        .update({ interests, onboarded_at: new Date().toISOString() })
+        .update({
+          interests,
+          dob: dob || null,
+          gender: gender || null,
+          onboarded_at: new Date().toISOString(),
+        } as any)
         .eq("user_id", user.id);
 
       if (followed.size > 0) {
@@ -83,13 +92,22 @@ const Onboarding = () => {
     }
   };
 
-  const next = () => (step < 3 ? setStep((s) => s + 1) : finish());
+  const LAST = 4;
+  const next = () => (step < LAST ? setStep((s) => s + 1) : finish());
+
+  const GENDERS = [
+    { v: "female", l: "Female" },
+    { v: "male", l: "Male" },
+    { v: "nonbinary", l: "Non-binary" },
+    { v: "other", l: "Other" },
+    { v: "prefer_not", l: "Prefer not to say" },
+  ];
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
       {/* Progress dots */}
       <div className="flex items-center justify-center gap-1.5 pt-6">
-        {[0, 1, 2, 3].map((i) => (
+        {[0, 1, 2, 3, 4].map((i) => (
           <span
             key={i}
             className={cn(
@@ -109,14 +127,41 @@ const Onboarding = () => {
                 <Sparkles className="h-9 w-9 text-primary-foreground" />
               </div>
               <h1 className="text-4xl font-black tracking-tight relative">A New Universe<br />for Creators.</h1>
-              <p className="text-sm text-muted-foreground mt-4 max-w-xs mx-auto relative">
-                Create. Connect. Earn. Grow.
-              </p>
+              <p className="text-sm text-muted-foreground mt-4 max-w-xs mx-auto relative">Create. Connect. Earn. Grow.</p>
               <p className="text-xs text-muted-foreground/70 mt-10 relative">Hi {profile?.display_name || profile?.username || "there"} 👋</p>
             </motion.div>
           )}
 
           {step === 1 && (
+            <motion.div key="about" {...fadeUp}>
+              <h2 className="text-2xl font-semibold tracking-tight">A little about you</h2>
+              <p className="text-sm text-muted-foreground mt-1.5">Used to personalize your experience. You must be 13+.</p>
+
+              <label className="block mt-6 text-xs font-medium text-muted-foreground">Date of birth</label>
+              <input
+                type="date" value={dob} max={maxDob} onChange={(e) => setDob(e.target.value)}
+                className="mt-2 w-full bg-secondary/60 border border-border rounded-2xl px-4 py-3.5 text-sm outline-none focus:border-primary/60"
+              />
+
+              <label className="block mt-5 text-xs font-medium text-muted-foreground">Gender <span className="opacity-60">(optional)</span></label>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {GENDERS.map((g) => (
+                  <button
+                    key={g.v}
+                    onClick={() => setGender(gender === g.v ? "" : g.v)}
+                    className={cn(
+                      "px-3.5 py-2 rounded-full text-sm font-medium border transition-all active:scale-95",
+                      gender === g.v ? "bg-foreground text-background border-foreground" : "bg-card text-foreground border-border hover:border-foreground/40",
+                    )}
+                  >
+                    {g.l}
+                  </button>
+                ))}
+              </div>
+            </motion.div>
+          )}
+
+          {step === 2 && (
             <motion.div key="interests" {...fadeUp}>
               <h2 className="text-2xl font-semibold tracking-tight">What do you love?</h2>
               <p className="text-sm text-muted-foreground mt-1.5">Pick at least 3. We'll tune your feed.</p>
@@ -129,9 +174,7 @@ const Onboarding = () => {
                       onClick={() => toggleInterest(tag)}
                       className={cn(
                         "px-3.5 py-2 rounded-full text-sm font-medium border transition-all active:scale-95",
-                        active
-                          ? "bg-foreground text-background border-foreground"
-                          : "bg-card text-foreground border-border hover:border-foreground/40",
+                        active ? "bg-foreground text-background border-foreground" : "bg-card text-foreground border-border hover:border-foreground/40",
                       )}
                     >
                       {tag}
@@ -143,7 +186,7 @@ const Onboarding = () => {
             </motion.div>
           )}
 
-          {step === 2 && (
+          {step === 3 && (
             <motion.div key="founders" {...fadeUp}>
               <h2 className="text-2xl font-semibold tracking-tight">Follow a few founders</h2>
               <p className="text-sm text-muted-foreground mt-1.5">The people who built this place.</p>
@@ -187,7 +230,7 @@ const Onboarding = () => {
             </motion.div>
           )}
 
-          {step === 3 && (
+          {step === 4 && (
             <motion.div key="notify" {...fadeUp} className="text-center mt-12">
               <div className="mx-auto h-16 w-16 grid place-items-center rounded-full bg-muted mb-5">
                 <Bell className="h-7 w-7 text-primary" />
@@ -196,9 +239,7 @@ const Onboarding = () => {
               <p className="text-sm text-muted-foreground mt-3 max-w-xs mx-auto">
                 We'll only ping you when something matters — DMs, mentions, and new followers.
               </p>
-              <p className="text-xs text-muted-foreground/70 mt-8">
-                You can change this anytime in Settings.
-              </p>
+              <p className="text-xs text-muted-foreground/70 mt-8">You can change this anytime in Settings.</p>
             </motion.div>
           )}
         </AnimatePresence>
@@ -206,10 +247,7 @@ const Onboarding = () => {
 
       <div className="fixed bottom-0 inset-x-0 mx-auto max-w-md p-4 bg-background/95 backdrop-blur-sm border-t border-border flex gap-2">
         {step > 0 && (
-          <button
-            onClick={() => setStep((s) => s - 1)}
-            className="px-4 py-3 rounded-xl text-sm font-semibold text-muted-foreground"
-          >
+          <button onClick={() => setStep((s) => s - 1)} className="px-4 py-3 rounded-xl text-sm font-semibold text-muted-foreground">
             Back
           </button>
         )}
@@ -221,7 +259,7 @@ const Onboarding = () => {
             "bg-primary text-primary-foreground disabled:opacity-40",
           )}
         >
-          {saving ? "Setting up…" : step === 3 ? "Enter Aurelix" : "Continue"}
+          {saving ? "Setting up…" : step === LAST ? "Enter Aurelix" : "Continue"}
           {!saving && <ArrowRight className="h-4 w-4" />}
         </button>
       </div>
@@ -230,3 +268,4 @@ const Onboarding = () => {
 };
 
 export default Onboarding;
+
