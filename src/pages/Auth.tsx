@@ -290,6 +290,9 @@ const Auth = () => {
         <p className="text-center text-[11px] text-muted-foreground mt-8 leading-relaxed">
           By continuing you agree to our Terms & Privacy. <br/>OTP codes expire in 5 minutes.
         </p>
+
+        {/* Invisible reCAPTCHA host for Firebase phone auth */}
+        <div id="recaptcha-container" />
       </div>
     </div>
   );
