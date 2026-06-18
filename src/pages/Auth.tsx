@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
@@ -6,6 +6,8 @@ import { lovable } from "@/integrations/lovable";
 import { useAuth } from "@/contexts/AuthProvider";
 import { toast } from "sonner";
 import { Sparkles, ArrowLeft, Mail, Phone, KeyRound } from "lucide-react";
+import { sendFirebasePhoneOtp, resetRecaptcha } from "@/integrations/firebase/client";
+import type { ConfirmationResult } from "firebase/auth";
 
 type Tab = "signin" | "signup";
 type Identifier = "email" | "phone";
