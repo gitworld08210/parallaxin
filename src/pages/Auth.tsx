@@ -31,6 +31,7 @@ const Auth = () => {
 
   const [busy, setBusy] = useState(false);
   const [resendIn, setResendIn] = useState(0);
+  const firebaseConfirmRef = useRef<ConfirmationResult | null>(null);
 
   const routeForUser = async (uid: string) => {
     const { data: role } = await supabase
