@@ -64,18 +64,26 @@ const Auth = () => {
     }
     setBusy(true);
     try {
-      const params: any = idKind === "email"
-        ? { email, options: { shouldCreateUser: forSignup, emailRedirectTo: `${window.location.origin}/` } }
-        : { phone, options: { shouldCreateUser: forSignup, channel: "sms" } };
-      const { error } = await supabase.auth.signInWithOtp(params);
-      if (error) throw error;
+      if (idKind === "phone") {
+        // Firebase-backed phone OTP (works for both signup and signin).
+        resetRecaptcha();
+        firebaseConfirmRef.current = await sendFirebasePhoneOtp(phone.trim());
+      } else {
+        const { error } = await supabase.auth.signInWithOtp({
+          email,
+          options: { shouldCreateUser: forSignup, emailRedirectTo: `${window.location.origin}/` },
+        });
+        if (error) throw error;
+      }
       toast.success(`Code sent to your ${idKind}`);
       setStage("otp");
       setResendIn(RESEND_SECONDS);
     } catch (e: any) {
-      const msg = e?.message || "Could not send code";
-      if (/sms|phone|provider/i.test(msg) && idKind === "phone") {
-        toast.error("Phone sign-in isn't configured yet. Use email or password.");
+      const msg = e?.message || e?.code || "Could not send code";
+      if (idKind === "phone" && /configured|not configured|api[-_ ]?key|firebase/i.test(msg)) {
+        toast.error("Phone sign-in isn't configured yet. Use email instead.");
+      } else if (idKind === "phone" && /recaptcha|captcha/i.test(msg)) {
+        toast.error("reCAPTCHA failed. Reload and try again.");
       } else {
         toast.error(msg);
       }
@@ -86,13 +94,30 @@ const Auth = () => {
     if (code.length !== OTP_LEN) return;
     setBusy(true);
     try {
-      const params: any = idKind === "email"
-        ? { email, token: code, type: "email" }
-        : { phone, token: code, type: "sms" };
-      const { data, error } = await supabase.auth.verifyOtp(params);
-      if (error) throw error;
-      toast.success("Verified ✦");
-      if (data.user) await routeForUser(data.user.id);
+      if (idKind === "phone") {
+        const conf = firebaseConfirmRef.current;
+        if (!conf) throw new Error("Send a code first");
+        const cred = await conf.confirm(code);
+        const idToken = await cred.user.getIdToken();
+        // Exchange Firebase ID token for a Supabase session via the bridge.
+        const { data, error } = await supabase.functions.invoke<{ token_hash: string; email: string }>(
+          "firebase-bridge",
+          { body: { idToken } },
+        );
+        if (error || !data?.token_hash) throw new Error(error?.message || "Bridge failed");
+        const { data: sess, error: sessErr } = await supabase.auth.verifyOtp({
+          type: "magiclink",
+          token_hash: data.token_hash,
+        });
+        if (sessErr) throw sessErr;
+        toast.success("Verified ✦");
+        if (sess.user) await routeForUser(sess.user.id);
+      } else {
+        const { data, error } = await supabase.auth.verifyOtp({ email, token: code, type: "email" });
+        if (error) throw error;
+        toast.success("Verified ✦");
+        if (data.user) await routeForUser(data.user.id);
+      }
     } catch (e: any) {
       toast.error(e?.message || "Invalid or expired code");
     } finally { setBusy(false); }
