@@ -80,7 +80,9 @@ const Auth = () => {
       setResendIn(RESEND_SECONDS);
     } catch (e: any) {
       const msg = e?.message || e?.code || "Could not send code";
-      if (idKind === "phone" && /configured|not configured|api[-_ ]?key|firebase/i.test(msg)) {
+      if (idKind === "phone" && /billing/i.test(msg)) {
+        toast.error("Firebase billing must be enabled before phone OTP can be sent.");
+      } else if (idKind === "phone" && /configured|not configured|api[-_ ]?key|firebase/i.test(msg)) {
         toast.error("Phone sign-in isn't configured yet. Use email instead.");
       } else if (idKind === "phone" && /recaptcha|captcha/i.test(msg)) {
         toast.error("reCAPTCHA failed. Reload and try again.");
