@@ -1,37 +1,22 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { useAuth } from "@/contexts/AuthProvider";
 import { toast } from "sonner";
-import { Sparkles, ArrowLeft, Mail, Phone, KeyRound } from "lucide-react";
-import { sendFirebasePhoneOtp, resetRecaptcha } from "@/integrations/firebase/client";
-import type { ConfirmationResult } from "firebase/auth";
+import { Sparkles } from "lucide-react";
 
 type Tab = "signin" | "signup";
-type Identifier = "email" | "phone";
-type Stage = "identify" | "otp" | "password";
-
-const OTP_LEN = 6;
-const RESEND_SECONDS = 30;
 
 const Auth = () => {
   const nav = useNavigate();
   const { user, loading } = useAuth();
 
   const [tab, setTab] = useState<Tab>("signin");
-  const [idKind, setIdKind] = useState<Identifier>("email");
-  const [stage, setStage] = useState<Stage>("identify");
-
   const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState(""); // E.164 e.g. +14155551234
   const [password, setPassword] = useState("");
-  const [code, setCode] = useState("");
-
   const [busy, setBusy] = useState(false);
-  const [resendIn, setResendIn] = useState(0);
-  const firebaseConfirmRef = useRef<ConfirmationResult | null>(null);
 
   const routeForUser = async (uid: string) => {
     const { data: role } = await supabase
@@ -44,98 +29,39 @@ const Auth = () => {
 
   useEffect(() => { if (!loading && user) routeForUser(user.id); /* eslint-disable-next-line */ }, [user, loading]);
 
-  useEffect(() => {
-    if (resendIn <= 0) return;
-    const t = setInterval(() => setResendIn((s) => Math.max(0, s - 1)), 1000);
-    return () => clearInterval(t);
-  }, [resendIn]);
+  const validEmail = () => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
 
-  const identifier = idKind === "email" ? email.trim().toLowerCase() : phone.trim();
-
-  const validIdentifier = () => {
-    if (idKind === "email") return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
-    return /^\+[1-9]\d{6,14}$/.test(phone.trim());
-  };
-
-  const sendOtp = async (forSignup: boolean) => {
-    if (!validIdentifier()) {
-      toast.error(idKind === "email" ? "Enter a valid email" : "Enter phone in E.164 format (+countrycode…)");
-      return;
-    }
+  const signIn = async () => {
+    if (!validEmail() || password.length < 6) { toast.error("Enter a valid email and password"); return; }
     setBusy(true);
     try {
-      if (idKind === "phone") {
-        // Firebase-backed phone OTP (works for both signup and signin).
-        resetRecaptcha();
-        firebaseConfirmRef.current = await sendFirebasePhoneOtp(phone.trim());
-      } else {
-        const { error } = await supabase.auth.signInWithOtp({
-          email,
-          options: { shouldCreateUser: forSignup, emailRedirectTo: `${window.location.origin}/` },
-        });
-        if (error) throw error;
-      }
-      toast.success(`Code sent to your ${idKind}`);
-      setStage("otp");
-      setResendIn(RESEND_SECONDS);
-    } catch (e: any) {
-      const msg = e?.message || e?.code || "Could not send code";
-      if (idKind === "phone" && /billing/i.test(msg)) {
-        toast.error("Firebase billing must be enabled before phone OTP can be sent.");
-      } else if (idKind === "phone" && /configured|not configured|api[-_ ]?key|firebase/i.test(msg)) {
-        toast.error("Phone sign-in isn't configured yet. Use email instead.");
-      } else if (idKind === "phone" && /recaptcha|captcha/i.test(msg)) {
-        toast.error("reCAPTCHA failed. Reload and try again.");
-      } else {
-        toast.error(msg);
-      }
-    } finally { setBusy(false); }
-  };
-
-  const verifyOtp = async () => {
-    if (code.length !== OTP_LEN) return;
-    setBusy(true);
-    try {
-      if (idKind === "phone") {
-        const conf = firebaseConfirmRef.current;
-        if (!conf) throw new Error("Send a code first");
-        const cred = await conf.confirm(code);
-        const idToken = await cred.user.getIdToken();
-        // Exchange Firebase ID token for a Supabase session via the bridge.
-        const { data, error } = await supabase.functions.invoke<{ token_hash: string; email: string }>(
-          "firebase-bridge",
-          { body: { idToken } },
-        );
-        if (error || !data?.token_hash) throw new Error(error?.message || "Bridge failed");
-        const { data: sess, error: sessErr } = await supabase.auth.verifyOtp({
-          type: "magiclink",
-          token_hash: data.token_hash,
-        });
-        if (sessErr) throw sessErr;
-        toast.success("Verified ✦");
-        if (sess.user) await routeForUser(sess.user.id);
-      } else {
-        const { data, error } = await supabase.auth.verifyOtp({ email, token: code, type: "email" });
-        if (error) throw error;
-        toast.success("Verified ✦");
-        if (data.user) await routeForUser(data.user.id);
-      }
-    } catch (e: any) {
-      toast.error(e?.message || "Invalid or expired code");
-    } finally { setBusy(false); }
-  };
-
-  const passwordSignIn = async () => {
-    if (idKind !== "email") { toast.error("Password login uses email"); return; }
-    if (!validIdentifier() || password.length < 6) { toast.error("Enter email and password"); return; }
-    setBusy(true);
-    try {
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      const { data, error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
       if (error) throw error;
       toast.success("Welcome back ✦");
       if (data.user) await routeForUser(data.user.id);
     } catch (e: any) {
       toast.error(e?.message || "Sign-in failed");
+    } finally { setBusy(false); }
+  };
+
+  const signUp = async () => {
+    if (!validEmail() || password.length < 6) { toast.error("Enter a valid email and a password (6+ chars)"); return; }
+    setBusy(true);
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email: email.trim(),
+        password,
+        options: { emailRedirectTo: `${window.location.origin}/` },
+      });
+      if (error) throw error;
+      if (data.session && data.user) {
+        toast.success("Account created ✦");
+        await routeForUser(data.user.id);
+      } else {
+        toast.success("Check your email to confirm your account.");
+      }
+    } catch (e: any) {
+      toast.error(e?.message || "Sign-up failed");
     } finally { setBusy(false); }
   };
 
@@ -152,8 +78,6 @@ const Auth = () => {
 
   const inputCls =
     "w-full bg-secondary/60 border border-border rounded-2xl px-4 py-3.5 text-sm outline-none placeholder:text-muted-foreground focus:border-primary/60 transition-colors";
-
-  const reset = () => { setStage("identify"); setCode(""); setPassword(""); };
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
@@ -174,7 +98,7 @@ const Auth = () => {
         <div className="grid grid-cols-2 p-1 bg-secondary/40 border border-border rounded-2xl mb-5">
           {(["signin","signup"] as Tab[]).map((t) => (
             <button key={t}
-              onClick={() => { setTab(t); reset(); if (t === "signup") setStage("identify"); else setStage("password"); }}
+              onClick={() => setTab(t)}
               className={`py-2.5 rounded-xl text-sm font-semibold transition-all ${tab===t ? "bg-background text-foreground shadow-sm" : "text-muted-foreground"}`}>
               {t === "signin" ? "Log in" : "Sign up"}
             </button>
@@ -182,94 +106,25 @@ const Auth = () => {
         </div>
 
         <AnimatePresence mode="wait">
-          {/* ===== IDENTIFY (Sign up + Sign in via OTP) ===== */}
-          {stage === "identify" && (
-            <motion.div key="identify" initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0}} className="space-y-3">
-              {/* identifier kind switcher */}
-              <div className="flex gap-2 mb-1">
-                <button onClick={() => setIdKind("email")}
-                  className={`flex-1 inline-flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-semibold border transition-colors ${idKind==="email" ? "bg-foreground text-background border-foreground" : "bg-card text-foreground border-border"}`}>
-                  <Mail className="h-3.5 w-3.5" /> Email
-                </button>
-                <button onClick={() => setIdKind("phone")}
-                  className={`flex-1 inline-flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-semibold border transition-colors ${idKind==="phone" ? "bg-foreground text-background border-foreground" : "bg-card text-foreground border-border"}`}>
-                  <Phone className="h-3.5 w-3.5" /> Phone
-                </button>
-              </div>
+          <motion.form
+            key={tab}
+            onSubmit={(e) => { e.preventDefault(); tab === "signin" ? signIn() : signUp(); }}
+            initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+            className="space-y-3"
+          >
+            <input className={inputCls} type="email" placeholder="you@aurelix.app" value={email} onChange={(e)=>setEmail(e.target.value)} autoComplete="email" required />
+            <input className={inputCls} type="password" placeholder="Password" minLength={6} value={password} onChange={(e)=>setPassword(e.target.value)} autoComplete={tab === "signin" ? "current-password" : "new-password"} required />
 
-              {idKind === "email" ? (
-                <input className={inputCls} type="email" placeholder="you@aurelix.app" value={email} onChange={(e)=>setEmail(e.target.value)} autoComplete="email" />
-              ) : (
-                <input className={inputCls} type="tel" placeholder="+1 415 555 1234" value={phone} onChange={(e)=>setPhone(e.target.value)} autoComplete="tel" inputMode="tel" />
-              )}
-
-              <button disabled={busy} onClick={() => sendOtp(tab === "signup")}
-                className="w-full py-3.5 rounded-2xl bg-gradient-primary text-primary-foreground font-semibold text-sm shadow-glow disabled:opacity-60 active:scale-[0.98] transition-transform">
-                {busy ? "Sending…" : "Send verification code"}
-              </button>
-
-              {tab === "signin" && idKind === "email" && (
-                <button onClick={() => setStage("password")} className="w-full text-xs text-muted-foreground hover:text-foreground py-2 inline-flex items-center justify-center gap-1.5">
-                  <KeyRound className="h-3.5 w-3.5" /> Use password instead
-                </button>
-              )}
-
-              <p className="text-[11px] text-muted-foreground text-center pt-1">
-                {tab === "signup"
-                  ? "We'll send a 6-digit code to verify it's you."
-                  : "We'll send a 6-digit code to sign you in."}
-              </p>
-            </motion.div>
-          )}
-
-          {/* ===== OTP ===== */}
-          {stage === "otp" && (
-            <motion.div key="otp" initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0}} className="space-y-4">
-              <button onClick={reset} className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground">
-                <ArrowLeft className="h-3.5 w-3.5" /> Change {idKind}
-              </button>
-              <div className="text-center">
-                <p className="text-sm text-muted-foreground">Enter the 6-digit code sent to</p>
-                <p className="text-sm font-semibold mt-0.5 break-all">{identifier}</p>
-              </div>
-              <input
-                inputMode="numeric" pattern="\d*" maxLength={OTP_LEN} autoFocus
-                value={code}
-                onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, OTP_LEN))}
-                placeholder="••••••"
-                className={`${inputCls} text-center text-2xl tracking-[0.6em] font-mono`}
-              />
-              <button disabled={busy || code.length !== OTP_LEN} onClick={verifyOtp}
-                className="w-full py-3.5 rounded-2xl bg-gradient-primary text-primary-foreground font-semibold text-sm shadow-glow disabled:opacity-60 active:scale-[0.98] transition-transform">
-                {busy ? "Verifying…" : "Verify & continue"}
-              </button>
-              <button
-                disabled={resendIn > 0 || busy}
-                onClick={() => sendOtp(tab === "signup")}
-                className="w-full text-xs text-muted-foreground hover:text-foreground py-1.5 disabled:opacity-50">
-                {resendIn > 0 ? `Resend in ${resendIn}s` : "Resend code"}
-              </button>
-              <p className="text-[11px] text-muted-foreground text-center">Code expires in 5 minutes. Max 5 attempts.</p>
-            </motion.div>
-          )}
-
-          {/* ===== PASSWORD (Log in fallback) ===== */}
-          {stage === "password" && (
-            <motion.form key="password" onSubmit={(e)=>{e.preventDefault();passwordSignIn();}}
-              initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0}} className="space-y-3">
-              <input className={inputCls} type="email" placeholder="Email" value={email} onChange={(e)=>setEmail(e.target.value)} autoComplete="email" required />
-              <input className={inputCls} type="password" placeholder="Password" minLength={6} value={password} onChange={(e)=>setPassword(e.target.value)} autoComplete="current-password" required />
+            {tab === "signin" && (
               <div className="flex justify-end">
                 <Link to="/reset-password" className="text-xs text-muted-foreground hover:text-foreground">Forgot password?</Link>
               </div>
-              <button disabled={busy} className="w-full py-3.5 rounded-2xl bg-gradient-primary text-primary-foreground font-semibold text-sm shadow-glow disabled:opacity-60 active:scale-[0.98] transition-transform">
-                {busy ? "…" : "Log in"}
-              </button>
-              <button type="button" onClick={() => setStage("identify")} className="w-full text-xs text-muted-foreground hover:text-foreground py-2 inline-flex items-center justify-center gap-1.5">
-                <Mail className="h-3.5 w-3.5" /> Use a one-time code instead
-              </button>
-            </motion.form>
-          )}
+            )}
+
+            <button disabled={busy} className="w-full py-3.5 rounded-2xl bg-gradient-primary text-primary-foreground font-semibold text-sm shadow-glow disabled:opacity-60 active:scale-[0.98] transition-transform">
+              {busy ? "…" : tab === "signin" ? "Log in" : "Create account"}
+            </button>
+          </motion.form>
         </AnimatePresence>
 
         <div className="flex items-center gap-3 my-6">
@@ -290,11 +145,8 @@ const Auth = () => {
         </div>
 
         <p className="text-center text-[11px] text-muted-foreground mt-8 leading-relaxed">
-          By continuing you agree to our Terms & Privacy. <br/>OTP codes expire in 5 minutes.
+          By continuing you agree to our Terms & Privacy.
         </p>
-
-        {/* Invisible reCAPTCHA host for Firebase phone auth */}
-        <div id="recaptcha-container" />
       </div>
     </div>
   );
