@@ -92,11 +92,39 @@ export const AppShell = () => {
           isReels && "bg-black/90 border-white/10",
         )}
       >
-        <NavSlot to="/" end label="Home" icon={Home} badge={unreadNotif > 0} isReels={isReels} />
+        <NavSlot to="/" end label="Home" icon={Home} isReels={isReels} />
         <NavSlot to="/discover" label="Search" icon={Search} isReels={isReels} />
         <NavSlot to="/reels" label="Reels" icon={Compass} isReels={isReels} />
-        <NavSlot to="/notifications" label="Notifications" icon={Bell} badge={unreadNotif > 0} badgeCount={unreadNotif} isReels={isReels} />
         <NavSlot to="/messages" label="Messages" icon={MessageCircle} badge={unreadDm > 0} badgeCount={unreadDm} isReels={isReels} />
+        <NavLink to="/profile" aria-label="Profile" className="h-full w-full flex items-center justify-center active:scale-95 transition-transform">
+          {({ isActive }) => (
+            <div className="relative">
+              {profile?.avatar_url ? (
+                <img
+                  src={profile.avatar_url}
+                  alt=""
+                  className={cn(
+                    "h-7 w-7 rounded-full object-cover",
+                    isActive ? "ring-2 ring-foreground" : "ring-1 ring-border",
+                  )}
+                />
+              ) : (
+                <User
+                  className={cn(
+                    "h-7 w-7",
+                    isActive
+                      ? (isReels ? "text-white fill-white" : "text-foreground fill-foreground")
+                      : (isReels ? "text-white/60" : "text-muted-foreground"),
+                  )}
+                  strokeWidth={isActive ? 1.5 : 1.75}
+                />
+              )}
+              {unreadNotif > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-primary ring-2 ring-background" />
+              )}
+            </div>
+          )}
+        </NavLink>
       </nav>
 
     </div>
