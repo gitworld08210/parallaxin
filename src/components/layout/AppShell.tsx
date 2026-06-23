@@ -104,13 +104,14 @@ export const AppShell = () => {
 };
 
 const NavSlot = ({
-  to, end, label, icon: Icon, badge, isReels,
+  to, end, label, icon: Icon, badge, badgeCount, isReels,
 }: {
   to: string;
   end?: boolean;
   label: string;
   icon: any;
   badge?: boolean;
+  badgeCount?: number;
   isReels?: boolean;
 }) => (
   <NavLink to={to} end={end} aria-label={label} className="h-full w-full flex items-center justify-center active:scale-95 transition-transform">
@@ -126,12 +127,19 @@ const NavSlot = ({
           strokeWidth={isActive ? 1.5 : 1.75}
         />
         {badge && (
-          <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-destructive ring-2 ring-background" />
+          badgeCount && badgeCount > 0 ? (
+            <span className="absolute -top-1.5 -right-2 min-w-[18px] h-[18px] px-1 rounded-full bg-primary text-primary-foreground text-[10px] font-bold grid place-items-center ring-2 ring-background">
+              {badgeCount > 99 ? "99+" : badgeCount}
+            </span>
+          ) : (
+            <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-primary ring-2 ring-background" />
+          )
         )}
       </div>
     )}
   </NavLink>
 );
+
 
 const CreateAction = ({ to, icon: Icon, label, onPick }: { to: string; icon: any; label: string; onPick: () => void }) => (
   <Link onClick={onPick} to={to} className="rounded-xl py-5 flex flex-col items-center gap-2 bg-card border border-border hover:bg-secondary transition-colors">
