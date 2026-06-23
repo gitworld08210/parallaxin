@@ -186,6 +186,18 @@ const ReelItem = ({
     }
   };
 
+  // Imperatively sync mute state — React's `muted` prop isn't reliably applied to the DOM.
+  // Also re-issue play() on unmute so the user gesture grants audio playback.
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    v.muted = muted;
+    if (!muted) {
+      v.volume = 1;
+      v.play().catch(() => {});
+    }
+  }, [muted]);
+
   return (
     <section className="relative h-[100dvh] snap-start grid place-items-center">
       <video
@@ -198,6 +210,7 @@ const ReelItem = ({
         onClick={onTap}
         className="absolute inset-0 w-full h-full object-cover"
       />
+
       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/40 pointer-events-none" />
 
       {/* Pause indicator overlay */}
