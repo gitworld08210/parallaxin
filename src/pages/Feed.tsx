@@ -20,26 +20,17 @@ const Feed = () => {
 
   const load = async () => {
     setLoading(true);
+
+    const sel = "id, user_id, content, media_url, media_type, like_count, comment_count, created_at, has_certificate, profile:profiles!posts_user_profile_fkey(username, display_name, avatar_url, verified, verification_kind)";
+
+    // Kick off ALL requests in parallel — including posts. Don't wait on the ranker for first paint.
     const blocksOut = user ? (supabase.from("blocks" as any).select("blocked_id").eq("blocker_id", user.id) as any) : Promise.resolve({ data: [] });
     const blocksIn = user ? (supabase.from("blocks" as any).select("blocker_id").eq("blocked_id", user.id) as any) : Promise.resolve({ data: [] });
     const mutesP = user ? (supabase.from("mutes" as any).select("muted_id").eq("muter_id", user.id) as any) : Promise.resolve({ data: [] });
     const followsP = (tab === "following" && user)
       ? supabase.from("follows").select("following_id").eq("follower_id", user.id)
       : Promise.resolve({ data: null as any });
-
-    // For You: ask ranker for ordered post ids
-    let foryouIds: string[] | null = null;
-    if (tab === "foryou" && user) {
-      try {
-        const { data } = await supabase.functions.invoke("rank-foryou", { body: {} });
-        if (Array.isArray(data?.post_ids) && data.post_ids.length) foryouIds = data.post_ids;
-      } catch { /* fallback to chronological */ }
-    }
-
-    const sel = "id, user_id, content, media_url, media_type, like_count, comment_count, created_at, has_certificate, profile:profiles!posts_user_profile_fkey(username, display_name, avatar_url, verified, verification_kind)";
-    const postsP = foryouIds
-      ? supabase.from("posts").select(sel).in("id", foryouIds)
-      : supabase.from("posts").select(sel).eq("is_reel", false).order("created_at", { ascending: false }).limit(50);
+    const postsP = supabase.from("posts").select(sel).eq("is_reel", false).order("created_at", { ascending: false }).limit(30);
 
     const [{ data: bOut }, { data: bIn }, { data: mu }, followsRes, postsRes] = await Promise.all([
       blocksOut, blocksIn, mutesP, followsP, postsP,
@@ -52,24 +43,36 @@ const Feed = () => {
 
     let visible = (postsRes.data ?? []).filter((d: any) => !excluded.has(d.user_id));
 
-    if (foryouIds) {
-      const order = new Map(foryouIds.map((id, i) => [id, i]));
-      visible.sort((a: any, b: any) => (order.get(a.id) ?? 999) - (order.get(b.id) ?? 999));
-    }
-
     if (tab === "following" && user) {
       const followIds = new Set(((followsRes as any).data ?? []).map((f: any) => f.following_id));
       visible = visible.filter((d: any) => followIds.has(d.user_id));
     }
 
-    let liked: Set<string> = new Set();
-    if (user && visible.length) {
-      const { data: l } = await supabase.from("likes").select("post_id").eq("user_id", user.id)
-        .in("post_id", visible.map((d: any) => d.id));
-      liked = new Set((l ?? []).map((x) => x.post_id));
-    }
-    setPosts(visible.map((d: any) => ({ ...d, liked: liked.has(d.id) })));
+    // Render immediately without `liked` flag — paint first, then enrich.
+    setPosts(visible.map((d: any) => ({ ...d, liked: false })));
     setLoading(false);
+
+    // Enrich with liked state in background.
+    if (user && visible.length) {
+      supabase.from("likes").select("post_id").eq("user_id", user.id)
+        .in("post_id", visible.map((d: any) => d.id))
+        .then(({ data: l }) => {
+          const liked = new Set((l ?? []).map((x: any) => x.post_id));
+          setPosts((cur) => cur.map((p) => ({ ...p, liked: liked.has(p.id) })));
+        });
+    }
+
+    // Re-rank in background for "For you" (don't block first paint on edge function cold start).
+    if (tab === "foryou" && user && visible.length) {
+      supabase.functions.invoke("rank-foryou", { body: {} }).then(({ data }) => {
+        const ids: string[] | undefined = data?.post_ids;
+        if (!Array.isArray(ids) || !ids.length) return;
+        const order = new Map(ids.map((id, i) => [id, i]));
+        setPosts((cur) => [...cur].sort(
+          (a, b) => (order.get(a.id) ?? 999) - (order.get(b.id) ?? 999),
+        ));
+      }).catch(() => {});
+    }
   };
 
   useEffect(() => { load(); /* eslint-disable-next-line */ }, [tab, user?.id]);
