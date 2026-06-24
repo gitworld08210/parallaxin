@@ -111,6 +111,29 @@ const Profile = () => {
           const { data: mu } = await (supabase.from("mutes" as any).select("muter_id").eq("muter_id", user.id).eq("muted_id", p.user_id).maybeSingle() as any);
           setIsMuted(!!mu);
         }
+
+        // Active affiliations to display next to the verification badge
+        const { data: affRows } = await supabase.from("affiliations" as any)
+          .select("id, role, started_on, org_id")
+          .eq("user_id", p.user_id).eq("status", "active");
+        const orgIds = Array.from(new Set(((affRows ?? []) as any[]).map((r) => r.org_id)));
+        const { data: orgRows } = orgIds.length
+          ? await supabase.from("organizations" as any).select("id, name, username, logo_url, verified").in("id", orgIds)
+          : { data: [] as any[] };
+        const orgMap = new Map(((orgRows ?? []) as any[]).map((o) => [o.id, o]));
+        setAffiliations(((affRows ?? []) as any[]).map((r) => ({
+          id: r.id, role: r.role, started_on: r.started_on,
+          org: orgMap.get(r.org_id) ?? null,
+        })));
+
+        // If viewing my own profile and I'm an org admin, surface admin link
+        if (user && p.user_id === user.id) {
+          const { data: mem } = await supabase.from("organization_members" as any)
+            .select("org_id, member_role, organization:organizations(username)")
+            .eq("user_id", user.id).in("member_role", ["owner","admin"]).limit(1).maybeSingle();
+          const orgUsername = (mem as any)?.organization?.username;
+          if (orgUsername) setOrgAdminUsername(orgUsername);
+        }
       }
       setLoading(false);
     })();
