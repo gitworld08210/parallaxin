@@ -58,6 +58,7 @@ const Auth = () => {
     if (!validEmail() || password.length < 6) { toast.error("Enter a valid email and a password (6+ chars)"); return; }
     setBusy(true);
     try {
+      if (kind === "organization") localStorage.setItem(ORG_INTENT_KEY, "organization");
       const { data, error } = await supabase.auth.signUp({
         email: email.trim(),
         password,
@@ -77,11 +78,13 @@ const Auth = () => {
 
   const google = async () => {
     setBusy(true);
+    if (tab === "signup" && kind === "organization") localStorage.setItem(ORG_INTENT_KEY, "organization");
     const r = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin });
     if (r.error) { toast.error("Google sign-in failed"); setBusy(false); }
   };
   const apple = async () => {
     setBusy(true);
+    if (tab === "signup" && kind === "organization") localStorage.setItem(ORG_INTENT_KEY, "organization");
     const r = await lovable.auth.signInWithOAuth("apple", { redirect_uri: window.location.origin });
     if (r.error) { toast.error("Apple sign-in failed"); setBusy(false); }
   };
