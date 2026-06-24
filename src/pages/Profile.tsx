@@ -272,7 +272,7 @@ const Profile = () => {
           )}
         </div>
         <div className="flex-1 min-w-0 pt-10 space-y-1">
-          <p className="text-lg font-bold inline-flex items-center gap-1.5 leading-tight">
+          <p className="text-lg font-bold inline-flex items-center gap-1.5 leading-tight flex-wrap">
             <span className="truncate">{profile.display_name || profile.username}</span>
             {profile.verification_kind && <VerificationBadge kind={profile.verification_kind as any} />}
             {profile.is_founder && (
@@ -280,8 +280,20 @@ const Profile = () => {
                 <Crown className="h-4 w-4" />
               </Link>
             )}
+            {affiliations.map((a) => <AffiliationChip key={a.id} data={a} />)}
           </p>
           <p className="text-xs text-muted-foreground">@{profile.username}</p>
+          {affiliations[0]?.org && (
+            <p className="text-xs text-muted-foreground">
+              {labelForRoleSafe(affiliations[0].role)} at {affiliations[0].org.name}
+              {affiliations[0].started_on && ` · Affiliated since ${new Date(affiliations[0].started_on).toLocaleDateString(undefined, { month: "short", year: "numeric" })}`}
+            </p>
+          )}
+          {isMe && orgAdminUsername && (
+            <Link to={`/org/${orgAdminUsername}/admin`} className="inline-block text-xs text-primary font-semibold mt-1">
+              Open organization dashboard →
+            </Link>
+          )}
         </div>
       </div>
 
