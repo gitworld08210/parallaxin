@@ -88,6 +88,7 @@ const Notifications = () => {
         .eq("user_id", user.id).order("created_at", { ascending: false }).limit(80);
       setItems((data ?? []) as any);
       await supabase.from("notifications").update({ read: true }).eq("user_id", user.id).eq("read", false);
+      await loadPendingAffs(user.id);
     })();
 
     const ch = supabase.channel(`notif:${user.id}`)
