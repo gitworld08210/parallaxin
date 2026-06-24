@@ -178,7 +178,31 @@ const Notifications = () => {
       </header>
 
       <div className="px-2 pb-8">
-        {items.length === 0 ? (
+        {pendingAffs.length > 0 && (
+          <div className="mt-3 mx-1 space-y-2">
+            {pendingAffs.map((a) => (
+              <div key={a.id} className="rounded-2xl border border-primary/40 bg-primary/5 p-3 flex items-center gap-3">
+                {a.org?.logo_url ? (
+                  <img src={a.org.logo_url} alt="" className="h-10 w-10 rounded-xl object-cover" />
+                ) : (
+                  <div className="h-10 w-10 rounded-xl bg-secondary grid place-items-center"><Building2 className="h-5 w-5 text-muted-foreground" /></div>
+                )}
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm leading-snug">
+                    <span className="font-semibold">{a.org?.name || "An organization"}</span>{" "}
+                    <span className="text-muted-foreground">invited you to become an official {labelForRole(a.role)}.</span>
+                  </p>
+                  {a.note && <p className="text-xs text-muted-foreground mt-0.5 italic line-clamp-2">"{a.note}"</p>}
+                </div>
+                <div className="flex flex-col gap-1">
+                  <button onClick={() => respond(a.id, true)} className="h-8 w-8 grid place-items-center rounded-full bg-primary text-primary-foreground" aria-label="Accept"><Check className="h-4 w-4" /></button>
+                  <button onClick={() => respond(a.id, false)} className="h-8 w-8 grid place-items-center rounded-full bg-secondary border border-border" aria-label="Decline"><X className="h-4 w-4" /></button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+        {items.length === 0 && pendingAffs.length === 0 ? (
           <EmptyState
             icon={Bell}
             title="Nothing new yet"
