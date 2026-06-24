@@ -1,12 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { Heart, MessageCircle, UserPlus, Mail, Bell, BadgeCheck, Crown, SlidersHorizontal, Users } from "lucide-react";
+import { Heart, MessageCircle, UserPlus, Mail, Bell, BadgeCheck, Crown, SlidersHorizontal, Users, Building2, Check, X } from "lucide-react";
 import { CollabInviteSheet } from "@/components/social/CollabInviteSheet";
 import { AuraAvatar } from "@/components/vibe/AuraAvatar";
 import { EmptyState } from "@/components/empty/EmptyState";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthProvider";
 import { gradientFor, initialsOf, timeAgo } from "@/lib/format";
+import { labelForRole } from "@/lib/affiliationRoles";
+import { toast } from "sonner";
 
 type N = {
   id: string;
@@ -55,7 +57,27 @@ const bucketOf = (iso: string): "today" | "yesterday" | "earlier" => {
 const Notifications = () => {
   const { user } = useAuth();
   const [items, setItems] = useState<N[]>([]);
+  const [pendingAffs, setPendingAffs] = useState<any[]>([]);
   const [collabOpen, setCollabOpen] = useState(false);
+
+  const loadPendingAffs = async (uid: string) => {
+    const { data } = await supabase.from("affiliations" as any)
+      .select("id, role, note, created_at, org_id")
+      .eq("user_id", uid).eq("status", "pending");
+    const orgIds = Array.from(new Set(((data ?? []) as any[]).map((r) => r.org_id)));
+    const { data: orgs } = orgIds.length
+      ? await supabase.from("organizations" as any).select("id, name, username, logo_url").in("id", orgIds)
+      : { data: [] as any[] };
+    const byId = new Map(((orgs ?? []) as any[]).map((o) => [o.id, o]));
+    setPendingAffs(((data ?? []) as any[]).map((r) => ({ ...r, org: byId.get(r.org_id) })));
+  };
+
+  const respond = async (id: string, accept: boolean) => {
+    const { error } = await supabase.rpc("respond_affiliation" as any, { _aff_id: id, _accept: accept });
+    if (error) { toast.error(error.message); return; }
+    toast.success(accept ? "Affiliation accepted ✦" : "Declined");
+    setPendingAffs((p) => p.filter((x) => x.id !== id));
+  };
 
   useEffect(() => {
     if (!user) return;
