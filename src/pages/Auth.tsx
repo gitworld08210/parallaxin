@@ -5,15 +5,18 @@ import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { useAuth } from "@/contexts/AuthProvider";
 import { toast } from "sonner";
-import { Sparkles } from "lucide-react";
+import { Sparkles, User, Building2 } from "lucide-react";
 
 type Tab = "signin" | "signup";
+type AccountKind = "personal" | "organization";
+const ORG_INTENT_KEY = "aurelix:signup_kind";
 
 const Auth = () => {
   const nav = useNavigate();
   const { user, loading } = useAuth();
 
   const [tab, setTab] = useState<Tab>("signin");
+  const [kind, setKind] = useState<AccountKind>("personal");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
@@ -23,7 +26,14 @@ const Auth = () => {
       .from("user_roles").select("role").eq("user_id", uid).eq("role", "admin").maybeSingle();
     if (role) { nav("/admin", { replace: true }); return; }
     const { data: prof } = await supabase
-      .from("profiles").select("onboarded_at").eq("user_id", uid).maybeSingle();
+      .from("profiles").select("onboarded_at, account_type, organization_id").eq("user_id", uid).maybeSingle();
+    const intent = (localStorage.getItem(ORG_INTENT_KEY) as AccountKind | null) || null;
+    if (prof && !prof.organization_id && (prof.account_type === "organization" || intent === "organization")) {
+      localStorage.removeItem(ORG_INTENT_KEY);
+      nav("/onboarding/organization", { replace: true });
+      return;
+    }
+    localStorage.removeItem(ORG_INTENT_KEY);
     nav(prof?.onboarded_at ? "/" : "/onboarding", { replace: true });
   };
 
