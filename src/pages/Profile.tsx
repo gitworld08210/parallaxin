@@ -18,6 +18,7 @@ import { fmt, gradientFor, initialsOf } from "@/lib/format";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { BecomeCreatorSheet } from "@/components/creator/BecomeCreatorSheet";
+import { AffiliationChip, AffiliationChipData } from "@/components/organizations/AffiliationBadge";
 
 type ProfileRow = {
   user_id: string;
@@ -55,6 +56,8 @@ const Profile = () => {
   const [commentPost, setCommentPost] = useState<string | null>(null);
   const [reportOpen, setReportOpen] = useState(false);
   const [becomeOpen, setBecomeOpen] = useState(false);
+  const [affiliations, setAffiliations] = useState<AffiliationChipData[]>([]);
+  const [orgAdminUsername, setOrgAdminUsername] = useState<string | null>(null);
 
   const isMe = !username || (me && username === me.username);
 
