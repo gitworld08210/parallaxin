@@ -19,6 +19,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { BecomeCreatorSheet } from "@/components/creator/BecomeCreatorSheet";
 import { AffiliationChip, AffiliationChipData } from "@/components/organizations/AffiliationBadge";
+import { labelForRole as labelForRoleSafe } from "@/lib/affiliationRoles";
 
 type ProfileRow = {
   user_id: string;
