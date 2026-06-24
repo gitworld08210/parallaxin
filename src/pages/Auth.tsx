@@ -125,8 +125,24 @@ const Auth = () => {
             initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
             className="space-y-3"
           >
+            {tab === "signup" && (
+              <div className="grid grid-cols-2 gap-2">
+                {([
+                  { id: "personal" as AccountKind, label: "Personal", icon: User, sub: "I'm an individual" },
+                  { id: "organization" as AccountKind, label: "Organization", icon: Building2, sub: "Company, NGO, school…" },
+                ]).map((opt) => (
+                  <button type="button" key={opt.id} onClick={() => setKind(opt.id)}
+                    className={`text-left p-3 rounded-2xl border transition-all ${kind === opt.id ? "border-primary bg-primary/10" : "border-border bg-secondary/40"}`}>
+                    <opt.icon className={`h-4 w-4 mb-1 ${kind === opt.id ? "text-primary" : "text-muted-foreground"}`} />
+                    <p className="text-sm font-semibold leading-tight">{opt.label}</p>
+                    <p className="text-[10px] text-muted-foreground leading-tight mt-0.5">{opt.sub}</p>
+                  </button>
+                ))}
+              </div>
+            )}
             <input className={inputCls} type="email" placeholder="you@aurelix.app" value={email} onChange={(e)=>setEmail(e.target.value)} autoComplete="email" required />
             <input className={inputCls} type="password" placeholder="Password" minLength={6} value={password} onChange={(e)=>setPassword(e.target.value)} autoComplete={tab === "signin" ? "current-password" : "new-password"} required />
+
 
             {tab === "signin" && (
               <div className="flex justify-end">
