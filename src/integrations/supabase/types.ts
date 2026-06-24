@@ -14,6 +14,104 @@ export type Database = {
   }
   public: {
     Tables: {
+      affiliation_audit_logs: {
+        Row: {
+          action: string
+          actor_user_id: string
+          affiliation_id: string | null
+          created_at: string
+          id: string
+          metadata: Json
+          org_id: string
+        }
+        Insert: {
+          action: string
+          actor_user_id: string
+          affiliation_id?: string | null
+          created_at?: string
+          id?: string
+          metadata?: Json
+          org_id: string
+        }
+        Update: {
+          action?: string
+          actor_user_id?: string
+          affiliation_id?: string | null
+          created_at?: string
+          id?: string
+          metadata?: Json
+          org_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "affiliation_audit_logs_affiliation_id_fkey"
+            columns: ["affiliation_id"]
+            isOneToOne: false
+            referencedRelation: "affiliations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "affiliation_audit_logs_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      affiliations: {
+        Row: {
+          created_at: string
+          ended_on: string | null
+          id: string
+          issued_by: string
+          note: string | null
+          org_id: string
+          responded_at: string | null
+          role: Database["public"]["Enums"]["affiliation_role"]
+          started_on: string | null
+          status: Database["public"]["Enums"]["affiliation_status"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          ended_on?: string | null
+          id?: string
+          issued_by: string
+          note?: string | null
+          org_id: string
+          responded_at?: string | null
+          role: Database["public"]["Enums"]["affiliation_role"]
+          started_on?: string | null
+          status?: Database["public"]["Enums"]["affiliation_status"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          ended_on?: string | null
+          id?: string
+          issued_by?: string
+          note?: string | null
+          org_id?: string
+          responded_at?: string | null
+          role?: Database["public"]["Enums"]["affiliation_role"]
+          started_on?: string | null
+          status?: Database["public"]["Enums"]["affiliation_status"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "affiliations_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       app_config: {
         Row: {
           key: string
@@ -834,6 +932,92 @@ export type Database = {
           },
         ]
       }
+      organization_members: {
+        Row: {
+          id: string
+          joined_at: string
+          member_role: Database["public"]["Enums"]["org_member_role"]
+          org_id: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          joined_at?: string
+          member_role?: Database["public"]["Enums"]["org_member_role"]
+          org_id: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          joined_at?: string
+          member_role?: Database["public"]["Enums"]["org_member_role"]
+          org_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_members_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      organizations: {
+        Row: {
+          country: string | null
+          created_at: string
+          description: string | null
+          email: string | null
+          id: string
+          industry: string | null
+          location: string | null
+          logo_url: string | null
+          name: string
+          org_type: Database["public"]["Enums"]["org_type"]
+          owner_user_id: string
+          updated_at: string
+          username: string
+          verified: boolean
+          website: string | null
+        }
+        Insert: {
+          country?: string | null
+          created_at?: string
+          description?: string | null
+          email?: string | null
+          id?: string
+          industry?: string | null
+          location?: string | null
+          logo_url?: string | null
+          name: string
+          org_type?: Database["public"]["Enums"]["org_type"]
+          owner_user_id: string
+          updated_at?: string
+          username: string
+          verified?: boolean
+          website?: string | null
+        }
+        Update: {
+          country?: string | null
+          created_at?: string
+          description?: string | null
+          email?: string | null
+          id?: string
+          industry?: string | null
+          location?: string | null
+          logo_url?: string | null
+          name?: string
+          org_type?: Database["public"]["Enums"]["org_type"]
+          owner_user_id?: string
+          updated_at?: string
+          username?: string
+          verified?: boolean
+          website?: string | null
+        }
+        Relationships: []
+      }
       ownership_certificates: {
         Row: {
           bitcoin_block_height: number | null
@@ -1158,6 +1342,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          account_type: Database["public"]["Enums"]["account_type"]
           ai_dm_suggestions_enabled: boolean
           aura_rank: string | null
           avatar_url: string | null
@@ -1189,6 +1374,7 @@ export type Database = {
           join_era: string | null
           last_seen_at: string | null
           onboarded_at: string | null
+          organization_id: string | null
           payment_qr_url: string | null
           posts_count: number
           show_activity: boolean
@@ -1203,6 +1389,7 @@ export type Database = {
           verified: boolean
         }
         Insert: {
+          account_type?: Database["public"]["Enums"]["account_type"]
           ai_dm_suggestions_enabled?: boolean
           aura_rank?: string | null
           avatar_url?: string | null
@@ -1234,6 +1421,7 @@ export type Database = {
           join_era?: string | null
           last_seen_at?: string | null
           onboarded_at?: string | null
+          organization_id?: string | null
           payment_qr_url?: string | null
           posts_count?: number
           show_activity?: boolean
@@ -1248,6 +1436,7 @@ export type Database = {
           verified?: boolean
         }
         Update: {
+          account_type?: Database["public"]["Enums"]["account_type"]
           ai_dm_suggestions_enabled?: boolean
           aura_rank?: string | null
           avatar_url?: string | null
@@ -1279,6 +1468,7 @@ export type Database = {
           join_era?: string | null
           last_seen_at?: string | null
           onboarded_at?: string | null
+          organization_id?: string | null
           payment_qr_url?: string | null
           posts_count?: number
           show_activity?: boolean
@@ -1780,6 +1970,21 @@ export type Database = {
         Args: { _member_ids: string[]; _title: string }
         Returns: string
       }
+      create_organization: {
+        Args: {
+          _country: string
+          _description: string
+          _email: string
+          _industry: string
+          _location: string
+          _logo_url: string
+          _name: string
+          _org_type: Database["public"]["Enums"]["org_type"]
+          _username: string
+          _website: string
+        }
+        Returns: string
+      }
       credit_coins: {
         Args: {
           _amount: number
@@ -1832,6 +2037,19 @@ export type Database = {
         Returns: boolean
       }
       is_creator: { Args: { _user_id: string }; Returns: boolean }
+      is_org_admin: { Args: { _org: string; _user: string }; Returns: boolean }
+      is_org_member: { Args: { _org: string; _user: string }; Returns: boolean }
+      issue_affiliation: {
+        Args: {
+          _ended_on: string
+          _note: string
+          _org_id: string
+          _role: Database["public"]["Enums"]["affiliation_role"]
+          _started_on: string
+          _target_username: string
+        }
+        Returns: string
+      }
       leave_group: { Args: { _conv: string }; Returns: undefined }
       mark_conversation_read: {
         Args: { _conversation_id: string }
@@ -1857,15 +2075,56 @@ export type Database = {
         }
         Returns: string
       }
+      respond_affiliation: {
+        Args: { _accept: boolean; _aff_id: string }
+        Returns: undefined
+      }
+      revoke_affiliation: {
+        Args: { _aff_id: string; _reason: string }
+        Returns: undefined
+      }
       start_dm: { Args: { other_user_id: string }; Returns: string }
+      update_affiliation_role: {
+        Args: {
+          _aff_id: string
+          _role: Database["public"]["Enums"]["affiliation_role"]
+        }
+        Returns: undefined
+      }
       verify_tip_with_utr: {
         Args: { _tip_id: string; _utr: string }
         Returns: Json
       }
     }
     Enums: {
+      account_type: "personal" | "organization"
+      affiliation_role:
+        | "founder"
+        | "co_founder"
+        | "ceo"
+        | "cto"
+        | "employee"
+        | "brand_ambassador"
+        | "official_representative"
+        | "advisor"
+        | "investor"
+        | "moderator"
+      affiliation_status:
+        | "pending"
+        | "active"
+        | "declined"
+        | "revoked"
+        | "ended"
       app_role: "admin" | "moderator" | "user"
       council_role: "architect" | "curator" | "sentinel" | "innovator"
+      org_member_role: "owner" | "admin" | "manager" | "viewer"
+      org_type:
+        | "company"
+        | "startup"
+        | "education"
+        | "ngo"
+        | "government"
+        | "other"
       post_status: "draft" | "scheduled" | "published"
       story_audience: "public" | "close_friends"
     }
@@ -1995,8 +2254,31 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      account_type: ["personal", "organization"],
+      affiliation_role: [
+        "founder",
+        "co_founder",
+        "ceo",
+        "cto",
+        "employee",
+        "brand_ambassador",
+        "official_representative",
+        "advisor",
+        "investor",
+        "moderator",
+      ],
+      affiliation_status: ["pending", "active", "declined", "revoked", "ended"],
       app_role: ["admin", "moderator", "user"],
       council_role: ["architect", "curator", "sentinel", "innovator"],
+      org_member_role: ["owner", "admin", "manager", "viewer"],
+      org_type: [
+        "company",
+        "startup",
+        "education",
+        "ngo",
+        "government",
+        "other",
+      ],
       post_status: ["draft", "scheduled", "published"],
       story_audience: ["public", "close_friends"],
     },

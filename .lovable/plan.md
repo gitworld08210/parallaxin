@@ -1,111 +1,57 @@
-# Plan: Groups, Group Calls, Reel Share & Story Mentions
+# Organization Accounts & Affiliation System
 
-Four connected features, shipped together since they share data models.
+Large feature. Shipping it in 4 phases so you can review each before the next.
 
----
+## Phase 1 — Database & backend
 
-## 1. Group Chats (WhatsApp/Instagram style)
+New tables (all in `public`, RLS + GRANTs):
 
-The `conversations` table already supports `is_group`. We just need UX + a few extras.
+- `organizations` — `id`, `owner_user_id`, `name`, `username` (unique), `logo_url`, `email`, `website`, `industry`, `org_type` (company/startup/edu/ngo/government), `description`, `country`, `location`, `verified`, timestamps
+- `organization_members` — `org_id`, `user_id`, `member_role` (admin/manager/viewer), `joined_at` — internal team controlling the org account
+- `affiliations` — `id`, `org_id`, `user_id`, `role` (enum: founder/co_founder/ceo/cto/employee/brand_ambassador/official_rep/advisor/investor/moderator), `status` (pending/active/declined/revoked/ended), `started_on`, `ended_on`, `note`, `issued_by`, `responded_at`, timestamps. Unique partial index on `(org_id,user_id)` where status in (pending, active) prevents duplicates.
+- `affiliation_audit_logs` — `id`, `affiliation_id`, `org_id`, `actor_user_id`, `action` (issued/accepted/declined/revoked/role_changed/ended), `metadata jsonb`, `created_at`
 
-**Schema (migration):**
+Profiles: add `account_type` ('personal' | 'organization') and link to `organizations.id` for the org's own profile row (orgs still use a profiles row so they can post reels/posts like normal users — per your note).
 
-- Add `conversations.title text`, `avatar_url text`, `created_by uuid`.
-- Add `conversation_participants.role text default 'member'` ('admin' | 'member').
-- RPC `create_group(_title, _member_ids uuid[])` → inserts conversation, adds creator as admin, adds members.
-- RPC `add_group_member(_conv, _user)` / `remove_group_member` / `leave_group` (admin-checked).
-- Grants + RLS unchanged (existing participant policies already cover groups).
+Security-definer RPCs:
+- `create_organization(...)` — creates org + profile + owner membership
+- `issue_affiliation(org, username, role, started_on, ended_on, note)` — admin-only, creates pending row + notification + audit
+- `respond_affiliation(affiliation_id, accept boolean)` — only the invited user
+- `revoke_affiliation(affiliation_id, reason)` — admin-only
+- `is_org_admin(org, user)` — helper used in RLS
 
-**UI:**
+Storage bucket `org-logos` (public) for logo uploads.
 
-- `Messages.tsx` → "New group" button → `NewGroupSheet.tsx` (search followers, multi-select, name, create → navigate to conversation).
-- `Conversation.tsx` → for groups: show group title/avatar in header, "Group info" sheet (members list, add/remove, leave).
-- Messages already render per-sender; just show sender name above bubble when `is_group`.
+## Phase 2 — Signup & org onboarding
 
----
+- `/auth` gets an account-type toggle: **Personal** | **Organization**
+- Personal → existing flow unchanged
+- Organization → after auth, redirect to `/onboarding/organization` with the advanced form (name, username, logo upload, official email, website, industry, org_type, description, country, location)
+- After submit → redirect to org admin dashboard
 
-## 2. Group Voice & Video Calls (mesh WebRTC, up to ~12)
+## Phase 3 — Org admin dashboard
 
-Extend existing 1:1 call system to multi-party via **mesh** (each pair = own RTCPeerConnection). Good enough for small groups, no SFU needed.
+Route: `/org/:username/admin` — glassmorphism UI, gated by `is_org_admin`. Tabs:
+1. **Team** — list active affiliated members, search, remove
+2. **Affiliations** — issue new (search user by username → pick role → dates → note), pending list, revoke, edit role
+3. **Analytics** — profile visits, post engagement, team stats (reuses existing post analytics where available)
+4. **Posts** — create/manage official posts, pin announcement (adds `is_pinned` to posts for org accounts)
 
-Group call , screen share, reactions
+## Phase 4 — User-facing affiliation UX
 
-And creator Start paid live it schedule 4 hour ago if user paid only which able to see live 
+- Notification entry: "VibeNexus invited you to become an official Founder" with Accept / Decline buttons
+- Profile header: org logo chip beside verification tick, with "Founder at VibeNexus · Affiliated since Jun 2026"
+- Tap chip → modal with logo, org name, role, status, issued date, verified state, link to org profile
+- Only `active` affiliations render publicly; revoked disappear immediately (realtime)
 
-**Schema:**
+## Technical notes
 
-- Add `calls.is_group boolean default false`, `calls.conversation_id` already exists.
-- New `call_participants(call_id, user_id, joined_at, left_at, status)`.
-- `call_signals` keeps `from_user`/`to_user` (already pairwise).
+- Affiliation role + org_type as Postgres enums
+- All mutating RPCs `SECURITY DEFINER` with `set search_path = public`; every action writes an `affiliation_audit_logs` row
+- RLS:
+  - `organizations` SELECT public, UPDATE/DELETE only org admins
+  - `affiliations` SELECT public when `status='active'`; the invited user and org admins can see their own pending/revoked; INSERT/UPDATE only via RPCs (no direct table writes)
+  - `affiliation_audit_logs` SELECT org admins only
+- Org profile reuses existing `profiles` row → orgs post reels/posts using the same composer, no code duplication
 
-**Logic (`CallProvider.tsx` refactor):**
-
-- `startGroupCall(conversationId, kind)` → insert call row `is_group=true`, insert self into `call_participants`, broadcast ring to all other participants.
-- Each accepting peer creates pairwise PCs with already-joined peers (discovered via `call_participants` query + realtime).
-- `remoteStreams: Map<userId, MediaStream>` instead of single stream.
-- `CallScreen` renders a grid of remote tiles.
-- Leave = mark `call_participants.left_at`; call ends when ≤1 remain.
-
-**UI:**
-
-- Group conversation header → phone + video icons call `startGroupCall`.
-- `IncomingCallOverlay` shows group name + caller for group calls.
-
----
-
-## 3. Share Reel to Followers (Instagram-style DM share)
-
-**New component `ShareToFollowersSheet.tsx`:**
-
-- Opens from Reels' send button (already exists in `Reels.tsx` / `PostCard.tsx`).
-- Lists mutual followers + recent DMs, multi-select with checkmark chips.
-- Optional message field.
-- On send: for each selected user → `start_dm(other)` RPC → insert message with `content` = optional text + a special shared-post payload.
-
-**Schema:**
-
-- Add `messages.shared_post_id uuid references posts(id)` (nullable).
-- `messages.kind text default 'text'` ('text' | 'shared_post' | 'shared_reel').
-
-**Render:**
-
-- `Conversation.tsx` message renderer → when `kind='shared_post'`, show a glass card with post thumbnail + caption + tap-to-open.
-
----
-
-## 4. Story Mentions (@user sticker + auto-DM + re-share)
-
-**Schema:**
-
-- `story_stickers` already exists with 6 columns. Add a sticker `type='mention'` with `data: { user_id, username }`.
-- On story insert with mention stickers → trigger inserts a DM to mentioned user: "mentioned you in their story" with `kind='story_mention'`, `shared_story_id` ref.
-- Add `messages.shared_story_id uuid references stories(id)` nullable.
-
-**UI:**
-
-- `StoryCompose.tsx` → add "@ Mention" sticker tool. Tap → user picker (search followers/following) → places sticker with handle on canvas. Multiple mentions allowed.
-- `StoryViewer.tsx` → mention stickers are tappable → opens user profile. Also shows a "+ Add to your story" button when the **mentioned** user views it → opens `StoryCompose` pre-loaded with the original story media + an attribution sticker.
-- DM render → `kind='story_mention'` shows mini story preview + "Reply" / "Add to your story" buttons.
-
----
-
-## Files
-
-**New:** `NewGroupSheet.tsx`, `GroupInfoSheet.tsx`, `ShareToFollowersSheet.tsx`, `MentionPickerSheet.tsx`, `SharedPostMessage.tsx`, `SharedStoryMessage.tsx`. Plus 1 migration.
-
-**Edited:** `CallProvider.tsx`, `CallScreen.tsx`, `IncomingCallOverlay.tsx`, `IncomingCallListener.tsx`, `Conversation.tsx`, `Messages.tsx`, `Reels.tsx`, `PostCard.tsx`, `StoryCompose.tsx`, `StoryViewer.tsx`, `lib/webrtc.ts`.
-
-## Out of scope
-
-- SFU/large groups (>6 video reliably). Mesh degrades past that.
-  &nbsp;
-- Mention notifications to non-followers when account is private.
-- Story stickers other than mention (polls, music, etc.) — already partially exist; not touched here.
-
-## Order of work
-
-1. Migration (groups + call_participants + message kinds).
-2. Group chat UI (create + info).
-3. Group calls refactor.
-4. Reel share sheet.
-5. Story mention sticker + auto-DM + add-to-story flow.
+Confirm and I'll start with Phase 1 (the migration).

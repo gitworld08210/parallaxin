@@ -1,12 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { Heart, MessageCircle, UserPlus, Mail, Bell, BadgeCheck, Crown, SlidersHorizontal, Users } from "lucide-react";
+import { Heart, MessageCircle, UserPlus, Mail, Bell, BadgeCheck, Crown, SlidersHorizontal, Users, Building2, Check, X } from "lucide-react";
 import { CollabInviteSheet } from "@/components/social/CollabInviteSheet";
 import { AuraAvatar } from "@/components/vibe/AuraAvatar";
 import { EmptyState } from "@/components/empty/EmptyState";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthProvider";
 import { gradientFor, initialsOf, timeAgo } from "@/lib/format";
+import { labelForRole } from "@/lib/affiliationRoles";
+import { toast } from "sonner";
 
 type N = {
   id: string;
@@ -25,6 +27,7 @@ const iconFor = (t: string) =>
   t === "collab_invite" || t === "collab_accepted" ? Users :
   t === "verification_approved" || t === "verification_revoked" ? BadgeCheck :
   t === "founder_inducted" || t === "founder_revoked" ? Crown :
+  t.startsWith("affiliation_") ? Building2 :
   Mail;
 
 const textFor = (t: string) =>
@@ -38,9 +41,13 @@ const textFor = (t: string) =>
   t === "verification_revoked" ? "Your verification has been removed." :
   t === "founder_inducted" ? "Welcome to the Hall of Founders." :
   t === "founder_revoked" ? "Your founder status has been updated." :
+  t === "affiliation_invite" ? "invited you to an official role." :
+  t === "affiliation_accepted" ? "accepted your affiliation invite." :
+  t === "affiliation_declined" ? "declined your affiliation invite." :
+  t === "affiliation_revoked" ? "Your affiliation has been revoked." :
   "sent you a message.";
 
-const isSystem = (t: string) => t.startsWith("verification_") || t.startsWith("founder_");
+const isSystem = (t: string) => t.startsWith("verification_") || t.startsWith("founder_") || t === "affiliation_revoked";
 
 const bucketOf = (iso: string): "today" | "yesterday" | "earlier" => {
   const d = new Date(iso);
@@ -55,7 +62,27 @@ const bucketOf = (iso: string): "today" | "yesterday" | "earlier" => {
 const Notifications = () => {
   const { user } = useAuth();
   const [items, setItems] = useState<N[]>([]);
+  const [pendingAffs, setPendingAffs] = useState<any[]>([]);
   const [collabOpen, setCollabOpen] = useState(false);
+
+  const loadPendingAffs = async (uid: string) => {
+    const { data } = await supabase.from("affiliations" as any)
+      .select("id, role, note, created_at, org_id")
+      .eq("user_id", uid).eq("status", "pending");
+    const orgIds = Array.from(new Set(((data ?? []) as any[]).map((r) => r.org_id)));
+    const { data: orgs } = orgIds.length
+      ? await supabase.from("organizations" as any).select("id, name, username, logo_url").in("id", orgIds)
+      : { data: [] as any[] };
+    const byId = new Map(((orgs ?? []) as any[]).map((o) => [o.id, o]));
+    setPendingAffs(((data ?? []) as any[]).map((r) => ({ ...r, org: byId.get(r.org_id) })));
+  };
+
+  const respond = async (id: string, accept: boolean) => {
+    const { error } = await supabase.rpc("respond_affiliation" as any, { _aff_id: id, _accept: accept });
+    if (error) { toast.error(error.message); return; }
+    toast.success(accept ? "Affiliation accepted ✦" : "Declined");
+    setPendingAffs((p) => p.filter((x) => x.id !== id));
+  };
 
   useEffect(() => {
     if (!user) return;
@@ -66,6 +93,7 @@ const Notifications = () => {
         .eq("user_id", user.id).order("created_at", { ascending: false }).limit(80);
       setItems((data ?? []) as any);
       await supabase.from("notifications").update({ read: true }).eq("user_id", user.id).eq("read", false);
+      await loadPendingAffs(user.id);
     })();
 
     const ch = supabase.channel(`notif:${user.id}`)
@@ -155,7 +183,31 @@ const Notifications = () => {
       </header>
 
       <div className="px-2 pb-8">
-        {items.length === 0 ? (
+        {pendingAffs.length > 0 && (
+          <div className="mt-3 mx-1 space-y-2">
+            {pendingAffs.map((a) => (
+              <div key={a.id} className="rounded-2xl border border-primary/40 bg-primary/5 p-3 flex items-center gap-3">
+                {a.org?.logo_url ? (
+                  <img src={a.org.logo_url} alt="" className="h-10 w-10 rounded-xl object-cover" />
+                ) : (
+                  <div className="h-10 w-10 rounded-xl bg-secondary grid place-items-center"><Building2 className="h-5 w-5 text-muted-foreground" /></div>
+                )}
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm leading-snug">
+                    <span className="font-semibold">{a.org?.name || "An organization"}</span>{" "}
+                    <span className="text-muted-foreground">invited you to become an official {labelForRole(a.role)}.</span>
+                  </p>
+                  {a.note && <p className="text-xs text-muted-foreground mt-0.5 italic line-clamp-2">"{a.note}"</p>}
+                </div>
+                <div className="flex flex-col gap-1">
+                  <button onClick={() => respond(a.id, true)} className="h-8 w-8 grid place-items-center rounded-full bg-primary text-primary-foreground" aria-label="Accept"><Check className="h-4 w-4" /></button>
+                  <button onClick={() => respond(a.id, false)} className="h-8 w-8 grid place-items-center rounded-full bg-secondary border border-border" aria-label="Decline"><X className="h-4 w-4" /></button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+        {items.length === 0 && pendingAffs.length === 0 ? (
           <EmptyState
             icon={Bell}
             title="Nothing new yet"
