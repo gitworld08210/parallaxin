@@ -58,6 +58,9 @@ const OrganizationOnboarding = lazy(() => import("./pages/OrganizationOnboarding
 const OrgAdmin = lazy(() => import("./pages/OrgAdmin"));
 const CreatorHub = lazy(() => import("./pages/CreatorHub"));
 const Analytics = lazy(() => import("./pages/Analytics"));
+const LiveList = lazy(() => import("./pages/LiveList"));
+const LiveHost = lazy(() => import("./pages/LiveHost"));
+const LiveViewer = lazy(() => import("./pages/LiveViewer"));
 const Achievements = lazy(() => import("./pages/Achievements"));
 const AuraLevel = lazy(() => import("./pages/AuraLevel"));
 const Monetization = lazy(() => import("./pages/Monetization"));
@@ -155,6 +158,9 @@ const App = () => (
                   <Route path="/aura-level" element={<AuraLevel />} />
                   <Route path="/monetization" element={<CreatorGate><Monetization /></CreatorGate>} />
                   <Route path="/verification-center" element={<VerificationCenter />} />
+                  <Route path="/live" element={<LiveList />} />
+                  <Route path="/live/host" element={<CreatorGate><LiveHost /></CreatorGate>} />
+                  <Route path="/live/:id" element={<LiveViewer />} />
                 </Route>
               </Route>
               <Route element={<AdminRoute />}>
