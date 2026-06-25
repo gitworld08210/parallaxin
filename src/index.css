@@ -347,3 +347,8 @@
   --input: 30 8% 12%;
   --ring: 42 90% 58%;
 }
+
+@keyframes float {
+  0% { transform: translateY(0) scale(1); opacity: 1; }
+  100% { transform: translateY(-220px) scale(1.4); opacity: 0; }
+}

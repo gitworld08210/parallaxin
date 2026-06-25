@@ -111,9 +111,14 @@ const Reels = () => {
         chromeDim ? "opacity-0 pointer-events-none" : "opacity-100"
       )}>
         <h1 className="text-xl font-bold tracking-tight">Reels</h1>
-        <Link to="/compose/reel" className="p-2" aria-label="Create reel">
-          <Camera className="h-5 w-5" strokeWidth={1.75} />
-        </Link>
+        <div className="flex items-center gap-1">
+          <Link to="/live" className="p-2 text-xs font-semibold flex items-center gap-1" aria-label="Live">
+            <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse" /> LIVE
+          </Link>
+          <Link to="/compose/reel" className="p-2" aria-label="Create reel">
+            <Camera className="h-5 w-5" strokeWidth={1.75} />
+          </Link>
+        </div>
       </header>
       <div ref={containerRef} className="h-[100dvh] overflow-y-scroll snap-y snap-mandatory">
 
