@@ -42,8 +42,6 @@ export default function TwoFactorSetup() {
     const verifyRes = await supabase.auth.mfa.verify({ factorId, challengeId: challenge.data.id, code });
     setBusy(false);
     if (verifyRes.error) return toast.error(verifyRes.error.message);
-    const codes = Array.from({ length: 10 }, () => Math.random().toString(36).slice(2, 6) + "-" + Math.random().toString(36).slice(2, 6));
-    setRecovery(codes);
     setPhase("active");
     toast.success("Aura Shield engaged");
   };
