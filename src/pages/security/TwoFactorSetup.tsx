@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import QRCode from "qrcode";
-import { ChevronLeft, Shield, Copy, Download } from "lucide-react";
+import { ChevronLeft, Shield, Copy } from "lucide-react";
 import { TopBar } from "@/components/vibe/TopBar";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -13,7 +13,6 @@ export default function TwoFactorSetup() {
   const [secret, setSecret] = useState<string>("");
   const [factorId, setFactorId] = useState<string>("");
   const [code, setCode] = useState("");
-  const [recovery, setRecovery] = useState<string[]>([]);
   const [busy, setBusy] = useState(false);
 
   useEffect(() => { (async () => {
@@ -42,8 +41,6 @@ export default function TwoFactorSetup() {
     const verifyRes = await supabase.auth.mfa.verify({ factorId, challengeId: challenge.data.id, code });
     setBusy(false);
     if (verifyRes.error) return toast.error(verifyRes.error.message);
-    const codes = Array.from({ length: 10 }, () => Math.random().toString(36).slice(2, 6) + "-" + Math.random().toString(36).slice(2, 6));
-    setRecovery(codes);
     setPhase("active");
     toast.success("Aura Shield engaged");
   };
@@ -58,11 +55,6 @@ export default function TwoFactorSetup() {
     setPhase("enrolled");
   };
 
-  const downloadCodes = () => {
-    const blob = new Blob([`Aurelix recovery codes\n\n${recovery.join("\n")}\n`], { type: "text/plain" });
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob); a.download = "aurelix-recovery-codes.txt"; a.click();
-  };
 
   return (
     <div>
@@ -106,15 +98,10 @@ export default function TwoFactorSetup() {
             <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/5 px-4 py-3 text-sm">
               Two-factor authentication is active on this account.
             </div>
-            {recovery.length > 0 && (
-              <div className="rounded-2xl border border-border/40 p-4 bg-card/40">
-                <p className="text-xs uppercase tracking-wider text-muted-foreground mb-2">Recovery codes — save them now</p>
-                <div className="grid grid-cols-2 gap-1.5 font-mono text-sm">
-                  {recovery.map((c) => <span key={c} className="opacity-90">{c}</span>)}
-                </div>
-                <button onClick={downloadCodes} className="mt-3 text-xs flex items-center gap-1.5 text-aurum"><Download className="h-3 w-3" /> Download as .txt</button>
-              </div>
-            )}
+            <div className="rounded-2xl border border-border/40 bg-card/40 p-4 text-xs text-muted-foreground">
+              Lost access to your authenticator app? Contact support to recover your account — recovery codes are not available.
+            </div>
+
             <button disabled={busy} onClick={disable} className="w-full rounded-2xl border border-[hsl(15_55%_40%_/_0.4)] text-[hsl(15_55%_60%)] py-3.5 font-medium">
               Disable shield
             </button>
