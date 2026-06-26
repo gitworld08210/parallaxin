@@ -55,11 +55,6 @@ export default function TwoFactorSetup() {
     setPhase("enrolled");
   };
 
-  const downloadCodes = () => {
-    const blob = new Blob([`Aurelix recovery codes\n\n${recovery.join("\n")}\n`], { type: "text/plain" });
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob); a.download = "aurelix-recovery-codes.txt"; a.click();
-  };
 
   return (
     <div>
