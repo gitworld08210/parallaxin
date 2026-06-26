@@ -98,15 +98,10 @@ export default function TwoFactorSetup() {
             <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/5 px-4 py-3 text-sm">
               Two-factor authentication is active on this account.
             </div>
-            {recovery.length > 0 && (
-              <div className="rounded-2xl border border-border/40 p-4 bg-card/40">
-                <p className="text-xs uppercase tracking-wider text-muted-foreground mb-2">Recovery codes — save them now</p>
-                <div className="grid grid-cols-2 gap-1.5 font-mono text-sm">
-                  {recovery.map((c) => <span key={c} className="opacity-90">{c}</span>)}
-                </div>
-                <button onClick={downloadCodes} className="mt-3 text-xs flex items-center gap-1.5 text-aurum"><Download className="h-3 w-3" /> Download as .txt</button>
-              </div>
-            )}
+            <div className="rounded-2xl border border-border/40 bg-card/40 p-4 text-xs text-muted-foreground">
+              Lost access to your authenticator app? Contact support to recover your account — recovery codes are not available.
+            </div>
+
             <button disabled={busy} onClick={disable} className="w-full rounded-2xl border border-[hsl(15_55%_40%_/_0.4)] text-[hsl(15_55%_60%)] py-3.5 font-medium">
               Disable shield
             </button>
