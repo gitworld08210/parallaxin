@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import QRCode from "qrcode";
-import { ChevronLeft, Shield, Copy, Download } from "lucide-react";
+import { ChevronLeft, Shield, Copy } from "lucide-react";
 import { TopBar } from "@/components/vibe/TopBar";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -13,7 +13,6 @@ export default function TwoFactorSetup() {
   const [secret, setSecret] = useState<string>("");
   const [factorId, setFactorId] = useState<string>("");
   const [code, setCode] = useState("");
-  const [recovery, setRecovery] = useState<string[]>([]);
   const [busy, setBusy] = useState(false);
 
   useEffect(() => { (async () => {
