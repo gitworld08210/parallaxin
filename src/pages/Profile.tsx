@@ -395,15 +395,46 @@ const Profile = () => {
         <div className="grid grid-cols-3 gap-0.5 mt-0.5">
           {current.length === 0 && <p className="col-span-3 text-sm text-muted-foreground text-center py-12">No posts yet.</p>}
           {current.map((p) => (
-            <Link key={p.id} to={`/p/${p.id}`} className="aspect-square bg-muted overflow-hidden rounded-sm group">
-              {p.media_url ? (
-                p.media_type === "video"
-                  ? <video src={p.media_url} muted className="w-full h-full object-cover transition-transform group-hover:scale-105" />
-                  : <img src={p.media_url} alt="" className="w-full h-full object-cover transition-transform group-hover:scale-105" />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center p-2 text-[11px] text-muted-foreground line-clamp-4 text-center">{p.content}</div>
+            <div key={p.id} className="relative aspect-square bg-muted overflow-hidden rounded-sm group">
+              <Link to={`/p/${p.id}`} className="block w-full h-full">
+                {p.media_url ? (
+                  p.media_type === "video"
+                    ? <video src={p.media_url} muted className="w-full h-full object-cover transition-transform group-hover:scale-105" />
+                    : <img src={p.media_url} alt="" className="w-full h-full object-cover transition-transform group-hover:scale-105" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center p-2 text-[11px] text-muted-foreground line-clamp-4 text-center">{p.content}</div>
+                )}
+              </Link>
+              {(p as any).is_pinned && (
+                <div className="absolute top-1 left-1 rounded-full bg-background/80 backdrop-blur p-1 shadow-sm">
+                  <Pin className="h-3 w-3 text-primary" strokeWidth={2.5} />
+                </div>
               )}
-            </Link>
+              {isMe && (
+                <button
+                  type="button"
+                  aria-label={(p as any).is_pinned ? "Unpin post" : "Pin post"}
+                  onClick={async (e) => {
+                    e.preventDefault(); e.stopPropagation();
+                    const next = !(p as any).is_pinned;
+                    const { error } = await supabase.rpc("toggle_post_pin" as any, { _post_id: p.id, _pin: next });
+                    if (error) { toast.error(error.message || "Failed"); return; }
+                    toast.success(next ? "Pinned" : "Unpinned");
+                    setPosts((prev) => {
+                      const updated = prev.map((x) => x.id === p.id ? ({ ...x, is_pinned: next, pinned_at: next ? new Date().toISOString() : null } as any) : x);
+                      return updated.sort((a: any, b: any) => {
+                        const ap = a.is_pinned ? 1 : 0; const bp = b.is_pinned ? 1 : 0;
+                        if (ap !== bp) return bp - ap;
+                        return +new Date(b.created_at) - +new Date(a.created_at);
+                      });
+                    });
+                  }}
+                  className="absolute top-1 right-1 rounded-full bg-background/80 backdrop-blur p-1 opacity-0 group-hover:opacity-100 transition-opacity shadow-sm"
+                >
+                  {(p as any).is_pinned ? <PinOff className="h-3 w-3" /> : <Pin className="h-3 w-3" />}
+                </button>
+              )}
+            </div>
           ))}
         </div>
       ) : tab === "reels" ? (
