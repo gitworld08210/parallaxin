@@ -69,8 +69,11 @@ export const AffiliationChip = ({ data }: { data: AffiliationChipData }) => {
           <div className="mt-2 rounded-2xl border border-border divide-y divide-border text-sm">
             <Row label="Role" value={labelForRole(data.role)} />
             <Row label="Issued by" value={data.org.name} />
+            {data.org.org_type && <Row label="Organization" value={data.org.org_type.replace(/_/g, " ")} />}
             <Row label="Since" value={formatMonth(data.started_on)} />
+            {data.issued_at && <Row label="Issued on" value={formatMonth(data.issued_at)} />}
             <Row label="Status" value="Active" tone="primary" />
+            <Row label="Verification" value={data.org.verified ? "Verified" : "Unverified"} />
           </div>
 
           <Link
