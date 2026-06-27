@@ -1380,10 +1380,12 @@ export type Database = {
           has_certificate: boolean
           id: string
           is_paid: boolean
+          is_pinned: boolean
           is_reel: boolean
           like_count: number
           media_type: string | null
           media_url: string | null
+          pinned_at: string | null
           price_cents: number
           scheduled_for: string | null
           status: Database["public"]["Enums"]["post_status"]
@@ -1400,10 +1402,12 @@ export type Database = {
           has_certificate?: boolean
           id?: string
           is_paid?: boolean
+          is_pinned?: boolean
           is_reel?: boolean
           like_count?: number
           media_type?: string | null
           media_url?: string | null
+          pinned_at?: string | null
           price_cents?: number
           scheduled_for?: string | null
           status?: Database["public"]["Enums"]["post_status"]
@@ -1420,10 +1424,12 @@ export type Database = {
           has_certificate?: boolean
           id?: string
           is_paid?: boolean
+          is_pinned?: boolean
           is_reel?: boolean
           like_count?: number
           media_type?: string | null
           media_url?: string | null
+          pinned_at?: string | null
           price_cents?: number
           scheduled_for?: string | null
           status?: Database["public"]["Enums"]["post_status"]
@@ -2184,6 +2190,10 @@ export type Database = {
         Returns: undefined
       }
       start_dm: { Args: { other_user_id: string }; Returns: string }
+      toggle_post_pin: {
+        Args: { _pin: boolean; _post_id: string }
+        Returns: undefined
+      }
       update_affiliation_role: {
         Args: {
           _aff_id: string
