@@ -40,6 +40,7 @@ const OrgAdmin = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [tab, setTab] = useState<Tab>("team");
   const [affs, setAffs] = useState<Aff[]>([]);
+  const [teamQuery, setTeamQuery] = useState("");
   const [loading, setLoading] = useState(true);
 
   // Issue form
