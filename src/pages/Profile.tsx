@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, BadgeCheck, Grid3x3, Film, Bookmark, MoreHorizontal, Ban, VolumeX, Flag, Crown, Menu, Bell, UserPlus, Share2, Tag as TagIcon, Mic, Image as ImageIcon } from "lucide-react";
+import { ArrowLeft, BadgeCheck, Grid3x3, Film, Bookmark, MoreHorizontal, Ban, VolumeX, Flag, Crown, Menu, Bell, UserPlus, Share2, Tag as TagIcon, Mic, Image as ImageIcon, Pin, PinOff } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { AuraAvatar } from "@/components/vibe/AuraAvatar";
 import { VerificationBadge } from "@/components/vibe/VerificationBadge";
