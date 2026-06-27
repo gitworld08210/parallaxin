@@ -115,15 +115,15 @@ const Profile = () => {
 
         // Active affiliations to display next to the verification badge
         const { data: affRows } = await supabase.from("affiliations" as any)
-          .select("id, role, started_on, org_id")
+          .select("id, role, started_on, created_at, org_id")
           .eq("user_id", p.user_id).eq("status", "active");
         const orgIds = Array.from(new Set(((affRows ?? []) as any[]).map((r) => r.org_id)));
         const { data: orgRows } = orgIds.length
-          ? await supabase.from("organizations" as any).select("id, name, username, logo_url, verified").in("id", orgIds)
+          ? await supabase.from("organizations" as any).select("id, name, username, logo_url, verified, org_type").in("id", orgIds)
           : { data: [] as any[] };
         const orgMap = new Map(((orgRows ?? []) as any[]).map((o) => [o.id, o]));
         setAffiliations(((affRows ?? []) as any[]).map((r) => ({
-          id: r.id, role: r.role, started_on: r.started_on,
+          id: r.id, role: r.role, started_on: r.started_on, issued_at: r.created_at,
           org: orgMap.get(r.org_id) ?? null,
         })));
 
