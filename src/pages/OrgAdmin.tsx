@@ -180,25 +180,44 @@ const OrgAdmin = () => {
 
         {/* TEAM */}
         {tab === "team" && (
-          <div className="mt-5 space-y-2">
-            {team.length === 0 && <p className="text-sm text-muted-foreground text-center py-10">No active members yet.</p>}
-            {team.map((a) => (
-              <div key={a.id} className={`${glass} px-3 py-3 flex items-center gap-3`}>
-                {a.user?.avatar_url ? (
-                  <img src={a.user.avatar_url} alt="" className="h-10 w-10 rounded-full object-cover" />
-                ) : (
-                  <div className="h-10 w-10 rounded-full bg-secondary" />
-                )}
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold truncate">{a.user?.display_name || a.user?.username}</p>
-                  <p className="text-xs text-muted-foreground">{labelForRole(a.role)} · since {a.started_on?.slice(0,10) || "—"}</p>
+          <div className="mt-5 space-y-3">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <input
+                value={teamQuery}
+                onChange={(e) => setTeamQuery(e.target.value)}
+                placeholder="Search team by name or username…"
+                className="w-full pl-9 pr-3 py-2.5 rounded-2xl bg-secondary/60 border border-border text-sm outline-none focus:border-primary/60"
+              />
+            </div>
+            {(() => {
+              const q = teamQuery.trim().toLowerCase();
+              const filtered = q
+                ? team.filter((a) =>
+                    (a.user?.username || "").toLowerCase().includes(q) ||
+                    (a.user?.display_name || "").toLowerCase().includes(q) ||
+                    labelForRole(a.role).toLowerCase().includes(q))
+                : team;
+              if (team.length === 0) return <p className="text-sm text-muted-foreground text-center py-10">No active members yet.</p>;
+              if (filtered.length === 0) return <p className="text-sm text-muted-foreground text-center py-10">No matches for “{teamQuery}”.</p>;
+              return filtered.map((a) => (
+                <div key={a.id} className={`${glass} px-3 py-3 flex items-center gap-3`}>
+                  {a.user?.avatar_url ? (
+                    <img src={a.user.avatar_url} alt="" className="h-10 w-10 rounded-full object-cover" />
+                  ) : (
+                    <div className="h-10 w-10 rounded-full bg-secondary" />
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold truncate">{a.user?.display_name || a.user?.username}</p>
+                    <p className="text-xs text-muted-foreground">{labelForRole(a.role)} · since {a.started_on?.slice(0,10) || "—"}</p>
+                  </div>
+                  <select value={a.role} onChange={(e) => updateRole(a.id, e.target.value)} className="text-xs bg-secondary border border-border rounded-lg px-2 py-1">
+                    {AFFILIATION_ROLES.map((r) => <option key={r.value} value={r.value}>{r.label}</option>)}
+                  </select>
+                  <button onClick={() => revoke(a.id)} className="p-2 text-destructive" aria-label="Revoke"><Trash2 className="h-4 w-4" /></button>
                 </div>
-                <select value={a.role} onChange={(e) => updateRole(a.id, e.target.value)} className="text-xs bg-secondary border border-border rounded-lg px-2 py-1">
-                  {AFFILIATION_ROLES.map((r) => <option key={r.value} value={r.value}>{r.label}</option>)}
-                </select>
-                <button onClick={() => revoke(a.id)} className="p-2 text-destructive" aria-label="Revoke"><Trash2 className="h-4 w-4" /></button>
-              </div>
-            ))}
+              ));
+            })()}
           </div>
         )}
 
