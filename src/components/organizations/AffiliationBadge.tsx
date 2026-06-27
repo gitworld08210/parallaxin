@@ -8,12 +8,14 @@ export type AffiliationChipData = {
   id: string;
   role: string;
   started_on: string | null;
+  issued_at?: string | null;
   org: {
     id: string;
     name: string;
     username: string;
     logo_url: string | null;
     verified: boolean;
+    org_type?: string | null;
   } | null;
 };
 
