@@ -1,25 +1,38 @@
 import { Link } from "react-router-dom";
 import {
   User as UserIcon, LayoutGrid, Wallet, Bookmark, BarChart3, Settings, HelpCircle, BadgeCheck, LogOut, X, Users,
-  Home, Compass, Film, MessageCircle, Bell, DollarSign, Gem, Crown, Moon, Sun, Sparkles, ChevronRight,
+  Home, Compass, Film, MessageCircle, Bell, DollarSign, Gem, Crown, Moon, Sun, Sparkles, ChevronRight, Building2,
 } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useAuth } from "@/contexts/AuthProvider";
 import { AuraAvatar } from "@/components/vibe/AuraAvatar";
 import { gradientFor, initialsOf } from "@/lib/format";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useIsCreator } from "@/hooks/useIsCreator";
 import { BecomeCreatorSheet } from "@/components/creator/BecomeCreatorSheet";
 import { useTheme } from "@/contexts/ThemeProvider";
 import { AppearanceSheet } from "@/components/layout/AppearanceSheet";
+import { supabase } from "@/integrations/supabase/client";
 
 export const SideMenu = ({ trigger }: { trigger: React.ReactNode }) => {
-  const { profile, signOut } = useAuth();
+  const { user, profile, signOut } = useAuth();
   const { isCreator } = useIsCreator();
   const { theme } = useTheme();
   const dark = theme === "dark";
   const [becomeOpen, setBecomeOpen] = useState(false);
   const [appearanceOpen, setAppearanceOpen] = useState(false);
+  const [orgAdminUsername, setOrgAdminUsername] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!user) { setOrgAdminUsername(null); return; }
+    (async () => {
+      const { data: mem } = await supabase
+        .from("organization_members" as any)
+        .select("organization:organizations(username)")
+        .eq("user_id", user.id).in("member_role", ["owner","admin"]).limit(1).maybeSingle();
+      setOrgAdminUsername((mem as any)?.organization?.username ?? null);
+    })();
+  }, [user?.id]);
 
   type Row = {
     to?: string;
@@ -41,12 +54,16 @@ export const SideMenu = ({ trigger }: { trigger: React.ReactNode }) => {
       { to: "/creator-hub", icon: LayoutGrid, label: "Creator Hub" },
       { to: "/monetization", icon: DollarSign, label: "Monetization" },
     ] as Row[] : []),
+    ...(orgAdminUsername ? [
+      { to: `/org/${orgAdminUsername}/admin`, icon: Building2, label: "Organization Admin", badge: "ADMIN" },
+    ] as Row[] : []),
     { to: "/verification-center", icon: BadgeCheck, label: "Verification Center", badge: "NEW" },
     { to: "/wallet", icon: Wallet, label: "Aura Wallet", trailing: <span className="text-xs font-bold text-primary">0</span> },
     { to: "/profile?tab=saved", icon: Bookmark, label: "Saved" },
     { to: "/settings", icon: Settings, label: "Settings" },
     { to: "/settings", icon: HelpCircle, label: "Help & Support" },
   ];
+
 
   return (
     <Sheet>
