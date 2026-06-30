@@ -61,6 +61,9 @@ export const SideMenu = ({ trigger }: { trigger: React.ReactNode }) => {
     { to: "/wallet", icon: Wallet, label: "Aura Wallet", trailing: <span className="text-xs font-bold text-primary">0</span> },
     { to: "/profile?tab=saved", icon: Bookmark, label: "Saved" },
     { to: "/settings", icon: Settings, label: "Settings" },
+    { to: "/settings", icon: HelpCircle, label: "Help & Support" },
+  ];
+
 
   return (
     <Sheet>
