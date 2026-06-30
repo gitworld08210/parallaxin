@@ -54,12 +54,13 @@ export const SideMenu = ({ trigger }: { trigger: React.ReactNode }) => {
       { to: "/creator-hub", icon: LayoutGrid, label: "Creator Hub" },
       { to: "/monetization", icon: DollarSign, label: "Monetization" },
     ] as Row[] : []),
+    ...(orgAdminUsername ? [
+      { to: `/org/${orgAdminUsername}/admin`, icon: Building2, label: "Organization Admin", badge: "ADMIN" },
+    ] as Row[] : []),
     { to: "/verification-center", icon: BadgeCheck, label: "Verification Center", badge: "NEW" },
     { to: "/wallet", icon: Wallet, label: "Aura Wallet", trailing: <span className="text-xs font-bold text-primary">0</span> },
     { to: "/profile?tab=saved", icon: Bookmark, label: "Saved" },
     { to: "/settings", icon: Settings, label: "Settings" },
-    { to: "/settings", icon: HelpCircle, label: "Help & Support" },
-  ];
 
   return (
     <Sheet>
