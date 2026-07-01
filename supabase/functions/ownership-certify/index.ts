@@ -70,6 +70,12 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ certificate_id: existing.id, content_hash: existing.content_hash, already: true }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
+    // SSRF guard: only allow fetching media from our own Supabase Storage.
+    const allowedPrefix = `${Deno.env.get("SUPABASE_URL")}/storage/v1/object/public/`;
+    if (!post.media_url.startsWith(allowedPrefix)) {
+      return new Response(JSON.stringify({ error: "invalid media URL" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
     // Download media
     const mediaRes = await fetch(post.media_url);
     if (!mediaRes.ok) return new Response(JSON.stringify({ error: "could not fetch media" }), { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } });

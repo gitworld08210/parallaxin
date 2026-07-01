@@ -51,6 +51,7 @@ Deno.serve(async (req) => {
       .eq("id", post_id)
       .maybeSingle();
     if (error || !post) return json({ error: "post not found" }, 404);
+    if (post.user_id !== userId) return json({ error: "forbidden" }, 403);
 
     const userContent: any[] = [{
       type: "text",

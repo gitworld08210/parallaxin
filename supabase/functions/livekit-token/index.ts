@@ -30,8 +30,24 @@ Deno.serve(async (req) => {
     const wsUrl = Deno.env.get('LIVEKIT_WS_URL');
     if (!apiKey || !apiSecret || !wsUrl) return json({ error: 'LiveKit not configured' }, 500);
 
+    // Verify host ownership server-side; ignore client-supplied identity to prevent spoofing.
+    if (role === 'host') {
+      const admin = createClient(
+        Deno.env.get('SUPABASE_URL')!,
+        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
+      );
+      const { data: stream } = await admin
+        .from('live_streams')
+        .select('host_id')
+        .eq('livekit_room', room)
+        .maybeSingle();
+      if (!stream || stream.host_id !== userId) {
+        return json({ error: 'Forbidden: not the stream host' }, 403);
+      }
+    }
+
     const at = new AccessToken(apiKey, apiSecret, {
-      identity: identity || userId,
+      identity: userId,
       name: name || userId.slice(0, 8),
       ttl: '2h',
     });
