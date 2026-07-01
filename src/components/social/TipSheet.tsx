@@ -45,26 +45,13 @@ export function TipSheet({ open, onOpenChange, recipientId, recipientName, postI
     if (!open) return;
     let cancelled = false;
     (async () => {
-      const { data } = await supabase
-        .from("app_config")
-        .select("key, value")
-        .in("key", ["platform_upi_id", "platform_qr_url", "platform_payee_name"]);
-      if (cancelled) return;
-      const unwrap = (v: any): string => {
-        let s = typeof v === "string" ? v : v == null ? "" : String(v);
-        // strip up to two layers of JSON-string wrapping (legacy double-encoded rows)
-        for (let i = 0; i < 2; i++) {
-          if (s.length >= 2 && s.startsWith('"') && s.endsWith('"')) {
-            try { s = JSON.parse(s); } catch { break; }
-          } else break;
-        }
-        return s;
-      };
-      const map = Object.fromEntries((data ?? []).map((r: any) => [r.key, r.value]));
+      const { data, error } = await supabase.rpc("get_platform_pay_config" as any);
+      if (cancelled || error || !data) return;
+      const row: any = Array.isArray(data) ? data[0] : data;
       setPay({
-        upi: unwrap(map.platform_upi_id),
-        qr: unwrap(map.platform_qr_url),
-        payee: unwrap(map.platform_payee_name) || "Aurelix",
+        upi: row?.upi_id || "",
+        qr: row?.qr_url || "",
+        payee: row?.payee_name || "Aurelix",
       });
     })();
     return () => { cancelled = true; };
@@ -80,23 +67,21 @@ export function TipSheet({ open, onOpenChange, recipientId, recipientName, postI
     if (!pay?.upi && !pay?.qr) return toast.error("Payments are not configured yet. Try again later.");
     setLoading(true);
     try {
-      const fee = Math.floor(cents * 0.15);
-      const net = cents - fee;
-      const { data, error } = await supabase.from("tips").insert({
-        sender_id: user.id,
-        recipient_id: recipientId,
-        post_id: postId ?? null,
-        amount_cents: cents,
-        platform_fee_cents: fee,
-        net_cents: net,
-        currency: "inr",
-        environment: "live",
-        message: message.trim() || null,
-        status: "pending",
-      }).select("id").single();
+      const { data, error } = await supabase.rpc("create_tip" as any, {
+        _recipient_id: recipientId,
+        _amount_cents: cents,
+        _post_id: postId ?? null,
+        _message: message.trim() || null,
+      });
       if (error || !data) throw new Error(error?.message || "Failed");
-      setTipId(data.id);
+      setTipId(String(data));
       setStep("pay");
+    } catch (e: any) {
+      toast.error(e.message);
+    } finally {
+      setLoading(false);
+    }
+  };
     } catch (e: any) {
       toast.error(e.message);
     } finally {
