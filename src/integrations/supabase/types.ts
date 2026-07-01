@@ -1454,24 +1454,18 @@ export type Database = {
           avatar_url: string | null
           bio: string | null
           chronicle: string | null
-          coin_balance: number
           contribution_score: number
           council_role: Database["public"]["Enums"]["council_role"] | null
           council_vote_weight: number
           cover_url: string | null
           created_at: string
           creator_since: string | null
-          creator_terms_accepted_at: string | null
           creator_terms_version: string | null
-          deletion_scheduled_at: string | null
           display_name: string
-          dm_price_cents: number
-          dob: string | null
           followers_count: number
           following_count: number
           founder_level: number
           founder_title: string | null
-          gender: string | null
           id: string
           interests: string[]
           is_creator: boolean
@@ -1481,14 +1475,12 @@ export type Database = {
           last_seen_at: string | null
           onboarded_at: string | null
           organization_id: string | null
-          payment_qr_url: string | null
           posts_count: number
           show_activity: boolean
           show_read_receipts: boolean
           signature_aura: string | null
           tier: string
           updated_at: string
-          upi_id: string | null
           user_id: string
           username: string
           verification_kind: string | null
@@ -1501,24 +1493,18 @@ export type Database = {
           avatar_url?: string | null
           bio?: string | null
           chronicle?: string | null
-          coin_balance?: number
           contribution_score?: number
           council_role?: Database["public"]["Enums"]["council_role"] | null
           council_vote_weight?: number
           cover_url?: string | null
           created_at?: string
           creator_since?: string | null
-          creator_terms_accepted_at?: string | null
           creator_terms_version?: string | null
-          deletion_scheduled_at?: string | null
           display_name?: string
-          dm_price_cents?: number
-          dob?: string | null
           followers_count?: number
           following_count?: number
           founder_level?: number
           founder_title?: string | null
-          gender?: string | null
           id?: string
           interests?: string[]
           is_creator?: boolean
@@ -1528,14 +1514,12 @@ export type Database = {
           last_seen_at?: string | null
           onboarded_at?: string | null
           organization_id?: string | null
-          payment_qr_url?: string | null
           posts_count?: number
           show_activity?: boolean
           show_read_receipts?: boolean
           signature_aura?: string | null
           tier?: string
           updated_at?: string
-          upi_id?: string | null
           user_id: string
           username: string
           verification_kind?: string | null
@@ -1548,24 +1532,18 @@ export type Database = {
           avatar_url?: string | null
           bio?: string | null
           chronicle?: string | null
-          coin_balance?: number
           contribution_score?: number
           council_role?: Database["public"]["Enums"]["council_role"] | null
           council_vote_weight?: number
           cover_url?: string | null
           created_at?: string
           creator_since?: string | null
-          creator_terms_accepted_at?: string | null
           creator_terms_version?: string | null
-          deletion_scheduled_at?: string | null
           display_name?: string
-          dm_price_cents?: number
-          dob?: string | null
           followers_count?: number
           following_count?: number
           founder_level?: number
           founder_title?: string | null
-          gender?: string | null
           id?: string
           interests?: string[]
           is_creator?: boolean
@@ -1575,18 +1553,55 @@ export type Database = {
           last_seen_at?: string | null
           onboarded_at?: string | null
           organization_id?: string | null
-          payment_qr_url?: string | null
           posts_count?: number
           show_activity?: boolean
           show_read_receipts?: boolean
           signature_aura?: string | null
           tier?: string
           updated_at?: string
-          upi_id?: string | null
           user_id?: string
           username?: string
           verification_kind?: string | null
           verified?: boolean
+        }
+        Relationships: []
+      }
+      profiles_private: {
+        Row: {
+          coin_balance: number
+          creator_terms_accepted_at: string | null
+          deletion_scheduled_at: string | null
+          dm_price_cents: number
+          dob: string | null
+          gender: string | null
+          payment_qr_url: string | null
+          updated_at: string
+          upi_id: string | null
+          user_id: string
+        }
+        Insert: {
+          coin_balance?: number
+          creator_terms_accepted_at?: string | null
+          deletion_scheduled_at?: string | null
+          dm_price_cents?: number
+          dob?: string | null
+          gender?: string | null
+          payment_qr_url?: string | null
+          updated_at?: string
+          upi_id?: string | null
+          user_id: string
+        }
+        Update: {
+          coin_balance?: number
+          creator_terms_accepted_at?: string | null
+          deletion_scheduled_at?: string | null
+          dm_price_cents?: number
+          dob?: string | null
+          gender?: string | null
+          payment_qr_url?: string | null
+          updated_at?: string
+          upi_id?: string | null
+          user_id?: string
         }
         Relationships: []
       }
@@ -2091,6 +2106,15 @@ export type Database = {
         }
         Returns: string
       }
+      create_tip: {
+        Args: {
+          _amount_cents: number
+          _message: string
+          _post_id: string
+          _recipient_id: string
+        }
+        Returns: string
+      }
       credit_coins: {
         Args: {
           _amount: number
@@ -2124,6 +2148,14 @@ export type Database = {
           ots_confirmed_at: string
           ots_status: string
           post_id: string
+        }[]
+      }
+      get_platform_pay_config: {
+        Args: never
+        Returns: {
+          payee_name: string
+          qr_url: string
+          upi_id: string
         }[]
       }
       has_active_subscription: {
@@ -2199,6 +2231,10 @@ export type Database = {
           _aff_id: string
           _role: Database["public"]["Enums"]["affiliation_role"]
         }
+        Returns: undefined
+      }
+      upsert_profile_private: {
+        Args: { _dob: string; _gender: string }
         Returns: undefined
       }
       verify_tip_with_utr: {

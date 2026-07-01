@@ -17,7 +17,10 @@ Deno.serve(async (req) => {
     if (!claims) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
     const { content, media_type } = await req.json();
+    const safeContent = typeof content === "string" ? content.slice(0, 2000) : "";
+    const safeMediaType = typeof media_type === "string" ? media_type.slice(0, 50) : "none";
     const apiKey = Deno.env.get("LOVABLE_API_KEY")!;
+
 
     // Pick a "best time" — IST-friendly heuristic, prime evening windows
     const now = new Date();
@@ -34,7 +37,7 @@ Deno.serve(async (req) => {
         model: "google/gemini-2.5-flash",
         messages: [
           { role: "system", content: "You generate 6-10 highly relevant, on-trend hashtags for a social post. Output ONLY a JSON object: {\"hashtags\":[\"#tag1\",...],\"reasoning\":\"one short sentence\"}. Hashtags must start with #, be lowercase, no spaces, no duplicates." },
-          { role: "user", content: `Post content: ${content || "(no caption)"}\nMedia: ${media_type || "none"}` },
+          { role: "user", content: `Post content: ${safeContent || "(no caption)"}\nMedia: ${safeMediaType}` },
         ],
         response_format: { type: "json_object" },
       }),

@@ -67,11 +67,16 @@ const Onboarding = () => {
         .from("profiles")
         .update({
           interests,
-          dob: dob || null,
-          gender: gender || null,
           onboarded_at: new Date().toISOString(),
         } as any)
         .eq("user_id", user.id);
+
+      if (dob || gender) {
+        await supabase.rpc("upsert_profile_private" as any, {
+          _dob: dob || null,
+          _gender: gender || null,
+        });
+      }
 
       if (followed.size > 0) {
         const rows = Array.from(followed).map((following_id) => ({ follower_id: user.id, following_id }));
