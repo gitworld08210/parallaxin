@@ -82,12 +82,6 @@ export function TipSheet({ open, onOpenChange, recipientId, recipientName, postI
       setLoading(false);
     }
   };
-    } catch (e: any) {
-      toast.error(e.message);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const submitUtr = async () => {
     if (!tipId) return;
