@@ -210,6 +210,7 @@ const Auth = () => {
               {busy ? "…" : tab === "signin" ? "Log in" : "Create account"}
             </button>
           </motion.form>
+          )}
         </AnimatePresence>
 
         <div className="flex items-center gap-3 my-6">
