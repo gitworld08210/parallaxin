@@ -141,17 +141,40 @@ const Auth = () => {
         </motion.div>
 
         {/* Tabs */}
-        <div className="grid grid-cols-2 p-1 bg-secondary/40 border border-border rounded-2xl mb-5">
-          {(["signin","signup"] as Tab[]).map((t) => (
+        <div className="grid grid-cols-3 p-1 bg-secondary/40 border border-border rounded-2xl mb-5">
+          {(["signin","signup","phone"] as Tab[]).map((t) => (
             <button key={t}
               onClick={() => setTab(t)}
               className={`py-2.5 rounded-xl text-sm font-semibold transition-all ${tab===t ? "bg-background text-foreground shadow-sm" : "text-muted-foreground"}`}>
-              {t === "signin" ? "Log in" : "Sign up"}
+              {t === "signin" ? "Log in" : t === "signup" ? "Sign up" : "Phone"}
             </button>
           ))}
         </div>
 
         <AnimatePresence mode="wait">
+          {tab === "phone" ? (
+            <motion.form
+              key="phone"
+              onSubmit={(e) => { e.preventDefault(); otpSent ? verifyPhoneOtp() : sendPhoneOtp(); }}
+              initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+              className="space-y-3"
+            >
+              <input className={inputCls} type="tel" placeholder="+14155551234" value={phone}
+                onChange={(e)=>setPhone(e.target.value)} autoComplete="tel" required disabled={otpSent} />
+              {otpSent && (
+                <input className={inputCls} type="text" inputMode="numeric" placeholder="6-digit code"
+                  value={otp} onChange={(e)=>setOtp(e.target.value.replace(/\D/g,"").slice(0,8))} autoFocus required />
+              )}
+              <button disabled={busy} className="w-full py-3.5 rounded-2xl bg-gradient-primary text-primary-foreground font-semibold text-sm shadow-glow disabled:opacity-60 active:scale-[0.98] transition-transform">
+                {busy ? "…" : otpSent ? "Verify & continue" : "Send code"}
+              </button>
+              {otpSent && (
+                <button type="button" onClick={() => { setOtpSent(false); setOtp(""); }} className="w-full text-xs text-muted-foreground py-2">
+                  Change number
+                </button>
+              )}
+            </motion.form>
+          ) : (
           <motion.form
             key={tab}
             onSubmit={(e) => { e.preventDefault(); tab === "signin" ? signIn() : signUp(); }}
