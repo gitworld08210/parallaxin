@@ -54,13 +54,7 @@ Deno.serve(async (req) => {
       await admin.auth.admin.updateUserById(userId, { phone_confirm: true } as any);
     }
 
-    // Generate a magic link and extract tokens so client can setSession
-    const link = await admin.auth.admin.generateLink({
-      type: 'magiclink',
-      email: `${userId}@phone.aurelix.local`,
-    } as any);
-    // Fallback: create a session via sign-in with a fresh password reset approach isn't feasible.
-    // Use signInWithOtp workflow: mint a one-time password via updateUserById then sign in.
+    // Mint a one-time password to sign the user in, then rotate to a random unknown value
     const tempPassword = crypto.randomUUID() + 'Aa1!';
     const upd = await admin.auth.admin.updateUserById(userId!, { password: tempPassword });
     if (upd.error) throw upd.error;
