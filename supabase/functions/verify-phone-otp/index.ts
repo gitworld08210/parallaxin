@@ -1,6 +1,8 @@
 import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors';
 import { createClient } from 'npm:@supabase/supabase-js@2';
 
+const phoneToEmail = (p: string) => `phone_${p.replace(/^\+/, '')}@phone.aurelix.local`;
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
   try {
@@ -35,37 +37,37 @@ Deno.serve(async (req) => {
       { auth: { autoRefreshToken: false, persistSession: false } },
     );
 
-    // Find existing user by phone
+    const syntheticEmail = phoneToEmail(phone);
+
+    // Find existing user by synthetic email
     let userId: string | null = null;
     const list = await admin.auth.admin.listUsers({ page: 1, perPage: 200 });
-    const existing = list.data?.users?.find((u: any) => u.phone === phone.replace(/^\+/, '') || u.phone === phone);
+    const existing = list.data?.users?.find((u: any) => u.email === syntheticEmail);
     if (existing) userId = existing.id;
+
+    const tempPassword = crypto.randomUUID() + 'Aa1!';
 
     if (!userId) {
       const created = await admin.auth.admin.createUser({
-        phone,
-        phone_confirm: true,
-        user_metadata: { signup_method: 'phone' },
+        email: syntheticEmail,
+        email_confirm: true,
+        password: tempPassword,
+        user_metadata: { signup_method: 'phone', phone },
       });
       if (created.error) throw created.error;
       userId = created.data.user!.id;
     } else {
-      // ensure phone confirmed
-      await admin.auth.admin.updateUserById(userId, { phone_confirm: true } as any);
+      const upd = await admin.auth.admin.updateUserById(userId, { password: tempPassword });
+      if (upd.error) throw upd.error;
     }
-
-    // Mint a one-time password to sign the user in, then rotate to a random unknown value
-    const tempPassword = crypto.randomUUID() + 'Aa1!';
-    const upd = await admin.auth.admin.updateUserById(userId!, { password: tempPassword });
-    if (upd.error) throw upd.error;
 
     const anon = createClient(
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('SUPABASE_ANON_KEY')!,
       { auth: { autoRefreshToken: false, persistSession: false } },
     );
-    const signIn = await anon.auth.signInWithPassword({ phone, password: tempPassword });
-    // Rotate password to random so it can't be reused
+    const signIn = await anon.auth.signInWithPassword({ email: syntheticEmail, password: tempPassword });
+    // Rotate to a random unknown value so this password can't be reused
     await admin.auth.admin.updateUserById(userId!, { password: crypto.randomUUID() + crypto.randomUUID() });
     if (signIn.error) throw signIn.error;
 
