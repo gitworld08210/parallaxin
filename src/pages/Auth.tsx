@@ -7,7 +7,7 @@ import { useAuth } from "@/contexts/AuthProvider";
 import { toast } from "sonner";
 import { Sparkles, User, Building2 } from "lucide-react";
 
-type Tab = "signin" | "signup";
+type Tab = "signin" | "signup" | "phone";
 type AccountKind = "personal" | "organization";
 const ORG_INTENT_KEY = "aurelix:signup_kind";
 
@@ -20,6 +20,11 @@ const Auth = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
+
+  // Phone flow
+  const [phone, setPhone] = useState("");
+  const [otp, setOtp] = useState("");
+  const [otpSent, setOtpSent] = useState(false);
 
   const routeForUser = async (uid: string) => {
     const { data: role } = await supabase
@@ -89,6 +94,34 @@ const Auth = () => {
     if (r.error) { toast.error("Apple sign-in failed"); setBusy(false); }
   };
 
+  const sendPhoneOtp = async () => {
+    const p = phone.trim();
+    if (!/^\+[1-9]\d{6,14}$/.test(p)) { toast.error("Enter phone in E.164 format, e.g. +14155551234"); return; }
+    setBusy(true);
+    const { data, error } = await supabase.functions.invoke("send-phone-otp", { body: { phone: p } });
+    setBusy(false);
+    if (error || (data as any)?.error) { toast.error((data as any)?.error || error?.message || "Failed to send code"); return; }
+    setOtpSent(true);
+    toast.success("Code sent");
+  };
+
+  const verifyPhoneOtp = async () => {
+    if (!/^\d{4,8}$/.test(otp)) { toast.error("Enter the code"); return; }
+    setBusy(true);
+    const { data, error } = await supabase.functions.invoke("verify-phone-otp", { body: { phone: phone.trim(), code: otp } });
+    if (error || (data as any)?.error || !(data as any)?.session) {
+      setBusy(false);
+      toast.error((data as any)?.error || error?.message || "Invalid code");
+      return;
+    }
+    const s = (data as any).session;
+    await supabase.auth.setSession({ access_token: s.access_token, refresh_token: s.refresh_token });
+    toast.success("Welcome ✦");
+    const uid = (data as any).user?.id;
+    setBusy(false);
+    if (uid) await routeForUser(uid);
+  };
+
   const inputCls =
     "w-full bg-secondary/60 border border-border rounded-2xl px-4 py-3.5 text-sm outline-none placeholder:text-muted-foreground focus:border-primary/60 transition-colors";
 
@@ -108,17 +141,40 @@ const Auth = () => {
         </motion.div>
 
         {/* Tabs */}
-        <div className="grid grid-cols-2 p-1 bg-secondary/40 border border-border rounded-2xl mb-5">
-          {(["signin","signup"] as Tab[]).map((t) => (
+        <div className="grid grid-cols-3 p-1 bg-secondary/40 border border-border rounded-2xl mb-5">
+          {(["signin","signup","phone"] as Tab[]).map((t) => (
             <button key={t}
               onClick={() => setTab(t)}
               className={`py-2.5 rounded-xl text-sm font-semibold transition-all ${tab===t ? "bg-background text-foreground shadow-sm" : "text-muted-foreground"}`}>
-              {t === "signin" ? "Log in" : "Sign up"}
+              {t === "signin" ? "Log in" : t === "signup" ? "Sign up" : "Phone"}
             </button>
           ))}
         </div>
 
         <AnimatePresence mode="wait">
+          {tab === "phone" ? (
+            <motion.form
+              key="phone"
+              onSubmit={(e) => { e.preventDefault(); otpSent ? verifyPhoneOtp() : sendPhoneOtp(); }}
+              initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+              className="space-y-3"
+            >
+              <input className={inputCls} type="tel" placeholder="+14155551234" value={phone}
+                onChange={(e)=>setPhone(e.target.value)} autoComplete="tel" required disabled={otpSent} />
+              {otpSent && (
+                <input className={inputCls} type="text" inputMode="numeric" placeholder="6-digit code"
+                  value={otp} onChange={(e)=>setOtp(e.target.value.replace(/\D/g,"").slice(0,8))} autoFocus required />
+              )}
+              <button disabled={busy} className="w-full py-3.5 rounded-2xl bg-gradient-primary text-primary-foreground font-semibold text-sm shadow-glow disabled:opacity-60 active:scale-[0.98] transition-transform">
+                {busy ? "…" : otpSent ? "Verify & continue" : "Send code"}
+              </button>
+              {otpSent && (
+                <button type="button" onClick={() => { setOtpSent(false); setOtp(""); }} className="w-full text-xs text-muted-foreground py-2">
+                  Change number
+                </button>
+              )}
+            </motion.form>
+          ) : (
           <motion.form
             key={tab}
             onSubmit={(e) => { e.preventDefault(); tab === "signin" ? signIn() : signUp(); }}
@@ -154,6 +210,7 @@ const Auth = () => {
               {busy ? "…" : tab === "signin" ? "Log in" : "Create account"}
             </button>
           </motion.form>
+          )}
         </AnimatePresence>
 
         <div className="flex items-center gap-3 my-6">
