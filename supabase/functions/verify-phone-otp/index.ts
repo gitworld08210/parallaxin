@@ -65,6 +65,8 @@ Deno.serve(async (req) => {
       { auth: { autoRefreshToken: false, persistSession: false } },
     );
     const signIn = await anon.auth.signInWithPassword({ phone, password: tempPassword });
+    // Rotate password to random so it can't be reused
+    await admin.auth.admin.updateUserById(userId!, { password: crypto.randomUUID() + crypto.randomUUID() });
     if (signIn.error) throw signIn.error;
 
     return new Response(JSON.stringify({ session: signIn.data.session, user: signIn.data.user }), {
