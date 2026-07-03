@@ -94,6 +94,34 @@ const Auth = () => {
     if (r.error) { toast.error("Apple sign-in failed"); setBusy(false); }
   };
 
+  const sendPhoneOtp = async () => {
+    const p = phone.trim();
+    if (!/^\+[1-9]\d{6,14}$/.test(p)) { toast.error("Enter phone in E.164 format, e.g. +14155551234"); return; }
+    setBusy(true);
+    const { data, error } = await supabase.functions.invoke("send-phone-otp", { body: { phone: p } });
+    setBusy(false);
+    if (error || (data as any)?.error) { toast.error((data as any)?.error || error?.message || "Failed to send code"); return; }
+    setOtpSent(true);
+    toast.success("Code sent");
+  };
+
+  const verifyPhoneOtp = async () => {
+    if (!/^\d{4,8}$/.test(otp)) { toast.error("Enter the code"); return; }
+    setBusy(true);
+    const { data, error } = await supabase.functions.invoke("verify-phone-otp", { body: { phone: phone.trim(), code: otp } });
+    if (error || (data as any)?.error || !(data as any)?.session) {
+      setBusy(false);
+      toast.error((data as any)?.error || error?.message || "Invalid code");
+      return;
+    }
+    const s = (data as any).session;
+    await supabase.auth.setSession({ access_token: s.access_token, refresh_token: s.refresh_token });
+    toast.success("Welcome ✦");
+    const uid = (data as any).user?.id;
+    setBusy(false);
+    if (uid) await routeForUser(uid);
+  };
+
   const inputCls =
     "w-full bg-secondary/60 border border-border rounded-2xl px-4 py-3.5 text-sm outline-none placeholder:text-muted-foreground focus:border-primary/60 transition-colors";
 
