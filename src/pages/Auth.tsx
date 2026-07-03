@@ -7,7 +7,7 @@ import { useAuth } from "@/contexts/AuthProvider";
 import { toast } from "sonner";
 import { Sparkles, User, Building2 } from "lucide-react";
 
-type Tab = "signin" | "signup";
+type Tab = "signin" | "signup" | "phone";
 type AccountKind = "personal" | "organization";
 const ORG_INTENT_KEY = "aurelix:signup_kind";
 
@@ -20,6 +20,11 @@ const Auth = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
+
+  // Phone flow
+  const [phone, setPhone] = useState("");
+  const [otp, setOtp] = useState("");
+  const [otpSent, setOtpSent] = useState(false);
 
   const routeForUser = async (uid: string) => {
     const { data: role } = await supabase
