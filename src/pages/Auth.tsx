@@ -98,6 +98,10 @@ const Auth = () => {
   const sendPhoneOtp = async () => {
     const p = phone.trim();
     if (!/^\+[1-9]\d{6,14}$/.test(p)) { toast.error("Enter phone in E.164 format, e.g. +14155551234"); return; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(phoneEmail.trim())) {
+      toast.error("Add an email address — it's required to secure your account");
+      return;
+    }
     setBusy(true);
     const { data, error } = await supabase.functions.invoke("send-phone-otp", { body: { phone: p } });
     setBusy(false);
@@ -109,7 +113,9 @@ const Auth = () => {
   const verifyPhoneOtp = async () => {
     if (!/^\d{4,8}$/.test(otp)) { toast.error("Enter the code"); return; }
     setBusy(true);
-    const { data, error } = await supabase.functions.invoke("verify-phone-otp", { body: { phone: phone.trim(), code: otp } });
+    const { data, error } = await supabase.functions.invoke("verify-phone-otp", {
+      body: { phone: phone.trim(), code: otp, email: phoneEmail.trim() },
+    });
     if (error || (data as any)?.error || !(data as any)?.session) {
       setBusy(false);
       toast.error((data as any)?.error || error?.message || "Invalid code");
@@ -117,7 +123,19 @@ const Auth = () => {
     }
     const s = (data as any).session;
     await supabase.auth.setSession({ access_token: s.access_token, refresh_token: s.refresh_token });
-    toast.success("Welcome ✦");
+
+    // First-time phone signup: attach the real email + trigger a confirmation link
+    const pendingEmail = (data as any).pendingEmail as string | null;
+    if (pendingEmail) {
+      const { error: upErr } = await supabase.auth.updateUser(
+        { email: pendingEmail, data: { pending_email: pendingEmail, signup_method: "phone" } },
+        { emailRedirectTo: `${window.location.origin}/` },
+      );
+      if (upErr) toast.error(upErr.message);
+      else toast.success("Verification link sent to " + pendingEmail);
+    } else {
+      toast.success("Welcome ✦");
+    }
     const uid = (data as any).user?.id;
     setBusy(false);
     if (uid) await routeForUser(uid);
