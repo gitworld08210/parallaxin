@@ -130,6 +130,7 @@ export const AppShell = () => {
         </NavLink>
       </nav>
 
+      {needsEmail && <EmailVerificationGate />}
     </div>
   );
 };
