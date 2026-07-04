@@ -23,6 +23,7 @@ const Auth = () => {
 
   // Phone flow
   const [phone, setPhone] = useState("");
+  const [phoneEmail, setPhoneEmail] = useState("");
   const [otp, setOtp] = useState("");
   const [otpSent, setOtpSent] = useState(false);
 
@@ -97,6 +98,10 @@ const Auth = () => {
   const sendPhoneOtp = async () => {
     const p = phone.trim();
     if (!/^\+[1-9]\d{6,14}$/.test(p)) { toast.error("Enter phone in E.164 format, e.g. +14155551234"); return; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(phoneEmail.trim())) {
+      toast.error("Add an email address — it's required to secure your account");
+      return;
+    }
     setBusy(true);
     const { data, error } = await supabase.functions.invoke("send-phone-otp", { body: { phone: p } });
     setBusy(false);
@@ -108,7 +113,9 @@ const Auth = () => {
   const verifyPhoneOtp = async () => {
     if (!/^\d{4,8}$/.test(otp)) { toast.error("Enter the code"); return; }
     setBusy(true);
-    const { data, error } = await supabase.functions.invoke("verify-phone-otp", { body: { phone: phone.trim(), code: otp } });
+    const { data, error } = await supabase.functions.invoke("verify-phone-otp", {
+      body: { phone: phone.trim(), code: otp, email: phoneEmail.trim() },
+    });
     if (error || (data as any)?.error || !(data as any)?.session) {
       setBusy(false);
       toast.error((data as any)?.error || error?.message || "Invalid code");
@@ -116,7 +123,19 @@ const Auth = () => {
     }
     const s = (data as any).session;
     await supabase.auth.setSession({ access_token: s.access_token, refresh_token: s.refresh_token });
-    toast.success("Welcome ✦");
+
+    // First-time phone signup: attach the real email + trigger a confirmation link
+    const pendingEmail = (data as any).pendingEmail as string | null;
+    if (pendingEmail) {
+      const { error: upErr } = await supabase.auth.updateUser(
+        { email: pendingEmail, data: { pending_email: pendingEmail, signup_method: "phone" } },
+        { emailRedirectTo: `${window.location.origin}/` },
+      );
+      if (upErr) toast.error(upErr.message);
+      else toast.success("Verification link sent to " + pendingEmail);
+    } else {
+      toast.success("Welcome ✦");
+    }
     const uid = (data as any).user?.id;
     setBusy(false);
     if (uid) await routeForUser(uid);
@@ -161,6 +180,11 @@ const Auth = () => {
             >
               <input className={inputCls} type="tel" placeholder="+14155551234" value={phone}
                 onChange={(e)=>setPhone(e.target.value)} autoComplete="tel" required disabled={otpSent} />
+              <input className={inputCls} type="email" placeholder="you@aurelix.app (required)" value={phoneEmail}
+                onChange={(e)=>setPhoneEmail(e.target.value)} autoComplete="email" required disabled={otpSent} />
+              <p className="text-[11px] text-muted-foreground px-1 -mt-1">
+                We'll text a code to your phone and email a link to confirm your address.
+              </p>
               {otpSent && (
                 <input className={inputCls} type="text" inputMode="numeric" placeholder="6-digit code"
                   value={otp} onChange={(e)=>setOtp(e.target.value.replace(/\D/g,"").slice(0,8))} autoFocus required />

@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
-import { ChevronLeft, ChevronRight, Shield, KeyRound, Mail, Download, Trash2, EyeOff, Activity, UserX, Sparkles, LogOut } from "lucide-react";
+import { ChevronLeft, ChevronRight, Shield, KeyRound, Mail, Phone, Download, Trash2, EyeOff, Activity, UserX, Sparkles, LogOut } from "lucide-react";
 import { TopBar } from "@/components/vibe/TopBar";
 import { useAuth } from "@/contexts/AuthProvider";
 
@@ -46,6 +46,7 @@ export default function Settings() {
           <Row to="/profile/edit" icon={Sparkles} title="Edit profile" hint="Name, avatar, bio" />
           <Row to="/settings/password" icon={KeyRound} title="Change password" />
           <Row to="/settings/email" icon={Mail} title="Change email" />
+          <Row to="/settings/phone" icon={Phone} title="Phone number" hint="Add or change your verified number" />
         </Section>
 
         <Section label="Aura Shield">

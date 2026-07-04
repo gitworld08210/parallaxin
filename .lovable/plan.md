@@ -1,57 +1,44 @@
-# Organization Accounts & Affiliation System
+## What changes
 
-Large feature. Shipping it in 4 phases so you can review each before the next.
+### 1. Email is mandatory in every signup
 
-## Phase 1 — Database & backend
+- **Email tab** (existing): keep as is — Supabase already blocks sign-in until the confirmation link is clicked.
+- **Signup**: add an email field. Flow becomes:
+  1. Enter phone + email → tap "Send code" (Twilio OTP goes to the phone).
+  2. Enter the 6-digit code → account is created with **both** phone (verified) and email (not yet verified).
+  3. User is signed in immediately, but the app shows a full-screen **"Verify your email"** gate on every route until they click the confirmation link. A "Resend email" button is on the gate.
 
-New tables (all in `public`, RLS + GRANTs):
 
-- `organizations` — `id`, `owner_user_id`, `name`, `username` (unique), `logo_url`, `email`, `website`, `industry`, `org_type` (company/startup/edu/ngo/government), `description`, `country`, `location`, `verified`, timestamps
-- `organization_members` — `org_id`, `user_id`, `member_role` (admin/manager/viewer), `joined_at` — internal team controlling the org account
-- `affiliations` — `id`, `org_id`, `user_id`, `role` (enum: founder/co_founder/ceo/cto/employee/brand_ambassador/official_rep/advisor/investor/moderator), `status` (pending/active/declined/revoked/ended), `started_on`, `ended_on`, `note`, `issued_by`, `responded_at`, timestamps. Unique partial index on `(org_id,user_id)` where status in (pending, active) prevents duplicates.
-- `affiliation_audit_logs` — `id`, `affiliation_id`, `org_id`, `actor_user_id`, `action` (issued/accepted/declined/revoked/role_changed/ended), `metadata jsonb`, `created_at`
 
-Profiles: add `account_type` ('personal' | 'organization') and link to `organizations.id` for the org's own profile row (orgs still use a profiles row so they can post reels/posts like normal users — per your note).
+### 3.Password reset via email link 
 
-Security-definer RPCs:
-- `create_organization(...)` — creates org + profile + owner membership
-- `issue_affiliation(org, username, role, started_on, ended_on, note)` — admin-only, creates pending row + notification + audit
-- `respond_affiliation(affiliation_id, accept boolean)` — only the invited user
-- `revoke_affiliation(affiliation_id, reason)` — admin-only
-- `is_org_admin(org, user)` — helper used in RLS
+- New tab on `/reset-password`: "Reset via email".
+- Existing "Reset via email" flow stays.
 
-Storage bucket `org-logos` (public) for logo uploads.
+### 4. Verify new email when changing email
 
-## Phase 2 — Signup & org onboarding
+- The existing "Change email" screen already calls `supabase.auth.updateUser({ email })`, which triggers a confirmation link to the **new** address. Add clear copy so the user knows the change only takes effect after they click that link, and add a "Resend confirmation" button.
 
-- `/auth` gets an account-type toggle: **Personal** | **Organization**
-- Personal → existing flow unchanged
-- Organization → after auth, redirect to `/onboarding/organization` with the advanced form (name, username, logo upload, official email, website, industry, org_type, description, country, location)
-- After submit → redirect to org admin dashboard
+### 5. Add / change phone number with SMS OTP
 
-## Phase 3 — Org admin dashboard
+- New "Phone number" screen under Settings → Security.
+- Shows current phone (if any). Enter new number → "Send code" (Twilio Verify) → enter code → edge function verifies and writes the phone onto the user record via admin API.
 
-Route: `/org/:username/admin` — glassmorphism UI, gated by `is_org_admin`. Tabs:
-1. **Team** — list active affiliated members, search, remove
-2. **Affiliations** — issue new (search user by username → pick role → dates → note), pending list, revoke, edit role
-3. **Analytics** — profile visits, post engagement, team stats (reuses existing post analytics where available)
-4. **Posts** — create/manage official posts, pin announcement (adds `is_pinned` to posts for org accounts)
+## Technical bits
 
-## Phase 4 — User-facing affiliation UX
+- **Auth config**: call `supabase--configure_auth` with `auto_confirm_email: false`.
+- **New edge functions** (Twilio Verify + service-role admin API):
+  - `reset-password-phone` — verifies OTP, updates password for the user whose synthetic email matches the phone.
+  - `change-phone-otp` — verifies OTP, sets phone on the authenticated user (Bearer JWT from client).
+  - Update `verify-phone-otp` — accept an optional `email` on first-time signup and store it on the created user (email_confirm=false so the confirmation link is triggered).
+- **New client screens/updates**:
+  - `src/pages/Auth.tsx` — add email field to Phone tab.
+  - `src/pages/ResetPassword.tsx` — add "Reset via phone" tab with OTP + new-password form.
+  - `src/pages/security/ChangePhoneScreen.tsx` — new screen; add route + Settings link.
+  - `src/components/auth/EmailVerificationGate.tsx` — full-screen gate shown while `user.email_confirmed_at` is null; wraps the authenticated app in `AppShell`.
+  - Update `ChangeEmailScreen.tsx` — clarifying copy + "Resend confirmation" button.
 
-- Notification entry: "VibeNexus invited you to become an official Founder" with Accept / Decline buttons
-- Profile header: org logo chip beside verification tick, with "Founder at VibeNexus · Affiliated since Jun 2026"
-- Tap chip → modal with logo, org name, role, status, issued date, verified state, link to org profile
-- Only `active` affiliations render publicly; revoked disappear immediately (realtime)
+## Out of scope
 
-## Technical notes
-
-- Affiliation role + org_type as Postgres enums
-- All mutating RPCs `SECURITY DEFINER` with `set search_path = public`; every action writes an `affiliation_audit_logs` row
-- RLS:
-  - `organizations` SELECT public, UPDATE/DELETE only org admins
-  - `affiliations` SELECT public when `status='active'`; the invited user and org admins can see their own pending/revoked; INSERT/UPDATE only via RPCs (no direct table writes)
-  - `affiliation_audit_logs` SELECT org admins only
-- Org profile reuses existing `profiles` row → orgs post reels/posts using the same composer, no code duplication
-
-Confirm and I'll start with Phase 1 (the migration).
+- Custom-branded auth email templates (still uses default Lovable templates).
+- 2FA changes (existing TOTP flow untouched).

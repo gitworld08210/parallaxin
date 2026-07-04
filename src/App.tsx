@@ -53,6 +53,7 @@ const DataExportScreen = lazy(() => import("./pages/security/DataExportScreen"))
 const DeleteAccountScreen = lazy(() => import("./pages/security/DeleteAccountScreen"));
 const ChangePasswordScreen = lazy(() => import("./pages/security/ChangePasswordScreen"));
 const ChangeEmailScreen = lazy(() => import("./pages/security/ChangeEmailScreen"));
+const ChangePhoneScreen = lazy(() => import("./pages/security/ChangePhoneScreen"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
 const OrganizationOnboarding = lazy(() => import("./pages/OrganizationOnboarding"));
 const OrgAdmin = lazy(() => import("./pages/OrgAdmin"));
@@ -152,6 +153,7 @@ const App = () => (
                   <Route path="/settings/delete" element={<DeleteAccountScreen />} />
                   <Route path="/settings/password" element={<ChangePasswordScreen />} />
                   <Route path="/settings/email" element={<ChangeEmailScreen />} />
+                  <Route path="/settings/phone" element={<ChangePhoneScreen />} />
                   <Route path="/creator-hub" element={<CreatorGate><CreatorHub /></CreatorGate>} />
                   <Route path="/analytics" element={<CreatorGate><Analytics /></CreatorGate>} />
                   <Route path="/achievements" element={<Achievements />} />

@@ -11,6 +11,7 @@ import { BecomeCreatorSheet } from "@/components/creator/BecomeCreatorSheet";
 import { IncomingCallListener } from "@/components/call/IncomingCallListener";
 import { IncomingCallOverlay } from "@/components/call/IncomingCallOverlay";
 import { CallScreen } from "@/components/call/CallScreen";
+import { EmailVerificationGate, useNeedsEmailVerification } from "@/components/auth/EmailVerificationGate";
 
 export const AppShell = () => {
   const { pathname } = useLocation();
@@ -20,6 +21,7 @@ export const AppShell = () => {
   const [createOpen, setCreateOpen] = useState(false);
   const [becomeOpen, setBecomeOpen] = useState(false);
   const { isCreator } = useIsCreator();
+  const needsEmail = useNeedsEmailVerification();
 
   useEffect(() => {
     if (!user) return;
@@ -128,6 +130,7 @@ export const AppShell = () => {
         </NavLink>
       </nav>
 
+      {needsEmail && <EmailVerificationGate />}
     </div>
   );
 };
