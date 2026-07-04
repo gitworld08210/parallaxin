@@ -2,11 +2,12 @@ import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors';
 import { createClient } from 'npm:@supabase/supabase-js@2';
 
 const phoneToEmail = (p: string) => `phone_${p.replace(/^\+/, '')}@phone.aurelix.local`;
+const isRealEmail = (e: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e) && !e.endsWith('@phone.aurelix.local');
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
   try {
-    const { phone, code } = await req.json();
+    const { phone, code, email } = await req.json();
     if (!phone || !/^\+[1-9]\d{6,14}$/.test(phone) || !code || !/^\d{4,8}$/.test(code)) {
       return new Response(JSON.stringify({ error: 'Invalid phone or code' }), {
         status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -46,13 +47,20 @@ Deno.serve(async (req) => {
     if (existing) userId = existing.id;
 
     const tempPassword = crypto.randomUUID() + 'Aa1!';
+    const isNewSignup = !userId;
 
     if (!userId) {
       const created = await admin.auth.admin.createUser({
         email: syntheticEmail,
         email_confirm: true,
+        phone,
+        phone_confirm: true,
         password: tempPassword,
-        user_metadata: { signup_method: 'phone', phone },
+        user_metadata: {
+          signup_method: 'phone',
+          phone,
+          pending_email: isRealEmail(email ?? '') ? email.trim() : null,
+        },
       });
       if (created.error) throw created.error;
       userId = created.data.user!.id;
@@ -71,7 +79,12 @@ Deno.serve(async (req) => {
     await admin.auth.admin.updateUserById(userId!, { password: crypto.randomUUID() + crypto.randomUUID() });
     if (signIn.error) throw signIn.error;
 
-    return new Response(JSON.stringify({ session: signIn.data.session, user: signIn.data.user }), {
+    return new Response(JSON.stringify({
+      session: signIn.data.session,
+      user: signIn.data.user,
+      isNewSignup,
+      pendingEmail: isNewSignup && isRealEmail(email ?? '') ? email.trim() : null,
+    }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (e) {
