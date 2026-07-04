@@ -153,6 +153,7 @@ const App = () => (
                   <Route path="/settings/delete" element={<DeleteAccountScreen />} />
                   <Route path="/settings/password" element={<ChangePasswordScreen />} />
                   <Route path="/settings/email" element={<ChangeEmailScreen />} />
+                  <Route path="/settings/phone" element={<ChangePhoneScreen />} />
                   <Route path="/creator-hub" element={<CreatorGate><CreatorHub /></CreatorGate>} />
                   <Route path="/analytics" element={<CreatorGate><Analytics /></CreatorGate>} />
                   <Route path="/achievements" element={<Achievements />} />
