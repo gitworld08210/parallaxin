@@ -23,6 +23,7 @@ const Auth = () => {
 
   // Phone flow
   const [phone, setPhone] = useState("");
+  const [phoneEmail, setPhoneEmail] = useState("");
   const [otp, setOtp] = useState("");
   const [otpSent, setOtpSent] = useState(false);
 
