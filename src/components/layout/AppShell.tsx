@@ -21,6 +21,7 @@ export const AppShell = () => {
   const [createOpen, setCreateOpen] = useState(false);
   const [becomeOpen, setBecomeOpen] = useState(false);
   const { isCreator } = useIsCreator();
+  const needsEmail = useNeedsEmailVerification();
 
   useEffect(() => {
     if (!user) return;
