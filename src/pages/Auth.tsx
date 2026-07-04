@@ -180,6 +180,11 @@ const Auth = () => {
             >
               <input className={inputCls} type="tel" placeholder="+14155551234" value={phone}
                 onChange={(e)=>setPhone(e.target.value)} autoComplete="tel" required disabled={otpSent} />
+              <input className={inputCls} type="email" placeholder="you@aurelix.app (required)" value={phoneEmail}
+                onChange={(e)=>setPhoneEmail(e.target.value)} autoComplete="email" required disabled={otpSent} />
+              <p className="text-[11px] text-muted-foreground px-1 -mt-1">
+                We'll text a code to your phone and email a link to confirm your address.
+              </p>
               {otpSent && (
                 <input className={inputCls} type="text" inputMode="numeric" placeholder="6-digit code"
                   value={otp} onChange={(e)=>setOtp(e.target.value.replace(/\D/g,"").slice(0,8))} autoFocus required />
