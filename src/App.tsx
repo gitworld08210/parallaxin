@@ -53,6 +53,7 @@ const DataExportScreen = lazy(() => import("./pages/security/DataExportScreen"))
 const DeleteAccountScreen = lazy(() => import("./pages/security/DeleteAccountScreen"));
 const ChangePasswordScreen = lazy(() => import("./pages/security/ChangePasswordScreen"));
 const ChangeEmailScreen = lazy(() => import("./pages/security/ChangeEmailScreen"));
+const ChangePhoneScreen = lazy(() => import("./pages/security/ChangePhoneScreen"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
 const OrganizationOnboarding = lazy(() => import("./pages/OrganizationOnboarding"));
 const OrgAdmin = lazy(() => import("./pages/OrgAdmin"));
