@@ -14,6 +14,7 @@ import { CallProvider } from "@/contexts/CallProvider";
 // Eager: critical first-paint routes
 import Feed from "./pages/Feed";
 import Auth from "./pages/Auth";
+const OAuthConsent = lazy(() => import("./pages/OAuthConsent"));
 
 // Lazy: everything else streams in on demand
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
