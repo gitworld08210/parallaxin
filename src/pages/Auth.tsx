@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
@@ -15,6 +15,17 @@ const PENDING_PHONE_KEY = "aurelix:pending_phone";
 const Auth = () => {
   const nav = useNavigate();
   const { user, loading } = useAuth();
+  const [params] = useSearchParams();
+
+  // Preserve a same-origin relative `next` path across every auth path so
+  // OAuth consent (and any other deep link) returns the user where they came from.
+  const nextPath = useMemo(() => {
+    const raw = params.get("next");
+    if (!raw) return null;
+    if (!raw.startsWith("/") || raw.startsWith("//")) return null;
+    return raw;
+  }, [params]);
+  const returnUrl = nextPath ? `${window.location.origin}${nextPath}` : `${window.location.origin}/`;
 
   const [tab, setTab] = useState<Tab>("signin");
   const [kind, setKind] = useState<AccountKind>("personal");
@@ -24,6 +35,7 @@ const Auth = () => {
   const [busy, setBusy] = useState(false);
 
   const routeForUser = async (uid: string) => {
+    if (nextPath) { nav(nextPath, { replace: true }); return; }
     const { data: role } = await supabase
       .from("user_roles").select("role").eq("user_id", uid).eq("role", "admin").maybeSingle();
     if (role) { nav("/admin", { replace: true }); return; }
@@ -68,7 +80,7 @@ const Auth = () => {
         email: email.trim(),
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/`,
+          emailRedirectTo: returnUrl,
           data: { pending_phone: phone.trim(), account_type: kind },
         },
       });
@@ -87,13 +99,13 @@ const Auth = () => {
   const google = async () => {
     setBusy(true);
     if (tab === "signup" && kind === "organization") localStorage.setItem(ORG_INTENT_KEY, "organization");
-    const r = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin });
+    const r = await lovable.auth.signInWithOAuth("google", { redirect_uri: returnUrl });
     if (r.error) { toast.error("Google sign-in failed"); setBusy(false); }
   };
   const apple = async () => {
     setBusy(true);
     if (tab === "signup" && kind === "organization") localStorage.setItem(ORG_INTENT_KEY, "organization");
-    const r = await lovable.auth.signInWithOAuth("apple", { redirect_uri: window.location.origin });
+    const r = await lovable.auth.signInWithOAuth("apple", { redirect_uri: returnUrl });
     if (r.error) { toast.error("Apple sign-in failed"); setBusy(false); }
   };
 

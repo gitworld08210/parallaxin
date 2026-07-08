@@ -14,6 +14,7 @@ import { CallProvider } from "@/contexts/CallProvider";
 // Eager: critical first-paint routes
 import Feed from "./pages/Feed";
 import Auth from "./pages/Auth";
+const OAuthConsent = lazy(() => import("./pages/OAuthConsent"));
 
 // Lazy: everything else streams in on demand
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
@@ -108,6 +109,7 @@ const App = () => (
           <Suspense fallback={<RouteFallback />}>
             <Routes>
               <Route path="/auth" element={<Auth />} />
+              <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/certificate/:postId" element={<Certificate />} />
               <Route element={<ProtectedRoute />}>

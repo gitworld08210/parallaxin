@@ -11,7 +11,10 @@ export const ProtectedRoute = () => {
       </div>
     );
   }
-  if (!user) return <Navigate to="/auth" state={{ from: loc.pathname }} replace />;
+  if (!user) {
+    const next = loc.pathname + loc.search;
+    return <Navigate to={`/auth?next=${encodeURIComponent(next)}`} state={{ from: loc.pathname }} replace />;
+  }
 
   // Funnel new users through the first-run flow once.
   const needsOnboarding = profile && !profile.onboarded_at;
