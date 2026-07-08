@@ -105,7 +105,7 @@ const Auth = () => {
   const apple = async () => {
     setBusy(true);
     if (tab === "signup" && kind === "organization") localStorage.setItem(ORG_INTENT_KEY, "organization");
-    const r = await lovable.auth.signInWithOAuth("apple", { redirect_uri: window.location.origin });
+    const r = await lovable.auth.signInWithOAuth("apple", { redirect_uri: returnUrl });
     if (r.error) { toast.error("Apple sign-in failed"); setBusy(false); }
   };
 
