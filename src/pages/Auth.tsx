@@ -99,7 +99,7 @@ const Auth = () => {
   const google = async () => {
     setBusy(true);
     if (tab === "signup" && kind === "organization") localStorage.setItem(ORG_INTENT_KEY, "organization");
-    const r = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin });
+    const r = await lovable.auth.signInWithOAuth("google", { redirect_uri: returnUrl });
     if (r.error) { toast.error("Google sign-in failed"); setBusy(false); }
   };
   const apple = async () => {
