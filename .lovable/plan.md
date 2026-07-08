@@ -1,44 +1,61 @@
-## What changes
+## Goal
+Simplify auth to a single Sign up / Log in surface. Remove the separate "Phone" tab. During signup, the user must verify **at least one** of: email or phone. Both fields are collected; verification of either one unlocks the app.
 
-### 1. Email is mandatory in every signup
+## Changes
 
-- **Email tab** (existing): keep as is — Supabase already blocks sign-in until the confirmation link is clicked.
-- **Signup**: add an email field. Flow becomes:
-  1. Enter phone + email → tap "Send code" (Twilio OTP goes to the phone).
-  2. Enter the 6-digit code → account is created with **both** phone (verified) and email (not yet verified).
-  3. User is signed in immediately, but the app shows a full-screen **"Verify your email"** gate on every route until they click the confirmation link. A "Resend email" button is on the gate.
+### 1. `src/pages/Auth.tsx` — collapse to 2 tabs
+- Remove the `"phone"` tab and all phone-OTP UI from this page.
+- Tabs become: **Log in** / **Sign up**.
+- Sign-up form fields (in order):
+  - Account kind (Personal / Organization) — unchanged
+  - Email (required)
+  - Phone in E.164 (required)
+  - Password (required, 6+)
+- On submit:
+  - Call `supabase.auth.signUp({ email, password, options: { data: { pending_phone: phone }, emailRedirectTo } })`.
+  - Immediately after, invoke `send-phone-otp` so a code is sent to the phone.
+  - Route user to the verification gate (they are signed-in-but-unverified, or if email confirmation blocks session, show "check your email" state).
+- Log-in tab stays email + password only. Phone-only login is dropped from this screen (kept out of scope per user request to remove the extra section).
 
+### 2. `src/components/auth/EmailVerificationGate.tsx` → rename conceptually to a **Verification Gate**
+Show whenever **neither** channel is verified. Dismiss as soon as **one** is verified.
 
+Logic (`useNeedsVerification`):
+```
+emailVerified = !!user.email_confirmed_at && !isSyntheticPhoneEmail(user.email)
+phoneVerified = !!user.phone_confirmed_at   // from auth.users
+needsGate     = !(emailVerified || phoneVerified)
+```
 
-### 3.Password reset via email link 
+Gate UI (single screen, two actions):
+- Headline: "Verify your account"
+- Subtext: "Confirm your email **or** your phone number to continue."
+- **Card A — Email**: shows the pending email, "Resend link" button (uses `supabase.auth.resend`). If no email attached (legacy phone-only user), show input to add one.
+- **Card B — Phone**: shows the pending phone from `user_metadata.pending_phone` or `user.phone`. Button "Send code" → calls `send-phone-otp`. Then a 6-digit input → calls a new small edge function `verify-signup-phone` that runs Twilio VerificationCheck and, on success, calls `admin.updateUserById(uid, { phone, phone_confirm: true })`.
+- Poll `supabase.auth.refreshSession()` every 8s; auto-close when either flag flips true.
+- Sign-out link at the bottom (kept).
 
-- New tab on `/reset-password`: "Reset via email".
-- Existing "Reset via email" flow stays.
+### 3. New edge function `supabase/functions/verify-signup-phone/index.ts`
+- Input: `{ phone, code }` + user's JWT (verify via `admin.auth.getUser(token)`).
+- Runs Twilio `VerificationCheck`.
+- On approved: `admin.auth.admin.updateUserById(user.id, { phone, phone_confirm: true })`.
+- Returns `{ ok: true }`.
 
-### 4. Verify new email when changing email
+### 4. Deprecate the standalone phone signup path
+- `verify-phone-otp` edge function stays (used elsewhere/for legacy) but is no longer invoked from Auth.tsx.
+- `send-phone-otp` is reused unchanged for the gate's phone verification.
 
-- The existing "Change email" screen already calls `supabase.auth.updateUser({ email })`, which triggers a confirmation link to the **new** address. Add clear copy so the user knows the change only takes effect after they click that link, and add a "Resend confirmation" button.
-
-### 5. Add / change phone number with SMS OTP
-
-- New "Phone number" screen under Settings → Security.
-- Shows current phone (if any). Enter new number → "Send code" (Twilio Verify) → enter code → edge function verifies and writes the phone onto the user record via admin API.
-
-## Technical bits
-
-- **Auth config**: call `supabase--configure_auth` with `auto_confirm_email: false`.
-- **New edge functions** (Twilio Verify + service-role admin API):
-  - `reset-password-phone` — verifies OTP, updates password for the user whose synthetic email matches the phone.
-  - `change-phone-otp` — verifies OTP, sets phone on the authenticated user (Bearer JWT from client).
-  - Update `verify-phone-otp` — accept an optional `email` on first-time signup and store it on the created user (email_confirm=false so the confirmation link is triggered).
-- **New client screens/updates**:
-  - `src/pages/Auth.tsx` — add email field to Phone tab.
-  - `src/pages/ResetPassword.tsx` — add "Reset via phone" tab with OTP + new-password form.
-  - `src/pages/security/ChangePhoneScreen.tsx` — new screen; add route + Settings link.
-  - `src/components/auth/EmailVerificationGate.tsx` — full-screen gate shown while `user.email_confirmed_at` is null; wraps the authenticated app in `AppShell`.
-  - Update `ChangeEmailScreen.tsx` — clarifying copy + "Resend confirmation" button.
+### 5. Copy tweaks
+- Gate title/subtitle updated to reflect "either one is enough".
+- Sign-up button label unchanged ("Create account").
 
 ## Out of scope
+- Password reset flow, change-email screen, change-phone screen — unchanged.
+- Removing/renaming `verify-phone-otp` function.
+- Auth email templates.
 
-- Custom-branded auth email templates (still uses default Lovable templates).
-- 2FA changes (existing TOTP flow untouched).
+## Files touched
+- edit `src/pages/Auth.tsx`
+- edit `src/components/auth/EmailVerificationGate.tsx` (rework to dual-channel gate)
+- create `supabase/functions/verify-signup-phone/index.ts`
+- deploy the new function
