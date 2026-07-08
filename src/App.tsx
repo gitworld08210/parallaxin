@@ -109,6 +109,7 @@ const App = () => (
           <Suspense fallback={<RouteFallback />}>
             <Routes>
               <Route path="/auth" element={<Auth />} />
+              <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/certificate/:postId" element={<Certificate />} />
               <Route element={<ProtectedRoute />}>
