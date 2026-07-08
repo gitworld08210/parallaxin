@@ -15,6 +15,17 @@ const PENDING_PHONE_KEY = "aurelix:pending_phone";
 const Auth = () => {
   const nav = useNavigate();
   const { user, loading } = useAuth();
+  const [params] = useSearchParams();
+
+  // Preserve a same-origin relative `next` path across every auth path so
+  // OAuth consent (and any other deep link) returns the user where they came from.
+  const nextPath = useMemo(() => {
+    const raw = params.get("next");
+    if (!raw) return null;
+    if (!raw.startsWith("/") || raw.startsWith("//")) return null;
+    return raw;
+  }, [params]);
+  const returnUrl = nextPath ? `${window.location.origin}${nextPath}` : `${window.location.origin}/`;
 
   const [tab, setTab] = useState<Tab>("signin");
   const [kind, setKind] = useState<AccountKind>("personal");
@@ -24,6 +35,7 @@ const Auth = () => {
   const [busy, setBusy] = useState(false);
 
   const routeForUser = async (uid: string) => {
+    if (nextPath) { nav(nextPath, { replace: true }); return; }
     const { data: role } = await supabase
       .from("user_roles").select("role").eq("user_id", uid).eq("role", "admin").maybeSingle();
     if (role) { nav("/admin", { replace: true }); return; }
