@@ -80,7 +80,7 @@ const Auth = () => {
         email: email.trim(),
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/`,
+          emailRedirectTo: returnUrl,
           data: { pending_phone: phone.trim(), account_type: kind },
         },
       });
