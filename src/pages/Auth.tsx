@@ -7,9 +7,10 @@ import { useAuth } from "@/contexts/AuthProvider";
 import { toast } from "sonner";
 import { Sparkles, User, Building2 } from "lucide-react";
 
-type Tab = "signin" | "signup" | "phone";
+type Tab = "signin" | "signup";
 type AccountKind = "personal" | "organization";
 const ORG_INTENT_KEY = "aurelix:signup_kind";
+const PENDING_PHONE_KEY = "aurelix:pending_phone";
 
 const Auth = () => {
   const nav = useNavigate();
@@ -18,14 +19,9 @@ const Auth = () => {
   const [tab, setTab] = useState<Tab>("signin");
   const [kind, setKind] = useState<AccountKind>("personal");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
-
-  // Phone flow
-  const [phone, setPhone] = useState("");
-  const [phoneEmail, setPhoneEmail] = useState("");
-  const [otp, setOtp] = useState("");
-  const [otpSent, setOtpSent] = useState(false);
 
   const routeForUser = async (uid: string) => {
     const { data: role } = await supabase
@@ -46,6 +42,7 @@ const Auth = () => {
   useEffect(() => { if (!loading && user) routeForUser(user.id); /* eslint-disable-next-line */ }, [user, loading]);
 
   const validEmail = () => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+  const validPhone = () => /^\+[1-9]\d{6,14}$/.test(phone.trim());
 
   const signIn = async () => {
     if (!validEmail() || password.length < 6) { toast.error("Enter a valid email and password"); return; }
@@ -62,20 +59,25 @@ const Auth = () => {
 
   const signUp = async () => {
     if (!validEmail() || password.length < 6) { toast.error("Enter a valid email and a password (6+ chars)"); return; }
+    if (!validPhone()) { toast.error("Enter phone in E.164 format, e.g. +14155551234"); return; }
     setBusy(true);
     try {
       if (kind === "organization") localStorage.setItem(ORG_INTENT_KEY, "organization");
+      localStorage.setItem(PENDING_PHONE_KEY, phone.trim());
       const { data, error } = await supabase.auth.signUp({
         email: email.trim(),
         password,
-        options: { emailRedirectTo: `${window.location.origin}/` },
+        options: {
+          emailRedirectTo: `${window.location.origin}/`,
+          data: { pending_phone: phone.trim(), account_type: kind },
+        },
       });
       if (error) throw error;
       if (data.session && data.user) {
-        toast.success("Account created ✦");
+        toast.success("Account created — verify your email or phone to continue.");
         await routeForUser(data.user.id);
       } else {
-        toast.success("Check your email to confirm your account.");
+        toast.success("Check your email to confirm — or sign in and verify your phone.");
       }
     } catch (e: any) {
       toast.error(e?.message || "Sign-up failed");
@@ -93,52 +95,6 @@ const Auth = () => {
     if (tab === "signup" && kind === "organization") localStorage.setItem(ORG_INTENT_KEY, "organization");
     const r = await lovable.auth.signInWithOAuth("apple", { redirect_uri: window.location.origin });
     if (r.error) { toast.error("Apple sign-in failed"); setBusy(false); }
-  };
-
-  const sendPhoneOtp = async () => {
-    const p = phone.trim();
-    if (!/^\+[1-9]\d{6,14}$/.test(p)) { toast.error("Enter phone in E.164 format, e.g. +14155551234"); return; }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(phoneEmail.trim())) {
-      toast.error("Add an email address — it's required to secure your account");
-      return;
-    }
-    setBusy(true);
-    const { data, error } = await supabase.functions.invoke("send-phone-otp", { body: { phone: p } });
-    setBusy(false);
-    if (error || (data as any)?.error) { toast.error((data as any)?.error || error?.message || "Failed to send code"); return; }
-    setOtpSent(true);
-    toast.success("Code sent");
-  };
-
-  const verifyPhoneOtp = async () => {
-    if (!/^\d{4,8}$/.test(otp)) { toast.error("Enter the code"); return; }
-    setBusy(true);
-    const { data, error } = await supabase.functions.invoke("verify-phone-otp", {
-      body: { phone: phone.trim(), code: otp, email: phoneEmail.trim() },
-    });
-    if (error || (data as any)?.error || !(data as any)?.session) {
-      setBusy(false);
-      toast.error((data as any)?.error || error?.message || "Invalid code");
-      return;
-    }
-    const s = (data as any).session;
-    await supabase.auth.setSession({ access_token: s.access_token, refresh_token: s.refresh_token });
-
-    // First-time phone signup: attach the real email + trigger a confirmation link
-    const pendingEmail = (data as any).pendingEmail as string | null;
-    if (pendingEmail) {
-      const { error: upErr } = await supabase.auth.updateUser(
-        { email: pendingEmail, data: { pending_email: pendingEmail, signup_method: "phone" } },
-        { emailRedirectTo: `${window.location.origin}/` },
-      );
-      if (upErr) toast.error(upErr.message);
-      else toast.success("Verification link sent to " + pendingEmail);
-    } else {
-      toast.success("Welcome ✦");
-    }
-    const uid = (data as any).user?.id;
-    setBusy(false);
-    if (uid) await routeForUser(uid);
   };
 
   const inputCls =
@@ -160,45 +116,17 @@ const Auth = () => {
         </motion.div>
 
         {/* Tabs */}
-        <div className="grid grid-cols-3 p-1 bg-secondary/40 border border-border rounded-2xl mb-5">
-          {(["signin","signup","phone"] as Tab[]).map((t) => (
+        <div className="grid grid-cols-2 p-1 bg-secondary/40 border border-border rounded-2xl mb-5">
+          {(["signin","signup"] as Tab[]).map((t) => (
             <button key={t}
               onClick={() => setTab(t)}
               className={`py-2.5 rounded-xl text-sm font-semibold transition-all ${tab===t ? "bg-background text-foreground shadow-sm" : "text-muted-foreground"}`}>
-              {t === "signin" ? "Log in" : t === "signup" ? "Sign up" : "Phone"}
+              {t === "signin" ? "Log in" : "Sign up"}
             </button>
           ))}
         </div>
 
         <AnimatePresence mode="wait">
-          {tab === "phone" ? (
-            <motion.form
-              key="phone"
-              onSubmit={(e) => { e.preventDefault(); otpSent ? verifyPhoneOtp() : sendPhoneOtp(); }}
-              initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-              className="space-y-3"
-            >
-              <input className={inputCls} type="tel" placeholder="+14155551234" value={phone}
-                onChange={(e)=>setPhone(e.target.value)} autoComplete="tel" required disabled={otpSent} />
-              <input className={inputCls} type="email" placeholder="you@aurelix.app (required)" value={phoneEmail}
-                onChange={(e)=>setPhoneEmail(e.target.value)} autoComplete="email" required disabled={otpSent} />
-              <p className="text-[11px] text-muted-foreground px-1 -mt-1">
-                We'll text a code to your phone and email a link to confirm your address.
-              </p>
-              {otpSent && (
-                <input className={inputCls} type="text" inputMode="numeric" placeholder="6-digit code"
-                  value={otp} onChange={(e)=>setOtp(e.target.value.replace(/\D/g,"").slice(0,8))} autoFocus required />
-              )}
-              <button disabled={busy} className="w-full py-3.5 rounded-2xl bg-gradient-primary text-primary-foreground font-semibold text-sm shadow-glow disabled:opacity-60 active:scale-[0.98] transition-transform">
-                {busy ? "…" : otpSent ? "Verify & continue" : "Send code"}
-              </button>
-              {otpSent && (
-                <button type="button" onClick={() => { setOtpSent(false); setOtp(""); }} className="w-full text-xs text-muted-foreground py-2">
-                  Change number
-                </button>
-              )}
-            </motion.form>
-          ) : (
           <motion.form
             key={tab}
             onSubmit={(e) => { e.preventDefault(); tab === "signin" ? signIn() : signUp(); }}
@@ -221,8 +149,16 @@ const Auth = () => {
               </div>
             )}
             <input className={inputCls} type="email" placeholder="you@aurelix.app" value={email} onChange={(e)=>setEmail(e.target.value)} autoComplete="email" required />
+            {tab === "signup" && (
+              <>
+                <input className={inputCls} type="tel" placeholder="+14155551234" value={phone}
+                  onChange={(e)=>setPhone(e.target.value)} autoComplete="tel" required />
+                <p className="text-[11px] text-muted-foreground px-1 -mt-1">
+                  You'll verify your email or phone after signing up — either one unlocks your account.
+                </p>
+              </>
+            )}
             <input className={inputCls} type="password" placeholder="Password" minLength={6} value={password} onChange={(e)=>setPassword(e.target.value)} autoComplete={tab === "signin" ? "current-password" : "new-password"} required />
-
 
             {tab === "signin" && (
               <div className="flex justify-end">
@@ -234,7 +170,6 @@ const Auth = () => {
               {busy ? "…" : tab === "signin" ? "Log in" : "Create account"}
             </button>
           </motion.form>
-          )}
         </AnimatePresence>
 
         <div className="flex items-center gap-3 my-6">
