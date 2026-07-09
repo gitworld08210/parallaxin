@@ -39,10 +39,25 @@ const Auth = () => {
     const { data: role } = await supabase
       .from("user_roles").select("role").eq("user_id", uid).eq("role", "admin").maybeSingle();
     if (role) { nav("/admin", { replace: true }); return; }
-    const { data: prof } = await supabase
-      .from("profiles").select("onboarded_at, account_type, organization_id").eq("user_id", uid).maybeSingle();
+
+    // Profile row is created by an auth trigger — briefly race-prone right after OAuth signup.
+    // Retry a couple of times so we don't lose org intent on first Google sign-up.
+    let prof: { onboarded_at: string | null; account_type: string | null; organization_id: string | null } | null = null;
+    for (let i = 0; i < 4; i++) {
+      const { data } = await supabase
+        .from("profiles").select("onboarded_at, account_type, organization_id").eq("user_id", uid).maybeSingle();
+      if (data) { prof = data as any; break; }
+      await new Promise((r) => setTimeout(r, 250));
+    }
+
     const intent = (localStorage.getItem(ORG_INTENT_KEY) as AccountKind | null) || null;
-    if (prof && !prof.organization_id && (prof.account_type === "organization" || intent === "organization")) {
+    const wantsOrg = intent === "organization" || prof?.account_type === "organization";
+
+    if (wantsOrg && !prof?.organization_id) {
+      // Persist the choice on the profile so future logins keep routing correctly.
+      if (prof && prof.account_type !== "organization") {
+        await supabase.from("profiles").update({ account_type: "organization" as any }).eq("user_id", uid);
+      }
       localStorage.removeItem(ORG_INTENT_KEY);
       nav("/onboarding/organization", { replace: true });
       return;
