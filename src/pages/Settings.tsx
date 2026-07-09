@@ -51,6 +51,14 @@ export default function Settings() {
           <Row to="/settings/phone" icon={Phone} title="Phone number" hint="Add or change your verified number" />
         </Section>
 
+        <Section label="Organization">
+          {hasOrg ? (
+            <Row to={`/org/${p.username}/admin`} icon={Building2} title="Organization admin" hint="Manage your organization" />
+          ) : (
+            <Row to="/onboarding/organization" icon={Building2} title="Create an organization" hint="Company, NGO, school — get an admin panel & affiliation badges" />
+          )}
+        </Section>
+
         <Section label="Aura Shield">
           <Row to="/settings/security" icon={Shield} title="Two-factor authentication" hint="Protect with a 6-digit aura" />
           <Row to="/settings/activity" icon={Activity} title="Login activity" hint="Constellation of recent sessions" />
