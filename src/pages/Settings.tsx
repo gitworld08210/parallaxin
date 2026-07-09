@@ -28,7 +28,8 @@ const Section = ({ label, children }: { label: string; children: React.ReactNode
 
 export default function Settings() {
   const nav = useNavigate();
-  const { signOut } = useAuth();
+  const { signOut, profile } = useAuth();
+  const orgUsername = profile?.organization_id ? (profile as any)?.username : null;
 
   return (
     <div>
