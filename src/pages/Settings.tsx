@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
-import { ChevronLeft, ChevronRight, Shield, KeyRound, Mail, Phone, Download, Trash2, EyeOff, Activity, UserX, Sparkles, LogOut } from "lucide-react";
+import { ChevronLeft, ChevronRight, Shield, KeyRound, Mail, Phone, Download, Trash2, EyeOff, Activity, UserX, Sparkles, LogOut, Building2 } from "lucide-react";
 import { TopBar } from "@/components/vibe/TopBar";
 import { useAuth } from "@/contexts/AuthProvider";
 
