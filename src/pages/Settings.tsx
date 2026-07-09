@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
-import { ChevronLeft, ChevronRight, Shield, KeyRound, Mail, Phone, Download, Trash2, EyeOff, Activity, UserX, Sparkles, LogOut } from "lucide-react";
+import { ChevronLeft, ChevronRight, Shield, KeyRound, Mail, Phone, Download, Trash2, EyeOff, Activity, UserX, Sparkles, LogOut, Building2 } from "lucide-react";
 import { TopBar } from "@/components/vibe/TopBar";
 import { useAuth } from "@/contexts/AuthProvider";
 
@@ -28,7 +28,9 @@ const Section = ({ label, children }: { label: string; children: React.ReactNode
 
 export default function Settings() {
   const nav = useNavigate();
-  const { signOut } = useAuth();
+  const { signOut, profile } = useAuth();
+  const p: any = profile || {};
+  const hasOrg = !!p.organization_id;
 
   return (
     <div>
@@ -47,6 +49,14 @@ export default function Settings() {
           <Row to="/settings/password" icon={KeyRound} title="Change password" />
           <Row to="/settings/email" icon={Mail} title="Change email" />
           <Row to="/settings/phone" icon={Phone} title="Phone number" hint="Add or change your verified number" />
+        </Section>
+
+        <Section label="Organization">
+          {hasOrg ? (
+            <Row to={`/org/${p.username}/admin`} icon={Building2} title="Organization admin" hint="Manage your organization" />
+          ) : (
+            <Row to="/onboarding/organization" icon={Building2} title="Create an organization" hint="Company, NGO, school — get an admin panel & affiliation badges" />
+          )}
         </Section>
 
         <Section label="Aura Shield">
