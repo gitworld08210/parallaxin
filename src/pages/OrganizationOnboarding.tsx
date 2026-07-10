@@ -54,21 +54,17 @@ const OrganizationOnboarding = () => {
     }
     setBusy(true);
     try {
-      const { data, error } = await supabase.rpc("create_organization" as any, {
-        _name: form.name.trim(),
-        _username: form.username.trim().toLowerCase(),
-        _logo_url: logoUrl,
-        _email: form.email.trim() || null,
-        _website: form.website.trim() || null,
-        _industry: form.industry.trim() || null,
-        _org_type: form.org_type,
-        _description: form.description.trim() || null,
-        _country: form.country.trim() || null,
-        _location: form.location.trim() || null,
+      const { data, error } = await supabase.rpc("create_organization_workspace", {
+        p_name: form.name.trim(),
+        p_username: form.username.trim().toLowerCase(),
+        p_org_type: form.org_type,
+        p_description: form.description?.trim() || null,
+        p_logo_url: logoUrl || null,
+        p_cover_url: null,
       });
       if (error) throw error;
       toast.success("Organization created ✦");
-      nav(`/org/${form.username.trim().toLowerCase()}/admin`, { replace: true });
+      nav(`/organization/dashboard`, { replace: true });
     } catch (e: any) {
       toast.error(e?.message || "Could not create organization");
     } finally {
