@@ -187,6 +187,28 @@ const App = () => (
                   <Route path="/live" element={<LiveList />} />
                   <Route path="/live/host" element={<CreatorGate><LiveHost /></CreatorGate>} />
                   <Route path="/live/:id" element={<LiveViewer />} />
+                  <Route path="/organization/create" element={<OrgCreateOrganization />} />
+                  <Route path="/organization" element={<OrganizationLayout />}>
+                    <Route index element={<OrgDashboard />} />
+                    <Route path="dashboard" element={<OrgDashboard />} />
+                    <Route path="feed" element={<OrgFeed />} />
+                    <Route path="members" element={<OrgMembers />} />
+                    <Route path="members/:memberId" element={<OrgMemberDetails />} />
+                    <Route path="roles" element={<OrgRoles />} />
+                    <Route path="permissions" element={<OrgPermissions />} />
+                    <Route path="departments" element={<OrgDepartments />} />
+                    <Route path="projects" element={<OrgProjects />} />
+                    <Route path="tasks" element={<OrgTasks />} />
+                    <Route path="calendar" element={<OrgCalendar />} />
+                    <Route path="drive" element={<OrgDrive />} />
+                    <Route path="hiring" element={<OrgHiring />} />
+                    <Route path="analytics" element={<OrgAnalytics />} />
+                    <Route path="settings" element={<OrgSettings />} />
+                    <Route path="profile" element={<OrgProfile />} />
+                    <Route path="announcements" element={<OrgAnnouncements />} />
+                    <Route path="search" element={<OrgSearch />} />
+                    <Route path="notifications" element={<OrgNotifications />} />
+                  </Route>
                 </Route>
               </Route>
               <Route element={<AdminRoute />}>
