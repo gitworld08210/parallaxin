@@ -91,6 +91,28 @@ const queryClient = new QueryClient({
   },
 });
 
+// Organization workspace (lazy)
+const OrganizationLayout = lazy(() => import("./components/organization/layout/OrganizationLayout"));
+const OrgCreateOrganization = lazy(() => import("./pages/organization/CreateOrganization"));
+const OrgDashboard = lazy(() => import("./pages/organization/OrganizationDashboard"));
+const OrgFeed = lazy(() => import("./pages/organization/OrganizationFeed"));
+const OrgMembers = lazy(() => import("./pages/organization/OrganizationMembers"));
+const OrgMemberDetails = lazy(() => import("./pages/organization/OrganizationMemberDetails"));
+const OrgRoles = lazy(() => import("./pages/organization/OrganizationRoles"));
+const OrgPermissions = lazy(() => import("./pages/organization/OrganizationPermissions"));
+const OrgDepartments = lazy(() => import("./pages/organization/OrganizationDepartments"));
+const OrgProjects = lazy(() => import("./pages/organization/OrganizationProjects"));
+const OrgTasks = lazy(() => import("./pages/organization/OrganizationTasks"));
+const OrgCalendar = lazy(() => import("./pages/organization/OrganizationCalendar"));
+const OrgDrive = lazy(() => import("./pages/organization/OrganizationDrive"));
+const OrgHiring = lazy(() => import("./pages/organization/OrganizationHiring"));
+const OrgAnalytics = lazy(() => import("./pages/organization/OrganizationAnalytics"));
+const OrgSettings = lazy(() => import("./pages/organization/OrganizationSettings"));
+const OrgProfile = lazy(() => import("./pages/organization/OrganizationProfile"));
+const OrgAnnouncements = lazy(() => import("./pages/organization/OrganizationAnnouncements"));
+const OrgSearch = lazy(() => import("./pages/organization/OrganizationSearch"));
+const OrgNotifications = lazy(() => import("./pages/organization/OrganizationNotifications"));
+
 const RouteFallback = () => (
   <div className="min-h-screen grid place-items-center">
     <div className="h-8 w-8 rounded-full border-2 border-primary border-t-transparent animate-spin" />
@@ -165,6 +187,28 @@ const App = () => (
                   <Route path="/live" element={<LiveList />} />
                   <Route path="/live/host" element={<CreatorGate><LiveHost /></CreatorGate>} />
                   <Route path="/live/:id" element={<LiveViewer />} />
+                  <Route path="/organization/create" element={<OrgCreateOrganization />} />
+                  <Route path="/organization" element={<OrganizationLayout />}>
+                    <Route index element={<OrgDashboard />} />
+                    <Route path="dashboard" element={<OrgDashboard />} />
+                    <Route path="feed" element={<OrgFeed />} />
+                    <Route path="members" element={<OrgMembers />} />
+                    <Route path="members/:memberId" element={<OrgMemberDetails />} />
+                    <Route path="roles" element={<OrgRoles />} />
+                    <Route path="permissions" element={<OrgPermissions />} />
+                    <Route path="departments" element={<OrgDepartments />} />
+                    <Route path="projects" element={<OrgProjects />} />
+                    <Route path="tasks" element={<OrgTasks />} />
+                    <Route path="calendar" element={<OrgCalendar />} />
+                    <Route path="drive" element={<OrgDrive />} />
+                    <Route path="hiring" element={<OrgHiring />} />
+                    <Route path="analytics" element={<OrgAnalytics />} />
+                    <Route path="settings" element={<OrgSettings />} />
+                    <Route path="profile" element={<OrgProfile />} />
+                    <Route path="announcements" element={<OrgAnnouncements />} />
+                    <Route path="search" element={<OrgSearch />} />
+                    <Route path="notifications" element={<OrgNotifications />} />
+                  </Route>
                 </Route>
               </Route>
               <Route element={<AdminRoute />}>
