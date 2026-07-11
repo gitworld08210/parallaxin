@@ -56,21 +56,27 @@ export const OrganizationProvider = ({ children }: { children: ReactNode }) => {
   const workspaces = workspacesQuery.data ?? [];
 
   // 2. Resolve slug → organization row. If no slug, pick the user's first workspace.
+  //    Key includes the fallback workspace id so the query refetches when the
+  //    workspaces list arrives/changes (prevents stale cache on /organization).
+  const fallbackWorkspaceId = !slug ? workspaces[0]?.id ?? null : null;
   const resolveQuery = useQuery({
-    queryKey: orgKeys.bySlug(slug ?? null),
+    queryKey: slug
+      ? orgKeys.bySlug(slug)
+      : ([...orgKeys.bySlug(null), "fallback", fallbackWorkspaceId ?? "__none__"] as const),
     queryFn: async () => {
       if (slug) return organizationService.resolveBySlug(slug);
-      if (workspaces.length > 0) {
+      const first = workspaces[0];
+      if (first) {
         return {
-          id: workspaces[0].id,
-          slug: workspaces[0].slug,
-          name: workspaces[0].name,
+          id: first.id,
+          slug: first.slug,
+          name: first.name,
           username: "",
-          logo_url: workspaces[0].logo_url,
+          logo_url: first.logo_url,
           cover_url: null,
           org_type: null,
           is_member: true,
-          is_owner: workspaces[0].is_owner,
+          is_owner: first.is_owner,
         };
       }
       return null;

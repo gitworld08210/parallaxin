@@ -33,14 +33,26 @@ export const organizationApi = {
 
   /** Every workspace the signed-in user belongs to (owner or active member). */
   async listWorkspacesForUser(userId: string): Promise<WorkspaceSummary[]> {
-    const { data: memberRows, error: memberErr } = await supabase
-      .from("organization_members")
-      .select("organization_id, organizations(id, slug, name, logo_url, owner_user_id)")
-      .eq("user_id", userId)
-      .eq("status", "active");
-    if (memberErr) throw memberErr;
+    // Fetch member-based and owner-based workspaces in parallel, then merge.
+    // Owner rows guarantee owners see their org even without an explicit
+    // organization_members entry.
+    const [memberRes, ownerRes] = await Promise.all([
+      supabase
+        .from("organization_members")
+        .select("organization_id, organizations(id, slug, name, logo_url, owner_user_id)")
+        .eq("user_id", userId)
+        .eq("status", "active"),
+      supabase
+        .from("organizations")
+        .select("id, slug, name, logo_url, owner_user_id")
+        .eq("owner_user_id", userId),
+    ]);
+    if (memberRes.error) throw memberRes.error;
+    if (ownerRes.error) throw ownerRes.error;
 
-    const rows = (memberRows ?? []) as Array<{
+    const byId = new Map<string, WorkspaceSummary>();
+
+    for (const r of (memberRes.data ?? []) as Array<{
       organization_id: string;
       organizations: {
         id: string;
@@ -49,17 +61,37 @@ export const organizationApi = {
         logo_url: string | null;
         owner_user_id: string;
       } | null;
-    }>;
-
-    return rows
-      .filter((r) => r.organizations)
-      .map((r) => ({
-        id: r.organizations!.id,
-        slug: r.organizations!.slug,
-        name: r.organizations!.name,
-        logo_url: r.organizations!.logo_url,
-        is_owner: r.organizations!.owner_user_id === userId,
+    }>) {
+      const o = r.organizations;
+      if (!o) continue;
+      byId.set(o.id, {
+        id: o.id,
+        slug: o.slug,
+        name: o.name,
+        logo_url: o.logo_url,
+        is_owner: o.owner_user_id === userId,
         role_names: [],
-      }));
+      });
+    }
+
+    for (const o of (ownerRes.data ?? []) as Array<{
+      id: string;
+      slug: string;
+      name: string;
+      logo_url: string | null;
+      owner_user_id: string;
+    }>) {
+      if (byId.has(o.id)) continue;
+      byId.set(o.id, {
+        id: o.id,
+        slug: o.slug,
+        name: o.name,
+        logo_url: o.logo_url,
+        is_owner: true,
+        role_names: [],
+      });
+    }
+
+    return Array.from(byId.values());
   },
 };
