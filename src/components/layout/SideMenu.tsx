@@ -7,12 +7,12 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useAuth } from "@/contexts/AuthProvider";
 import { AuraAvatar } from "@/components/vibe/AuraAvatar";
 import { gradientFor, initialsOf } from "@/lib/format";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useIsCreator } from "@/hooks/useIsCreator";
 import { BecomeCreatorSheet } from "@/components/creator/BecomeCreatorSheet";
 import { useTheme } from "@/contexts/ThemeProvider";
 import { AppearanceSheet } from "@/components/layout/AppearanceSheet";
-import { supabase } from "@/integrations/supabase/client";
+import { useMyWorkspaces } from "@/hooks/organization/useMyWorkspaces";
 
 export const SideMenu = ({ trigger }: { trigger: React.ReactNode }) => {
   const { user, profile, signOut } = useAuth();
