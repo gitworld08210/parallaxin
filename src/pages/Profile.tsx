@@ -580,9 +580,9 @@ const Profile = () => {
                   <p className="text-muted-foreground">No bio yet.</p>
                 )}
                 <dl className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-                  {locationRaw && <Field label="Location" value={locationRaw} />}
-                  {websiteHref && <Field label="Website" value={websiteLabel!} href={websiteHref} />}
-                  {joined && <Field label="Joined" value={joined} />}
+                  {locationRaw && <AboutField label="Location" value={locationRaw} />}
+                  {websiteHref && <AboutField label="Website" value={websiteLabel!} href={websiteHref} />}
+                  {joined && <AboutField label="Joined" value={joined} />}
                 </dl>
               </div>
             )}
