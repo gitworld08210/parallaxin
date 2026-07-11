@@ -87,16 +87,16 @@ const Notifications = () => {
     );
     let token = (cached as any)?.invite_token as string | undefined;
     if (!token) {
-      const { data } = await supabase
-        .from("organization_invites")
-        .select("invite_token")
-        .eq("organization_id", organizationId)
-        .eq("status", "pending")
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-      token = (data as any)?.invite_token;
+      // Fall back to the SECURITY DEFINER RPC — works for invitees who aren't
+      // yet org members (base-table SELECT is scoped to members).
+      const { data } = await supabase.rpc(
+        "list_incoming_organization_invites" as any,
+      );
+      const rows = (data ?? []) as any[];
+      const match = rows.find((r) => r.organization_id === organizationId);
+      token = match?.invite_token;
     }
+
     if (!token) {
       toast.info("This invitation is no longer available.");
       return;
