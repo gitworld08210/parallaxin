@@ -36,6 +36,8 @@ export const SideMenu = ({ trigger }: { trigger: React.ReactNode }) => {
   const dark = theme === "dark";
   const [becomeOpen, setBecomeOpen] = useState(false);
   const [appearanceOpen, setAppearanceOpen] = useState(false);
+  const [switcherOpen, setSwitcherOpen] = useState(false);
+
 
   const { workspaces } = useMyWorkspaces();
   const ownedWorkspace =
