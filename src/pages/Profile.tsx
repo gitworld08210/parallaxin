@@ -84,6 +84,7 @@ const Profile = () => {
   const [reportOpen, setReportOpen] = useState(false);
   const [becomeOpen, setBecomeOpen] = useState(false);
   const [verifyOpen, setVerifyOpen] = useState(false);
+  const [coverPreviewOpen, setCoverPreviewOpen] = useState(false);
 
   const { memberships: rawMemberships } = useUserOrganizations(profile?.user_id ?? null);
   const memberships = useMemo(
