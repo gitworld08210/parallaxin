@@ -49,6 +49,22 @@ export interface WorkspaceSummary {
   logo_url: string | null;
   is_owner: boolean;
   role_names: string[];
+  /** Canonical membership row id when the user has one; synthesised
+   *  "owner:<orgId>" placeholder when the user is only the owner. */
+  membership_id: string;
+  joined_at: string | null;
+  verified: boolean;
+  org_type: OrgType | null;
+  owner_user_id: string;
 }
+
+/** Canonical verification "kind" used by <VerificationBadge/>.
+ *  Derived from Organization.org_type so the badge is data-driven. */
+export type OrganizationVerificationKind =
+  | "verified"
+  | "business"
+  | "gov"
+  | "creator";
+
 
 export type ResolvedPermissionSet = ReadonlySet<OrgPermissionKey | string>;
