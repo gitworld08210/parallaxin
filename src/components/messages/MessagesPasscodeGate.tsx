@@ -2,12 +2,16 @@
 // Flow:
 //   1. First visit → setup wizard (create passcode → confirm → pick a security
 //      question and answer for recovery).
-//   2. Subsequent visits → passcode keypad; on unlock renders children.
+//   2. Every entry into Messages → passcode keypad; on unlock renders children.
+//      Unlock lasts ONLY while the user stays inside /messages. As soon as
+//      they navigate to any other route (Reels, Feed, Profile, …) the gate
+//      re-locks, so re-entering Messages always re-prompts.
 //   3. "Forgot Passcode" → asks the previously chosen security question; a
 //      correct answer lets the user set a new passcode.
 // Storage is per-user via localStorage. Passcode + answer are stored as
 // SHA-256 hashes only — never in plaintext.
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Delete, ArrowLeft, ShieldCheck, KeyRound, Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthProvider";
