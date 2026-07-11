@@ -1,0 +1,1 @@
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.verification_requests TO authenticated; GRANT ALL ON public.verification_requests TO service_role;
