@@ -20,6 +20,7 @@ type N = {
   created_at: string;
   actor_id: string | null;
   post_id: string | null;
+  organization_id: string | null;
   actor: { username: string; display_name: string; avatar_url: string | null } | null;
 };
 
@@ -30,7 +31,7 @@ const iconFor = (t: string) =>
   t === "collab_invite" || t === "collab_accepted" ? Users :
   t === "verification_approved" || t === "verification_revoked" ? BadgeCheck :
   t === "founder_inducted" || t === "founder_revoked" ? Crown :
-  t.startsWith("org_") ? Building2 :
+  t.startsWith("org_") || t === "organization_invite" || t.startsWith("affiliation_") ? Building2 :
   Mail;
 
 const textFor = (t: string) =>
@@ -40,11 +41,16 @@ const textFor = (t: string) =>
   t === "mention" ? "mentioned you in a post." :
   t === "collab_invite" ? "invited you to collaborate on a post." :
   t === "collab_accepted" ? "accepted your collab invite." :
+  t === "organization_invite" ? "invited you to join their organization." :
+  t === "affiliation_invite" ? "invited you to affiliate with their organization." :
+  t === "affiliation_accepted" ? "accepted your affiliation." :
+  t === "affiliation_revoked" ? "revoked your affiliation." :
   t === "verification_approved" ? "Your account has been verified." :
   t === "verification_revoked" ? "Your verification has been removed." :
   t === "founder_inducted" ? "Welcome to the Hall of Founders." :
   t === "founder_revoked" ? "Your founder status has been updated." :
   "sent you a message.";
+
 
 const isSystem = (t: string) => t.startsWith("verification_") || t.startsWith("founder_");
 
