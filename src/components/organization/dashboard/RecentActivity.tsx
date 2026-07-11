@@ -1,67 +1,54 @@
-// RecentActivity — UI scaffold. Compose real markup as the feature ships.
-import { UserPlus, Clapperboard, FolderPlus, Sparkles, Bell } from "lucide-react";
+// RecentActivity — real audit/activity data from useOrganizationDashboard.
+import { formatDistanceToNow } from "date-fns";
+import { Activity } from "lucide-react";
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-
-const activities = [
-  {
-    title: "Rahul joined Engineering",
-    subtitle: "2 minutes ago",
-    icon: UserPlus,
-  },
-  {
-    title: "Marketing uploaded a Reel",
-    subtitle: "12 minutes ago",
-    icon: Clapperboard,
-  },
-  {
-    title: "Project Aurelix Mobile created",
-    subtitle: "34 minutes ago",
-    icon: FolderPlus,
-  },
-  {
-    title: "AI summarized today's work",
-    subtitle: "1 hour ago",
-    icon: Sparkles,
-  },
-  {
-    title: "HR published announcement",
-    subtitle: "Today",
-    icon: Bell,
-  },
-];
+import { Skeleton } from "@/components/ui/skeleton";
+import { useOrganizationDashboard } from "@/hooks/organization/useOrganizationDashboard";
 
 export const RecentActivity = () => {
+  const { recentActivity, loading } = useOrganizationDashboard();
+
   return (
     <Card>
       <CardContent className="p-6">
         <div className="mb-6 flex items-center justify-between">
           <h2 className="text-xl font-bold">Recent Activity</h2>
-
           <span className="text-sm text-muted-foreground">Live</span>
         </div>
 
         <div className="space-y-5">
-          {activities.map((activity) => {
-            const Icon = activity.icon;
-
-            return (
-              <div key={activity.title} className="flex items-center gap-4">
-                <Avatar>
-                  <AvatarFallback>
-                    <Icon className="h-4 w-4" />
-                  </AvatarFallback>
-                </Avatar>
-
-                <div className="flex-1">
-                  <p className="font-medium">{activity.title}</p>
-
-                  <p className="text-sm text-muted-foreground">{activity.subtitle}</p>
+          {loading && recentActivity.length === 0 &&
+            Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="flex items-center gap-4">
+                <Skeleton className="h-10 w-10 rounded-full" />
+                <div className="flex-1 space-y-2">
+                  <Skeleton className="h-4 w-48" />
+                  <Skeleton className="h-3 w-24" />
                 </div>
               </div>
-            );
-          })}
+            ))}
+
+          {!loading && recentActivity.length === 0 && (
+            <p className="text-sm text-muted-foreground">No activity yet.</p>
+          )}
+
+          {recentActivity.map((activity) => (
+            <div key={activity.id} className="flex items-center gap-4">
+              <Avatar>
+                <AvatarFallback>
+                  <Activity className="h-4 w-4" />
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex-1">
+                <p className="font-medium">{activity.title}</p>
+                <p className="text-sm text-muted-foreground">
+                  {formatDistanceToNow(new Date(activity.created_at), { addSuffix: true })}
+                </p>
+              </div>
+            </div>
+          ))}
         </div>
       </CardContent>
     </Card>
