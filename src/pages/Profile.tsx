@@ -1,25 +1,42 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, BadgeCheck, Grid3x3, Film, Bookmark, MoreHorizontal, Ban, VolumeX, Flag, Crown, Menu, Bell, UserPlus, Share2, Tag as TagIcon, Mic, Image as ImageIcon, Pin, PinOff } from "lucide-react";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { AuraAvatar } from "@/components/vibe/AuraAvatar";
-import { VerificationBadge } from "@/components/vibe/VerificationBadge";
-import { PostCard, FeedPost } from "@/components/social/PostCard";
+import {
+  ArrowLeft,
+  Bell,
+  Bookmark,
+  Building2,
+  Film,
+  Grid3x3,
+  Info,
+  Menu,
+  Mic,
+  Tag as TagIcon,
+} from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+
+import { PostCard, type FeedPost } from "@/components/social/PostCard";
 import { CommentSheet } from "@/components/social/CommentSheet";
 import { ReportSheet } from "@/components/social/ReportSheet";
 import { HighlightsRail } from "@/components/social/HighlightsRail";
-import { FounderBadge } from "@/components/founders/FounderBadge";
 import { SideMenu } from "@/components/layout/SideMenu";
-import { ProfileShowcase } from "@/components/profile/ProfileShowcase";
+import { BecomeCreatorSheet } from "@/components/creator/BecomeCreatorSheet";
 import { EmptyState } from "@/components/empty/EmptyState";
+
+import { ProfileHero } from "@/components/profile/ProfileHero";
+import { ProfileIdentity } from "@/components/profile/ProfileIdentity";
+import { ProfileActions } from "@/components/profile/ProfileActions";
+import { ProfileStats, type ProfileStat } from "@/components/profile/ProfileStats";
+import { ProfileTabs, type ProfileTabDef } from "@/components/profile/ProfileTabs";
+import { OrganizationsSection } from "@/components/profile/OrganizationsSection";
+import { VerificationSheet } from "@/components/profile/VerificationSheet";
+import { PostGrid, PostGridSkeleton } from "@/components/profile/PostGrid";
+import { ProfileAbout } from "@/components/profile/ProfileAbout";
+
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthProvider";
-import { fmt, gradientFor, initialsOf } from "@/lib/format";
+import { useUserOrganizations } from "@/hooks/organization/useUserOrganizations";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { BecomeCreatorSheet } from "@/components/creator/BecomeCreatorSheet";
-import { OrganizationMemberChip } from "@/components/organization/OrganizationMemberChip";
-import { useUserOrganizations } from "@/hooks/organization/useUserOrganizations";
 
 type ProfileRow = {
   user_id: string;
@@ -37,14 +54,21 @@ type ProfileRow = {
   join_era?: string | null;
   founder_title?: string | null;
   council_role?: string | null;
+  created_at?: string | null;
+  aura_rank?: string | null;
+  contribution_score?: number | null;
+  tier?: string | null;
+  interests?: string[] | null;
+  is_creator?: boolean | null;
 };
 
-type Tab = "posts" | "reels" | "spaces" | "saved" | "tagged";
+type Tab = "posts" | "media" | "organizations" | "about" | "saved" | "tagged";
 
 const Profile = () => {
   const { username } = useParams();
   const { user, profile: me } = useAuth();
   const nav = useNavigate();
+
   const [profile, setProfile] = useState<ProfileRow | null>(null);
   const [posts, setPosts] = useState<FeedPost[]>([]);
   const [reels, setReels] = useState<FeedPost[]>([]);
@@ -53,89 +77,147 @@ const Profile = () => {
   const [isBlocked, setIsBlocked] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [contentLoading, setContentLoading] = useState(true);
   const [tab, setTab] = useState<Tab>("posts");
   const [commentPost, setCommentPost] = useState<string | null>(null);
   const [reportOpen, setReportOpen] = useState(false);
   const [becomeOpen, setBecomeOpen] = useState(false);
+  const [verifyOpen, setVerifyOpen] = useState(false);
+
   const { memberships: rawMemberships } = useUserOrganizations(profile?.user_id ?? null);
-  // Deterministic order: owner-first, then most-recent joined, then name.
-  const memberships = [...rawMemberships].sort((a, b) => {
-    if (a.is_owner !== b.is_owner) return a.is_owner ? -1 : 1;
-    const aj = a.joined_at ? Date.parse(a.joined_at) : 0;
-    const bj = b.joined_at ? Date.parse(b.joined_at) : 0;
-    if (aj !== bj) return bj - aj;
-    return a.name.localeCompare(b.name);
-  });
-  const primaryMembership = memberships[0] ?? null;
-  const ownerMembership = memberships.find((m) => m.is_owner) ?? null;
+  const memberships = useMemo(
+    () =>
+      [...rawMemberships].sort((a, b) => {
+        if (a.is_owner !== b.is_owner) return a.is_owner ? -1 : 1;
+        const aj = a.joined_at ? Date.parse(a.joined_at) : 0;
+        const bj = b.joined_at ? Date.parse(b.joined_at) : 0;
+        if (aj !== bj) return bj - aj;
+        return a.name.localeCompare(b.name);
+      }),
+    [rawMemberships],
+  );
 
   const isMe = !username || (me && username === me.username);
 
   useEffect(() => {
     (async () => {
       setLoading(true);
+      setContentLoading(true);
       const target = username || me?.username;
-      if (!target) { setLoading(false); return; }
-      const { data: p } = await supabase.from("profiles").select("*").eq("username", target).maybeSingle();
+      if (!target) {
+        setLoading(false);
+        setContentLoading(false);
+        return;
+      }
+      const { data: p } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("username", target)
+        .maybeSingle();
       setProfile(p as ProfileRow | null);
+      setLoading(false);
+
       if (p) {
-        const sel = "id, user_id, content, media_url, media_type, like_count, comment_count, created_at, has_certificate, is_pinned, pinned_at, profile:profiles!posts_user_profile_fkey(username, display_name, avatar_url, verified, verification_kind)";
-        const { data: ownPosts } = await supabase.from("posts").select(sel)
-          .eq("user_id", p.user_id).eq("is_reel", false).order("created_at", { ascending: false });
-        const { data: collabRows } = await supabase.from("post_collaborators" as any)
-          .select("post_id").eq("user_id", p.user_id).eq("status", "accepted");
+        const sel =
+          "id, user_id, content, media_url, media_type, like_count, comment_count, created_at, has_certificate, is_pinned, pinned_at, profile:profiles!posts_user_profile_fkey(username, display_name, avatar_url, verified, verification_kind)";
+        const { data: ownPosts } = await supabase
+          .from("posts")
+          .select(sel)
+          .eq("user_id", p.user_id)
+          .eq("is_reel", false)
+          .order("created_at", { ascending: false });
+        const { data: collabRows } = await supabase
+          .from("post_collaborators" as any)
+          .select("post_id")
+          .eq("user_id", p.user_id)
+          .eq("status", "accepted");
         const collabIds = (collabRows ?? []).map((r: any) => r.post_id);
         let collabPosts: any[] = [];
         if (collabIds.length) {
-          const { data } = await supabase.from("posts").select(sel)
-            .in("id", collabIds).eq("is_reel", false).order("created_at", { ascending: false });
+          const { data } = await supabase
+            .from("posts")
+            .select(sel)
+            .in("id", collabIds)
+            .eq("is_reel", false)
+            .order("created_at", { ascending: false });
           collabPosts = data ?? [];
         }
         const seen = new Set<string>();
         const pdata = [...(ownPosts ?? []), ...collabPosts]
-          .filter((d: any) => { if (seen.has(d.id)) return false; seen.add(d.id); return true; })
+          .filter((d: any) => {
+            if (seen.has(d.id)) return false;
+            seen.add(d.id);
+            return true;
+          })
           .sort((a: any, b: any) => {
             const ap = (a as any).is_pinned ? 1 : 0;
             const bp = (b as any).is_pinned ? 1 : 0;
             if (ap !== bp) return bp - ap;
             return +new Date(b.created_at) - +new Date(a.created_at);
           });
-        const { data: rdata } = await supabase.from("posts").select(sel)
-          .eq("user_id", p.user_id).eq("is_reel", true).order("created_at", { ascending: false });
-
+        const { data: rdata } = await supabase
+          .from("posts")
+          .select(sel)
+          .eq("user_id", p.user_id)
+          .eq("is_reel", true)
+          .order("created_at", { ascending: false });
 
         let liked = new Set<string>();
         const allIds = [...(pdata ?? []), ...(rdata ?? [])].map((d: any) => d.id);
         if (user && allIds.length) {
-          const { data: l } = await supabase.from("likes").select("post_id").eq("user_id", user.id).in("post_id", allIds);
+          const { data: l } = await supabase
+            .from("likes")
+            .select("post_id")
+            .eq("user_id", user.id)
+            .in("post_id", allIds);
           liked = new Set((l ?? []).map((x) => x.post_id));
         }
         setPosts((pdata ?? []).map((d: any) => ({ ...d, liked: liked.has(d.id) })));
         setReels((rdata ?? []).map((d: any) => ({ ...d, liked: liked.has(d.id) })));
 
         if (user && p.user_id === user.id) {
-          const { data: sv } = await supabase.from("saves").select(`post_id, post:posts(${sel})`).eq("user_id", user.id).order("created_at", { ascending: false });
-          setSaved(((sv ?? []).map((s: any) => s.post).filter(Boolean)).map((d: any) => ({ ...d, liked: liked.has(d.id) })));
+          const { data: sv } = await supabase
+            .from("saves")
+            .select(`post_id, post:posts(${sel})`)
+            .eq("user_id", user.id)
+            .order("created_at", { ascending: false });
+          setSaved(
+            ((sv ?? []).map((s: any) => s.post).filter(Boolean)).map((d: any) => ({
+              ...d,
+              liked: liked.has(d.id),
+            })),
+          );
         }
 
         if (user && p.user_id !== user.id) {
-          const { data: f } = await supabase.from("follows").select("follower_id").eq("follower_id", user.id).eq("following_id", p.user_id).maybeSingle();
+          const { data: f } = await supabase
+            .from("follows")
+            .select("follower_id")
+            .eq("follower_id", user.id)
+            .eq("following_id", p.user_id)
+            .maybeSingle();
           setIsFollowing(!!f);
-          const { data: b } = await (supabase.from("blocks" as any).select("blocker_id").eq("blocker_id", user.id).eq("blocked_id", p.user_id).maybeSingle() as any);
+          const { data: b } = await (supabase
+            .from("blocks" as any)
+            .select("blocker_id")
+            .eq("blocker_id", user.id)
+            .eq("blocked_id", p.user_id)
+            .maybeSingle() as any);
           setIsBlocked(!!b);
-          const { data: mu } = await (supabase.from("mutes" as any).select("muter_id").eq("muter_id", user.id).eq("muted_id", p.user_id).maybeSingle() as any);
+          const { data: mu } = await (supabase
+            .from("mutes" as any)
+            .select("muter_id")
+            .eq("muter_id", user.id)
+            .eq("muted_id", p.user_id)
+            .maybeSingle() as any);
           setIsMuted(!!mu);
         }
-
-        // Organization memberships are loaded via useUserOrganizations().
-
-
-
       }
-      setLoading(false);
+      setContentLoading(false);
     })();
   }, [username, me?.username, user?.id]);
 
+  // ============ Mutations ============
   const toggleBlock = async () => {
     if (!user || !profile) return;
     if (isBlocked) {
@@ -145,8 +227,10 @@ const Profile = () => {
     } else {
       setIsBlocked(true);
       const { error } = await (supabase.from("blocks" as any).insert({ blocker_id: user.id, blocked_id: profile.user_id } as any) as any);
-      if (error) { setIsBlocked(false); toast.error(error.message); }
-      else {
+      if (error) {
+        setIsBlocked(false);
+        toast.error(error.message);
+      } else {
         await supabase.from("follows").delete().eq("follower_id", user.id).eq("following_id", profile.user_id);
         await supabase.from("follows").delete().eq("follower_id", profile.user_id).eq("following_id", user.id);
         toast.success("Blocked");
@@ -162,7 +246,10 @@ const Profile = () => {
     } else {
       setIsMuted(true);
       const { error } = await (supabase.from("mutes" as any).insert({ muter_id: user.id, muted_id: profile.user_id } as any) as any);
-      if (error) { setIsMuted(false); toast.error(error.message); } else toast.success("Muted");
+      if (error) {
+        setIsMuted(false);
+        toast.error(error.message);
+      } else toast.success("Muted");
     }
   };
   const toggleFollow = async () => {
@@ -173,306 +260,298 @@ const Profile = () => {
     } else {
       setIsFollowing(true);
       const { error } = await supabase.from("follows").insert({ follower_id: user.id, following_id: profile.user_id });
-      if (error) { setIsFollowing(false); toast.error(error.message); }
+      if (error) {
+        setIsFollowing(false);
+        toast.error(error.message);
+      }
     }
   };
-
+  const openDM = async () => {
+    if (!user || !profile) return;
+    const { data, error } = await supabase.rpc("start_dm", { other_user_id: profile.user_id });
+    if (error) {
+      toast.error(error.message || "Could not start chat");
+      return;
+    }
+    if (data) nav(`/messages/${data}`);
+  };
   const shareProfile = async () => {
     const url = `${window.location.origin}/u/${profile?.username}`;
     try {
       if (navigator.share) await navigator.share({ title: profile?.display_name || profile?.username, url });
-      else { await navigator.clipboard.writeText(url); toast.success("Profile link copied"); }
-    } catch {/* ignore */}
+      else {
+        await navigator.clipboard.writeText(url);
+        toast.success("Profile link copied");
+      }
+    } catch {
+      /* ignore */
+    }
+  };
+  const togglePin = async (p: FeedPost) => {
+    const next = !(p as any).is_pinned;
+    const { error } = await supabase.rpc("toggle_post_pin" as any, { _post_id: p.id, _pin: next });
+    if (error) {
+      toast.error(error.message || "Failed");
+      return;
+    }
+    toast.success(next ? "Pinned" : "Unpinned");
+    setPosts((prev) => {
+      const updated = prev.map((x) =>
+        x.id === p.id ? ({ ...x, is_pinned: next, pinned_at: next ? new Date().toISOString() : null } as any) : x,
+      );
+      return updated.sort((a: any, b: any) => {
+        const ap = a.is_pinned ? 1 : 0;
+        const bp = b.is_pinned ? 1 : 0;
+        if (ap !== bp) return bp - ap;
+        return +new Date(b.created_at) - +new Date(a.created_at);
+      });
+    });
   };
 
-  if (loading) return <div className="p-10 text-center text-sm text-muted-foreground">Loading…</div>;
-  if (!profile) return <div className="p-10 text-center text-sm text-muted-foreground">Profile not found.</div>;
+  // ============ Render ============
+  if (loading) {
+    return (
+      <div className="pb-10">
+        <div className="h-14 border-b border-border" />
+        <div className="aspect-[3/1] sm:aspect-[4/1] w-full bg-secondary/40 animate-pulse" />
+        <div className="px-4 pt-16 space-y-3">
+          <div className="h-6 w-40 rounded bg-secondary animate-pulse" />
+          <div className="h-4 w-24 rounded bg-secondary animate-pulse" />
+        </div>
+      </div>
+    );
+  }
+  if (!profile) {
+    return (
+      <EmptyState
+        icon={Info}
+        title="Profile not found"
+        subtitle="This account may have been removed or the username is incorrect."
+        size="lg"
+      />
+    );
+  }
 
-  const current = tab === "posts" ? posts : tab === "reels" ? reels : tab === "saved" ? saved : [];
-
-  const tabs: { id: Tab; label: string; icon: any }[] = [
+  const tabs: ProfileTabDef<Tab>[] = [
     { id: "posts", label: "Posts", icon: Grid3x3 },
-    { id: "reels", label: "Reels", icon: Film },
-    { id: "spaces", label: "Spaces", icon: Mic },
+    { id: "media", label: "Media", icon: Film },
+    { id: "organizations", label: "Organizations", icon: Building2 },
     ...(isMe ? [{ id: "saved" as Tab, label: "Saved", icon: Bookmark }] : []),
-    { id: "tagged", label: "Tagged", icon: TagIcon },
+    { id: "tagged" as Tab, label: "Tagged", icon: TagIcon },
+    { id: "about" as Tab, label: "About", icon: Info },
   ];
 
+  const stats: ProfileStat[] = [
+    { key: "posts", label: "Posts", value: profile.posts_count ?? 0 },
+    { key: "followers", label: "Followers", value: profile.followers_count ?? 0, to: `/u/${profile.username}/followers` },
+    { key: "following", label: "Following", value: profile.following_count ?? 0, to: `/u/${profile.username}/following` },
+    { key: "orgs", label: "Orgs", value: memberships.length },
+    { key: "projects", label: "Projects", value: 0 },
+  ];
+
+  const anyProfile = profile as any;
+
   return (
-    <div className="pb-10">
+    <div className="pb-16">
       {/* Top bar */}
-      <header className="sticky top-0 z-30 h-14 px-3 flex items-center justify-between gap-3 bg-background/80 backdrop-blur border-b border-border">
-        <div className="flex items-center gap-2">
-          <button onClick={() => nav(-1)} className="p-2 -ml-2" aria-label="Back">
+      <header className="sticky top-0 z-30 h-14 px-3 flex items-center justify-between gap-3 bg-background/85 backdrop-blur-xl supports-[backdrop-filter]:bg-background/70 border-b border-border">
+        <div className="flex items-center gap-2 min-w-0">
+          <button
+            onClick={() => nav(-1)}
+            className="p-2 -ml-2 rounded-full hover:bg-secondary/60 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            aria-label="Back"
+          >
             <ArrowLeft className="h-5 w-5" />
           </button>
-          <span className="text-lg font-extrabold tracking-tight text-primary">AURELIX</span>
+          <div className="min-w-0">
+            <p className="text-sm font-semibold leading-tight truncate">
+              {profile.display_name || profile.username}
+            </p>
+            <p className="text-[11px] text-muted-foreground truncate">
+              {profile.posts_count ?? 0} posts
+            </p>
+          </div>
         </div>
         <div className="flex items-center gap-1">
-          <Link to="/notifications" className="p-2 relative" aria-label="Notifications">
+          <Link
+            to="/notifications"
+            className="relative p-2 rounded-full hover:bg-secondary/60 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            aria-label="Notifications"
+          >
             <Bell className="h-5 w-5" />
-            <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-primary" />
+            <span aria-hidden className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-primary" />
           </Link>
-          {isMe ? (
+          {isMe && (
             <SideMenu
               trigger={
-                <button className="p-2" aria-label="Menu">
+                <button
+                  className="p-2 rounded-full hover:bg-secondary/60 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  aria-label="Menu"
+                >
                   <Menu className="h-5 w-5" />
                 </button>
               }
             />
-          ) : (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button className="p-2" aria-label="More">
-                  <MoreHorizontal className="h-5 w-5" />
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-44">
-                <DropdownMenuItem onClick={toggleMute}>
-                  <VolumeX className="h-4 w-4 mr-2" />
-                  {isMuted ? "Unmute" : "Mute"} @{profile.username}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setReportOpen(true)} className="text-destructive focus:text-destructive">
-                  <Flag className="h-4 w-4 mr-2" />
-                  Report @{profile.username}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={toggleBlock} className="text-destructive focus:text-destructive">
-                  <Ban className="h-4 w-4 mr-2" />
-                  {isBlocked ? "Unblock" : "Block"} @{profile.username}
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
           )}
         </div>
       </header>
 
-      {/* Cover banner */}
-      <div className="relative h-36 w-full overflow-hidden">
-        {profile.cover_url ? (
-          <img src={profile.cover_url} alt="" className="absolute inset-0 w-full h-full object-cover" />
-        ) : (
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,hsl(var(--primary)/0.6),transparent_60%),radial-gradient(circle_at_80%_80%,hsl(var(--aura)/0.5),transparent_55%),linear-gradient(180deg,hsl(var(--card)),hsl(var(--background)))]" />
-        )}
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/30 to-transparent" />
-      </div>
+      {/* Hero */}
+      <ProfileHero
+        coverUrl={profile.cover_url}
+        avatarUrl={profile.avatar_url}
+        displayName={profile.display_name || profile.username}
+        username={profile.username}
+        hasFounderGlow={!!profile.is_founder}
+      />
 
-      {/* Avatar + identity row */}
-      <div className="px-4 -mt-10 relative z-10 flex gap-4">
-        <div className="shrink-0 rounded-full p-[3px] bg-gradient-to-br from-primary via-aura to-primary shadow-[0_0_30px_hsl(var(--primary)/0.5)]">
-          {profile.avatar_url ? (
-            <img src={profile.avatar_url} alt="" className="h-20 w-20 rounded-full object-cover ring-2 ring-background" />
-          ) : (
-            <div className="ring-2 ring-background rounded-full">
-              <AuraAvatar gradient={gradientFor(profile.username)} size="lg" initials={initialsOf(profile.display_name || profile.username)} />
-            </div>
-          )}
-        </div>
-        <div className="flex-1 min-w-0 pt-10 space-y-1">
-          <p className="text-lg font-bold inline-flex items-center gap-1.5 leading-tight flex-wrap">
-            <span className="truncate">{profile.display_name || profile.username}</span>
-            {profile.verification_kind && <VerificationBadge kind={profile.verification_kind as any} />}
-            {profile.is_founder && (
-              <Link to="/hall-of-founders" aria-label="Hall of Founders" className="inline-flex items-center justify-center h-5 w-5 rounded-full text-aura">
-                <Crown className="h-4 w-4" />
-              </Link>
-            )}
-            {memberships.map((m) => (
-              <OrganizationMemberChip key={m.id} data={m} />
-            ))}
-          </p>
-          <p className="text-xs text-muted-foreground">@{profile.username}</p>
-          {primaryMembership && (
-            <p className="text-xs text-muted-foreground">
-              {primaryMembership.is_owner
-                ? "Owner"
-                : primaryMembership.role_names[0] ?? "Member"}{" "}
-              at {primaryMembership.name}
-              {primaryMembership.joined_at &&
-                ` · Joined ${new Date(primaryMembership.joined_at).toLocaleDateString(undefined, { month: "short", year: "numeric" })}`}
-            </p>
-          )}
-          {isMe && ownerMembership && (
-            <Link
-              to={`/organization/${ownerMembership.slug}/dashboard`}
-              className="mt-1 inline-block text-xs font-semibold text-primary"
-            >
-              Open organization dashboard →
-            </Link>
-          )}
+      {/* Body */}
+      <div className="px-4 sm:px-6 pt-16 sm:pt-20 max-w-3xl mx-auto space-y-5">
+        <ProfileIdentity
+          displayName={profile.display_name || profile.username}
+          username={profile.username}
+          verificationKind={profile.verification_kind}
+          onVerificationClick={() => setVerifyOpen(true)}
+          isFounder={!!profile.is_founder}
+          bio={profile.bio}
+          profession={anyProfile.profession ?? null}
+          location={anyProfile.location ?? null}
+          website={anyProfile.website ?? null}
+          joinedAt={profile.created_at ?? null}
+        />
 
-        </div>
-      </div>
+        <ProfileStats stats={stats} />
 
-      {/* About strip — bio + website link, full width */}
-      <div className="px-4 mt-3 space-y-1">
-        {profile.bio && <p className="text-sm whitespace-pre-wrap leading-relaxed">{profile.bio}</p>}
-        <a href={`https://aurelix.app/${profile.username}`} target="_blank" rel="noreferrer" className="text-sm text-primary inline-block">
-          aurelix.app/{profile.username}
-        </a>
-      </div>
-
-      {/* Stats */}
-      <div className="px-4 mt-5 grid grid-cols-3 gap-2 text-left">
-        <Stat value={profile.posts_count} label="Posts" />
-        <Stat value={profile.followers_count} label="Followers" to={`/u/${profile.username}/followers`} />
-        <Stat value={profile.following_count} label="Following" to={`/u/${profile.username}/following`} />
-      </div>
-
-      {/* Actions */}
-      <div className="px-4 mt-5 flex gap-2">
         {isMe ? (
-          <>
-            <Link to="/profile/edit" className="flex-1 text-center py-2.5 rounded-xl bg-gradient-to-r from-primary to-aura text-primary-foreground font-semibold text-sm shadow-[0_0_20px_hsl(var(--primary)/0.4)]">
-              Edit Profile
-            </Link>
-            {!(me as any)?.is_creator && (
-              <button onClick={() => setBecomeOpen(true)} className="flex-1 text-center py-2.5 rounded-xl border border-primary/40 bg-primary/10 text-primary font-semibold text-sm">
-                Become Creator
-              </button>
-            )}
-            <button onClick={shareProfile} className="flex-1 text-center py-2.5 rounded-xl border border-border bg-muted/30 text-foreground font-semibold text-sm">
-              Share Profile
-            </button>
-            <button onClick={shareProfile} aria-label="Invite" className="h-10 w-10 grid place-items-center rounded-xl border border-border bg-muted/30">
-              <UserPlus className="h-4 w-4" />
-            </button>
-          </>
+          <ProfileActions
+            mode="self"
+            editHref="/profile/edit"
+            onShare={shareProfile}
+            onInvite={shareProfile}
+            isCreator={!!(me as any)?.is_creator}
+            onBecomeCreator={() => setBecomeOpen(true)}
+          />
         ) : (
-          <>
-            <button
-              onClick={toggleFollow}
-              className={cn(
-                "flex-1 py-2.5 rounded-xl font-semibold text-sm",
-                isFollowing ? "bg-muted text-foreground" : "bg-gradient-to-r from-primary to-aura text-primary-foreground shadow-[0_0_20px_hsl(var(--primary)/0.4)]",
-              )}
-            >
-              {isFollowing ? "Following" : "Follow"}
-            </button>
-            <button
-              onClick={async () => {
-                if (!user || !profile) return;
-                const { data, error } = await supabase.rpc("start_dm", { other_user_id: profile.user_id });
-                if (error) { toast.error(error.message || "Could not start chat"); return; }
-                if (data) nav(`/messages/${data}`);
-              }}
-              className="flex-1 py-2.5 rounded-xl border border-border bg-muted/30 text-foreground font-semibold text-sm"
-            >
-              Message
-            </button>
-            <button onClick={shareProfile} aria-label="Share" className="h-10 w-10 grid place-items-center rounded-xl border border-border bg-muted/30">
-              <Share2 className="h-4 w-4" />
-            </button>
-          </>
+          <ProfileActions
+            mode="visitor"
+            isFollowing={isFollowing}
+            isMuted={isMuted}
+            isBlocked={isBlocked}
+            onFollowToggle={toggleFollow}
+            onMessage={openDM}
+            onShare={shareProfile}
+            onMute={toggleMute}
+            onBlock={toggleBlock}
+            onReport={() => setReportOpen(true)}
+            username={profile.username}
+          />
         )}
+
+        {/* Highlights */}
+        <HighlightsRail userId={profile.user_id} isMe={!!isMe} />
       </div>
 
-      {/* Highlights */}
-      {profile && <HighlightsRail userId={profile.user_id} isMe={!!isMe} />}
+      {/* Tabs (sticky under top bar) */}
+      <div className="max-w-3xl mx-auto mt-4">
+        <ProfileTabs tabs={tabs} value={tab} onChange={setTab} stickyTop={56} />
 
-
-      {/* Tabs */}
-      <div className="mt-5 border-t border-border">
-        <div className="flex overflow-x-auto no-scrollbar">
-          {tabs.map((t) => (
-            <button
-              key={t.id}
-              onClick={() => setTab(t.id)}
-              className={cn(
-                "flex-1 min-w-[72px] py-3 flex items-center justify-center gap-1.5 relative text-sm font-medium",
-                tab === t.id ? "text-foreground" : "text-muted-foreground",
-              )}
+        {/* Panels */}
+        <div className="px-4 sm:px-6 pt-4">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={tab}
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -4 }}
+              transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+              role="tabpanel"
+              id={`panel-${tab}`}
+              aria-labelledby={`tab-${tab}`}
             >
-              <t.icon className="h-4 w-4" strokeWidth={1.75} />
-              <span>{t.label}</span>
-              {tab === t.id && <span className="absolute left-3 right-3 -bottom-px h-[2px] rounded-full bg-primary" />}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Content */}
-      {tab === "posts" ? (
-        <div className="grid grid-cols-3 gap-0.5 mt-0.5">
-          {current.length === 0 && <p className="col-span-3 text-sm text-muted-foreground text-center py-12">No posts yet.</p>}
-          {current.map((p) => (
-            <div key={p.id} className="relative aspect-square bg-muted overflow-hidden rounded-sm group">
-              <Link to={`/p/${p.id}`} className="block w-full h-full">
-                {p.media_url ? (
-                  p.media_type === "video"
-                    ? <video src={p.media_url} muted className="w-full h-full object-cover transition-transform group-hover:scale-105" />
-                    : <img src={p.media_url} alt="" className="w-full h-full object-cover transition-transform group-hover:scale-105" />
+              {tab === "posts" && (
+                contentLoading ? (
+                  <PostGridSkeleton count={9} />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center p-2 text-[11px] text-muted-foreground line-clamp-4 text-center">{p.content}</div>
-                )}
-              </Link>
-              {(p as any).is_pinned && (
-                <div className="absolute top-1 left-1 rounded-full bg-background/80 backdrop-blur p-1 shadow-sm">
-                  <Pin className="h-3 w-3 text-primary" strokeWidth={2.5} />
+                  <PostGrid
+                    posts={posts}
+                    isMe={!!isMe}
+                    onTogglePin={togglePin}
+                    emptyLabel="No posts yet."
+                  />
+                )
+              )}
+              {tab === "media" && (
+                contentLoading ? (
+                  <PostGridSkeleton count={9} aspect="portrait" />
+                ) : (
+                  <PostGrid
+                    posts={reels}
+                    aspect="portrait"
+                    emptyLabel="No media yet."
+                  />
+                )
+              )}
+              {tab === "organizations" && (
+                <OrganizationsSection memberships={memberships} variant="full" className="py-2" />
+              )}
+              {tab === "saved" && (
+                <div className={cn("divide-y divide-border pb-6", !saved.length && "divide-y-0")}>
+                  {saved.length === 0 ? (
+                    <EmptyState icon={Bookmark} title="Nothing saved yet" subtitle="Posts you save will appear here." size="sm" />
+                  ) : (
+                    saved.map((p) => <PostCard key={p.id} post={p} onOpenComments={setCommentPost} />)
+                  )}
                 </div>
               )}
-              {isMe && (
-                <button
-                  type="button"
-                  aria-label={(p as any).is_pinned ? "Unpin post" : "Pin post"}
-                  onClick={async (e) => {
-                    e.preventDefault(); e.stopPropagation();
-                    const next = !(p as any).is_pinned;
-                    const { error } = await supabase.rpc("toggle_post_pin" as any, { _post_id: p.id, _pin: next });
-                    if (error) { toast.error(error.message || "Failed"); return; }
-                    toast.success(next ? "Pinned" : "Unpinned");
-                    setPosts((prev) => {
-                      const updated = prev.map((x) => x.id === p.id ? ({ ...x, is_pinned: next, pinned_at: next ? new Date().toISOString() : null } as any) : x);
-                      return updated.sort((a: any, b: any) => {
-                        const ap = a.is_pinned ? 1 : 0; const bp = b.is_pinned ? 1 : 0;
-                        if (ap !== bp) return bp - ap;
-                        return +new Date(b.created_at) - +new Date(a.created_at);
-                      });
-                    });
-                  }}
-                  className="absolute top-1 right-1 rounded-full bg-background/80 backdrop-blur p-1 opacity-0 group-hover:opacity-100 transition-opacity shadow-sm"
-                >
-                  {(p as any).is_pinned ? <PinOff className="h-3 w-3" /> : <Pin className="h-3 w-3" />}
-                </button>
+              {tab === "tagged" && (
+                <EmptyState icon={TagIcon} title="No tagged posts" subtitle="Posts you're tagged in will show up here." />
               )}
-            </div>
-          ))}
+              {tab === "about" && (
+                <ProfileAbout
+                  bio={profile.bio}
+                  profession={anyProfile.profession ?? null}
+                  location={anyProfile.location ?? null}
+                  website={anyProfile.website ?? null}
+                  joinedAt={profile.created_at ?? null}
+                  auraRank={profile.aura_rank ?? null}
+                  contributionScore={profile.contribution_score ?? null}
+                  tier={profile.tier ?? null}
+                  interests={profile.interests ?? null}
+                />
+              )}
+            </motion.div>
+          </AnimatePresence>
         </div>
-      ) : tab === "reels" ? (
-        <div className="grid grid-cols-3 gap-0.5 mt-0.5">
-          {current.length === 0 && <p className="col-span-3 text-sm text-muted-foreground text-center py-12">No reels yet.</p>}
-          {current.map((r) => (
-            <Link key={r.id} to={`/p/${r.id}`} className="aspect-[9/16] bg-muted overflow-hidden rounded-sm">
-              {r.media_url && <video src={r.media_url} muted className="w-full h-full object-cover" />}
-            </Link>
-          ))}
-        </div>
-      ) : tab === "saved" ? (
-        <div className="divide-y divide-border pb-6">
-          {current.length === 0 && <p className="text-sm text-muted-foreground text-center py-12">Nothing saved yet.</p>}
-          {current.map((p) => <PostCard key={p.id} post={p} onOpenComments={setCommentPost} />)}
-        </div>
-      ) : tab === "spaces" ? (
-        <EmptyState icon={Mic} title="No Spaces yet" subtitle="Live audio rooms will appear here." />
-      ) : (
-        <EmptyState icon={TagIcon} title="No tagged posts" subtitle="Posts you're tagged in will show up here." />
-      )}
+      </div>
 
-      <CommentSheet postId={commentPost} open={!!commentPost} onOpenChange={(b) => !b && setCommentPost(null)} />
-      <ReportSheet open={reportOpen} onOpenChange={setReportOpen} targetKind="profile" targetId={profile?.user_id ?? null} />
+      {/* Sheets */}
+      <CommentSheet
+        postId={commentPost}
+        open={!!commentPost}
+        onOpenChange={(b) => !b && setCommentPost(null)}
+      />
+      <ReportSheet
+        open={reportOpen}
+        onOpenChange={setReportOpen}
+        targetKind="profile"
+        targetId={profile?.user_id ?? null}
+      />
       <BecomeCreatorSheet open={becomeOpen} onOpenChange={setBecomeOpen} />
+      <VerificationSheet
+        open={verifyOpen}
+        onOpenChange={setVerifyOpen}
+        kind={profile.verification_kind}
+        verified={!!profile.verified}
+        verifiedSince={profile.created_at ?? null}
+        verifiedBy="Aurelix Trust & Safety"
+        verificationId={profile.user_id.slice(0, 8).toUpperCase()}
+        reason={profile.founder_title ?? null}
+        displayName={profile.display_name || profile.username}
+        username={profile.username}
+        organizations={memberships}
+      />
     </div>
   );
-};
-
-const Stat = ({ value, label, to }: { value: number; label: string; to?: string }) => {
-  const inner = (
-    <div className="px-1">
-      <p className="text-2xl font-bold leading-tight tracking-tight">{fmt(value)}</p>
-      <p className="text-[11px] uppercase tracking-wider text-muted-foreground mt-0.5">{label}</p>
-    </div>
-  );
-  return to ? <Link to={to}>{inner}</Link> : inner;
 };
 
 export default Profile;
