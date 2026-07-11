@@ -1,11 +1,10 @@
-// MemberRoleBadge — UI scaffold. Compose real markup as the feature ships.
+// MemberRoleBadge — visual chip for a member's primary role.
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
-type MemberRole = "Owner" | "Admin" | "Manager" | "Lead" | "Member" | "Guest";
-
 interface MemberRoleBadgeProps {
-  role: MemberRole | string;
+  role: string;
+  isOwner?: boolean;
 }
 
 const roleStyles: Record<string, string> = {
@@ -17,16 +16,17 @@ const roleStyles: Record<string, string> = {
   Guest: "bg-gray-100 text-gray-600 border-gray-200",
 };
 
-export const MemberRoleBadge = ({ role }: MemberRoleBadgeProps) => {
+export const MemberRoleBadge = ({ role, isOwner }: MemberRoleBadgeProps) => {
+  const label = isOwner ? "Owner" : role;
   return (
     <Badge
       variant="outline"
       className={cn(
         "rounded-full px-3 py-1 font-medium",
-        roleStyles[role] ?? "bg-slate-100 text-slate-700 border-slate-200",
+        roleStyles[label] ?? "bg-slate-100 text-slate-700 border-slate-200",
       )}
     >
-      {role}
+      {label}
     </Badge>
   );
 };
