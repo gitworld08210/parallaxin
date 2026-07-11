@@ -1,19 +1,19 @@
-// useOrganizationRoles — cached role list for the current org.
+// useOrganizationSettings — cached settings row for the current org.
 import { useQuery } from "@tanstack/react-query";
 import { useOrganizationContext } from "@/contexts/OrganizationProvider";
-import { roleService } from "@/services/organization/role.service";
+import { settingsService } from "@/services/organization/settings.service";
 import { orgKeys } from "@/services/organization/queryKeys";
 
-export const useOrganizationRoles = () => {
+export const useOrganizationSettings = () => {
   const { organizationId } = useOrganizationContext();
   const query = useQuery({
-    queryKey: organizationId ? orgKeys.roles(organizationId) : ["organization", "__none__", "roles"],
-    queryFn: () => roleService.list(organizationId!),
+    queryKey: organizationId ? orgKeys.settings(organizationId) : ["organization", "__none__", "settings"],
+    queryFn: () => settingsService.get(organizationId!),
     enabled: !!organizationId,
     staleTime: 60_000,
   });
   return {
-    roles: query.data ?? [],
+    settings: query.data ?? null,
     loading: query.isLoading,
     error: query.error as Error | null,
     refetch: query.refetch,
