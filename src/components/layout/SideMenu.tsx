@@ -16,6 +16,8 @@ import { useTheme } from "@/contexts/ThemeProvider";
 import { AppearanceSheet } from "@/components/layout/AppearanceSheet";
 import { useMyWorkspaces } from "@/hooks/organization/useMyWorkspaces";
 import { VerificationBadge } from "@/components/vibe/VerificationBadge";
+import { AccountSwitcherSheet } from "@/components/layout/AccountSwitcherSheet";
+
 import { cn } from "@/lib/utils";
 
 type Row = {
@@ -34,6 +36,8 @@ export const SideMenu = ({ trigger }: { trigger: React.ReactNode }) => {
   const dark = theme === "dark";
   const [becomeOpen, setBecomeOpen] = useState(false);
   const [appearanceOpen, setAppearanceOpen] = useState(false);
+  const [switcherOpen, setSwitcherOpen] = useState(false);
+
 
   const { workspaces } = useMyWorkspaces();
   const ownedWorkspace =
@@ -101,7 +105,7 @@ export const SideMenu = ({ trigger }: { trigger: React.ReactNode }) => {
       >
         {/* Account header */}
         <div className="px-4 pt-6 pb-4 border-b border-border">
-          <button className="w-full flex items-center gap-3 text-left">
+          <button onClick={() => setSwitcherOpen(true)} className="w-full flex items-center gap-3 text-left">
             <span className="text-xl font-extrabold tracking-tight truncate flex items-center gap-1.5">
               {profile?.username ? `@${profile.username}` : displayName}
               {profile?.verified && profile?.verification_kind && (
@@ -131,6 +135,7 @@ export const SideMenu = ({ trigger }: { trigger: React.ReactNode }) => {
           </Link>
 
           <button
+            onClick={() => setSwitcherOpen(true)}
             className="mt-2 w-full flex items-center gap-3 rounded-2xl p-2 -mx-2 hover:bg-secondary/50 transition-colors"
             aria-label="Add or switch accounts"
           >
@@ -140,6 +145,7 @@ export const SideMenu = ({ trigger }: { trigger: React.ReactNode }) => {
             <span className="text-sm font-semibold">Add account</span>
           </button>
         </div>
+
 
         {/* Become creator upsell */}
         {!isCreator && (
@@ -203,6 +209,8 @@ export const SideMenu = ({ trigger }: { trigger: React.ReactNode }) => {
 
         <BecomeCreatorSheet open={becomeOpen} onOpenChange={setBecomeOpen} />
         <AppearanceSheet open={appearanceOpen} onOpenChange={setAppearanceOpen} />
+        <AccountSwitcherSheet open={switcherOpen} onOpenChange={setSwitcherOpen} />
+
       </SheetContent>
     </Sheet>
   );
