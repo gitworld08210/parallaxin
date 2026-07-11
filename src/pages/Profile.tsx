@@ -309,7 +309,7 @@ const Profile = () => {
       </header>
 
       {/* Cover */}
-      <div className="relative w-full h-56 sm:h-72 bg-secondary overflow-hidden">
+      <div className="relative w-full h-32 sm:h-44 bg-secondary overflow-hidden">
         {profile.cover_url ? (
           <img src={profile.cover_url} alt="" className="h-full w-full object-cover" loading="eager" />
         ) : (
