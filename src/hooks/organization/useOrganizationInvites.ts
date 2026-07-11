@@ -143,6 +143,17 @@ export const useIncomingInviteActions = () => {
 
   const accept = useMutation({
     mutationFn: ({ token }: { token: string }) => inviteService.accept(token),
+    onMutate: async ({ token }) => {
+      if (!user?.id) return;
+      const key = orgKeys.incomingInvites(user.id);
+      const prev = qc.getQueryData<InviteWithMeta[]>(key);
+      if (prev)
+        qc.setQueryData<InviteWithMeta[]>(key, prev.filter((i) => i.invite_token !== token));
+      return { prev, key };
+    },
+    onError: (_e, _v, ctx) => {
+      if (ctx?.prev && ctx.key) qc.setQueryData(ctx.key, ctx.prev);
+    },
     onSettled: invalidate,
   });
 

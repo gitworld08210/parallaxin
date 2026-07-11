@@ -57,7 +57,15 @@ const Profile = () => {
   const [commentPost, setCommentPost] = useState<string | null>(null);
   const [reportOpen, setReportOpen] = useState(false);
   const [becomeOpen, setBecomeOpen] = useState(false);
-  const { memberships } = useUserOrganizations(profile?.user_id ?? null);
+  const { memberships: rawMemberships } = useUserOrganizations(profile?.user_id ?? null);
+  // Deterministic order: owner-first, then most-recent joined, then name.
+  const memberships = [...rawMemberships].sort((a, b) => {
+    if (a.is_owner !== b.is_owner) return a.is_owner ? -1 : 1;
+    const aj = a.joined_at ? Date.parse(a.joined_at) : 0;
+    const bj = b.joined_at ? Date.parse(b.joined_at) : 0;
+    if (aj !== bj) return bj - aj;
+    return a.name.localeCompare(b.name);
+  });
   const primaryMembership = memberships[0] ?? null;
   const ownerMembership = memberships.find((m) => m.is_owner) ?? null;
 
