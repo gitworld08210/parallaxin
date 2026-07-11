@@ -50,6 +50,8 @@ export const useDepartment = (departmentId: string | null | undefined) => {
   return {
     department: query.data ?? null,
     loading: query.isLoading,
+    error: query.error as Error | null,
+  };
 };
 
 /** Aggregated member counts keyed by department id. */
