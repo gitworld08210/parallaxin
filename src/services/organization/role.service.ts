@@ -1,6 +1,24 @@
-// RoleService — organization role reads.
+// RoleService — organization role reads + mutations (permission-checked RPCs).
 import { supabase } from "@/integrations/supabase/client";
 import type { Role } from "@/types/organization/role";
+
+interface RoleLinkRow {
+  organization_roles: Role | null;
+}
+
+export interface CreateRoleInput {
+  name: string;
+  description?: string | null;
+  color?: string | null;
+  priority?: number;
+}
+
+export interface UpdateRoleInput {
+  name?: string;
+  description?: string | null;
+  color?: string | null;
+  priority?: number;
+}
 
 export const roleService = {
   async list(orgId: string): Promise<Role[]> {
@@ -19,8 +37,46 @@ export const roleService = {
       .select("organization_roles(*)")
       .eq("member_id", memberId);
     if (error) throw error;
-    return ((data ?? []) as any[])
-      .map((r) => r.organization_roles as Role)
-      .filter(Boolean);
+    return ((data ?? []) as RoleLinkRow[])
+      .map((r) => r.organization_roles)
+      .filter((r): r is Role => !!r);
+  },
+
+  // ---------- Mutations ----------
+
+  async create(orgId: string, input: CreateRoleInput): Promise<string> {
+    const { data, error } = await supabase.rpc("org_create_role", {
+      _organization_id: orgId,
+      _name: input.name,
+      _description: input.description ?? null,
+      _color: input.color ?? null,
+      _priority: input.priority ?? 100,
+    });
+    if (error) throw error;
+    return data as string;
+  },
+
+  async update(roleId: string, patch: UpdateRoleInput): Promise<void> {
+    const { error } = await supabase.rpc("org_update_role", {
+      _role_id: roleId,
+      _name: patch.name ?? null,
+      _description: patch.description ?? null,
+      _color: patch.color ?? null,
+      _priority: patch.priority ?? null,
+    });
+    if (error) throw error;
+  },
+
+  async remove(roleId: string): Promise<void> {
+    const { error } = await supabase.rpc("org_delete_role", { _role_id: roleId });
+    if (error) throw error;
+  },
+
+  async setPermissions(roleId: string, permissionKeys: string[]): Promise<void> {
+    const { error } = await supabase.rpc("org_set_role_permissions", {
+      _role_id: roleId,
+      _permission_keys: permissionKeys,
+    });
+    if (error) throw error;
   },
 };

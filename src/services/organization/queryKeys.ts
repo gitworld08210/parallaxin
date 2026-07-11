@@ -13,6 +13,8 @@ export const orgKeys = {
   roles: (orgId: string) => ["organization", orgId, "roles"] as const,
   permissions: (orgId: string) => ["organization", orgId, "permissions"] as const,
   rolePermissions: (orgId: string) => ["organization", orgId, "role-permissions"] as const,
+  rolePermissionsFor: (orgId: string, roleId: string) =>
+    ["organization", orgId, "role-permissions", roleId] as const,
   memberRoles: (orgId: string, memberId: string) =>
     ["organization", orgId, "members", memberId, "roles"] as const,
   settings: (orgId: string) => ["organization", orgId, "settings"] as const,

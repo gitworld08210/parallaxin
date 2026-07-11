@@ -14,3 +14,7 @@ export interface Role {
   created_at: string;
   updated_at: string;
 }
+
+/** Structural check for the built-in Owner role (no hardcoded name string in UI). */
+export const isOwnerRole = (role: Pick<Role, "is_system" | "name">): boolean =>
+  role.is_system && role.name.toLowerCase() === "owner";

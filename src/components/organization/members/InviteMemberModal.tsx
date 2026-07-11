@@ -24,6 +24,7 @@ import {
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useOrganizationRoles } from "@/hooks/organization/useOrganizationRoles";
 import { useInviteMutations } from "@/hooks/organization/useOrganizationInvites";
+import { isOwnerRole } from "@/types/organization/role";
 
 interface InviteMemberModalProps {
   open: boolean;
@@ -127,7 +128,7 @@ export const InviteMemberModal = ({ open, onOpenChange }: InviteMemberModalProps
             <SelectContent>
               <SelectItem value={DEFAULT_ROLE_VALUE}>Default (Member)</SelectItem>
               {roles
-                .filter((r) => r.name !== "Owner")
+                .filter((r) => !isOwnerRole(r))
                 .map((r) => (
                   <SelectItem key={r.id} value={r.id}>
                     {r.name}
