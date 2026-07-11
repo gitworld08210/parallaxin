@@ -10,6 +10,8 @@ import { Button } from "@/components/ui/button";
 import { VerificationBadge } from "@/components/vibe/VerificationBadge";
 import { useOrganizationContext } from "@/contexts/OrganizationProvider";
 import { WorkspaceSwitcher } from "@/components/organization/WorkspaceSwitcher";
+import { getOrganizationVerificationKind } from "@/services/organization/organization.service";
+
 
 export const OrganizationTopbar = () => {
   const { organization, role } = useOrganizationContext();
@@ -19,6 +21,8 @@ export const OrganizationTopbar = () => {
 
   // Human-readable role label — owner outranks any assigned role name.
   const roleLabel = role.isOwner ? "Owner" : role.roleNames[0] ?? "Member";
+  const verificationKind = getOrganizationVerificationKind(organization);
+
 
   return (
     <header
@@ -36,11 +40,10 @@ export const OrganizationTopbar = () => {
             <span className="truncate text-sm font-semibold">
               {organization?.name ?? "Organization"}
             </span>
-            {/* Verification badge — organizations.verified is boolean; use
-                the generic "business" kind for the badge visual. */}
-            {organization && (organization as { verified?: boolean }).verified && (
-              <VerificationBadge kind="business" />
-            )}
+            {/* Verification badge kind is derived from Organization.org_type
+                via organizationService.getVerificationKind — data-driven. */}
+            {verificationKind && <VerificationBadge kind={verificationKind} />}
+
           </div>
           <p className="truncate text-[11px] text-muted-foreground">{roleLabel}</p>
         </div>

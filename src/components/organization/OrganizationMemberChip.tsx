@@ -1,27 +1,15 @@
 // OrganizationMemberChip — compact badge showing a user's active membership
 // in an organization. Clicking navigates to that organization's dashboard.
-// Data-source only: organization_members, organization_roles, organizations
-// (surfaced through memberService.listUserMemberships). No affiliation queries.
+// Data-source: the canonical WorkspaceSummary from
+// organizationService.listWorkspacesForUser (owner OR member).
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { BadgeCheck, Building2 } from "lucide-react";
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import type { WorkspaceSummary } from "@/types/organization/organization";
 
-export interface OrganizationMemberChipData {
-  id: string;
-  joined_at: string | null;
-  role_names: string[];
-  is_owner: boolean;
-  organization: {
-    id: string;
-    slug: string;
-    name: string;
-    logo_url: string | null;
-    verified: boolean;
-    org_type: string | null;
-  } | null;
-}
+export type OrganizationMemberChipData = WorkspaceSummary;
 
 const formatDate = (iso: string | null) => {
   if (!iso) return "—";
@@ -35,10 +23,11 @@ const primaryRoleName = (data: OrganizationMemberChipData) => {
 
 export const OrganizationMemberChip = ({ data }: { data: OrganizationMemberChipData }) => {
   const [open, setOpen] = useState(false);
-  const org = data.organization;
-  if (!org) return null;
+  const org = data;
+  if (!org?.id) return null;
 
   const roleLabel = primaryRoleName(data);
+
 
   return (
     <>

@@ -1,16 +1,16 @@
-// useUserOrganizations — list a given user's active organization memberships
-// (org + role names + owner flag). Safe to call outside OrganizationProvider,
-// so profile / global-menu / notification surfaces can use it.
+// useUserOrganizations — canonical membership hook for ANY user id.
+// Delegates to organizationService.listWorkspacesForUser so Profile,
+// WorkspaceSwitcher and SideMenu all share one source of truth.
 import { useQuery } from "@tanstack/react-query";
-import { memberService } from "@/services/organization/member.service";
+import { organizationService } from "@/services/organization/organization.service";
 import { orgKeys } from "@/services/organization/queryKeys";
 
 export const useUserOrganizations = (userId: string | null | undefined) => {
   const query = useQuery({
     queryKey: userId
-      ? orgKeys.userMemberships(userId)
-      : ["organization", "user-memberships", "__none__"],
-    queryFn: () => memberService.listUserMemberships(userId!),
+      ? orgKeys.workspaces(userId)
+      : orgKeys.workspaces("__none__"),
+    queryFn: () => organizationService.listWorkspacesForUser(userId!),
     enabled: !!userId,
     staleTime: 60_000,
   });

@@ -1,8 +1,38 @@
 // OrganizationService — high-level reads used by the OrganizationProvider.
 import { organizationApi } from "./organization.api";
 import { permissionService } from "./permission.service";
-import type { Organization, OrganizationMembership } from "@/types/organization/organization";
+import type {
+  Organization,
+  OrganizationMembership,
+  OrganizationVerificationKind,
+} from "@/types/organization/organization";
 import { supabase } from "@/integrations/supabase/client";
+
+/**
+ * Map an organization to its canonical verification "kind" for
+ * <VerificationBadge/>. Derived from `org_type` so the badge is
+ * data-driven — no more hard-coded "business". Returns null when
+ * the org isn't verified so callers can skip rendering.
+ */
+export const getOrganizationVerificationKind = (
+  org: Pick<Organization, "verified" | "org_type"> | null | undefined,
+): OrganizationVerificationKind | null => {
+  if (!org?.verified) return null;
+  switch (org.org_type) {
+    case "government":
+      return "gov";
+    case "nonprofit":
+    case "community":
+    case "education":
+      return "verified";
+    case "company":
+    case "startup":
+    case "other":
+      return "business";
+    default:
+      return "verified";
+  }
+};
 
 export const organizationService = {
   api: organizationApi,
@@ -10,6 +40,8 @@ export const organizationService = {
   resolveBySlug: organizationApi.resolveBySlug,
   getById: organizationApi.getById,
   listWorkspacesForUser: organizationApi.listWorkspacesForUser,
+  getVerificationKind: getOrganizationVerificationKind,
+
 
   /** Load the signed-in user's membership for a given org. Null if not a member. */
   async getMembership(orgId: string, userId: string): Promise<OrganizationMembership | null> {
