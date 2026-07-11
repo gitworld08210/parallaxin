@@ -1487,6 +1487,7 @@ export type Database = {
           owner_user_id: string
           phone: string | null
           post_count: number | null
+          slug: string
           updated_at: string | null
           username: string
           verified: boolean | null
@@ -1511,6 +1512,7 @@ export type Database = {
           owner_user_id: string
           phone?: string | null
           post_count?: number | null
+          slug: string
           updated_at?: string | null
           username: string
           verified?: boolean | null
@@ -1535,6 +1537,7 @@ export type Database = {
           owner_user_id?: string
           phone?: string | null
           post_count?: number | null
+          slug?: string
           updated_at?: string | null
           username?: string
           verified?: boolean | null
@@ -2579,6 +2582,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      generate_unique_org_slug: {
+        Args: { _name: string; _self?: string }
+        Returns: string
+      }
       get_certificate_by_hash: {
         Args: { _hash: string }
         Returns: {
@@ -2608,6 +2615,14 @@ export type Database = {
         Returns: boolean
       }
       has_approved_kyc: { Args: { _user_id: string }; Returns: boolean }
+      has_org_permission: {
+        Args: {
+          _organization_id: string
+          _permission_key: string
+          _user_id: string
+        }
+        Returns: boolean
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -2686,6 +2701,20 @@ export type Database = {
         }
         Returns: string
       }
+      resolve_organization_by_slug: {
+        Args: { _slug: string }
+        Returns: {
+          cover_url: string
+          id: string
+          is_member: boolean
+          is_owner: boolean
+          logo_url: string
+          name: string
+          org_type: Database["public"]["Enums"]["org_type"]
+          slug: string
+          username: string
+        }[]
+      }
       respond_affiliation: {
         Args: { _accept: boolean; _aff_id: string }
         Returns: undefined
@@ -2694,6 +2723,7 @@ export type Database = {
         Args: { _aff_id: string; _reason: string }
         Returns: undefined
       }
+      slugify_org_name: { Args: { _name: string }; Returns: string }
       start_dm: { Args: { other_user_id: string }; Returns: string }
       toggle_post_pin: {
         Args: { _pin: boolean; _post_id: string }
@@ -2713,6 +2743,17 @@ export type Database = {
       verify_tip_with_utr: {
         Args: { _tip_id: string; _utr: string }
         Returns: Json
+      }
+      write_org_audit_log: {
+        Args: {
+          _action: string
+          _entity_id?: string
+          _entity_type?: string
+          _new_data?: Json
+          _old_data?: Json
+          _organization_id: string
+        }
+        Returns: string
       }
     }
     Enums: {
