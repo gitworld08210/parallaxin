@@ -274,24 +274,25 @@ const Profile = () => {
             ))}
           </p>
           <p className="text-xs text-muted-foreground">@{profile.username}</p>
-          {primaryMembership?.organization && (
+          {primaryMembership && (
             <p className="text-xs text-muted-foreground">
               {primaryMembership.is_owner
                 ? "Owner"
                 : primaryMembership.role_names[0] ?? "Member"}{" "}
-              at {primaryMembership.organization.name}
+              at {primaryMembership.name}
               {primaryMembership.joined_at &&
                 ` · Joined ${new Date(primaryMembership.joined_at).toLocaleDateString(undefined, { month: "short", year: "numeric" })}`}
             </p>
           )}
-          {isMe && ownerMembership?.organization && (
+          {isMe && ownerMembership && (
             <Link
-              to={`/organization/${ownerMembership.organization.slug}/dashboard`}
+              to={`/organization/${ownerMembership.slug}/dashboard`}
               className="mt-1 inline-block text-xs font-semibold text-primary"
             >
               Open organization dashboard →
             </Link>
           )}
+
         </div>
       </div>
 
