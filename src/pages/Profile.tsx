@@ -429,7 +429,14 @@ const Profile = () => {
               {displayName}
             </h1>
             {profile.verified && profile.verification_kind && (
-              <VerificationBadge kind={profile.verification_kind} className="h-5 w-5" />
+              <button
+                type="button"
+                onClick={() => setVerifyOpen(true)}
+                aria-label="View verification details"
+                className="inline-flex items-center justify-center rounded-full p-0.5 -m-0.5 hover:bg-primary/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring active:scale-90 duration-fast"
+              >
+                <VerificationBadge kind={profile.verification_kind} className="h-5 w-5" />
+              </button>
             )}
           </div>
           <p className="text-sm text-muted-foreground -mt-1">@{profile.username}</p>
