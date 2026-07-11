@@ -93,7 +93,7 @@ const Notifications = () => {
     (async () => {
       const { data } = await supabase
         .from("notifications")
-        .select("id, type, read, created_at, actor_id, post_id, actor:profiles!notifications_actor_profile_fkey(username, display_name, avatar_url)")
+        .select("id, type, read, created_at, actor_id, post_id, organization_id, actor:profiles!notifications_actor_profile_fkey(username, display_name, avatar_url)")
         .eq("user_id", user.id).order("created_at", { ascending: false }).limit(80);
       setItems((data ?? []) as any);
       // Incoming organization invites are loaded via useIncomingInvites().
