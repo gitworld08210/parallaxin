@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -62,7 +62,27 @@ export const DepartmentFormModal = ({
   const isEdit = !!department;
   const submitting = create.isPending || update.isPending;
 
-  const parentOptions = departments.filter((d) => d.id !== department?.id);
+  // Exclude self + every descendant so users can't select a parent that would
+  // create a cycle. Mirrors the server-side cycle guard in org_update_department.
+  const parentOptions = useMemo(() => {
+    if (!department) return departments;
+    const forbidden = new Set<string>([department.id]);
+    let added = true;
+    while (added) {
+      added = false;
+      for (const d of departments) {
+        if (
+          d.parent_department_id &&
+          forbidden.has(d.parent_department_id) &&
+          !forbidden.has(d.id)
+        ) {
+          forbidden.add(d.id);
+          added = true;
+        }
+      }
+    }
+    return departments.filter((d) => !forbidden.has(d.id));
+  }, [departments, department]);
 
   const handleSubmit = async () => {
     const trimmed = name.trim();

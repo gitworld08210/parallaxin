@@ -23,14 +23,21 @@ export const departmentService = {
       parentDepartmentId: input.parentDepartmentId ?? null,
     }),
 
-  update: (id: string, patch: UpdateDepartmentInput): Promise<void> =>
-    organizationDepartmentApi.update(id, {
-      name: patch.name,
-      description: patch.description ?? null,
-      color: patch.color ?? null,
-      icon: patch.icon ?? null,
-      parentDepartmentId: patch.parentDepartmentId ?? null,
-    }),
+  /**
+   * Partial update. Only keys present on `patch` are sent — this preserves
+   * "undefined = keep" while allowing `null` to clear nullable fields.
+   */
+  update: (id: string, patch: UpdateDepartmentInput): Promise<void> => {
+    const jsonPatch: Record<string, unknown> = {};
+    if (Object.prototype.hasOwnProperty.call(patch, "name")) jsonPatch.name = patch.name;
+    if (Object.prototype.hasOwnProperty.call(patch, "description"))
+      jsonPatch.description = patch.description;
+    if (Object.prototype.hasOwnProperty.call(patch, "color")) jsonPatch.color = patch.color;
+    if (Object.prototype.hasOwnProperty.call(patch, "icon")) jsonPatch.icon = patch.icon;
+    if (Object.prototype.hasOwnProperty.call(patch, "parentDepartmentId"))
+      jsonPatch.parent_department_id = patch.parentDepartmentId;
+    return organizationDepartmentApi.update(id, jsonPatch);
+  },
 
   remove: (id: string): Promise<void> => organizationDepartmentApi.remove(id),
 
@@ -42,20 +49,17 @@ export const departmentService = {
 
   /**
    * Return { department_id -> active_member_count } for a given org.
-   * Uses a bounded aggregate query so the tree page doesn't fetch full members.
+   * Uses a server-side aggregate RPC so we never download raw member rows.
    */
   async memberCountsByDepartment(orgId: string): Promise<Record<string, number>> {
-    const { data, error } = await supabase
-      .from("organization_members")
-      .select("department_id")
-      .eq("organization_id", orgId)
-      .eq("status", "active")
-      .not("department_id", "is", null);
+    const { data, error } = await supabase.rpc("org_department_member_counts", {
+      _organization_id: orgId,
+    });
     if (error) throw error;
     const counts: Record<string, number> = {};
-    for (const row of (data ?? []) as Array<{ department_id: string | null }>) {
+    for (const row of (data ?? []) as Array<{ department_id: string; member_count: number }>) {
       if (!row.department_id) continue;
-      counts[row.department_id] = (counts[row.department_id] ?? 0) + 1;
+      counts[row.department_id] = Number(row.member_count) || 0;
     }
     return counts;
   },

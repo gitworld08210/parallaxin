@@ -43,20 +43,15 @@ export const organizationDepartmentApi = {
     return data as string;
   },
 
-  async update(id: string, patch: {
-    name?: string;
-    description?: string | null;
-    color?: string | null;
-    icon?: string | null;
-    parentDepartmentId?: string | null;
-  }): Promise<void> {
+  /**
+   * Update a department. Uses JSONB patch semantics:
+   *   - key present  → apply value (nullable fields accept `null` to clear)
+   *   - key absent   → preserve current value
+   */
+  async update(id: string, patch: Record<string, unknown>): Promise<void> {
     const { error } = await supabase.rpc("org_update_department", {
       _department_id: id,
-      _name: patch.name ?? null,
-      _description: patch.description ?? null,
-      _color: patch.color ?? null,
-      _icon: patch.icon ?? null,
-      _parent_department_id: patch.parentDepartmentId ?? null,
+      _patch: patch as never,
     });
     if (error) throw error;
   },

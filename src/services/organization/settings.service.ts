@@ -46,20 +46,35 @@ export const settingsService = {
     return (data as OrganizationSettings | null) ?? null;
   },
 
+  /**
+   * Partial update. Semantics per key:
+   *   - key omitted / value `undefined` → preserve current value
+   *   - explicit `null`                  → clear (for nullable columns)
+   *   - explicit `[]` on `enabledModules`→ save an empty array (disables all)
+   * Server (`org_update_settings`) enforces permissions, slug rules, and audit.
+   */
   async update(orgId: string, patch: OrganizationSettingsUpdate): Promise<void> {
+    const j: Record<string, unknown> = {};
+    const put = (key: string, value: unknown) => {
+      if (value !== undefined) j[key] = value;
+    };
+    put("name", patch.name);
+    put("slug", patch.slug);
+    put("description", patch.description);
+    put("logo_url", patch.logoUrl);
+    put("cover_url", patch.coverUrl);
+    put("website", patch.website);
+    put("email", patch.email);
+    put("org_type", patch.orgType);
+    put("timezone", patch.timezone);
+    put("visibility", patch.visibility);
+    if (patch.enabledModules !== undefined) j.enabled_modules = patch.enabledModules;
+
+    if (Object.keys(j).length === 0) return; // Nothing to update.
+
     const { error } = await supabase.rpc("org_update_settings", {
       _organization_id: orgId,
-      _name: patch.name ?? null,
-      _slug: patch.slug ?? null,
-      _description: patch.description ?? null,
-      _logo_url: patch.logoUrl ?? null,
-      _cover_url: patch.coverUrl ?? null,
-      _website: patch.website ?? null,
-      _email: patch.email ?? null,
-      _org_type: patch.orgType ?? null,
-      _timezone: patch.timezone ?? null,
-      _visibility: patch.visibility ?? null,
-      _enabled_modules: patch.enabledModules ?? null,
+      _patch: j as never,
     });
     if (error) throw error;
   },

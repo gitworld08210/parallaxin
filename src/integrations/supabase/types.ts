@@ -2550,6 +2550,7 @@ export type Database = {
     }
     Functions: {
       _org_is_system_role_name: { Args: { _name: string }; Returns: boolean }
+      _org_slug_is_reserved: { Args: { _slug: string }; Returns: boolean }
       add_group_member: {
         Args: { _conv: string; _user: string }
         Returns: undefined
@@ -2782,6 +2783,13 @@ export type Database = {
         Returns: undefined
       }
       org_delete_role: { Args: { _role_id: string }; Returns: undefined }
+      org_department_member_counts: {
+        Args: { _organization_id: string }
+        Returns: {
+          department_id: string
+          member_count: number
+        }[]
+      }
       org_invite_member: {
         Args: {
           _email?: string
@@ -2808,14 +2816,7 @@ export type Database = {
         Returns: undefined
       }
       org_update_department: {
-        Args: {
-          _color?: string
-          _department_id: string
-          _description?: string
-          _icon?: string
-          _name?: string
-          _parent_department_id?: string
-        }
+        Args: { _department_id: string; _patch: Json }
         Returns: undefined
       }
       org_update_role: {
@@ -2829,20 +2830,7 @@ export type Database = {
         Returns: undefined
       }
       org_update_settings: {
-        Args: {
-          _cover_url?: string
-          _description?: string
-          _email?: string
-          _enabled_modules?: string[]
-          _logo_url?: string
-          _name?: string
-          _org_type?: string
-          _organization_id: string
-          _slug?: string
-          _timezone?: string
-          _visibility?: string
-          _website?: string
-        }
+        Args: { _organization_id: string; _patch: Json }
         Returns: undefined
       }
       remove_group_member: {
