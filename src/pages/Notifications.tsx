@@ -217,21 +217,17 @@ const Notifications = () => {
       );
     }
     if (n.type === "organization_invite" || n.type === "affiliation_invite") {
-      const token = n.organization_id ? inviteTokenByOrg[n.organization_id] : undefined;
-      if (token) {
-        return <Link to={`/invite/${token}`} key={n.id} className={cls}>{inner}</Link>;
-      }
-      // No pending invite found (already answered / expired) — show a toast instead of routing to the profile.
       return (
         <button
           key={n.id}
-          onClick={() => toast.info("This invitation is no longer available.")}
+          onClick={() => openInvite(n.organization_id)}
           className={cls}
         >
           {inner}
         </button>
       );
     }
+
     const to = system
       ? (n.type.startsWith("founder_") ? "/hall-of-founders" : "/profile")
       : n.post_id ? `/p/${n.post_id}` : n.actor ? `/u/${n.actor.username}` : null;
