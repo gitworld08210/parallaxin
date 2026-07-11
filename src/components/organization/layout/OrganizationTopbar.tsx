@@ -10,6 +10,8 @@ import { Button } from "@/components/ui/button";
 import { VerificationBadge } from "@/components/vibe/VerificationBadge";
 import { useOrganizationContext } from "@/contexts/OrganizationProvider";
 import { WorkspaceSwitcher } from "@/components/organization/WorkspaceSwitcher";
+import { getOrganizationVerificationKind } from "@/services/organization/organization.service";
+
 
 export const OrganizationTopbar = () => {
   const { organization, role } = useOrganizationContext();
