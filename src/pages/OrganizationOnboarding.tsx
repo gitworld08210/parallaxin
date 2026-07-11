@@ -4,7 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthProvider";
 import { toast } from "sonner";
 import { Building2, Upload, Sparkles } from "lucide-react";
-import { ORG_TYPES, OrgType } from "@/lib/affiliationRoles";
+import { ORG_TYPES } from "@/lib/orgTypes";
+import type { OrgType } from "@/types/organization/organization";
 
 const input =
   "w-full bg-secondary/60 border border-border rounded-2xl px-4 py-3 text-sm outline-none placeholder:text-muted-foreground focus:border-primary/60 transition-colors";

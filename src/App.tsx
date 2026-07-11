@@ -57,7 +57,7 @@ const ChangeEmailScreen = lazy(() => import("./pages/security/ChangeEmailScreen"
 const ChangePhoneScreen = lazy(() => import("./pages/security/ChangePhoneScreen"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
 const OrganizationOnboarding = lazy(() => import("./pages/OrganizationOnboarding"));
-const OrgAdmin = lazy(() => import("./pages/OrgAdmin"));
+
 const CreatorHub = lazy(() => import("./pages/CreatorHub"));
 const Analytics = lazy(() => import("./pages/Analytics"));
 const LiveList = lazy(() => import("./pages/LiveList"));
@@ -137,7 +137,7 @@ const App = () => (
               <Route element={<ProtectedRoute />}>
                 <Route path="/onboarding" element={<Onboarding />} />
                 <Route path="/onboarding/organization" element={<OrganizationOnboarding />} />
-                <Route path="/org/:username/admin" element={<OrgAdmin />} />
+                
                 <Route element={<AppShell />}>
                   <Route path="/" element={<Feed />} />
                   <Route path="/reels" element={<Reels />} />
