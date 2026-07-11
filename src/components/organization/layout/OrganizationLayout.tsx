@@ -2,9 +2,43 @@ import { Outlet } from "react-router-dom";
 import { OrganizationSidebar } from "./OrganizationSidebar";
 import { OrganizationTopbar } from "./OrganizationTopbar";
 import { OrganizationMobileNavigation } from "./OrganizationMobileNavigation";
+import { OrganizationProvider, useOrganizationContext } from "@/contexts/OrganizationProvider";
 
-// Shell for every /organization/* route. Wire responsive layout as needed.
-export const OrganizationLayout = () => {
+const OrganizationShell = () => {
+  const { loading, error, organization, organizationId } = useOrganizationContext();
+
+  if (loading && !organization) {
+    return (
+      <div className="min-h-screen grid place-items-center">
+        <div className="h-8 w-8 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen grid place-items-center p-8 text-center">
+        <div className="max-w-md space-y-2">
+          <h2 className="text-lg font-semibold">We couldn't load this organization.</h2>
+          <p className="text-sm text-muted-foreground">{error.message}</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!organizationId) {
+    return (
+      <div className="min-h-screen grid place-items-center p-8 text-center">
+        <div className="max-w-md space-y-2">
+          <h2 className="text-lg font-semibold">No organization workspace yet.</h2>
+          <p className="text-sm text-muted-foreground">
+            Create an organization from the onboarding screen to get started.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div data-component="OrganizationLayout" className="min-h-screen flex flex-col">
       <OrganizationTopbar />
@@ -18,5 +52,12 @@ export const OrganizationLayout = () => {
     </div>
   );
 };
+
+// Shell for every /organization/* route. Provides OrganizationContext.
+export const OrganizationLayout = () => (
+  <OrganizationProvider>
+    <OrganizationShell />
+  </OrganizationProvider>
+);
 
 export default OrganizationLayout;
