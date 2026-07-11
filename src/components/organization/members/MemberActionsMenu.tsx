@@ -168,7 +168,7 @@ export const MemberActionsMenu = ({ member, isOwnerRow }: MemberActionsMenuProps
               </SelectTrigger>
               <SelectContent>
                 {roles
-                  .filter((r) => r.name !== "Owner")
+                  .filter((r) => !isOwnerRole(r))
                   .map((r) => (
                     <SelectItem key={r.id} value={r.id}>
                       {r.name}
