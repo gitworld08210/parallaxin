@@ -155,7 +155,7 @@ export const RolePermissionsTable = () => {
             </TableHeader>
             <TableBody>
               {Object.entries(grouped).map(([module, perms]) => (
-                <>
+                <Fragment key={module}>
                   <TableRow key={`m-${module}`} className="bg-slate-50">
                     <TableCell
                       colSpan={1 + roles.length}
