@@ -97,7 +97,14 @@ export const AppShell = () => {
         <NavSlot to="/" end label="Home" icon={Home} isReels={isReels} />
         <NavSlot to="/reels" label="Reels" icon={Film} isReels={isReels} />
         <NavSlot to="/compose" label="Create" icon={Plus} isReels={isReels} />
-        <NavSlot to="/discover" label="Search" icon={Search} isReels={isReels} />
+        <NavSlot
+          to="/messages"
+          label="Messages"
+          icon={MessageCircle}
+          isReels={isReels}
+          badge={unreadDm > 0}
+          badgeCount={unreadDm}
+        />
 
         <NavLink to="/profile" aria-label="Profile" className="h-full w-full flex items-center justify-center active:scale-95 transition-transform">
           {({ isActive }) => (
