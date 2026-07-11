@@ -59,32 +59,44 @@ const writeStored = (uid: string, value: Stored) => {
 // Persistent unlock — once the user enters the passcode on this device we
 // remember it, so DM taps don't re-prompt every time. Cleared only if the
 // passcode is reset or storage is wiped.
-const UNLOCK_KEY = (uid: string) => `msg_unlocked:${uid}`;
+// Module-level unlock flag — survives remounts while the user navigates
+// between /messages and /messages/:id, but is CLEARED as soon as they leave
+// the Messages section (see effect below). This ensures every fresh entry
+// into DMs re-prompts for the passcode.
+let sessionUnlocked = false;
 
 export const MessagesPasscodeGate = ({ children }: { children: React.ReactNode }) => {
   const { user } = useAuth();
+  const { pathname } = useLocation();
   const uid = user?.id ?? "anon";
 
   const [ready, setReady] = useState(false);
   const [stored, setStored] = useState<Stored | null>(null);
-  const [unlocked, setUnlocked] = useState(false);
+  const [unlocked, setUnlocked] = useState(sessionUnlocked);
 
   useEffect(() => {
     if (!user) return;
     setStored(readStored(uid));
-    setUnlocked(localStorage.getItem(UNLOCK_KEY(uid)) === "1");
     setReady(true);
   }, [uid, user]);
 
+  // Re-lock whenever the user leaves the Messages surface entirely.
+  useEffect(() => {
+    if (!pathname.startsWith("/messages")) {
+      sessionUnlocked = false;
+      setUnlocked(false);
+    }
+  }, [pathname]);
+
   const handleUnlocked = () => {
-    localStorage.setItem(UNLOCK_KEY(uid), "1");
+    sessionUnlocked = true;
     setUnlocked(true);
   };
 
   const handleCreated = (s: Stored) => {
     writeStored(uid, s);
     setStored(s);
-    localStorage.setItem(UNLOCK_KEY(uid), "1");
+    sessionUnlocked = true;
     setUnlocked(true);
     toast.success("Passcode set — Messages are now protected");
   };
