@@ -472,7 +472,7 @@ const PasscodePad = ({
                 animate={{ scale: filled ? 1.05 : 1 }}
                 className={
                   "h-[22px] w-[22px] rounded-full border-2 " +
-                  (filled ? "bg-white border-white" : "border-white/30")
+                  (filled ? "bg-foreground border-foreground" : "border-foreground/30")
                 }
               />
             );
@@ -515,7 +515,7 @@ const Key = ({
 } & React.ButtonHTMLAttributes<HTMLButtonElement>) => (
   <button
     onClick={onPress}
-    className="h-16 rounded-full bg-muted/40 active:bg-white/[0.14] grid place-items-center text-foreground transition-colors"
+    className="h-16 rounded-full bg-muted/40 active:bg-muted/60 grid place-items-center text-foreground transition-colors"
     {...rest}
   >
     {children}
