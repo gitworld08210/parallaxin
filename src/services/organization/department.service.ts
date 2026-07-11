@@ -49,20 +49,17 @@ export const departmentService = {
 
   /**
    * Return { department_id -> active_member_count } for a given org.
-   * Uses a bounded aggregate query so the tree page doesn't fetch full members.
+   * Uses a server-side aggregate RPC so we never download raw member rows.
    */
   async memberCountsByDepartment(orgId: string): Promise<Record<string, number>> {
-    const { data, error } = await supabase
-      .from("organization_members")
-      .select("department_id")
-      .eq("organization_id", orgId)
-      .eq("status", "active")
-      .not("department_id", "is", null);
+    const { data, error } = await supabase.rpc("org_department_member_counts", {
+      _organization_id: orgId,
+    });
     if (error) throw error;
     const counts: Record<string, number> = {};
-    for (const row of (data ?? []) as Array<{ department_id: string | null }>) {
+    for (const row of (data ?? []) as Array<{ department_id: string; member_count: number }>) {
       if (!row.department_id) continue;
-      counts[row.department_id] = (counts[row.department_id] ?? 0) + 1;
+      counts[row.department_id] = Number(row.member_count) || 0;
     }
     return counts;
   },
