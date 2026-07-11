@@ -72,13 +72,14 @@ const NAV_SECTIONS: { title: string; items: NavItem[] }[] = [
 
 export const OrganizationSidebar = () => {
   const { organization, role } = useOrganizationContext();
+  const featureFlags = useOrgFeatureFlags();
   const slug = organization?.slug ?? "";
   const base = slug ? `/organization/${slug}` : "/organization";
   const fallback = organization?.name?.[0]?.toUpperCase() ?? "O";
 
   const sections = NAV_SECTIONS.map((section) => ({
     ...section,
-    items: section.items.filter((item) => isOrgFeatureEnabled(item.feature)),
+    items: section.items.filter((item) => featureFlags[item.feature]),
   })).filter((s) => s.items.length > 0);
 
   return (
