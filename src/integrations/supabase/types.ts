@@ -2627,6 +2627,32 @@ export type Database = {
           post_id: string
         }[]
       }
+      get_organization_invite_by_token: {
+        Args: { _token: string }
+        Returns: {
+          created_at: string
+          email: string
+          expires_at: string
+          id: string
+          invite_token: string
+          invited_by: string
+          inviter_avatar_url: string
+          inviter_display_name: string
+          inviter_user_id: string
+          inviter_username: string
+          organization_description: string
+          organization_id: string
+          organization_logo_url: string
+          organization_member_count: number
+          organization_name: string
+          organization_slug: string
+          organization_verified: boolean
+          role_id: string
+          role_name: string
+          status: string
+          username: string
+        }[]
+      }
       get_platform_pay_config: {
         Args: never
         Returns: {
@@ -2691,6 +2717,28 @@ export type Database = {
         Returns: boolean
       }
       leave_group: { Args: { _conv: string }; Returns: undefined }
+      list_incoming_organization_invites: {
+        Args: never
+        Returns: {
+          created_at: string
+          email: string
+          expires_at: string
+          id: string
+          invite_token: string
+          invited_by: string
+          inviter_avatar_url: string
+          inviter_display_name: string
+          inviter_username: string
+          organization_id: string
+          organization_logo_url: string
+          organization_name: string
+          organization_slug: string
+          role_id: string
+          role_name: string
+          status: string
+          username: string
+        }[]
+      }
       mark_conversation_read: {
         Args: { _conversation_id: string }
         Returns: undefined

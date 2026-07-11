@@ -66,40 +66,50 @@ const InviteAccept = () => {
     let cancelled = false;
     (async () => {
       setLoading(true);
-      const { data, error } = await supabase
-        .from("organization_invites")
-        .select(
-          "id, organization_id, invited_by, email, username, role_id, invite_token, status, expires_at, created_at",
-        )
-        .eq("invite_token", token)
-        .maybeSingle();
+      // Uses a SECURITY DEFINER RPC so invitees (who aren't yet org members)
+      // can still read their invitation despite table-level RLS.
+      const { data, error } = await supabase.rpc(
+        "get_organization_invite_by_token" as any,
+        { _token: token },
+      );
       if (cancelled) return;
-      if (error || !data) {
+      const row = Array.isArray(data) ? data[0] : (data as any);
+      if (error || !row) {
         setNotFound(true);
         setLoading(false);
         return;
       }
-      const [orgRes, inviterRes, roleRes] = await Promise.all([
-        supabase
-          .from("organizations")
-          .select("id, name, slug, logo_url, description, verified, member_count")
-          .eq("id", data.organization_id)
-          .maybeSingle(),
-        supabase
-          .from("profiles")
-          .select("user_id, username, display_name, avatar_url")
-          .eq("user_id", data.invited_by)
-          .maybeSingle(),
-        data.role_id
-          ? supabase.from("organization_roles").select("name").eq("id", data.role_id).maybeSingle()
-          : Promise.resolve({ data: null as { name: string } | null }),
-      ]);
-      if (cancelled) return;
       setInv({
-        ...(data as any),
-        organization: (orgRes.data as any) ?? null,
-        inviter: (inviterRes.data as any) ?? null,
-        role_name: (roleRes.data as any)?.name ?? null,
+        id: row.id,
+        organization_id: row.organization_id,
+        invited_by: row.invited_by,
+        email: row.email,
+        username: row.username,
+        role_id: row.role_id,
+        invite_token: row.invite_token,
+        status: row.status,
+        expires_at: row.expires_at,
+        created_at: row.created_at,
+        organization: row.organization_name
+          ? {
+              id: row.organization_id,
+              name: row.organization_name,
+              slug: row.organization_slug,
+              logo_url: row.organization_logo_url,
+              description: row.organization_description,
+              verified: row.organization_verified,
+              member_count: row.organization_member_count,
+            }
+          : null,
+        inviter: row.inviter_user_id
+          ? {
+              user_id: row.inviter_user_id,
+              username: row.inviter_username,
+              display_name: row.inviter_display_name,
+              avatar_url: row.inviter_avatar_url,
+            }
+          : null,
+        role_name: row.role_name ?? null,
       });
       setLoading(false);
     })();
@@ -107,6 +117,7 @@ const InviteAccept = () => {
       cancelled = true;
     };
   }, [token]);
+
 
   const expired = useMemo(() => {
     if (!inv) return false;
