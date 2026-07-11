@@ -99,7 +99,7 @@ export default function OrganizationMemberDetails() {
               <span className="text-sm text-muted-foreground">No roles assigned.</span>
             ) : (
               member.role_names.map((name) => (
-                <MemberRoleBadge key={name} role={name} isOwner={isOwnerRow && name === "Owner"} />
+                <MemberRoleBadge key={name} role={name} />
               ))
             )}
           </div>
