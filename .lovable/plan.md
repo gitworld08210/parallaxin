@@ -1,61 +1,43 @@
-## Goal
-Simplify auth to a single Sign up / Log in surface. Remove the separate "Phone" tab. During signup, the user must verify **at least one** of: email or phone. Both fields are collected; verification of either one unlocks the app.
+# App-wide Redesign Plan
 
-## Changes
+You're asking for a full visual + interaction overhaul across most of the app. This is a large scope, so I want to align before I touch code.
 
-### 1. `src/pages/Auth.tsx` — collapse to 2 tabs
-- Remove the `"phone"` tab and all phone-OTP UI from this page.
-- Tabs become: **Log in** / **Sign up**.
-- Sign-up form fields (in order):
-  - Account kind (Personal / Organization) — unchanged
-  - Email (required)
-  - Phone in E.164 (required)
-  - Password (required, 6+)
-- On submit:
-  - Call `supabase.auth.signUp({ email, password, options: { data: { pending_phone: phone }, emailRedirectTo } })`.
-  - Immediately after, invoke `send-phone-otp` so a code is sent to the phone.
-  - Route user to the verification gate (they are signed-in-but-unverified, or if email confirmation blocks session, show "check your email" state).
-- Log-in tab stays email + password only. Phone-only login is dropped from this screen (kept out of scope per user request to remove the extra section).
+## What you're asking for (as I understand it)
 
-### 2. `src/components/auth/EmailVerificationGate.tsx` → rename conceptually to a **Verification Gate**
-Show whenever **neither** channel is verified. Dismiss as soon as **one** is verified.
+| Surface | Inspiration | Core feel |
+|---|---|---|
+| Home feed | Twitter / X | Infinite text-first timeline, sticky tabs (For you / Following), compact engagement bar |
+| Photo/Post grid | Instagram | 3-col grid, stories rail, double-tap heart, immersive viewer |
+| Reels | TikTok | Full-screen vertical snap, right-rail actions, auto-play, swipe up/down |
+| Messages | Telegram / WhatsApp | Chat bubbles, tail, sent/read ticks, voice notes, media grid, swipe-to-reply |
+| Side menu / drawer | Instagram | Slide-out with account switcher, saved, close friends, insights, settings |
+| Auth / Login | X | Split-screen big logo, phased email → password, minimal chrome |
+| Profile | X | Cover + avatar overlap, verified + affiliation chip, sticky tabs |
+| Premium | Apple | Big serif hero, plan cards with hairline borders, tier toggle, quiet motion |
 
-Logic (`useNeedsVerification`):
+## Scope reality check
+
+The current app already has ~30 pages. Rewriting all of them premium-quality in one pass is not realistic in a single turn — the result would be shallow across the board. I want to do this in **staged passes**, one surface family per turn, so each screen actually gets the craft it deserves.
+
+## Suggested order (highest impact first)
+
+```text
+Pass 1  Auth        Auth.tsx, ResetPassword.tsx           (X-style split hero)
+Pass 2  Side menu   SideMenu.tsx + AppShell trigger       (IG drawer, account row, sectioned links)
+Pass 3  Feed        Feed.tsx + PostCard                   (X timeline, sticky For you / Following)
+Pass 4  Reels       Reels.tsx + ReelCompose viewer        (TikTok vertical snap + right rail)
+Pass 5  Messages    Messages.tsx + Conversation.tsx       (Telegram bubbles, WhatsApp ticks, voice UI)
+Pass 6  Premium     Premium.tsx                           (Apple hero, plan cards, tier toggle)
+Pass 7  Profile     Profile.tsx polish                    (already X-styled; tighten spacing + affiliation)
 ```
-emailVerified = !!user.email_confirmed_at && !isSyntheticPhoneEmail(user.email)
-phoneVerified = !!user.phone_confirmed_at   // from auth.users
-needsGate     = !(emailVerified || phoneVerified)
-```
 
-Gate UI (single screen, two actions):
-- Headline: "Verify your account"
-- Subtext: "Confirm your email **or** your phone number to continue."
-- **Card A — Email**: shows the pending email, "Resend link" button (uses `supabase.auth.resend`). If no email attached (legacy phone-only user), show input to add one.
-- **Card B — Phone**: shows the pending phone from `user_metadata.pending_phone` or `user.phone`. Button "Send code" → calls `send-phone-otp`. Then a 6-digit input → calls a new small edge function `verify-signup-phone` that runs Twilio VerificationCheck and, on success, calls `admin.updateUserById(uid, { phone, phone_confirm: true })`.
-- Poll `supabase.auth.refreshSession()` every 8s; auto-close when either flag flips true.
-- Sign-out link at the bottom (kept).
+Each pass = one turn, focused, verified visually before moving on.
 
-### 3. New edge function `supabase/functions/verify-signup-phone/index.ts`
-- Input: `{ phone, code }` + user's JWT (verify via `admin.auth.getUser(token)`).
-- Runs Twilio `VerificationCheck`.
-- On approved: `admin.auth.admin.updateUserById(user.id, { phone, phone_confirm: true })`.
-- Returns `{ ok: true }`.
+## What I need from you before I start
 
-### 4. Deprecate the standalone phone signup path
-- `verify-phone-otp` edge function stays (used elsewhere/for legacy) but is no longer invoked from Auth.tsx.
-- `send-phone-otp` is reused unchanged for the gate's phone verification.
+1. **Confirm the order** above, or reshuffle it (e.g. "start with Reels").
+2. **Design tokens** — should I keep the current dark Aurelix palette (primary purple, dark background), or re-pick a palette for the whole app? If re-picking, I'll run a taste round (palette / typography / layout) first.
+3. **Scope of change per screen** — visual only (layout, spacing, motion, chrome) vs. also restructuring information architecture (adding/removing sections)? Recommend visual-only to keep behavior stable.
+4. **Menu content** — you said "menu I access more features". List the entries you want in the IG-style drawer (e.g. Saved, Close Friends, Insights, Wallet, Verification, Settings, Log out) or let me propose a default set based on existing routes.
 
-### 5. Copy tweaks
-- Gate title/subtitle updated to reflect "either one is enough".
-- Sign-up button label unchanged ("Create account").
-
-## Out of scope
-- Password reset flow, change-email screen, change-phone screen — unchanged.
-- Removing/renaming `verify-phone-otp` function.
-- Auth email templates.
-
-## Files touched
-- edit `src/pages/Auth.tsx`
-- edit `src/components/auth/EmailVerificationGate.tsx` (rework to dual-channel gate)
-- create `supabase/functions/verify-signup-phone/index.ts`
-- deploy the new function
+Once you answer, I'll start with Pass 1 and ship one polished surface per turn.
