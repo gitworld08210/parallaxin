@@ -25,6 +25,7 @@ const Messages = lazy(() => import("./pages/Messages"));
 const Conversation = lazy(() => import("./pages/Conversation"));
 const Notifications = lazy(() => import("./pages/Notifications"));
 const InviteAccept = lazy(() => import("./pages/InviteAccept"));
+const CollabInviteAccept = lazy(() => import("./pages/CollabInviteAccept"));
 const Compose = lazy(() => import("./pages/Compose"));
 const ReelCompose = lazy(() => import("./pages/ReelCompose"));
 const StoryCompose = lazy(() => import("./pages/StoryCompose"));
