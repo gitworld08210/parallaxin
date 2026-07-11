@@ -227,7 +227,7 @@ const Conversation = () => {
       {/* Header */}
       <header
         className="h-16 px-2 flex items-center gap-2 sticky top-0 z-20 backdrop-blur"
-        style={{ background: "hsl(var(--background) / 0.85)", borderBottom: "1px solid rgba(255,255,255,0.06)" }}
+        style={{ background: "hsl(var(--background) / 0.85)", borderBottom: "1px solid hsl(var(--border))" }}
       >
         <button onClick={() => nav("/messages")} className="h-10 w-10 grid place-items-center rounded-full hover:bg-muted/40" aria-label="Back">
           <ChevronLeft className="h-6 w-6 text-foreground" />
@@ -235,9 +235,9 @@ const Conversation = () => {
         <Link to={other ? `/u/${other.username}` : "#"} className="flex items-center gap-3 flex-1 min-w-0">
           <div className="rounded-full p-[2px] shrink-0" style={{ background: `linear-gradient(135deg, ${RED}, #ff3b47)` }}>
             {other?.avatar_url ? (
-              <img src={other.avatar_url} className="h-9 w-9 rounded-full object-cover" style={{ border: "2px solid #0a0a0a" }} alt="" />
+              <img src={other.avatar_url} className="h-9 w-9 rounded-full object-cover" style={{ border: "2px solid hsl(var(--background))" }} alt="" />
             ) : (
-              <div className="h-9 w-9 rounded-full overflow-hidden" style={{ border: "2px solid #0a0a0a" }}>
+              <div className="h-9 w-9 rounded-full overflow-hidden" style={{ border: "2px solid hsl(var(--background))" }}>
                 <AuraAvatar gradient={gradientFor(other?.username)} size="sm" initials={initialsOf(otherName)} />
               </div>
             )}
@@ -311,7 +311,7 @@ const Conversation = () => {
                 ...radius,
               }
             : {
-                background: "#1f1f1f",
+                background: "hsl(var(--secondary))",
                 color: "hsl(var(--foreground))",
                 ...radius,
               };
@@ -353,7 +353,7 @@ const Conversation = () => {
         })}
         {otherTyping && (
           <div className="flex justify-start">
-            <div className="rounded-2xl rounded-bl-md px-3.5 py-3 inline-flex gap-1" style={{ background: "#1f1f1f" }}>
+            <div className="rounded-2xl rounded-bl-md px-3.5 py-3 inline-flex gap-1" style={{ background: "hsl(var(--secondary))" }}>
               <span className="h-1.5 w-1.5 rounded-full animate-bounce" style={{ background: "hsl(var(--muted-foreground))", animationDelay: "0ms" }} />
               <span className="h-1.5 w-1.5 rounded-full animate-bounce" style={{ background: "hsl(var(--muted-foreground))", animationDelay: "150ms" }} />
               <span className="h-1.5 w-1.5 rounded-full animate-bounce" style={{ background: "hsl(var(--muted-foreground))", animationDelay: "300ms" }} />
@@ -367,7 +367,7 @@ const Conversation = () => {
       <form
         onSubmit={send}
         className="fixed bottom-14 inset-x-0 mx-auto max-w-md p-3 flex flex-col gap-2"
-        style={{ background: "hsl(var(--background))", borderTop: "1px solid rgba(255,255,255,0.06)" }}
+        style={{ background: "hsl(var(--background))", borderTop: "1px solid hsl(var(--border))" }}
       >
         {aiSuggestions.length > 0 && (
           <div className="flex gap-1.5 overflow-x-auto -mx-1 px-1 pb-1">
@@ -387,7 +387,7 @@ const Conversation = () => {
         <div className="flex gap-2 items-center">
           <div
             className="flex items-center gap-2 flex-1 rounded-full px-3"
-            style={{ background: "hsl(var(--secondary))", border: "1px solid rgba(255,255,255,0.06)" }}
+            style={{ background: "hsl(var(--secondary))", border: "1px solid hsl(var(--border))" }}
           >
             <button type="button" className="h-9 w-9 grid place-items-center -ml-1" aria-label="Attach">
               <Paperclip className="h-5 w-5" style={{ color: "hsl(var(--muted-foreground))" }} />

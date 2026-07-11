@@ -279,16 +279,16 @@ const Messages = () => {
                       style={c.unread > 0 ? { background: `conic-gradient(from 210deg, ${RED}, #ff7a4a, ${RED})` } : { background: "transparent" }}
                     >
                       {avatarUrl ? (
-                        <img src={avatarUrl} className="h-14 w-14 rounded-full object-cover" style={{ border: c.unread > 0 ? "2px solid #0a0a0a" : "none" }} />
+                        <img src={avatarUrl} className="h-14 w-14 rounded-full object-cover" style={{ border: c.unread > 0 ? "2px solid hsl(var(--background))" : "none" }} />
                       ) : (
-                        <div className="h-14 w-14 rounded-full overflow-hidden" style={{ border: c.unread > 0 ? "2px solid #0a0a0a" : "none" }}>
+                        <div className="h-14 w-14 rounded-full overflow-hidden" style={{ border: c.unread > 0 ? "2px solid hsl(var(--background))" : "none" }}>
                           <AuraAvatar gradient={gradientFor(handleSeed)} size="md" initials={initialsOf(name)} />
                         </div>
                       )}
                     </div>
                     <span
                       className="absolute bottom-0 right-0 h-3.5 w-3.5 rounded-full"
-                      style={{ background: "#22c55e", border: "2px solid #0a0a0a" }}
+                      style={{ background: "#22c55e", border: "2px solid hsl(var(--background))" }}
                     />
                   </div>
                   <span className="text-[11px] text-foreground/80 truncate w-full text-center">{name.split(" ")[0]}</span>
@@ -351,7 +351,7 @@ const Messages = () => {
                       ) : (
                         <span
                           className="absolute bottom-0.5 right-0.5 h-3 w-3 rounded-full"
-                          style={{ background: "#22c55e", border: "2px solid #0a0a0a" }}
+                          style={{ background: "#22c55e", border: "2px solid hsl(var(--background))" }}
                         />
                       )}
                     </div>
@@ -422,7 +422,7 @@ const Messages = () => {
           className="border-t h-[80vh] rounded-t-3xl p-0 flex flex-col"
           style={{ background: "hsl(var(--background))", borderColor: "hsl(var(--border))", color: "hsl(var(--foreground))" }}
         >
-          <SheetHeader className="px-5 py-4" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+          <SheetHeader className="px-5 py-4" style={{ borderBottom: "1px solid hsl(var(--border))" }}>
             <SheetTitle className="text-base font-semibold text-foreground text-left">New message</SheetTitle>
           </SheetHeader>
           <div className="p-4">
@@ -446,7 +446,7 @@ const Messages = () => {
                 key={p.user_id}
                 disabled={starting}
                 onClick={() => startChat(p.user_id)}
-                className="w-full flex items-center gap-3 px-4 py-3 text-left disabled:opacity-50 hover:bg-white/[0.03]"
+                className="w-full flex items-center gap-3 px-4 py-3 text-left disabled:opacity-50 hover:bg-muted/30"
               >
                 {p.avatar_url ? (
                   <img src={p.avatar_url} alt="" className="h-11 w-11 rounded-full object-cover" />

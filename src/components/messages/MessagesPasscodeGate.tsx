@@ -229,7 +229,7 @@ const SetupWizard = ({ onComplete }: { onComplete: (s: Stored) => void }) => {
         <button
           onClick={finalize}
           disabled={busy || answer.trim().length < 2}
-          className="mt-8 w-full h-14 rounded-2xl bg-white text-black font-bold text-[15px] disabled:opacity-40 active:scale-[0.98] transition inline-flex items-center justify-center gap-2"
+          className="mt-8 w-full h-14 rounded-2xl bg-foreground text-background font-bold text-[15px] disabled:opacity-40 active:scale-[0.98] transition inline-flex items-center justify-center gap-2"
         >
           {busy ? <Loader2 className="h-5 w-5 animate-spin" /> : "Enable passcode"}
         </button>
@@ -375,7 +375,7 @@ const LockScreen = ({
           <button
             onClick={submitAnswer}
             disabled={busy || answer.trim().length < 2}
-            className="mt-6 w-full h-14 rounded-2xl bg-white text-black font-bold text-[15px] disabled:opacity-40 active:scale-[0.98] transition inline-flex items-center justify-center gap-2"
+            className="mt-6 w-full h-14 rounded-2xl bg-foreground text-background font-bold text-[15px] disabled:opacity-40 active:scale-[0.98] transition inline-flex items-center justify-center gap-2"
           >
             {busy ? <Loader2 className="h-5 w-5 animate-spin" /> : "Verify"}
           </button>
