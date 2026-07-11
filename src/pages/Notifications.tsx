@@ -108,11 +108,19 @@ const Notifications = () => {
     return () => { supabase.removeChannel(ch); };
   }, [user?.id]);
 
+  const visibleItems = useMemo(
+    // Org invite rows are surfaced via the dedicated pending-invite banner
+    // (with accept/decline). Hide the duplicate generic notification row so
+    // the official banner is the single CTA.
+    () => items.filter((n) => !n.type.startsWith("org_invite") && n.type !== "org_invited"),
+    [items],
+  );
+
   const groups = useMemo(() => {
     const g: Record<"today" | "yesterday" | "earlier", N[]> = { today: [], yesterday: [], earlier: [] };
-    items.forEach((n) => g[bucketOf(n.created_at)].push(n));
+    visibleItems.forEach((n) => g[bucketOf(n.created_at)].push(n));
     return g;
-  }, [items]);
+  }, [visibleItems]);
 
   const renderRow = (n: N) => {
     const Icon = iconFor(n.type);
@@ -251,7 +259,7 @@ const Notifications = () => {
             })}
           </div>
         )}
-        {items.length === 0 && pendingInvites.length === 0 ? (
+        {visibleItems.length === 0 && pendingInvites.length === 0 ? (
           <EmptyState
             icon={Bell}
             title="Nothing new yet"

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { Menu, Sparkles, Users, PenSquare } from "lucide-react";
+import { Menu, Sparkles, Users, PenSquare, MessageCircle } from "lucide-react";
 import { motion } from "framer-motion";
 import { PostCard, FeedPost } from "@/components/social/PostCard";
 import { CommentSheet } from "@/components/social/CommentSheet";
@@ -128,13 +128,22 @@ const Feed = () => {
               AURELIX
             </span>
           </div>
-          <Link
-            to="/discover"
-            className="p-2 rounded-full hover:bg-secondary/60 transition-colors"
-            aria-label="Feed settings"
-          >
-            <Sparkles className="h-5 w-5 text-primary" strokeWidth={2} />
-          </Link>
+          <div className="flex items-center gap-1">
+            <Link
+              to="/messages"
+              className="p-2 rounded-full hover:bg-secondary/60 transition-colors"
+              aria-label="Messages"
+            >
+              <MessageCircle className="h-5 w-5 text-foreground" strokeWidth={2} />
+            </Link>
+            <Link
+              to="/discover"
+              className="p-2 rounded-full hover:bg-secondary/60 transition-colors"
+              aria-label="Feed settings"
+            >
+              <Sparkles className="h-5 w-5 text-primary" strokeWidth={2} />
+            </Link>
+          </div>
         </header>
 
         {/* X-style tabs — animated underline with layoutId */}
