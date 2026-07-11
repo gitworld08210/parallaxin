@@ -21,18 +21,14 @@ export const SideMenu = ({ trigger }: { trigger: React.ReactNode }) => {
   const dark = theme === "dark";
   const [becomeOpen, setBecomeOpen] = useState(false);
   const [appearanceOpen, setAppearanceOpen] = useState(false);
-  const [orgAdminUsername, setOrgAdminUsername] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!user) { setOrgAdminUsername(null); return; }
-    (async () => {
-      const { data: mem } = await supabase
-        .from("organization_members" as any)
-        .select("organization:organizations(username)")
-        .eq("user_id", user.id).in("member_role", ["owner","admin"]).limit(1).maybeSingle();
-      setOrgAdminUsername((mem as any)?.organization?.username ?? null);
-    })();
-  }, [user?.id]);
+  // Uses OrganizationProvider primitives via the useMyWorkspaces hook — the
+  // signed-in user's workspaces. Admin entry surfaces only when the user owns
+  // an organization (server-side ownership → no client-only admin state).
+  const { workspaces } = useMyWorkspaces();
+  const ownedWorkspace = workspaces.find((w) => w.is_owner) ?? null;
+  const adminOrgSlug = ownedWorkspace?.slug ?? null;
+
 
   type Row = {
     to?: string;
