@@ -612,6 +612,15 @@ const Profile = () => {
         targetId={profile?.user_id ?? null}
       />
       <BecomeCreatorSheet open={becomeOpen} onOpenChange={setBecomeOpen} />
+      <VerificationSheet
+        open={verifyOpen}
+        onOpenChange={setVerifyOpen}
+        displayName={displayName}
+        verificationKind={profile.verification_kind}
+        memberships={memberships}
+        joined={joined}
+        verificationId={`AX-${profile.user_id.slice(0, 8).toUpperCase()}`}
+      />
     </div>
   );
 };
