@@ -172,11 +172,11 @@ const Messages = () => {
   ];
 
   return (
-    <div style={{ background: "#0a0a0a", color: "white" }} className="min-h-screen">
+    <div style={{ background: "hsl(var(--background))", color: "hsl(var(--foreground))" }} className="min-h-screen">
       {/* Sticky Telegram-style header */}
       <header
         className="sticky top-0 z-20 px-5 pt-4 pb-3 backdrop-blur-xl"
-        style={{ background: "rgba(10,10,10,0.85)", borderBottom: "1px solid hsl(var(--border))" }}
+        style={{ background: "hsl(var(--background) / 0.85)", borderBottom: "1px solid hsl(var(--border))" }}
       >
         <div className="flex items-center justify-between mb-3">
           <h1 className="text-[26px] font-bold tracking-tight text-foreground">Chats</h1>
@@ -239,7 +239,7 @@ const Messages = () => {
                 {t.count > 0 && (
                   <span
                     className="min-w-[18px] h-[18px] px-1 rounded-full grid place-items-center text-[10px] font-bold"
-                    style={{ background: active ? "rgba(255,255,255,0.25)" : RED, color: "white" }}
+                    style={{ background: active ? "hsl(var(--foreground) / 0.25)" : RED, color: "hsl(var(--foreground))" }}
                   >
                     {t.count > 99 ? "99+" : t.count}
                   </span>
@@ -343,7 +343,7 @@ const Messages = () => {
                         </div>
                       )}
                       {c.is_group ? (
-                        <span className="absolute -bottom-0.5 -right-0.5 h-5 w-5 grid place-items-center rounded-full" style={{ background: "#0a0a0a" }}>
+                        <span className="absolute -bottom-0.5 -right-0.5 h-5 w-5 grid place-items-center rounded-full" style={{ background: "hsl(var(--background))" }}>
                           <span className="h-4 w-4 rounded-full grid place-items-center" style={{ background: RED }}>
                             <Users className="h-2.5 w-2.5 text-foreground" />
                           </span>
@@ -362,7 +362,7 @@ const Messages = () => {
                         {!c.is_group && other?.verification_kind && <VerificationBadge kind={other.verification_kind as any} />}
                         <div className="ml-auto flex items-center gap-1 shrink-0">
                           {pinned && <Pin className="h-3 w-3 text-muted-foreground rotate-45" />}
-                          <span className="text-[11.5px]" style={{ color: unread ? RED : "rgba(255,255,255,0.45)" }}>
+                          <span className="text-[11.5px]" style={{ color: unread ? RED : "hsl(var(--muted-foreground))" }}>
                             {chatTime(c.last_message_at)}
                           </span>
                         </div>
@@ -377,7 +377,7 @@ const Messages = () => {
                         )}
                         <p
                           className="text-[13.5px] truncate flex-1"
-                          style={{ color: unread ? "hsl(var(--foreground))" : "rgba(255,255,255,0.5)" }}
+                          style={{ color: unread ? "hsl(var(--foreground))" : "hsl(var(--muted-foreground))" }}
                         >
                           {c.last ?? "Tap to start chatting"}
                         </p>
@@ -420,7 +420,7 @@ const Messages = () => {
         <SheetContent
           side="bottom"
           className="border-t h-[80vh] rounded-t-3xl p-0 flex flex-col"
-          style={{ background: "#0a0a0a", borderColor: "rgba(255,255,255,0.08)", color: "white" }}
+          style={{ background: "hsl(var(--background))", borderColor: "hsl(var(--border))", color: "hsl(var(--foreground))" }}
         >
           <SheetHeader className="px-5 py-4" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
             <SheetTitle className="text-base font-semibold text-foreground text-left">New message</SheetTitle>
