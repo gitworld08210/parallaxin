@@ -1,6 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { Heart, MessageCircle, Send, Bookmark, MoreHorizontal, BarChart3, FolderPlus, Trash2, Flag, Sparkles, ShieldCheck } from "lucide-react";
+import {
+  Heart, MessageCircle, Repeat2, Send, Bookmark, MoreHorizontal, BarChart3,
+  FolderPlus, Trash2, Flag, Sparkles, ShieldCheck,
+} from "lucide-react";
 import { TipSheet } from "@/components/social/TipSheet";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { supabase } from "@/integrations/supabase/client";
@@ -15,6 +18,7 @@ import { ReportSheet } from "@/components/social/ReportSheet";
 import { FounderBadge } from "@/components/founders/FounderBadge";
 import { GenesisMark } from "@/components/founders/GenesisMark";
 import { DoubleTapHeart } from "@/components/social/DoubleTapHeart";
+import { cn } from "@/lib/utils";
 
 export type FeedPost = {
   id: string;
@@ -39,18 +43,17 @@ export type FeedPost = {
   collaborators?: { username: string; display_name: string; avatar_url: string | null }[];
 };
 
-// Session-scoped view dedupe
 const viewedThisSession = new Set<string>();
 
 const linkify = (text: string) =>
   text.split(/(\s+)/).map((tok, i) => {
     if (tok.startsWith("#") && tok.length > 1) {
       const tag = tok.slice(1).replace(/[^\w]/g, "");
-      if (tag) return <Link key={i} to={`/tag/${tag}`} className="text-primary">{tok}</Link>;
+      if (tag) return <Link key={i} to={`/tag/${tag}`} className="text-primary hover:underline">{tok}</Link>;
     }
     if (tok.startsWith("@") && tok.length > 1) {
       const u = tok.slice(1).replace(/[^\w.]/g, "");
-      if (u) return <Link key={i} to={`/u/${u}`} className="text-primary">{tok}</Link>;
+      if (u) return <Link key={i} to={`/u/${u}`} className="text-primary hover:underline">{tok}</Link>;
     }
     return <span key={i}>{tok}</span>;
   });
@@ -96,9 +99,6 @@ export const PostCard = ({ post, onOpenComments }: { post: FeedPost; onOpenComme
     })();
   }, [post.id]);
 
-
-
-  // View tracker — fires once per session when card crosses 60% visible
   useEffect(() => {
     if (!user || !articleRef.current || viewedThisSession.has(post.id)) return;
     const el = articleRef.current;
@@ -157,28 +157,31 @@ export const PostCard = ({ post, onOpenComments }: { post: FeedPost; onOpenComme
   const handle = post.profile?.username ?? "unknown";
   const name = post.profile?.display_name || handle;
   const caption = post.content || "";
-  const longCaption = caption.length > 110;
+  const longCaption = caption.length > 240;
+  const shortCaption = longCaption && !expanded ? caption.slice(0, 240) : caption;
 
   return (
-    <article ref={articleRef} className="bg-background">
-      <header className="flex items-center gap-3 px-3 py-2.5">
-        <Link to={`/u/${handle}`} className="shrink-0 flex -space-x-2">
+    <article ref={articleRef} className="bg-background px-4 pt-3 pb-2 hover:bg-secondary/20 transition-colors">
+      {/* X-style: avatar left, content right */}
+      <div className="flex gap-3">
+        {/* Avatar column */}
+        <Link to={`/u/${handle}`} className="shrink-0">
           {post.profile?.avatar_url ? (
-            <img src={post.profile.avatar_url} alt={name} className="h-8 w-8 rounded-full object-cover ring-2 ring-background" />
+            <img
+              src={post.profile.avatar_url}
+              alt={name}
+              className="h-10 w-10 rounded-full object-cover ring-1 ring-border"
+            />
           ) : (
             <AuraAvatar gradient={gradientFor(handle)} size="sm" initials={initialsOf(name)} />
           )}
-          {collabs.slice(0, 2).map((c) =>
-            c.avatar_url ? (
-              <img key={c.username} src={c.avatar_url} alt="" className="h-8 w-8 rounded-full object-cover ring-2 ring-background" />
-            ) : (
-              <AuraAvatar key={c.username} gradient={gradientFor(c.username)} size="sm" initials={initialsOf(c.display_name || c.username)} />
-            )
-          )}
         </Link>
+
+        {/* Content column */}
         <div className="flex-1 min-w-0">
-          <Link to={`/u/${handle}`} className="inline-flex items-center gap-1">
-            <p className="font-semibold text-sm truncate leading-tight">{handle}</p>
+          {/* Name row */}
+          <header className="flex items-center gap-1 text-[14px] leading-tight">
+            <Link to={`/u/${handle}`} className="font-bold truncate hover:underline">{name}</Link>
             {isFounder && <FounderBadge tier={tier} size={12} />}
             {post.profile?.verification_kind
               ? <VerificationBadge kind={post.profile.verification_kind as any} />
@@ -188,125 +191,180 @@ export const PostCard = ({ post, onOpenComments }: { post: FeedPost; onOpenComme
                 <ShieldCheck className="h-3.5 w-3.5 text-primary" />
               </Link>
             )}
-          </Link>
+            <span className="text-muted-foreground truncate">@{handle}</span>
+            <span className="text-muted-foreground">·</span>
+            <span className="text-muted-foreground shrink-0" title={new Date(post.created_at).toLocaleString()}>
+              {timeAgo(post.created_at)}
+            </span>
+
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  className="ml-auto -mr-2 p-2 rounded-full text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
+                  aria-label="More"
+                >
+                  <MoreHorizontal className="h-4 w-4" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-52">
+                <DropdownMenuItem onSelect={() => setCollectionOpen(true)}>
+                  <FolderPlus className="h-4 w-4 mr-2" /> Save to collection
+                </DropdownMenuItem>
+                {post.has_certificate && (
+                  <DropdownMenuItem asChild>
+                    <Link to={`/certificate/${post.id}`}>
+                      <ShieldCheck className="h-4 w-4 mr-2" /> View certificate
+                    </Link>
+                  </DropdownMenuItem>
+                )}
+                {isOwner && !post.has_certificate && post.media_url && (
+                  <DropdownMenuItem onSelect={async () => {
+                    toast.loading("Generating certificate…", { id: "cert" });
+                    const { data, error } = await supabase.functions.invoke("ownership-certify", { body: { post_id: post.id } });
+                    if (error) toast.error(error.message, { id: "cert" });
+                    else { toast.success("Certificate created", { id: "cert" }); window.location.href = `/certificate/${post.id}`; }
+                  }}>
+                    <ShieldCheck className="h-4 w-4 mr-2" /> Generate certificate
+                  </DropdownMenuItem>
+                )}
+                {isOwner && (
+                  <DropdownMenuItem asChild>
+                    <Link to={`/p/${post.id}/insights`}>
+                      <BarChart3 className="h-4 w-4 mr-2" /> View insights
+                    </Link>
+                  </DropdownMenuItem>
+                )}
+                {!isOwner && (
+                  <DropdownMenuItem onSelect={() => setReportOpen(true)} className="text-destructive focus:text-destructive">
+                    <Flag className="h-4 w-4 mr-2" /> Report
+                  </DropdownMenuItem>
+                )}
+                {isOwner && (
+                  <DropdownMenuItem onSelect={remove} className="text-destructive focus:text-destructive">
+                    <Trash2 className="h-4 w-4 mr-2" /> Delete
+                  </DropdownMenuItem>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </header>
+
           {collabs.length > 0 && (
-            <p className="text-[11px] text-muted-foreground truncate leading-tight">
+            <p className="text-[12px] text-muted-foreground truncate mt-0.5">
               with {collabs.slice(0, 2).map((c, i) => (
                 <span key={c.username}>
                   {i > 0 && " & "}
-                  <Link to={`/u/${c.username}`} className="text-foreground/80 font-medium">@{c.username}</Link>
+                  <Link to={`/u/${c.username}`} className="text-foreground/80 font-medium hover:underline">@{c.username}</Link>
                 </span>
               ))}
               {collabs.length > 2 && ` +${collabs.length - 2}`}
             </p>
           )}
-        </div>
 
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <button className="text-foreground p-1" aria-label="More"><MoreHorizontal className="h-5 w-5" /></button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-52">
-            <DropdownMenuItem onSelect={() => setCollectionOpen(true)}>
-              <FolderPlus className="h-4 w-4 mr-2" /> Save to collection
-            </DropdownMenuItem>
-            {post.has_certificate && (
-              <DropdownMenuItem asChild>
-                <Link to={`/certificate/${post.id}`}>
-                  <ShieldCheck className="h-4 w-4 mr-2" /> View certificate
-                </Link>
-              </DropdownMenuItem>
-            )}
-            {isOwner && !post.has_certificate && post.media_url && (
-              <DropdownMenuItem onSelect={async () => {
-                toast.loading("Generating certificate…", { id: "cert" });
-                const { data, error } = await supabase.functions.invoke("ownership-certify", { body: { post_id: post.id } });
-                if (error) toast.error(error.message, { id: "cert" });
-                else { toast.success("Certificate created", { id: "cert" }); window.location.href = `/certificate/${post.id}`; }
-              }}>
-                <ShieldCheck className="h-4 w-4 mr-2" /> Generate certificate
-              </DropdownMenuItem>
-            )}
-            {isOwner && (
-              <DropdownMenuItem asChild>
-                <Link to={`/p/${post.id}/insights`}>
-                  <BarChart3 className="h-4 w-4 mr-2" /> View insights
-                </Link>
-              </DropdownMenuItem>
-            )}
+          {/* Caption */}
+          {caption && (
+            <p className="mt-0.5 text-[15px] leading-snug whitespace-pre-wrap break-words">
+              {linkify(shortCaption)}
+              {longCaption && !expanded && (
+                <>
+                  <span className="text-muted-foreground">… </span>
+                  <button onClick={() => setExpanded(true)} className="text-primary font-medium hover:underline">
+                    Show more
+                  </button>
+                </>
+              )}
+            </p>
+          )}
+
+          {/* Media */}
+          {post.media_url && (
+            <div
+              onClick={onMediaTap}
+              className="relative mt-2 rounded-2xl overflow-hidden border border-border bg-muted select-none"
+            >
+              {post.media_type === "video" ? (
+                <video src={post.media_url} controls playsInline className="w-full max-h-[560px] object-cover" />
+              ) : (
+                <img src={post.media_url} alt="" className="w-full max-h-[560px] object-cover" draggable={false} />
+              )}
+              <DoubleTapHeart trigger={burst} />
+            </div>
+          )}
+
+          {/* X-style action row: reply · repost · like · tip · save */}
+          <div className="mt-2 -ml-2 flex items-center justify-between max-w-md pr-2 text-muted-foreground">
+            <ActionBtn
+              label="Reply"
+              onClick={() => onOpenComments(post.id)}
+              icon={<MessageCircle className="h-[18px] w-[18px]" strokeWidth={1.9} />}
+              count={post.comment_count}
+              hoverClass="group-hover:text-primary group-hover:bg-primary/10"
+              textClass="group-hover:text-primary"
+            />
+            <ActionBtn
+              label="Repost"
+              onClick={() => setShareOpen(true)}
+              icon={<Repeat2 className="h-[18px] w-[18px]" strokeWidth={2} />}
+              hoverClass="group-hover:text-emerald-500 group-hover:bg-emerald-500/10"
+              textClass="group-hover:text-emerald-500"
+            />
+            <ActionBtn
+              label={liked ? "Unlike" : "Like"}
+              onClick={toggleLike}
+              icon={
+                <Heart
+                  className={cn(
+                    "h-[18px] w-[18px] transition-transform",
+                    liked ? "fill-rose-500 text-rose-500 scale-110" : "",
+                  )}
+                  strokeWidth={1.9}
+                />
+              }
+              count={likes}
+              active={liked}
+              activeColor="text-rose-500"
+              hoverClass="group-hover:text-rose-500 group-hover:bg-rose-500/10"
+              textClass="group-hover:text-rose-500"
+            />
             {!isOwner && (
-              <DropdownMenuItem onSelect={() => setReportOpen(true)} className="text-destructive focus:text-destructive">
-                <Flag className="h-4 w-4 mr-2" /> Report
-              </DropdownMenuItem>
+              <ActionBtn
+                label="Send Aura"
+                onClick={() => setTipOpen(true)}
+                icon={<Sparkles className="h-[18px] w-[18px] text-primary" strokeWidth={1.9} />}
+                hoverClass="group-hover:bg-primary/10"
+                textClass="text-primary"
+              />
             )}
-            {isOwner && (
-              <DropdownMenuItem onSelect={remove} className="text-destructive focus:text-destructive">
-                <Trash2 className="h-4 w-4 mr-2" /> Delete
-              </DropdownMenuItem>
-            )}
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </header>
+            <div className="flex items-center gap-1">
+              <ActionBtn
+                label="Save"
+                onClick={toggleSave}
+                icon={
+                  <Bookmark
+                    className={cn("h-[18px] w-[18px]", saved && "fill-primary text-primary")}
+                    strokeWidth={1.9}
+                  />
+                }
+                active={saved}
+                activeColor="text-primary"
+                hoverClass="group-hover:text-primary group-hover:bg-primary/10"
+                textClass="group-hover:text-primary"
+              />
+              <ActionBtn
+                label="Share"
+                onClick={() => setShareOpen(true)}
+                icon={<Send className="h-[18px] w-[18px]" strokeWidth={1.9} />}
+                hoverClass="group-hover:text-primary group-hover:bg-primary/10"
+                textClass="group-hover:text-primary"
+              />
+            </div>
+          </div>
 
-      {post.media_url && (
-        <div onClick={onMediaTap} className="relative w-full bg-muted select-none">
-          {post.media_type === "video" ? (
-            <video src={post.media_url} controls playsInline className="w-full max-h-[560px] object-cover" />
-          ) : (
-            <img src={post.media_url} alt="" className="w-full max-h-[560px] object-cover" draggable={false} />
+          {isFounder && (
+            <div className="mt-1">
+              <GenesisMark />
+            </div>
           )}
-          <DoubleTapHeart trigger={burst} />
         </div>
-      )}
-
-      <div className="flex items-center px-2 pt-2 pb-1">
-        <button onClick={toggleLike} aria-label="Like" className="p-2 active:scale-90 transition-transform">
-          <Heart className={`h-7 w-7 ${liked ? "fill-destructive text-destructive" : "text-foreground"}`} strokeWidth={1.75} />
-        </button>
-        <button onClick={() => onOpenComments(post.id)} aria-label="Comment" className="p-2 active:scale-90 transition-transform">
-          <MessageCircle className="h-7 w-7 text-foreground" strokeWidth={1.75} />
-        </button>
-        <button onClick={() => setShareOpen(true)} aria-label="Share" className="p-2 active:scale-90 transition-transform">
-          <Send className="h-7 w-7 text-foreground" strokeWidth={1.75} />
-        </button>
-        {!isOwner && (
-          <button onClick={() => setTipOpen(true)} aria-label="Send Aura" className="p-2 active:scale-90 transition-transform">
-            <Sparkles className="h-7 w-7 text-primary" strokeWidth={1.75} />
-          </button>
-        )}
-        <button onClick={toggleSave} aria-label="Save" className="ml-auto p-2 active:scale-90 transition-transform">
-          <Bookmark className={`h-7 w-7 ${saved ? "fill-foreground text-foreground" : "text-foreground"}`} strokeWidth={1.75} />
-        </button>
-      </div>
-
-      {likes > 0 && (
-        <p className="px-3 text-sm font-semibold">{fmt(likes)} {likes === 1 ? "like" : "likes"}</p>
-      )}
-
-      {caption && (
-        <p className="px-3 mt-1 text-sm leading-snug whitespace-pre-wrap break-words">
-          <Link to={`/u/${handle}`} className="font-semibold mr-1.5">{handle}</Link>
-          {expanded || !longCaption ? linkify(caption) : (
-            <>
-              {linkify(caption.slice(0, 110))}
-              <span className="text-muted-foreground">… </span>
-              <button onClick={() => setExpanded(true)} className="text-muted-foreground">more</button>
-            </>
-          )}
-        </p>
-      )}
-
-      {post.comment_count > 0 && (
-        <button onClick={() => onOpenComments(post.id)} className="px-3 mt-1 text-sm text-muted-foreground block">
-          View all {fmt(post.comment_count)} comments
-        </button>
-      )}
-
-      <div className="flex items-center justify-between px-3 mt-1 pb-4">
-        <p className="text-[11px] uppercase tracking-wider text-muted-foreground">
-          {timeAgo(post.created_at)}
-        </p>
-        {isFounder && <GenesisMark />}
       </div>
 
       <ShareToDM postId={post.id} open={shareOpen} onOpenChange={setShareOpen} />
@@ -322,3 +380,46 @@ export const PostCard = ({ post, onOpenComments }: { post: FeedPost; onOpenComme
     </article>
   );
 };
+
+const ActionBtn = ({
+  label,
+  onClick,
+  icon,
+  count,
+  active,
+  activeColor,
+  hoverClass,
+  textClass,
+}: {
+  label: string;
+  onClick: () => void;
+  icon: React.ReactNode;
+  count?: number;
+  active?: boolean;
+  activeColor?: string;
+  hoverClass?: string;
+  textClass?: string;
+}) => (
+  <button
+    onClick={onClick}
+    aria-label={label}
+    className={cn(
+      "group inline-flex items-center gap-1 -mx-1 px-2 py-1 rounded-full transition-colors active:scale-95 duration-fast",
+      active && activeColor,
+    )}
+  >
+    <span
+      className={cn(
+        "grid place-items-center h-8 w-8 rounded-full transition-colors",
+        hoverClass,
+      )}
+    >
+      {icon}
+    </span>
+    {count !== undefined && count > 0 && (
+      <span className={cn("text-[13px] leading-none tabular-nums transition-colors", active ? activeColor : textClass)}>
+        {fmt(count)}
+      </span>
+    )}
+  </button>
+);

@@ -1,18 +1,22 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { Bell, Search, Sparkles, Users, ChevronDown } from "lucide-react";
+import { Menu, Sparkles, Users, PenSquare } from "lucide-react";
+import { motion } from "framer-motion";
 import { PostCard, FeedPost } from "@/components/social/PostCard";
 import { CommentSheet } from "@/components/social/CommentSheet";
 import { StoriesRail } from "@/components/social/StoriesRail";
 import { SuggestedUsersRail } from "@/components/social/SuggestedUsersRail";
 import { FeedSkeleton } from "@/components/social/FeedSkeleton";
 import { EmptyState } from "@/components/empty/EmptyState";
+import { SideMenu } from "@/components/layout/SideMenu";
+import { AuraAvatar } from "@/components/vibe/AuraAvatar";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthProvider";
+import { gradientFor, initialsOf } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 const Feed = () => {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const [tab, setTab] = useState<"foryou" | "following">("foryou");
   const [posts, setPosts] = useState<FeedPost[]>([]);
   const [loading, setLoading] = useState(true);
@@ -23,7 +27,6 @@ const Feed = () => {
 
     const sel = "id, user_id, content, media_url, media_type, like_count, comment_count, created_at, has_certificate, profile:profiles!posts_user_profile_fkey(username, display_name, avatar_url, verified, verification_kind)";
 
-    // Kick off ALL requests in parallel — including posts. Don't wait on the ranker for first paint.
     const blocksOut = user ? (supabase.from("blocks" as any).select("blocked_id").eq("blocker_id", user.id) as any) : Promise.resolve({ data: [] });
     const blocksIn = user ? (supabase.from("blocks" as any).select("blocker_id").eq("blocked_id", user.id) as any) : Promise.resolve({ data: [] });
     const mutesP = user ? (supabase.from("mutes" as any).select("muted_id").eq("muter_id", user.id) as any) : Promise.resolve({ data: [] });
@@ -48,11 +51,9 @@ const Feed = () => {
       visible = visible.filter((d: any) => followIds.has(d.user_id));
     }
 
-    // Render immediately without `liked` flag — paint first, then enrich.
     setPosts(visible.map((d: any) => ({ ...d, liked: false })));
     setLoading(false);
 
-    // Enrich with liked state in background.
     if (user && visible.length) {
       supabase.from("likes").select("post_id").eq("user_id", user.id)
         .in("post_id", visible.map((d: any) => d.id))
@@ -62,7 +63,6 @@ const Feed = () => {
         });
     }
 
-    // Re-rank in background for "For you" (don't block first paint on edge function cold start).
     if (tab === "foryou" && user && visible.length) {
       supabase.functions.invoke("rank-foryou", { body: {} }).then(({ data }) => {
         const ids: string[] | undefined = data?.post_ids;
@@ -77,7 +77,6 @@ const Feed = () => {
 
   useEffect(() => { load(); /* eslint-disable-next-line */ }, [tab, user?.id]);
 
-  // Collapsing top bar on scroll-down, restore on scroll-up
   const [chromeHidden, setChromeHidden] = useState(false);
   const lastY = useRef(0);
   useEffect(() => {
@@ -93,55 +92,88 @@ const Feed = () => {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  const displayName = profile?.display_name || profile?.username || "";
+
   return (
     <div>
+      {/* X-style translucent top chrome */}
       <div
         className={cn(
-          "sticky top-0 z-30 bg-background/95 backdrop-blur-sm transition-transform duration-300",
+          "sticky top-0 z-30 bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60 transition-transform duration-300 border-b border-border/70",
           chromeHidden ? "-translate-y-full" : "translate-y-0",
         )}
       >
-        <header className="h-14 px-5 flex items-center justify-between gap-3 border-b border-border">
-          <button className="flex items-center gap-1.5">
-            <span className="font-display text-2xl font-black tracking-wide text-primary">AURELIX</span>
-            <ChevronDown className="h-4 w-4 text-foreground" />
-          </button>
-          <div className="flex items-center gap-1">
-            <Link to="/discover" className="p-2" aria-label="Search">
-              <Search className="h-6 w-6 text-foreground" strokeWidth={1.75} />
-            </Link>
-            <Link to="/notifications" className="p-2" aria-label="Notifications">
-              <Bell className="h-6 w-6 text-foreground" strokeWidth={1.75} />
-            </Link>
+        <header className="h-14 px-3 grid grid-cols-[auto_1fr_auto] items-center gap-2">
+          <SideMenu
+            trigger={
+              <button className="p-1 rounded-full" aria-label="Menu">
+                {profile?.avatar_url ? (
+                  <img
+                    src={profile.avatar_url}
+                    alt=""
+                    className="h-8 w-8 rounded-full object-cover ring-1 ring-border"
+                  />
+                ) : (
+                  <AuraAvatar
+                    gradient={gradientFor(profile?.username)}
+                    size="sm"
+                    initials={initialsOf(displayName)}
+                  />
+                )}
+              </button>
+            }
+          />
+          <div className="flex items-center justify-center">
+            <span className="font-display text-xl font-black tracking-[0.2em] text-primary">
+              AURELIX
+            </span>
           </div>
+          <Link
+            to="/discover"
+            className="p-2 rounded-full hover:bg-secondary/60 transition-colors"
+            aria-label="Feed settings"
+          >
+            <Sparkles className="h-5 w-5 text-primary" strokeWidth={2} />
+          </Link>
         </header>
+
+        {/* X-style tabs — animated underline with layoutId */}
+        <div role="tablist" className="grid grid-cols-2">
+          {[
+            { id: "foryou", label: "For you" },
+            { id: "following", label: "Following" },
+          ].map((t: any) => {
+            const active = tab === t.id;
+            return (
+              <button
+                key={t.id}
+                role="tab"
+                aria-selected={active}
+                onClick={() => setTab(t.id)}
+                className={cn(
+                  "relative h-12 text-[15px] font-semibold transition-colors hover:bg-secondary/40",
+                  active ? "text-foreground" : "text-muted-foreground",
+                )}
+              >
+                <span className="relative inline-flex h-full items-center justify-center">
+                  {t.label}
+                  {active && (
+                    <motion.span
+                      layoutId="feed-tab-underline"
+                      className="absolute -bottom-px left-0 right-0 h-1 rounded-full bg-primary"
+                      transition={{ type: "spring", stiffness: 500, damping: 40 }}
+                    />
+                  )}
+                </span>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       <StoriesRail />
 
-      {/* Underline tabs */}
-      <div className="flex border-b border-border">
-        {[
-          { id: "foryou", label: "For you" },
-          { id: "following", label: "Following" },
-        ].map((t: any) => (
-          <button
-            key={t.id}
-            onClick={() => setTab(t.id)}
-            className={cn(
-              "flex-1 py-3 text-sm font-semibold relative",
-              tab === t.id ? "text-foreground" : "text-muted-foreground",
-            )}
-          >
-            {t.label}
-            {tab === t.id && (
-              <span className="absolute left-0 right-0 -bottom-px h-[2px] bg-foreground" />
-            )}
-          </button>
-        ))}
-      </div>
-
-      <section className="pb-6">
+      <section className="pb-24">
         {loading && <FeedSkeleton count={3} />}
         {!loading && posts.length === 0 && (
           tab === "following" ? (
@@ -171,6 +203,15 @@ const Feed = () => {
           ))}
         </div>
       </section>
+
+      {/* Floating compose FAB — X-style */}
+      <Link
+        to="/compose"
+        aria-label="Compose"
+        className="fixed z-40 bottom-24 right-4 h-14 w-14 rounded-full bg-primary text-primary-foreground grid place-items-center shadow-glow hover:brightness-110 active:scale-95 transition-all"
+      >
+        <PenSquare className="h-6 w-6" strokeWidth={2.2} />
+      </Link>
 
       <CommentSheet postId={commentPost} open={!!commentPost} onOpenChange={(b) => !b && setCommentPost(null)} />
     </div>
