@@ -2739,6 +2739,7 @@ export type Database = {
         }[]
       }
       org_accept_invite: { Args: { _invite_token: string }; Returns: string }
+      org_cancel_invite: { Args: { _invite_id: string }; Returns: undefined }
       org_change_member_role: {
         Args: { _member_id: string; _organization_id: string; _role_id: string }
         Returns: undefined
@@ -2758,6 +2759,10 @@ export type Database = {
       }
       org_remove_member: {
         Args: { _member_id: string; _organization_id: string }
+        Returns: undefined
+      }
+      org_transfer_ownership: {
+        Args: { _new_owner_user_id: string; _organization_id: string }
         Returns: undefined
       }
       remove_group_member: {
