@@ -198,15 +198,21 @@ const Notifications = () => {
               const orgLogo = (inv as any).organization?.logo_url || (inv as any).org_logo_url || null;
               const inviterName = inv.inviter?.display_name || inv.inviter?.username || "Someone";
               return (
-                <div
+                <Link
+                  to={`/invite/${inv.invite_token}`}
                   key={inv.id}
-                  className="relative rounded-2xl border border-primary/30 bg-gradient-to-br from-primary/[0.08] via-background to-background overflow-hidden shadow-sm"
+                  className="group relative block rounded-2xl border border-primary/30 bg-gradient-to-br from-primary/[0.08] via-background to-background overflow-hidden shadow-sm hover:shadow-md hover:border-primary/50 transition"
                 >
                   {/* Official ribbon */}
-                  <div className="flex items-center gap-1.5 px-4 py-1.5 bg-primary/10 border-b border-primary/20">
-                    <Building2 className="h-3 w-3 text-primary" />
-                    <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-primary">
-                      Organization invitation
+                  <div className="flex items-center justify-between gap-1.5 px-4 py-1.5 bg-primary/10 border-b border-primary/20">
+                    <span className="inline-flex items-center gap-1.5">
+                      <Building2 className="h-3 w-3 text-primary" />
+                      <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-primary">
+                        Organization invitation
+                      </span>
+                    </span>
+                    <span className="text-[10px] font-semibold text-primary/80 group-hover:translate-x-0.5 transition-transform">
+                      Review →
                     </span>
                   </div>
 
@@ -238,14 +244,14 @@ const Notifications = () => {
 
                     <div className="mt-4 flex items-center gap-2">
                       <button
-                        onClick={() => respondInvite(inv.invite_token, false)}
+                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); respondInvite(inv.invite_token, false); }}
                         disabled={acceptInvite.isPending || declineInvite.isPending}
                         className="flex-1 h-10 rounded-full border border-border bg-background text-sm font-semibold hover:bg-secondary/60 disabled:opacity-50 active:scale-[0.98] transition"
                       >
                         Decline
                       </button>
                       <button
-                        onClick={() => respondInvite(inv.invite_token, true)}
+                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); respondInvite(inv.invite_token, true); }}
                         disabled={acceptInvite.isPending || declineInvite.isPending}
                         className="flex-1 h-10 rounded-full bg-primary text-primary-foreground text-sm font-semibold inline-flex items-center justify-center gap-1.5 disabled:opacity-50 active:scale-[0.98] transition shadow-sm"
                       >
@@ -254,7 +260,7 @@ const Notifications = () => {
                       </button>
                     </div>
                   </div>
-                </div>
+                </Link>
               );
             })}
           </div>
