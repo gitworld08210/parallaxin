@@ -20,6 +20,7 @@ type N = {
   created_at: string;
   actor_id: string | null;
   post_id: string | null;
+  organization_id: string | null;
   actor: { username: string; display_name: string; avatar_url: string | null } | null;
 };
 
@@ -30,7 +31,7 @@ const iconFor = (t: string) =>
   t === "collab_invite" || t === "collab_accepted" ? Users :
   t === "verification_approved" || t === "verification_revoked" ? BadgeCheck :
   t === "founder_inducted" || t === "founder_revoked" ? Crown :
-  t.startsWith("org_") ? Building2 :
+  t.startsWith("org_") || t === "organization_invite" || t.startsWith("affiliation_") ? Building2 :
   Mail;
 
 const textFor = (t: string) =>
@@ -40,11 +41,16 @@ const textFor = (t: string) =>
   t === "mention" ? "mentioned you in a post." :
   t === "collab_invite" ? "invited you to collaborate on a post." :
   t === "collab_accepted" ? "accepted your collab invite." :
+  t === "organization_invite" ? "invited you to join their organization." :
+  t === "affiliation_invite" ? "invited you to affiliate with their organization." :
+  t === "affiliation_accepted" ? "accepted your affiliation." :
+  t === "affiliation_revoked" ? "revoked your affiliation." :
   t === "verification_approved" ? "Your account has been verified." :
   t === "verification_revoked" ? "Your verification has been removed." :
   t === "founder_inducted" ? "Welcome to the Hall of Founders." :
   t === "founder_revoked" ? "Your founder status has been updated." :
   "sent you a message.";
+
 
 const isSystem = (t: string) => t.startsWith("verification_") || t.startsWith("founder_");
 
@@ -87,7 +93,7 @@ const Notifications = () => {
     (async () => {
       const { data } = await supabase
         .from("notifications")
-        .select("id, type, read, created_at, actor_id, post_id, actor:profiles!notifications_actor_profile_fkey(username, display_name, avatar_url)")
+        .select("id, type, read, created_at, actor_id, post_id, organization_id, actor:profiles!notifications_actor_profile_fkey(username, display_name, avatar_url)")
         .eq("user_id", user.id).order("created_at", { ascending: false }).limit(80);
       setItems((data ?? []) as any);
       // Incoming organization invites are loaded via useIncomingInvites().
@@ -115,6 +121,17 @@ const Notifications = () => {
     () => items.filter((n) => !n.type.startsWith("org_invite") && n.type !== "org_invited"),
     [items],
   );
+
+  // Map organization_id -> pending invite_token for quick row->accept-page routing.
+  const inviteTokenByOrg = useMemo(() => {
+    const m: Record<string, string> = {};
+    pendingInvites.forEach((inv: any) => {
+      const oid = inv.organization_id || inv.organization?.id;
+      if (oid && inv.invite_token) m[oid] = inv.invite_token;
+    });
+    return m;
+  }, [pendingInvites]);
+
 
   const groups = useMemo(() => {
     const g: Record<"today" | "yesterday" | "earlier", N[]> = { today: [], yesterday: [], earlier: [] };
@@ -165,6 +182,22 @@ const Notifications = () => {
       }
       return (
         <button key={n.id} onClick={() => setCollabOpen(true)} className={cls}>{inner}</button>
+      );
+    }
+    if (n.type === "organization_invite" || n.type === "affiliation_invite") {
+      const token = n.organization_id ? inviteTokenByOrg[n.organization_id] : undefined;
+      if (token) {
+        return <Link to={`/invite/${token}`} key={n.id} className={cls}>{inner}</Link>;
+      }
+      // No pending invite found (already answered / expired) — show a toast instead of routing to the profile.
+      return (
+        <button
+          key={n.id}
+          onClick={() => toast.info("This invitation is no longer available.")}
+          className={cls}
+        >
+          {inner}
+        </button>
       );
     }
     const to = system
