@@ -138,75 +138,19 @@ export const memberService = {
   },
 
   /**
-   * All active memberships for a given user id, hydrated with the target
-   * organization row + role names. Used by profile pages / global menus so
-   * they don't have to hit the affiliations table.
+   * All active memberships for a given user id.
+   *
+   * NOTE: This is now a thin delegator over
+   * `organizationApi.listWorkspacesForUser` — the single canonical
+   * membership source shared by Profile, WorkspaceSwitcher, SideMenu and
+   * OrganizationProvider. Owners without an explicit organization_members
+   * row are included there, keeping every consumer consistent.
    */
-  async listUserMemberships(userId: string): Promise<Array<{
-    id: string;
-    user_id: string;
-    organization_id: string;
-    joined_at: string | null;
-    role_names: string[];
-    is_owner: boolean;
-    organization: {
-      id: string;
-      slug: string;
-      name: string;
-      logo_url: string | null;
-      verified: boolean;
-      org_type: string | null;
-      owner_user_id: string;
-    } | null;
-  }>> {
-    const { data: rows, error } = await supabase
-      .from("organization_members")
-      .select(
-        "id, user_id, organization_id, joined_at, status, organizations(id, slug, name, logo_url, verified, org_type, owner_user_id)",
-      )
-      .eq("user_id", userId)
-      .eq("status", "active");
-    if (error) throw error;
-
-    const list = (rows ?? []) as Array<{
-      id: string;
-      user_id: string;
-      organization_id: string;
-      joined_at: string | null;
-      organizations: {
-        id: string;
-        slug: string;
-        name: string;
-        logo_url: string | null;
-        verified: boolean;
-        org_type: string | null;
-        owner_user_id: string;
-      } | null;
-    }>;
-    if (list.length === 0) return [];
-
-    const memberIds = list.map((r) => r.id);
-    const { data: roleRows } = await supabase
-      .from("organization_member_roles")
-      .select("member_id, organization_roles(id, name)")
-      .in("member_id", memberIds);
-    const roleMap = new Map<string, string[]>();
-    for (const l of ((roleRows ?? []) as RoleLinkRow[])) {
-      const bucket = roleMap.get(l.member_id) ?? [];
-      if (l.organization_roles?.name) bucket.push(l.organization_roles.name);
-      roleMap.set(l.member_id, bucket);
-    }
-
-    return list.map((r) => ({
-      id: r.id,
-      user_id: r.user_id,
-      organization_id: r.organization_id,
-      joined_at: r.joined_at,
-      role_names: roleMap.get(r.id) ?? [],
-      is_owner: r.organizations?.owner_user_id === userId,
-      organization: r.organizations,
-    }));
+  async listUserMemberships(userId: string) {
+    const { organizationApi } = await import("./organization.api");
+    return organizationApi.listWorkspacesForUser(userId);
   },
+
 
   // ---------- Mutations (permission-checked RPCs) ----------
 
