@@ -269,17 +269,26 @@ const Profile = () => {
                 <Crown className="h-4 w-4" />
               </Link>
             )}
-            {affiliations.map((a) => <AffiliationChip key={a.id} data={a} />)}
+            {memberships.map((m) => (
+              <OrganizationMemberChip key={m.id} data={m} />
+            ))}
           </p>
           <p className="text-xs text-muted-foreground">@{profile.username}</p>
-          {affiliations[0]?.org && (
+          {primaryMembership?.organization && (
             <p className="text-xs text-muted-foreground">
-              {labelForRoleSafe(affiliations[0].role)} at {affiliations[0].org.name}
-              {affiliations[0].started_on && ` · Affiliated since ${new Date(affiliations[0].started_on).toLocaleDateString(undefined, { month: "short", year: "numeric" })}`}
+              {primaryMembership.is_owner
+                ? "Owner"
+                : primaryMembership.role_names[0] ?? "Member"}{" "}
+              at {primaryMembership.organization.name}
+              {primaryMembership.joined_at &&
+                ` · Joined ${new Date(primaryMembership.joined_at).toLocaleDateString(undefined, { month: "short", year: "numeric" })}`}
             </p>
           )}
-          {isMe && orgAdminUsername && (
-            <Link to={`/org/${orgAdminUsername}/admin`} className="inline-block text-xs text-primary font-semibold mt-1">
+          {isMe && ownerMembership?.organization && (
+            <Link
+              to={`/organization/${ownerMembership.organization.slug}/dashboard`}
+              className="mt-1 inline-block text-xs font-semibold text-primary"
+            >
               Open organization dashboard →
             </Link>
           )}
