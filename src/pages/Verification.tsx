@@ -181,7 +181,7 @@ const Verification = () => {
                 <Upload className="h-5 w-5 text-primary" />
                 <div className="flex-1">
                   <p className="text-sm font-semibold">{supportFile ? supportFile.name : "Supporting document (optional)"}</p>
-                  <p className="text-[11px] text-muted-foreground">Press kit, registry doc, or proof of affiliation</p>
+                  <p className="text-[11px] text-muted-foreground">Press kit, registry doc, or organization proof</p>
                 </div>
               </GlassCard>
               <input type="file" accept="image/*,application/pdf" className="hidden" onChange={(e) => setSupportFile(e.target.files?.[0] ?? null)} />

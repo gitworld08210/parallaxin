@@ -127,9 +127,9 @@ const Profile = () => {
           setIsMuted(!!mu);
         }
 
-        // Organization memberships are loaded via useUserOrganizations()
-        // (organization_members → organizations + organization_roles). The
-        // legacy affiliations query has been removed as part of Phase 6.
+        // Organization memberships are loaded via useUserOrganizations().
+
+
 
       }
       setLoading(false);
