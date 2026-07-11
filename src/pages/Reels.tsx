@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { Heart, MessageCircle, Send, Plus, Volume2, VolumeX, Pause, Camera } from "lucide-react";
+import { Heart, MessageCircle, Send, Plus, Volume2, VolumeX, Pause, Camera, Search, Music2, Bookmark, MoreHorizontal } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthProvider";
 import { CommentSheet } from "@/components/social/CommentSheet";
@@ -18,12 +19,16 @@ type Reel = {
   comment_count: number;
   profile: { username: string; display_name: string; avatar_url: string | null } | null;
   liked?: boolean;
+  bookmarked?: boolean;
 };
+
+type FeedTab = "following" | "foryou";
 
 const Reels = () => {
   const { user } = useAuth();
   const [reels, setReels] = useState<Reel[]>([]);
   const [muted, setMuted] = useState(true);
+  const [tab, setTab] = useState<FeedTab>("foryou");
   const [commentPost, setCommentPost] = useState<string | null>(null);
   const [sharePost, setSharePost] = useState<string | null>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
@@ -50,7 +55,6 @@ const Reels = () => {
     })();
   }, [user?.id]);
 
-  // Play the most-visible video; pause others.
   useEffect(() => {
     if (!containerRef.current) return;
     const videos = Array.from(containerRef.current.querySelectorAll<HTMLVideoElement>("video[data-reel-id]"));
@@ -70,11 +74,10 @@ const Reels = () => {
     return () => io.disconnect();
   }, [reels.length, pausedIds]);
 
-  // Auto-dim chrome after 2.2s of inactivity
   const bumpChrome = () => {
     setChromeDim(false);
     if (dimTimer.current) window.clearTimeout(dimTimer.current);
-    dimTimer.current = window.setTimeout(() => setChromeDim(true), 2200);
+    dimTimer.current = window.setTimeout(() => setChromeDim(true), 2400);
   };
   useEffect(() => {
     bumpChrome();
@@ -87,6 +90,11 @@ const Reels = () => {
     setReels((arr) => arr.map((x) => x.id === r.id ? { ...x, liked: next, like_count: x.like_count + (next ? 1 : -1) } : x));
     if (next) await supabase.from("likes").insert({ user_id: user.id, post_id: r.id });
     else await supabase.from("likes").delete().eq("user_id", user.id).eq("post_id", r.id);
+  };
+
+  const toggleBookmark = (r: Reel) => {
+    setReels((arr) => arr.map((x) => x.id === r.id ? { ...x, bookmarked: !x.bookmarked } : x));
+    toast.success(r.bookmarked ? "Removed from saved" : "Saved");
   };
 
   const togglePause = (r: Reel, videoEl: HTMLVideoElement | null) => {
@@ -104,24 +112,47 @@ const Reels = () => {
   };
 
   return (
-    <div className="bg-black text-white relative" onMouseMove={bumpChrome} onTouchStart={bumpChrome}>
-      {/* Reels title */}
-      <header className={cn(
-        "absolute top-0 inset-x-0 z-30 h-14 px-5 flex items-center justify-between transition-opacity duration-500",
-        chromeDim ? "opacity-0 pointer-events-none" : "opacity-100"
-      )}>
-        <h1 className="text-xl font-bold tracking-tight">Reels</h1>
-        <div className="flex items-center gap-1">
-          <Link to="/live" className="p-2 text-xs font-semibold flex items-center gap-1" aria-label="Live">
-            <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse" /> LIVE
-          </Link>
-          <Link to="/compose/reel" className="p-2" aria-label="Create reel">
-            <Camera className="h-5 w-5" strokeWidth={1.75} />
-          </Link>
-        </div>
-      </header>
-      <div ref={containerRef} className="h-[100dvh] overflow-y-scroll snap-y snap-mandatory">
+    <div className="bg-black text-white relative overflow-hidden" onMouseMove={bumpChrome} onTouchStart={bumpChrome}>
+      {/* TikTok-style top: For You / Following with animated pill underline */}
+      <header
+        className={cn(
+          "absolute top-0 inset-x-0 z-30 pt-3 pb-4 px-4 flex items-center justify-between transition-opacity duration-500",
+          "bg-gradient-to-b from-black/70 via-black/30 to-transparent",
+          chromeDim ? "opacity-0 pointer-events-none" : "opacity-100"
+        )}
+      >
+        <Link to="/search" className="p-2 -ml-2" aria-label="Search">
+          <Search className="h-5 w-5" strokeWidth={2} />
+        </Link>
 
+        <div className="flex items-center gap-6">
+          {(["following", "foryou"] as FeedTab[]).map((t) => (
+            <button
+              key={t}
+              onClick={() => setTab(t)}
+              className={cn(
+                "relative py-1 text-[15px] font-semibold transition-colors",
+                tab === t ? "text-white" : "text-white/60"
+              )}
+            >
+              {t === "following" ? "Following" : "For You"}
+              {tab === t && (
+                <motion.span
+                  layoutId="reels-tab-underline"
+                  className="absolute -bottom-1 left-1/2 -translate-x-1/2 h-0.5 w-6 bg-white rounded-full"
+                  transition={{ type: "spring", stiffness: 500, damping: 40 }}
+                />
+              )}
+            </button>
+          ))}
+        </div>
+
+        <Link to="/compose/reel" className="p-2 -mr-2" aria-label="Create reel">
+          <Camera className="h-5 w-5" strokeWidth={2} />
+        </Link>
+      </header>
+
+      <div ref={containerRef} className="h-[100dvh] overflow-y-scroll snap-y snap-mandatory scrollbar-hide">
         {reels.length === 0 && (
           <div className="h-[100dvh] grid place-items-center text-center px-8">
             <div>
@@ -133,23 +164,22 @@ const Reels = () => {
             </div>
           </div>
         )}
-        {reels.map((r) => {
-          const isPaused = pausedIds.has(r.id);
-          return (
-            <ReelItem
-              key={r.id}
-              r={r}
-              muted={muted}
-              chromeDim={chromeDim}
-              isPaused={isPaused}
-              onTogglePause={togglePause}
-              onToggleMute={() => { setMuted((m) => !m); bumpChrome(); }}
-              onToggleLike={toggleLike}
-              onOpenComments={(id) => setCommentPost(id)}
-              onShare={share}
-            />
-          );
-        })}
+        {reels.map((r) => (
+          <ReelItem
+            key={r.id}
+            r={r}
+            muted={muted}
+            chromeDim={chromeDim}
+            isPaused={pausedIds.has(r.id)}
+            isActive={activeId === r.id}
+            onTogglePause={togglePause}
+            onToggleMute={() => { setMuted((m) => !m); bumpChrome(); }}
+            onToggleLike={toggleLike}
+            onToggleBookmark={toggleBookmark}
+            onOpenComments={(id) => setCommentPost(id)}
+            onShare={share}
+          />
+        ))}
       </div>
 
       <CommentSheet postId={commentPost} open={!!commentPost} onOpenChange={(b) => !b && setCommentPost(null)} />
@@ -159,26 +189,31 @@ const Reels = () => {
 };
 
 const ReelItem = ({
-  r, muted, chromeDim, isPaused, onTogglePause, onToggleMute, onToggleLike, onOpenComments, onShare,
+  r, muted, chromeDim, isPaused, isActive, onTogglePause, onToggleMute, onToggleLike, onToggleBookmark, onOpenComments, onShare,
 }: {
   r: Reel;
   muted: boolean;
   chromeDim: boolean;
   isPaused: boolean;
+  isActive: boolean;
   onTogglePause: (r: Reel, el: HTMLVideoElement | null) => void;
   onToggleMute: () => void;
   onToggleLike: (r: Reel) => void;
+  onToggleBookmark: (r: Reel) => void;
   onOpenComments: (id: string) => void;
   onShare: (r: Reel) => void;
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const lastTap = useRef(0);
+  const [progress, setProgress] = useState(0);
+  const [heartBurst, setHeartBurst] = useState(0);
+  const [captionExpanded, setCaptionExpanded] = useState(false);
 
-  const onTap = () => {
+  const onTap = (e: React.MouseEvent) => {
     const now = Date.now();
     if (now - lastTap.current < 280) {
-      // double-tap → like
       if (!r.liked) onToggleLike(r);
+      setHeartBurst((n) => n + 1);
       lastTap.current = 0;
     } else {
       lastTap.current = now;
@@ -191,17 +226,20 @@ const ReelItem = ({
     }
   };
 
-  // Imperatively sync mute state — React's `muted` prop isn't reliably applied to the DOM.
-  // Also re-issue play() on unmute so the user gesture grants audio playback.
   useEffect(() => {
     const v = videoRef.current;
     if (!v) return;
     v.muted = muted;
-    if (!muted) {
-      v.volume = 1;
-      v.play().catch(() => {});
-    }
+    if (!muted) { v.volume = 1; v.play().catch(() => {}); }
   }, [muted]);
+
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    const onTime = () => setProgress(v.duration ? (v.currentTime / v.duration) * 100 : 0);
+    v.addEventListener("timeupdate", onTime);
+    return () => v.removeEventListener("timeupdate", onTime);
+  }, []);
 
   return (
     <section className="relative h-[100dvh] snap-start grid place-items-center">
@@ -216,9 +254,27 @@ const ReelItem = ({
         className="absolute inset-0 w-full h-full object-cover"
       />
 
-      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/40 pointer-events-none" />
+      {/* Vignette + top/bottom scrims for text legibility */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-transparent to-black/40 pointer-events-none" />
 
-      {/* Pause indicator overlay */}
+      {/* Double-tap heart burst */}
+      <AnimatePresence>
+        {heartBurst > 0 && (
+          <motion.div
+            key={heartBurst}
+            initial={{ scale: 0.4, opacity: 0 }}
+            animate={{ scale: 1.2, opacity: 1 }}
+            exit={{ scale: 1.6, opacity: 0 }}
+            transition={{ duration: 0.6, ease: "easeOut" }}
+            className="absolute inset-0 grid place-items-center pointer-events-none"
+            onAnimationComplete={() => setHeartBurst(0)}
+          >
+            <Heart className="h-32 w-32 fill-white text-white drop-shadow-2xl" strokeWidth={0} />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Pause indicator */}
       {isPaused && (
         <div className="absolute inset-0 grid place-items-center pointer-events-none">
           <div className="h-20 w-20 rounded-full bg-white/15 backdrop-blur-xl grid place-items-center animate-in fade-in zoom-in duration-200">
@@ -227,58 +283,129 @@ const ReelItem = ({
         </div>
       )}
 
-      {/* Mute toggle (top) */}
+      {/* Mute toggle */}
       <button
         onClick={onToggleMute}
         className={cn(
-          "absolute top-5 right-5 h-10 w-10 rounded-full bg-white/10 backdrop-blur-xl grid place-items-center transition-opacity duration-500",
+          "absolute top-16 right-4 h-9 w-9 rounded-full bg-black/40 backdrop-blur-xl grid place-items-center transition-opacity duration-500 z-20",
           chromeDim ? "opacity-0 pointer-events-none" : "opacity-100"
         )}
       >
-        {muted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
+        {muted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
       </button>
 
-      {/* Right action rail */}
+      {/* Right action rail — TikTok style */}
       <div
         className={cn(
-          "absolute right-3 bottom-32 flex flex-col items-center gap-5 transition-opacity duration-500",
+          "absolute right-2.5 bottom-28 flex flex-col items-center gap-4 transition-opacity duration-500 z-20",
           chromeDim ? "opacity-30" : "opacity-100"
         )}
       >
-        <Link to={r.profile ? `/u/${r.profile.username}` : "#"}>
+        {/* Avatar + follow plus */}
+        <Link to={r.profile ? `/u/${r.profile.username}` : "#"} className="relative pb-2">
           {r.profile?.avatar_url ? (
-            <img src={r.profile.avatar_url} className="h-11 w-11 rounded-full object-cover ring-2 ring-white" />
+            <img src={r.profile.avatar_url} className="h-12 w-12 rounded-full object-cover ring-2 ring-white" />
           ) : (
-            <div className="h-11 w-11 rounded-full bg-primary ring-2 ring-white" />
+            <div className="h-12 w-12 rounded-full bg-primary ring-2 ring-white grid place-items-center font-bold">
+              {r.profile?.username?.[0]?.toUpperCase() ?? "?"}
+            </div>
           )}
+          <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 h-5 w-5 rounded-full bg-accent grid place-items-center ring-2 ring-black">
+            <Plus className="h-3 w-3 text-accent-foreground" strokeWidth={3} />
+          </span>
         </Link>
-        <button onClick={() => onToggleLike(r)} className="flex flex-col items-center gap-1">
-          <Heart className={cn("h-7 w-7 transition-transform", r.liked ? "fill-accent text-accent scale-110" : "")} strokeWidth={2.25} />
-          <span className="text-xs font-semibold">{fmt(r.like_count)}</span>
-        </button>
-        <button onClick={() => onOpenComments(r.id)} className="flex flex-col items-center gap-1">
-          <MessageCircle className="h-7 w-7" strokeWidth={2.25} />
-          <span className="text-xs font-semibold">{fmt(r.comment_count)}</span>
-        </button>
-        <button onClick={() => onShare(r)} className="flex flex-col items-center gap-1">
-          <Send className="h-7 w-7" strokeWidth={2.25} />
-        </button>
+
+        <ActionButton
+          icon={
+            <Heart
+              className={cn("h-8 w-8 transition-transform", r.liked ? "fill-accent text-accent scale-110" : "text-white")}
+              strokeWidth={1.75}
+            />
+          }
+          label={fmt(r.like_count)}
+          onClick={() => onToggleLike(r)}
+        />
+
+        <ActionButton
+          icon={<MessageCircle className="h-8 w-8 text-white" strokeWidth={1.75} />}
+          label={fmt(r.comment_count)}
+          onClick={() => onOpenComments(r.id)}
+        />
+
+        <ActionButton
+          icon={<Bookmark className={cn("h-8 w-8", r.bookmarked ? "fill-yellow-400 text-yellow-400" : "text-white")} strokeWidth={1.75} />}
+          label="Save"
+          onClick={() => onToggleBookmark(r)}
+        />
+
+        <ActionButton
+          icon={<Send className="h-8 w-8 text-white" strokeWidth={1.75} />}
+          label="Share"
+          onClick={() => onShare(r)}
+        />
+
+        {/* Spinning music disc */}
+        <motion.div
+          animate={{ rotate: isActive && !isPaused ? 360 : 0 }}
+          transition={{ duration: 6, ease: "linear", repeat: Infinity }}
+          className="mt-1 h-10 w-10 rounded-full bg-gradient-to-br from-neutral-800 to-black ring-2 ring-white/30 grid place-items-center overflow-hidden"
+        >
+          {r.profile?.avatar_url ? (
+            <img src={r.profile.avatar_url} className="h-6 w-6 rounded-full object-cover" />
+          ) : (
+            <Music2 className="h-4 w-4 text-white/80" />
+          )}
+        </motion.div>
       </div>
 
-      {/* Bottom caption */}
+      {/* Bottom caption block */}
       <div
         className={cn(
-          "absolute left-4 right-20 bottom-6 transition-opacity duration-500",
+          "absolute left-4 right-20 bottom-8 transition-opacity duration-500 z-20",
           chromeDim ? "opacity-50" : "opacity-100"
         )}
       >
-        <Link to={r.profile ? `/u/${r.profile.username}` : "#"} className="font-semibold text-sm">
+        <Link to={r.profile ? `/u/${r.profile.username}` : "#"} className="font-semibold text-[15px] tracking-tight">
           @{r.profile?.username ?? "unknown"}
         </Link>
-        {r.content && <p className="mt-1 text-sm leading-snug line-clamp-3">{r.content}</p>}
+        {r.content && (
+          <p
+            onClick={() => setCaptionExpanded((v) => !v)}
+            className={cn(
+              "mt-1.5 text-[13.5px] leading-snug text-white/95",
+              !captionExpanded && "line-clamp-2"
+            )}
+          >
+            {r.content}
+          </p>
+        )}
+        <div className="mt-2.5 flex items-center gap-1.5 text-[12px] text-white/85">
+          <Music2 className="h-3.5 w-3.5" />
+          <div className="overflow-hidden max-w-[80%] whitespace-nowrap">
+            <motion.span
+              animate={{ x: ["0%", "-50%"] }}
+              transition={{ duration: 12, repeat: Infinity, ease: "linear" }}
+              className="inline-block pr-8"
+            >
+              Original sound — @{r.profile?.username ?? "unknown"} · Original sound — @{r.profile?.username ?? "unknown"} ·
+            </motion.span>
+          </div>
+        </div>
+      </div>
+
+      {/* Bottom progress scrubber */}
+      <div className="absolute left-0 right-0 bottom-0 h-0.5 bg-white/15 z-20">
+        <div className="h-full bg-white transition-[width] duration-150" style={{ width: `${progress}%` }} />
       </div>
     </section>
   );
 };
+
+const ActionButton = ({ icon, label, onClick }: { icon: React.ReactNode; label: string; onClick: () => void }) => (
+  <button onClick={onClick} className="flex flex-col items-center gap-0.5 active:scale-95 transition-transform">
+    <div className="drop-shadow-[0_2px_6px_rgba(0,0,0,0.5)]">{icon}</div>
+    <span className="text-[11px] font-semibold drop-shadow">{label}</span>
+  </button>
+);
 
 export default Reels;
