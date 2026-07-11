@@ -64,7 +64,11 @@ export const WorkspaceSwitcher = () => {
               <button
                 key={ws.id}
                 type="button"
-                onClick={() => switchOrganization(ws.slug)}
+                onClick={() => {
+                  if (active) return;
+                  switchOrganization(ws.slug);
+                }}
+                aria-current={active ? "true" : undefined}
                 className={cn(
                   "flex w-full items-center gap-3 rounded-lg px-2 py-2 text-left text-sm hover:bg-muted",
                   active && "bg-muted",

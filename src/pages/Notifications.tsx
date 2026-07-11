@@ -30,7 +30,7 @@ const iconFor = (t: string) =>
   t === "collab_invite" || t === "collab_accepted" ? Users :
   t === "verification_approved" || t === "verification_revoked" ? BadgeCheck :
   t === "founder_inducted" || t === "founder_revoked" ? Crown :
-  t.startsWith("affiliation_") ? Building2 :
+  t.startsWith("org_") ? Building2 :
   Mail;
 
 const textFor = (t: string) =>
@@ -44,13 +44,9 @@ const textFor = (t: string) =>
   t === "verification_revoked" ? "Your verification has been removed." :
   t === "founder_inducted" ? "Welcome to the Hall of Founders." :
   t === "founder_revoked" ? "Your founder status has been updated." :
-  t === "affiliation_invite" ? "invited you to an official role." :
-  t === "affiliation_accepted" ? "accepted your affiliation invite." :
-  t === "affiliation_declined" ? "declined your affiliation invite." :
-  t === "affiliation_revoked" ? "Your affiliation has been revoked." :
   "sent you a message.";
 
-const isSystem = (t: string) => t.startsWith("verification_") || t.startsWith("founder_") || t === "affiliation_revoked";
+const isSystem = (t: string) => t.startsWith("verification_") || t.startsWith("founder_");
 
 const bucketOf = (iso: string): "today" | "yesterday" | "earlier" => {
   const d = new Date(iso);

@@ -1,6 +1,7 @@
 // MemberService — organization member reads + mutations (via RPC).
 import { supabase } from "@/integrations/supabase/client";
 import type { Member, MemberWithProfile } from "@/types/organization/member";
+import { organizationApi } from "./organization.api";
 
 export interface MemberPage {
   members: MemberWithProfile[];
@@ -147,7 +148,6 @@ export const memberService = {
    * row are included there, keeping every consumer consistent.
    */
   async listUserMemberships(userId: string) {
-    const { organizationApi } = await import("./organization.api");
     return organizationApi.listWorkspacesForUser(userId);
   },
 
