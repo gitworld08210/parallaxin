@@ -491,11 +491,17 @@ const Profile = () => {
           )}
 
           {/* Affiliated organizations */}
+          {/* Affiliated organizations */}
           {memberships.length > 0 && (
-            <div className="pt-2 -mx-1 flex gap-2 overflow-x-auto no-scrollbar" aria-label="Affiliated organizations">
-              {memberships.slice(0, 8).map((m) => (
-                <OrgLogoCard key={m.id} membership={m} className="first:ml-1 last:mr-1" />
-              ))}
+            <div className="pt-2">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground pb-1.5">
+                Affiliated with ({memberships.length})
+              </p>
+              <div className="-mx-1 flex gap-2 overflow-x-auto no-scrollbar" aria-label="Affiliated organizations">
+                {memberships.slice(0, 8).map((m) => (
+                  <OrgLogoCard key={m.id} membership={m} className="first:ml-1 last:mr-1" />
+                ))}
+              </div>
             </div>
           )}
 
