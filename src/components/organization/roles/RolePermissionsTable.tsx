@@ -25,11 +25,9 @@ import {
   useRolePermissionMutations,
 } from "@/hooks/organization/useOrganizationPermissions";
 import { ORG_PERMISSIONS } from "@/features/organization/permissions.registry";
-import type { Role } from "@/types/organization/role";
+import { isOwnerRole, type Role } from "@/types/organization/role";
 import type { Permission } from "@/types/organization/permission";
 
-/** Owner role is identified structurally, not by string comparison in UI logic. */
-const isOwnerRole = (role: Role) => role.is_system && role.name.toLowerCase() === "owner";
 
 interface Draft {
   [roleId: string]: Set<string>;
