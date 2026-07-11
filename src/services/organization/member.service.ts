@@ -94,8 +94,7 @@ export const memberService = {
 
     return members.map((m) => ({
       ...m,
-      profile: profileMap.get(m.user_i
-d) ?? null,
+      profile: profileMap.get(m.user_id) ?? null,
       role_names: roleMap.get(m.id) ?? [],
     }));
   },
