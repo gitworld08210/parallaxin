@@ -1,5 +1,6 @@
 // DepartmentService — organization department reads + mutations.
 // UI components must go through the hook layer; hooks call this service.
+import { supabase } from "@/integrations/supabase/client";
 import { organizationDepartmentApi } from "./organizationDepartment.api";
 import type {
   CreateDepartmentInput,
