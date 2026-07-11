@@ -2546,6 +2546,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      _org_is_system_role_name: { Args: { _name: string }; Returns: boolean }
       add_group_member: {
         Args: { _conv: string; _user: string }
         Returns: undefined
@@ -2744,10 +2745,21 @@ export type Database = {
         Args: { _member_id: string; _organization_id: string; _role_id: string }
         Returns: undefined
       }
+      org_create_role: {
+        Args: {
+          _color?: string
+          _description?: string
+          _name: string
+          _organization_id: string
+          _priority?: number
+        }
+        Returns: string
+      }
       org_decline_invite: {
         Args: { _invite_token: string }
         Returns: undefined
       }
+      org_delete_role: { Args: { _role_id: string }; Returns: undefined }
       org_invite_member: {
         Args: {
           _email?: string
@@ -2761,8 +2773,22 @@ export type Database = {
         Args: { _member_id: string; _organization_id: string }
         Returns: undefined
       }
+      org_set_role_permissions: {
+        Args: { _permission_keys: string[]; _role_id: string }
+        Returns: undefined
+      }
       org_transfer_ownership: {
         Args: { _new_owner_user_id: string; _organization_id: string }
+        Returns: undefined
+      }
+      org_update_role: {
+        Args: {
+          _color?: string
+          _description?: string
+          _name?: string
+          _priority?: number
+          _role_id: string
+        }
         Returns: undefined
       }
       remove_group_member: {
