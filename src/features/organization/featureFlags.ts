@@ -12,7 +12,7 @@ export const ORG_FEATURE_FLAGS = {
   reels: false,
   stories: false,
   announcements: false,
-  members: false,
+  members: true,
   departments: false,
   roles: false,
   permissions: false,

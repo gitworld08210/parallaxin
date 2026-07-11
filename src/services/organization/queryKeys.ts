@@ -21,4 +21,8 @@ export const orgKeys = {
   recentMembers: (orgId: string) => ["organization", orgId, "dashboard", "recent-members"] as const,
   recentActivity: (orgId: string) => ["organization", orgId, "dashboard", "recent-activity"] as const,
   workspaces: (userId: string) => ["organization", "workspaces", userId] as const,
+  invites: (orgId: string) => ["organization", orgId, "invites"] as const,
+  incomingInvites: (userId: string) => ["organization", "incoming-invites", userId] as const,
+  membersPage: (orgId: string, page: number, pageSize: number, search: string) =>
+    ["organization", orgId, "members", "page", { page, pageSize, search }] as const,
 };

@@ -1,6 +1,7 @@
 export * from "./useOrganization";
 export * from "./useOrganizationDashboard";
 export * from "./useOrganizationMembers";
+export * from "./useOrganizationInvites";
 export * from "./useOrganizationRoles";
 export * from "./useOrganizationPermissions";
 export * from "./useOrganizationSettings";
