@@ -46,6 +46,7 @@ export const SideMenu = ({ trigger }: { trigger: React.ReactNode }) => {
   const displayName = profile?.display_name || profile?.username || "You";
 
   const primary: Row[] = [
+    { to: "/messages", icon: MessageCircle, label: "Messages" },
     { to: "/profile?tab=saved", icon: Clock, label: "Your activity" },
     { to: "/profile?tab=saved", icon: Archive, label: "Archive" },
     { to: "/notifications", icon: Bell, label: "Notifications" },
