@@ -143,8 +143,8 @@ const App = () => (
                   <Route path="/" element={<Feed />} />
                   <Route path="/reels" element={<Reels />} />
                   <Route path="/discover" element={<Discover />} />
-                  <Route path="/messages" element={<Messages />} />
-                  <Route path="/messages/:id" element={<Conversation />} />
+                  <Route path="/messages" element={<MessagesPasscodeGate><Messages /></MessagesPasscodeGate>} />
+                  <Route path="/messages/:id" element={<MessagesPasscodeGate><Conversation /></MessagesPasscodeGate>} />
                   <Route path="/notifications" element={<Notifications />} />
                   <Route path="/invite/:token" element={<InviteAccept />} />
                   <Route path="/compose" element={<CreatorGate><Compose /></CreatorGate>} />
