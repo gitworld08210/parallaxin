@@ -24,6 +24,7 @@ import {
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useOrganizationRoles } from "@/hooks/organization/useOrganizationRoles";
 import { useInviteMutations } from "@/hooks/organization/useOrganizationInvites";
+import { isOwnerRole } from "@/types/organization/role";
 
 interface InviteMemberModalProps {
   open: boolean;
