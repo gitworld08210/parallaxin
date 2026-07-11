@@ -69,9 +69,41 @@ const Notifications = () => {
   const [items, setItems] = useState<N[]>([]);
   const [collabOpen, setCollabOpen] = useState(false);
 
+  const nav = useNavigate();
+
   // Organization invites (join-workspace flow).
   const { invites: pendingInvites } = useIncomingInvites();
   const { accept: acceptInvite, decline: declineInvite } = useIncomingInviteActions();
+
+  const openInvite = async (organizationId: string | null) => {
+    if (!organizationId) {
+      toast.error("Invitation not found");
+      return;
+    }
+    // Prefer the cached pending list; fall back to a direct lookup so this
+    // works even when the useIncomingInvites hook missed the row.
+    const cached = pendingInvites.find(
+      (i: any) => (i.organization_id || i.organization?.id) === organizationId,
+    );
+    let token = (cached as any)?.invite_token as string | undefined;
+    if (!token) {
+      const { data } = await supabase
+        .from("organization_invites")
+        .select("invite_token")
+        .eq("organization_id", organizationId)
+        .eq("status", "pending")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      token = (data as any)?.invite_token;
+    }
+    if (!token) {
+      toast.info("This invitation is no longer available.");
+      return;
+    }
+    nav(`/invite/${token}`);
+  };
+
 
   const respondInvite = async (token: string, accept: boolean) => {
     try {
