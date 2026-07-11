@@ -26,11 +26,15 @@ const Section = ({ label, children }: { label: string; children: React.ReactNode
   </div>
 );
 
+import { useMyWorkspaces } from "@/hooks/organization/useMyWorkspaces";
+
 export default function Settings() {
   const nav = useNavigate();
-  const { signOut, profile } = useAuth();
-  const p: any = profile || {};
-  const hasOrg = !!p.organization_id;
+  const { signOut } = useAuth();
+  const { workspaces } = useMyWorkspaces();
+  // Prefer an owned workspace so the settings link deep-links into the admin
+  // dashboard; otherwise fall back to any workspace the user belongs to.
+  const primary = workspaces.find((w) => w.is_owner) ?? workspaces[0] ?? null;
 
   return (
     <div>
@@ -52,10 +56,15 @@ export default function Settings() {
         </Section>
 
         <Section label="Organization">
-          {hasOrg ? (
-            <Row to={`/org/${p.username}/admin`} icon={Building2} title="Organization admin" hint="Manage your organization" />
+          {primary ? (
+            <Row
+              to={`/organization/${primary.slug}/dashboard`}
+              icon={Building2}
+              title="Organization workspace"
+              hint={primary.is_owner ? "Manage your organization" : `Open ${primary.name}`}
+            />
           ) : (
-            <Row to="/onboarding/organization" icon={Building2} title="Create an organization" hint="Company, NGO, school — get an admin panel & affiliation badges" />
+            <Row to="/onboarding/organization" icon={Building2} title="Create an organization" hint="Company, NGO, school — get an admin panel & workspace" />
           )}
         </Section>
 
