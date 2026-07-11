@@ -24,7 +24,7 @@ import { CommentSheet } from "@/components/social/CommentSheet";
 import { ReportSheet } from "@/components/social/ReportSheet";
 import { BecomeCreatorSheet } from "@/components/creator/BecomeCreatorSheet";
 import { EmptyState } from "@/components/empty/EmptyState";
-import { AuraAvatar } from "@/components/vibe/AuraAvatar";
+
 import { VerificationBadge } from "@/components/vibe/VerificationBadge";
 import {
   DropdownMenu,
