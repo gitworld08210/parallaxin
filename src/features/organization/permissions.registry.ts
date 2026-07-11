@@ -21,8 +21,11 @@ export const ORG_PERMISSIONS = {
 
   ROLES_MANAGE: "roles.manage",
 
+  DEPARTMENTS_VIEW: "departments.view",
   DEPARTMENTS_CREATE: "departments.create",
   DEPARTMENTS_EDIT: "departments.edit",
+  DEPARTMENTS_UPDATE: "departments.update",
+  DEPARTMENTS_DELETE: "departments.delete",
   DEPARTMENTS_MANAGE: "departments.manage",
 
   SETTINGS_UPDATE: "settings.update",
