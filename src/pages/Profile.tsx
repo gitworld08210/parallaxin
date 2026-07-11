@@ -438,6 +438,23 @@ const Profile = () => {
                 <VerificationBadge kind={profile.verification_kind} className="h-5 w-5" />
               </button>
             )}
+            {/* Affiliation chip — X-style, opens verification sheet */}
+            {memberships.filter((m) => m.verified).slice(0, 1).map((m) => (
+              <button
+                key={m.id}
+                type="button"
+                onClick={() => setVerifyOpen(true)}
+                aria-label={`Affiliated with ${m.name}`}
+                title={`Affiliated with ${m.name}`}
+                className="inline-flex items-center justify-center h-6 w-6 rounded-md border border-border bg-secondary/60 hover:bg-secondary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring active:scale-90 duration-fast overflow-hidden ml-0.5"
+              >
+                {m.logo_url ? (
+                  <img src={m.logo_url} alt="" className="h-full w-full object-cover" />
+                ) : (
+                  <span className="text-[10px] font-bold">{m.name.slice(0, 1)}</span>
+                )}
+              </button>
+            ))}
           </div>
           <p className="text-sm text-muted-foreground -mt-1">@{profile.username}</p>
 
