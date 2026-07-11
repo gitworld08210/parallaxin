@@ -30,33 +30,48 @@ export const inviteService = {
   },
 
   /**
-   * Pending invitations targeted at the signed-in user, matched by their
-   * username and/or auth email. Both are provided by the caller (auth.email
-   * lives on the auth user, not the profile row).
+   * Pending invitations targeted at the signed-in user. Uses a security-definer
+   * RPC because the base table's SELECT policy is scoped to org members;
+   * the RPC filters by the caller's auth email + profile username server-side.
    */
-  async listIncomingForUser({
-    username,
-    email,
-  }: {
+  async listIncomingForUser(_opts?: {
     username?: string | null;
     email?: string | null;
   }): Promise<InviteWithMeta[]> {
-    const orClauses: string[] = [];
-    if (username) orClauses.push(`username.eq.${username.toLowerCase()}`);
-    if (email) orClauses.push(`email.eq.${email.toLowerCase()}`);
-    if (orClauses.length === 0) return [];
-
-    const { data, error } = await supabase
-      .from("organization_invites")
-      .select(
-        "id, organization_id, invited_by, email, username, role_id, invite_token, status, expires_at, accepted_at, created_at",
-      )
-      .eq("status", "pending")
-      .or(orClauses.join(","))
-      .order("created_at", { ascending: false });
+    const { data, error } = await supabase.rpc("list_incoming_organization_invites" as any);
     if (error) throw error;
-    return hydrateInvites((data ?? []) as Invite[]);
+    const rows = (data ?? []) as any[];
+    return rows.map((r) => ({
+      id: r.id,
+      organization_id: r.organization_id,
+      invited_by: r.invited_by,
+      email: r.email,
+      username: r.username,
+      role_id: r.role_id,
+      invite_token: r.invite_token,
+      status: r.status,
+      expires_at: r.expires_at,
+      accepted_at: null,
+      created_at: r.created_at,
+      inviter: r.inviter_user_id
+        ? {
+            user_id: r.inviter_user_id,
+            username: r.inviter_username,
+            display_name: r.inviter_display_name,
+            avatar_url: r.inviter_avatar_url,
+          }
+        : null,
+      role_name: r.role_name ?? null,
+      // Also expose org name/logo directly on the row for banner rendering.
+      organization: {
+        id: r.organization_id,
+        name: r.organization_name,
+        slug: r.organization_slug,
+        logo_url: r.organization_logo_url,
+      },
+    })) as any;
   },
+
 
   // ---------- Mutations (permission-checked RPCs) ----------
 
