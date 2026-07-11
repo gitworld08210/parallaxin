@@ -209,6 +209,8 @@ export const SideMenu = ({ trigger }: { trigger: React.ReactNode }) => {
 
         <BecomeCreatorSheet open={becomeOpen} onOpenChange={setBecomeOpen} />
         <AppearanceSheet open={appearanceOpen} onOpenChange={setAppearanceOpen} />
+        <AccountSwitcherSheet open={switcherOpen} onOpenChange={setSwitcherOpen} />
+
       </SheetContent>
     </Sheet>
   );
