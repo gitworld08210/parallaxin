@@ -1,3 +1,4 @@
 export * from "./RoleCard";
-export * from "./PermissionCard";
+export * from "./RoleFormModal";
 export * from "./RolePermissionsTable";
+export * from "./PermissionCard";
