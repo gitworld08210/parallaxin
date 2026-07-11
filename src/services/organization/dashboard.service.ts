@@ -16,9 +16,9 @@ export interface DashboardStats {
 
 export interface DashboardActivityItem {
   id: string;
-  action: string;
-  entity_type: string;
-  entity_id: string | null;
+  activity_type: string;
+  title: string;
+  description: string | null;
   created_at: string;
   actor_id: string | null;
 }
@@ -68,7 +68,7 @@ export const dashboardService = {
   async recentActivity(orgId: string, limit = 6): Promise<DashboardActivityItem[]> {
     const { data, error } = await supabase
       .from("organization_activity")
-      .select("id, action, entity_type, entity_id, created_at, actor_id")
+      .select("id, activity_type, title, description, created_at, actor_id")
       .eq("organization_id", orgId)
       .order("created_at", { ascending: false })
       .limit(limit);
