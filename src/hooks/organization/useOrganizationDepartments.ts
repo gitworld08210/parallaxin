@@ -50,6 +50,22 @@ export const useDepartment = (departmentId: string | null | undefined) => {
   return {
     department: query.data ?? null,
     loading: query.isLoading,
+};
+
+/** Aggregated member counts keyed by department id. */
+export const useDepartmentMemberCounts = () => {
+  const { organizationId } = useOrganizationContext();
+  const query = useQuery({
+    queryKey: organizationId
+      ? orgKeys.departmentMemberCounts(organizationId)
+      : ["organization", "__none__", "departments", "member-counts"],
+    queryFn: () => departmentService.memberCountsByDepartment(organizationId!),
+    enabled: !!organizationId,
+    staleTime: 30_000,
+  });
+  return {
+    counts: query.data ?? {},
+    loading: query.isLoading,
     error: query.error as Error | null,
   };
 };
