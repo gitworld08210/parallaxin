@@ -321,6 +321,7 @@ export type Database = {
           content: string
           created_at: string
           id: string
+          organization_id: string | null
           post_id: string
           user_id: string
         }
@@ -328,6 +329,7 @@ export type Database = {
           content: string
           created_at?: string
           id?: string
+          organization_id?: string | null
           post_id: string
           user_id: string
         }
@@ -335,10 +337,18 @@ export type Database = {
           content?: string
           created_at?: string
           id?: string
+          organization_id?: string | null
           post_id?: string
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "comments_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "comments_post_id_fkey"
             columns: ["post_id"]
@@ -915,6 +925,7 @@ export type Database = {
           comment_id: string | null
           created_at: string
           id: string
+          organization_id: string | null
           post_id: string | null
           read: boolean
           type: string
@@ -925,6 +936,7 @@ export type Database = {
           comment_id?: string | null
           created_at?: string
           id?: string
+          organization_id?: string | null
           post_id?: string | null
           read?: boolean
           type: string
@@ -935,6 +947,7 @@ export type Database = {
           comment_id?: string | null
           created_at?: string
           id?: string
+          organization_id?: string | null
           post_id?: string | null
           read?: boolean
           type?: string
@@ -953,6 +966,13 @@ export type Database = {
             columns: ["comment_id"]
             isOneToOne: false
             referencedRelation: "comments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
           {
@@ -1140,6 +1160,7 @@ export type Database = {
           invite_token: string
           invited_by: string
           organization_id: string
+          role_id: string | null
           status: string
           username: string | null
         }
@@ -1152,6 +1173,7 @@ export type Database = {
           invite_token?: string
           invited_by: string
           organization_id: string
+          role_id?: string | null
           status?: string
           username?: string | null
         }
@@ -1164,6 +1186,7 @@ export type Database = {
           invite_token?: string
           invited_by?: string
           organization_id?: string
+          role_id?: string | null
           status?: string
           username?: string | null
         }
@@ -1180,6 +1203,13 @@ export type Database = {
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "organization_invites_role_id_fkey"
+            columns: ["role_id"]
+            isOneToOne: false
+            referencedRelation: "organization_roles"
             referencedColumns: ["id"]
           },
         ]
@@ -1821,6 +1851,7 @@ export type Database = {
           like_count: number
           media_type: string | null
           media_url: string | null
+          organization_id: string | null
           pinned_at: string | null
           price_cents: number
           scheduled_for: string | null
@@ -1843,6 +1874,7 @@ export type Database = {
           like_count?: number
           media_type?: string | null
           media_url?: string | null
+          organization_id?: string | null
           pinned_at?: string | null
           price_cents?: number
           scheduled_for?: string | null
@@ -1865,6 +1897,7 @@ export type Database = {
           like_count?: number
           media_type?: string | null
           media_url?: string | null
+          organization_id?: string | null
           pinned_at?: string | null
           price_cents?: number
           scheduled_for?: string | null
@@ -1873,6 +1906,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "posts_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "posts_user_profile_fkey"
             columns: ["user_id"]
@@ -2108,6 +2148,7 @@ export type Database = {
           id: string
           media_type: string
           media_url: string
+          organization_id: string | null
           user_id: string
         }
         Insert: {
@@ -2117,6 +2158,7 @@ export type Database = {
           id?: string
           media_type?: string
           media_url: string
+          organization_id?: string | null
           user_id: string
         }
         Update: {
@@ -2126,9 +2168,17 @@ export type Database = {
           id?: string
           media_type?: string
           media_url?: string
+          organization_id?: string | null
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "stories_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "stories_user_profile_fkey"
             columns: ["user_id"]
@@ -2687,6 +2737,28 @@ export type Database = {
           post_id: string
           similarity: number
         }[]
+      }
+      org_accept_invite: { Args: { _invite_token: string }; Returns: string }
+      org_change_member_role: {
+        Args: { _member_id: string; _organization_id: string; _role_id: string }
+        Returns: undefined
+      }
+      org_decline_invite: {
+        Args: { _invite_token: string }
+        Returns: undefined
+      }
+      org_invite_member: {
+        Args: {
+          _email?: string
+          _organization_id: string
+          _role_id?: string
+          _username?: string
+        }
+        Returns: string
+      }
+      org_remove_member: {
+        Args: { _member_id: string; _organization_id: string }
+        Returns: undefined
       }
       remove_group_member: {
         Args: { _conv: string; _user: string }
