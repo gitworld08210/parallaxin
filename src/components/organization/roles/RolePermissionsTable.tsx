@@ -191,7 +191,7 @@ export const RolePermissionsTable = () => {
                       })}
                     </TableRow>
                   ))}
-                </>
+                </Fragment>
               ))}
             </TableBody>
           </Table>
