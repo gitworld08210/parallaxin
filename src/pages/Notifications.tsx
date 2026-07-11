@@ -156,6 +156,13 @@ const Notifications = () => {
     );
     const cls = "flex items-center gap-3 rounded-2xl px-3 py-3 hover:bg-muted/40 transition-colors w-full text-left";
     if (n.type === "collab_invite") {
+      // Open the dedicated celebration/accept page when we have the post id;
+      // fall back to the legacy sheet only if the notification is missing it.
+      if (n.post_id) {
+        return (
+          <Link to={`/collab/${n.post_id}`} key={n.id} className={cls}>{inner}</Link>
+        );
+      }
       return (
         <button key={n.id} onClick={() => setCollabOpen(true)} className={cls}>{inner}</button>
       );
