@@ -123,3 +123,44 @@ export const useInviteMutations = () => {
 
   return { invite, cancel, accept, decline };
 };
+
+/**
+ * Standalone accept/decline mutations for surfaces that live OUTSIDE an
+ * OrganizationProvider (Notifications, global menus). Does not depend on the
+ * organization context; invalidates the current user's incoming-invites list
+ * and workspaces list on success.
+ */
+export const useIncomingInviteActions = () => {
+  const { user } = useAuth();
+  const qc = useQueryClient();
+
+  const invalidate = () => {
+    if (!user?.id) return;
+    qc.invalidateQueries({ queryKey: orgKeys.incomingInvites(user.id) });
+    qc.invalidateQueries({ queryKey: orgKeys.workspaces(user.id) });
+    qc.invalidateQueries({ queryKey: orgKeys.userMemberships(user.id) });
+  };
+
+  const accept = useMutation({
+    mutationFn: ({ token }: { token: string }) => inviteService.accept(token),
+    onSettled: invalidate,
+  });
+
+  const decline = useMutation({
+    mutationFn: ({ token }: { token: string }) => inviteService.decline(token),
+    onMutate: async ({ token }) => {
+      if (!user?.id) return;
+      const key = orgKeys.incomingInvites(user.id);
+      const prev = qc.getQueryData<InviteWithMeta[]>(key);
+      if (prev)
+        qc.setQueryData<InviteWithMeta[]>(key, prev.filter((i) => i.invite_token !== token));
+      return { prev, key };
+    },
+    onError: (_e, _v, ctx) => {
+      if (ctx?.prev && ctx.key) qc.setQueryData(ctx.key, ctx.prev);
+    },
+    onSettled: invalidate,
+  });
+
+  return { accept, decline };
+};
