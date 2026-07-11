@@ -2,7 +2,7 @@
 // cell edits a working copy; the Save button per-role commits via the
 // permission-checked RPC. Owner role is displayed as fully granted and
 // read-only (server also rejects edits).
-import { useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import { Loader2, Save } from "lucide-react";
 import { toast } from "sonner";
 
