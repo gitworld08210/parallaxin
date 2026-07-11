@@ -40,11 +40,10 @@ export const OrganizationTopbar = () => {
             <span className="truncate text-sm font-semibold">
               {organization?.name ?? "Organization"}
             </span>
-            {/* Verification badge — organizations.verified is boolean; use
-                the generic "business" kind for the badge visual. */}
-            {organization && (organization as { verified?: boolean }).verified && (
-              <VerificationBadge kind="business" />
-            )}
+            {/* Verification badge kind is derived from Organization.org_type
+                via organizationService.getVerificationKind — data-driven. */}
+            {verificationKind && <VerificationBadge kind={verificationKind} />}
+
           </div>
           <p className="truncate text-[11px] text-muted-foreground">{roleLabel}</p>
         </div>
