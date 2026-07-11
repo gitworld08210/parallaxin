@@ -176,17 +176,17 @@ const Messages = () => {
       {/* Sticky Telegram-style header */}
       <header
         className="sticky top-0 z-20 px-5 pt-4 pb-3 backdrop-blur-xl"
-        style={{ background: "rgba(10,10,10,0.85)", borderBottom: "1px solid rgba(255,255,255,0.05)" }}
+        style={{ background: "rgba(10,10,10,0.85)", borderBottom: "1px solid hsl(var(--border))" }}
       >
         <div className="flex items-center justify-between mb-3">
-          <h1 className="text-[26px] font-bold tracking-tight text-white">Chats</h1>
+          <h1 className="text-[26px] font-bold tracking-tight text-foreground">Chats</h1>
           <div className="flex items-center gap-1.5">
             <button
               onClick={() => setGroupOpen(true)}
-              className="h-9 w-9 grid place-items-center rounded-full hover:bg-white/5"
+              className="h-9 w-9 grid place-items-center rounded-full hover:bg-muted/40"
               aria-label="New group"
             >
-              <Users className="h-[19px] w-[19px] text-white/80" />
+              <Users className="h-[19px] w-[19px] text-foreground/80" />
             </button>
             <button
               onClick={() => setComposerOpen(true)}
@@ -194,7 +194,7 @@ const Messages = () => {
               style={{ background: RED, boxShadow: `0 8px 24px ${RED}55` }}
               aria-label="New chat"
             >
-              <SquarePen className="h-[17px] w-[17px] text-white" strokeWidth={2.25} />
+              <SquarePen className="h-[17px] w-[17px] text-foreground" strokeWidth={2.25} />
             </button>
           </div>
         </div>
@@ -202,18 +202,18 @@ const Messages = () => {
         {/* Search pill */}
         <div
           className="flex items-center gap-2 rounded-2xl px-3.5 py-2.5"
-          style={{ background: "#161616", border: "1px solid rgba(255,255,255,0.05)" }}
+          style={{ background: "hsl(var(--secondary))", border: "1px solid hsl(var(--border))" }}
         >
-          <Search className="h-4 w-4 text-white/45" />
+          <Search className="h-4 w-4 text-muted-foreground" />
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search chats and messages"
-            className="flex-1 bg-transparent outline-none text-[14px] text-white placeholder:text-white/40"
+            className="flex-1 bg-transparent outline-none text-[14px] text-foreground placeholder:text-muted-foreground"
           />
           {query && (
             <button onClick={() => setQuery("")} aria-label="Clear">
-              <X className="h-4 w-4 text-white/50" />
+              <X className="h-4 w-4 text-muted-foreground" />
             </button>
           )}
         </div>
@@ -228,11 +228,11 @@ const Messages = () => {
                 onClick={() => setTab(t.id)}
                 className={cn(
                   "shrink-0 px-3.5 h-8 rounded-full text-[12.5px] font-semibold inline-flex items-center gap-1.5 transition-all",
-                  active ? "text-white" : "text-white/60"
+                  active ? "text-foreground" : "text-muted-foreground"
                 )}
                 style={{
-                  background: active ? RED : "#161616",
-                  border: active ? `1px solid ${RED}` : "1px solid rgba(255,255,255,0.05)",
+                  background: active ? RED : "hsl(var(--secondary))",
+                  border: active ? `1px solid ${RED}` : "1px solid hsl(var(--border))",
                 }}
               >
                 {t.label}
@@ -252,7 +252,7 @@ const Messages = () => {
 
       {/* Recent (Telegram "People" strip) */}
       {!loading && recents.length > 0 && (
-        <div className="pt-3 pb-1 border-b" style={{ borderColor: "rgba(255,255,255,0.05)" }}>
+        <div className="pt-3 pb-1 border-b" style={{ borderColor: "hsl(var(--border))" }}>
           <div className="px-4 flex items-center gap-4 overflow-x-auto scrollbar-hide">
             <button
               onClick={() => setComposerOpen(true)}
@@ -260,11 +260,11 @@ const Messages = () => {
             >
               <div
                 className="h-14 w-14 rounded-full grid place-items-center"
-                style={{ background: "#161616", border: "1.5px dashed rgba(255,255,255,0.15)" }}
+                style={{ background: "hsl(var(--secondary))", border: "1.5px dashed hsl(var(--border))" }}
               >
-                <SquarePen className="h-5 w-5 text-white/70" />
+                <SquarePen className="h-5 w-5 text-foreground/70" />
               </div>
-              <span className="text-[11px] text-white/60 truncate w-full text-center">New</span>
+              <span className="text-[11px] text-muted-foreground truncate w-full text-center">New</span>
             </button>
             {recents.map((c) => {
               const other = c.members[0];
@@ -291,7 +291,7 @@ const Messages = () => {
                       style={{ background: "#22c55e", border: "2px solid #0a0a0a" }}
                     />
                   </div>
-                  <span className="text-[11px] text-white/80 truncate w-full text-center">{name.split(" ")[0]}</span>
+                  <span className="text-[11px] text-foreground/80 truncate w-full text-center">{name.split(" ")[0]}</span>
                 </Link>
               );
             })}
@@ -301,7 +301,7 @@ const Messages = () => {
 
       {/* Chat list */}
       <div className="pt-1">
-        {loading && <p className="text-sm text-white/50 text-center py-10">Loading…</p>}
+        {loading && <p className="text-sm text-muted-foreground text-center py-10">Loading…</p>}
         {!loading && convs.length === 0 && (
           <EmptyState
             icon={MessageCircle}
@@ -312,7 +312,7 @@ const Messages = () => {
           />
         )}
         {!loading && convs.length > 0 && filtered.length === 0 && (
-          <p className="text-sm text-white/50 text-center py-10">No matches.</p>
+          <p className="text-sm text-muted-foreground text-center py-10">No matches.</p>
         )}
         <ul>
           {filtered.map((c, i) => {
@@ -345,7 +345,7 @@ const Messages = () => {
                       {c.is_group ? (
                         <span className="absolute -bottom-0.5 -right-0.5 h-5 w-5 grid place-items-center rounded-full" style={{ background: "#0a0a0a" }}>
                           <span className="h-4 w-4 rounded-full grid place-items-center" style={{ background: RED }}>
-                            <Users className="h-2.5 w-2.5 text-white" />
+                            <Users className="h-2.5 w-2.5 text-foreground" />
                           </span>
                         </span>
                       ) : (
@@ -358,10 +358,10 @@ const Messages = () => {
 
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-1.5">
-                        <p className="truncate text-[15.5px] font-semibold text-white">{name}</p>
+                        <p className="truncate text-[15.5px] font-semibold text-foreground">{name}</p>
                         {!c.is_group && other?.verification_kind && <VerificationBadge kind={other.verification_kind as any} />}
                         <div className="ml-auto flex items-center gap-1 shrink-0">
-                          {pinned && <Pin className="h-3 w-3 text-white/35 rotate-45" />}
+                          {pinned && <Pin className="h-3 w-3 text-muted-foreground rotate-45" />}
                           <span className="text-[11.5px]" style={{ color: unread ? RED : "rgba(255,255,255,0.45)" }}>
                             {chatTime(c.last_message_at)}
                           </span>
@@ -372,18 +372,18 @@ const Messages = () => {
                           c.last_read ? (
                             <CheckCheck className="h-3.5 w-3.5 shrink-0" style={{ color: "#60a5fa" }} />
                           ) : (
-                            <Check className="h-3.5 w-3.5 shrink-0 text-white/45" />
+                            <Check className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
                           )
                         )}
                         <p
                           className="text-[13.5px] truncate flex-1"
-                          style={{ color: unread ? "rgba(255,255,255,0.92)" : "rgba(255,255,255,0.5)" }}
+                          style={{ color: unread ? "hsl(var(--foreground))" : "rgba(255,255,255,0.5)" }}
                         >
                           {c.last ?? "Tap to start chatting"}
                         </p>
                         {unread && (
                           <span
-                            className="shrink-0 inline-flex items-center justify-center min-w-[20px] h-[20px] px-1.5 rounded-full text-[11px] font-bold text-white"
+                            className="shrink-0 inline-flex items-center justify-center min-w-[20px] h-[20px] px-1.5 rounded-full text-[11px] font-bold text-foreground"
                             style={{ background: RED, boxShadow: `0 4px 12px ${RED}55` }}
                           >
                             {c.unread > 99 ? "99+" : c.unread}
@@ -400,16 +400,16 @@ const Messages = () => {
 
         {!loading && convs.length > 0 && (
           <button
-            className="w-full flex items-center gap-3 px-4 py-4 mt-1 hover:bg-white/[0.02]"
-            style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}
+            className="w-full flex items-center gap-3 px-4 py-4 mt-1 hover:bg-muted/30"
+            style={{ borderTop: "1px solid hsl(var(--border))" }}
             onClick={() => toast.info("Archive coming soon")}
           >
-            <div className="h-11 w-11 rounded-full grid place-items-center shrink-0" style={{ background: "#161616" }}>
-              <Archive className="h-[18px] w-[18px] text-white/70" />
+            <div className="h-11 w-11 rounded-full grid place-items-center shrink-0" style={{ background: "hsl(var(--secondary))" }}>
+              <Archive className="h-[18px] w-[18px] text-foreground/70" />
             </div>
             <div className="flex-1 text-left">
-              <p className="text-[14.5px] font-semibold text-white">Archived</p>
-              <p className="text-[12px] text-white/50">Hidden chats you've saved</p>
+              <p className="text-[14.5px] font-semibold text-foreground">Archived</p>
+              <p className="text-[12px] text-muted-foreground">Hidden chats you've saved</p>
             </div>
           </button>
         )}
@@ -423,23 +423,23 @@ const Messages = () => {
           style={{ background: "#0a0a0a", borderColor: "rgba(255,255,255,0.08)", color: "white" }}
         >
           <SheetHeader className="px-5 py-4" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-            <SheetTitle className="text-base font-semibold text-white text-left">New message</SheetTitle>
+            <SheetTitle className="text-base font-semibold text-foreground text-left">New message</SheetTitle>
           </SheetHeader>
           <div className="p-4">
-            <div className="flex items-center gap-2 rounded-2xl px-4 py-2.5" style={{ background: "#161616", border: "1px solid rgba(255,255,255,0.05)" }}>
-              <Search className="h-4 w-4 text-white/50" />
+            <div className="flex items-center gap-2 rounded-2xl px-4 py-2.5" style={{ background: "hsl(var(--secondary))", border: "1px solid hsl(var(--border))" }}>
+              <Search className="h-4 w-4 text-muted-foreground" />
               <input
                 autoFocus
                 value={composerQuery}
                 onChange={(e) => setComposerQuery(e.target.value)}
                 placeholder="Search by name or @username"
-                className="flex-1 bg-transparent outline-none text-sm text-white placeholder:text-white/40"
+                className="flex-1 bg-transparent outline-none text-sm text-foreground placeholder:text-muted-foreground"
               />
             </div>
           </div>
           <div className="flex-1 overflow-y-auto">
             {composerQuery.trim() && results.length === 0 && (
-              <p className="text-sm text-white/50 text-center py-10">No results.</p>
+              <p className="text-sm text-muted-foreground text-center py-10">No results.</p>
             )}
             {results.map((p) => (
               <button
@@ -454,11 +454,11 @@ const Messages = () => {
                   <AuraAvatar gradient={gradientFor(p.username)} size="md" initials={initialsOf(p.display_name || p.username)} />
                 )}
                 <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-sm flex items-center gap-1 truncate text-white">
+                  <p className="font-semibold text-sm flex items-center gap-1 truncate text-foreground">
                     {p.display_name || p.username}
                     {p.verification_kind && <VerificationBadge kind={p.verification_kind as any} />}
                   </p>
-                  <p className="text-xs text-white/50 truncate">@{p.username}</p>
+                  <p className="text-xs text-muted-foreground truncate">@{p.username}</p>
                 </div>
               </button>
             ))}

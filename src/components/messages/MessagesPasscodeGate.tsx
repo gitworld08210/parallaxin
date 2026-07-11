@@ -172,38 +172,38 @@ const SetupWizard = ({ onComplete }: { onComplete: (s: Stored) => void }) => {
   }
 
   return (
-    <div className="min-h-[100dvh] bg-black text-white flex flex-col">
+    <div className="min-h-[100dvh] bg-background text-foreground flex flex-col">
       <header className="h-14 px-3 flex items-center gap-2">
         <button
           onClick={() => setStep("confirm")}
           aria-label="Back"
-          className="h-10 w-10 grid place-items-center rounded-full hover:bg-white/10"
+          className="h-10 w-10 grid place-items-center rounded-full hover:bg-muted/60"
         >
           <ArrowLeft className="h-5 w-5" />
         </button>
       </header>
       <div className="flex-1 px-6 pt-8 max-w-md mx-auto w-full">
-        <div className="mx-auto h-14 w-14 rounded-full bg-white/10 grid place-items-center">
+        <div className="mx-auto h-14 w-14 rounded-full bg-muted/60 grid place-items-center">
           <ShieldCheck className="h-6 w-6" />
         </div>
         <h1 className="mt-5 text-center text-3xl font-extrabold tracking-tight">
           Recovery question
         </h1>
-        <p className="mt-3 text-center text-sm text-white/60 leading-relaxed">
+        <p className="mt-3 text-center text-sm text-muted-foreground leading-relaxed">
           Pick a security question. If you ever forget your passcode, the correct answer will let
           you reset it.
         </p>
 
         <div className="mt-8 space-y-2">
-          <label className="text-[10px] uppercase tracking-widest text-white/50">Question</label>
-          <div className="rounded-2xl bg-white/5 border border-white/10 overflow-hidden">
+          <label className="text-[10px] uppercase tracking-widest text-muted-foreground">Question</label>
+          <div className="rounded-2xl bg-muted/40 border border-border overflow-hidden">
             <select
               value={question}
               onChange={(e) => setQuestion(e.target.value)}
               className="w-full bg-transparent px-4 py-3.5 text-[15px] outline-none appearance-none"
             >
               {QUESTIONS.map((q) => (
-                <option key={q} value={q} className="bg-black text-white">
+                <option key={q} value={q} className="bg-background text-foreground">
                   {q}
                 </option>
               ))}
@@ -212,16 +212,16 @@ const SetupWizard = ({ onComplete }: { onComplete: (s: Stored) => void }) => {
         </div>
 
         <div className="mt-5 space-y-2">
-          <label className="text-[10px] uppercase tracking-widest text-white/50">
+          <label className="text-[10px] uppercase tracking-widest text-muted-foreground">
             Your answer
           </label>
           <input
             value={answer}
             onChange={(e) => setAnswer(e.target.value)}
             placeholder="Type your answer"
-            className="w-full rounded-2xl bg-white/5 border border-white/10 px-4 py-3.5 text-[15px] outline-none placeholder:text-white/30"
+            className="w-full rounded-2xl bg-muted/40 border border-border px-4 py-3.5 text-[15px] outline-none placeholder:text-muted-foreground"
           />
-          <p className="text-[11px] text-white/40">
+          <p className="text-[11px] text-muted-foreground">
             Case-insensitive. Keep it something you'll always remember — we can't recover it for you.
           </p>
         </div>
@@ -334,40 +334,40 @@ const LockScreen = ({
 
   if (mode === "forgot") {
     return (
-      <div className="min-h-[100dvh] bg-black text-white flex flex-col">
+      <div className="min-h-[100dvh] bg-background text-foreground flex flex-col">
         <header className="h-14 px-3 flex items-center gap-2">
           <button
             onClick={() => setMode("enter")}
             aria-label="Back"
-            className="h-10 w-10 grid place-items-center rounded-full hover:bg-white/10"
+            className="h-10 w-10 grid place-items-center rounded-full hover:bg-muted/60"
           >
             <ArrowLeft className="h-5 w-5" />
           </button>
         </header>
         <div className="flex-1 px-6 pt-8 max-w-md mx-auto w-full">
-          <div className="mx-auto h-14 w-14 rounded-full bg-white/10 grid place-items-center">
+          <div className="mx-auto h-14 w-14 rounded-full bg-muted/60 grid place-items-center">
             <KeyRound className="h-6 w-6" />
           </div>
           <h1 className="mt-5 text-center text-3xl font-extrabold tracking-tight">
             Recover access
           </h1>
-          <p className="mt-3 text-center text-sm text-white/60">
+          <p className="mt-3 text-center text-sm text-muted-foreground">
             Answer your recovery question to reset your Messages passcode.
           </p>
 
-          <div className="mt-8 rounded-2xl bg-white/5 border border-white/10 px-4 py-4">
-            <p className="text-[11px] uppercase tracking-widest text-white/50">Your question</p>
+          <div className="mt-8 rounded-2xl bg-muted/40 border border-border px-4 py-4">
+            <p className="text-[11px] uppercase tracking-widest text-muted-foreground">Your question</p>
             <p className="mt-1 text-[15px] font-semibold">{stored.question}</p>
           </div>
 
           <div className="mt-4 space-y-2">
-            <label className="text-[10px] uppercase tracking-widest text-white/50">Answer</label>
+            <label className="text-[10px] uppercase tracking-widest text-muted-foreground">Answer</label>
             <input
               value={answer}
               onChange={(e) => setAnswer(e.target.value)}
               placeholder="Your answer"
               autoFocus
-              className="w-full rounded-2xl bg-white/5 border border-white/10 px-4 py-3.5 text-[15px] outline-none placeholder:text-white/30"
+              className="w-full rounded-2xl bg-muted/40 border border-border px-4 py-3.5 text-[15px] outline-none placeholder:text-muted-foreground"
               onKeyDown={(e) => e.key === "Enter" && submitAnswer()}
             />
           </div>
@@ -394,7 +394,7 @@ const LockScreen = ({
       footer={
         <button
           onClick={() => setMode("forgot")}
-          className="text-white font-bold text-[15px] hover:opacity-80"
+          className="text-foreground font-bold text-[15px] hover:opacity-80"
         >
           Forgot Passcode
         </button>
@@ -451,10 +451,10 @@ const PasscodePad = ({
   const dots = useMemo(() => [0, 1, 2, 3], []);
 
   return (
-    <div className="min-h-[100dvh] bg-black text-white flex flex-col">
+    <div className="min-h-[100dvh] bg-background text-foreground flex flex-col">
       <div className="flex-1 px-6 pt-16 max-w-md mx-auto w-full">
         <h1 className="text-center text-[28px] font-extrabold tracking-tight">{title}</h1>
-        <p className="mt-4 text-center text-[15px] text-white/60 leading-relaxed max-w-xs mx-auto">
+        <p className="mt-4 text-center text-[15px] text-muted-foreground leading-relaxed max-w-xs mx-auto">
           {subtitle}
         </p>
 
@@ -515,7 +515,7 @@ const Key = ({
 } & React.ButtonHTMLAttributes<HTMLButtonElement>) => (
   <button
     onClick={onPress}
-    className="h-16 rounded-full bg-white/[0.06] active:bg-white/[0.14] grid place-items-center text-white transition-colors"
+    className="h-16 rounded-full bg-muted/40 active:bg-white/[0.14] grid place-items-center text-foreground transition-colors"
     {...rest}
   >
     {children}

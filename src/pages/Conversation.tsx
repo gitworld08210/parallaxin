@@ -229,8 +229,8 @@ const Conversation = () => {
         className="h-16 px-2 flex items-center gap-2 sticky top-0 z-20 backdrop-blur"
         style={{ background: "rgba(10,10,10,0.85)", borderBottom: "1px solid rgba(255,255,255,0.06)" }}
       >
-        <button onClick={() => nav("/messages")} className="h-10 w-10 grid place-items-center rounded-full hover:bg-white/5" aria-label="Back">
-          <ChevronLeft className="h-6 w-6 text-white" />
+        <button onClick={() => nav("/messages")} className="h-10 w-10 grid place-items-center rounded-full hover:bg-muted/40" aria-label="Back">
+          <ChevronLeft className="h-6 w-6 text-foreground" />
         </button>
         <Link to={other ? `/u/${other.username}` : "#"} className="flex items-center gap-3 flex-1 min-w-0">
           <div className="rounded-full p-[2px] shrink-0" style={{ background: `linear-gradient(135deg, ${RED}, #ff3b47)` }}>
@@ -243,7 +243,7 @@ const Conversation = () => {
             )}
           </div>
           <div className="min-w-0">
-            <p className="text-[15px] font-semibold truncate leading-tight text-white inline-flex items-center gap-1">
+            <p className="text-[15px] font-semibold truncate leading-tight text-foreground inline-flex items-center gap-1">
               {otherName}
               {other?.verification_kind && <VerificationBadge kind={other.verification_kind as any} />}
             </p>
@@ -252,14 +252,14 @@ const Conversation = () => {
             </p>
           </div>
         </Link>
-        <button className="h-10 w-10 grid place-items-center rounded-full hover:bg-white/5" aria-label="Search">
+        <button className="h-10 w-10 grid place-items-center rounded-full hover:bg-muted/40" aria-label="Search">
           <Search className="h-5 w-5" style={{ color: "rgba(255,255,255,0.85)" }} />
         </button>
         <button
           onClick={() => other && startCall(id!, {
             user_id: other.user_id, username: other.username, display_name: other.display_name, avatar_url: other.avatar_url,
           }, "voice")}
-          className="h-10 w-10 grid place-items-center rounded-full hover:bg-white/5"
+          className="h-10 w-10 grid place-items-center rounded-full hover:bg-muted/40"
           aria-label="Voice call"
         >
           <Phone className="h-5 w-5" style={{ color: "rgba(255,255,255,0.85)" }} />
@@ -268,12 +268,12 @@ const Conversation = () => {
           onClick={() => other && startCall(id!, {
             user_id: other.user_id, username: other.username, display_name: other.display_name, avatar_url: other.avatar_url,
           }, "video")}
-          className="h-10 w-10 grid place-items-center rounded-full hover:bg-white/5"
+          className="h-10 w-10 grid place-items-center rounded-full hover:bg-muted/40"
           aria-label="Video call"
         >
           <Video className="h-5 w-5" style={{ color: "rgba(255,255,255,0.85)" }} />
         </button>
-        <button className="h-10 w-10 grid place-items-center rounded-full hover:bg-white/5" aria-label="More">
+        <button className="h-10 w-10 grid place-items-center rounded-full hover:bg-muted/40" aria-label="More">
           <MoreVertical className="h-5 w-5" style={{ color: "rgba(255,255,255,0.85)" }} />
         </button>
       </header>
@@ -396,7 +396,7 @@ const Conversation = () => {
               value={text}
               onChange={(e) => onType(e.target.value)}
               placeholder={`Message ${other?.display_name || other?.username || ""}…`}
-              className="flex-1 bg-transparent outline-none text-sm py-2.5 text-white placeholder:text-white/40"
+              className="flex-1 bg-transparent outline-none text-sm py-2.5 text-foreground placeholder:text-muted-foreground"
             />
             <button type="button" className="h-9 w-9 grid place-items-center" aria-label="Emoji">
               <Smile className="h-5 w-5" style={{ color: "rgba(255,255,255,0.6)" }} />
@@ -409,7 +409,7 @@ const Conversation = () => {
               style={{ background: RED, boxShadow: `0 6px 20px ${RED}66` }}
               aria-label="Send"
             >
-              <Send className="h-5 w-5 text-white" />
+              <Send className="h-5 w-5 text-foreground" />
             </button>
           ) : user ? (
             <div
