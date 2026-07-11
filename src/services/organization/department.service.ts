@@ -23,14 +23,21 @@ export const departmentService = {
       parentDepartmentId: input.parentDepartmentId ?? null,
     }),
 
-  update: (id: string, patch: UpdateDepartmentInput): Promise<void> =>
-    organizationDepartmentApi.update(id, {
-      name: patch.name,
-      description: patch.description ?? null,
-      color: patch.color ?? null,
-      icon: patch.icon ?? null,
-      parentDepartmentId: patch.parentDepartmentId ?? null,
-    }),
+  /**
+   * Partial update. Only keys present on `patch` are sent — this preserves
+   * "undefined = keep" while allowing `null` to clear nullable fields.
+   */
+  update: (id: string, patch: UpdateDepartmentInput): Promise<void> => {
+    const jsonPatch: Record<string, unknown> = {};
+    if (Object.prototype.hasOwnProperty.call(patch, "name")) jsonPatch.name = patch.name;
+    if (Object.prototype.hasOwnProperty.call(patch, "description"))
+      jsonPatch.description = patch.description;
+    if (Object.prototype.hasOwnProperty.call(patch, "color")) jsonPatch.color = patch.color;
+    if (Object.prototype.hasOwnProperty.call(patch, "icon")) jsonPatch.icon = patch.icon;
+    if (Object.prototype.hasOwnProperty.call(patch, "parentDepartmentId"))
+      jsonPatch.parent_department_id = patch.parentDepartmentId;
+    return organizationDepartmentApi.update(id, jsonPatch);
+  },
 
   remove: (id: string): Promise<void> => organizationDepartmentApi.remove(id),
 
