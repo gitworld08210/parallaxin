@@ -4,6 +4,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/AuthProvider";
 import { useOrganizationContext } from "@/contexts/OrganizationProvider";
+import { useCurrentProfile } from "@/hooks/useCurrentProfile";
 import { inviteService } from "@/services/organization/invite.service";
 import { orgKeys } from "@/services/organization/queryKeys";
 import type { InviteWithMeta } from "@/types/organization/invite";
