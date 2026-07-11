@@ -18,8 +18,8 @@ import { fmt, gradientFor, initialsOf } from "@/lib/format";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { BecomeCreatorSheet } from "@/components/creator/BecomeCreatorSheet";
-import { AffiliationChip, AffiliationChipData } from "@/components/organizations/AffiliationBadge";
-import { labelForRole as labelForRoleSafe } from "@/lib/affiliationRoles";
+import { OrganizationMemberChip } from "@/components/organization/OrganizationMemberChip";
+import { useUserOrganizations } from "@/hooks/organization/useUserOrganizations";
 
 type ProfileRow = {
   user_id: string;
@@ -57,8 +57,9 @@ const Profile = () => {
   const [commentPost, setCommentPost] = useState<string | null>(null);
   const [reportOpen, setReportOpen] = useState(false);
   const [becomeOpen, setBecomeOpen] = useState(false);
-  const [affiliations, setAffiliations] = useState<AffiliationChipData[]>([]);
-  const [orgAdminUsername, setOrgAdminUsername] = useState<string | null>(null);
+  const { memberships } = useUserOrganizations(profile?.user_id ?? null);
+  const primaryMembership = memberships[0] ?? null;
+  const ownerMembership = memberships.find((m) => m.is_owner) ?? null;
 
   const isMe = !username || (me && username === me.username);
 
@@ -118,28 +119,10 @@ const Profile = () => {
           setIsMuted(!!mu);
         }
 
-        // Active affiliations to display next to the verification badge
-        const { data: affRows } = await supabase.from("affiliations" as any)
-          .select("id, role, started_on, created_at, org_id")
-          .eq("user_id", p.user_id).eq("status", "active");
-        const orgIds = Array.from(new Set(((affRows ?? []) as any[]).map((r) => r.org_id)));
-        const { data: orgRows } = orgIds.length
-          ? await supabase.from("organizations" as any).select("id, name, username, logo_url, verified, org_type").in("id", orgIds)
-          : { data: [] as any[] };
-        const orgMap = new Map(((orgRows ?? []) as any[]).map((o) => [o.id, o]));
-        setAffiliations(((affRows ?? []) as any[]).map((r) => ({
-          id: r.id, role: r.role, started_on: r.started_on, issued_at: r.created_at,
-          org: orgMap.get(r.org_id) ?? null,
-        })));
+        // Organization memberships are loaded via useUserOrganizations()
+        // (organization_members → organizations + organization_roles). The
+        // legacy affiliations query has been removed as part of Phase 6.
 
-        // If viewing my own profile and I'm an org admin, surface admin link
-        if (user && p.user_id === user.id) {
-          const { data: mem } = await supabase.from("organization_members" as any)
-            .select("org_id, member_role, organization:organizations(username)")
-            .eq("user_id", user.id).in("member_role", ["owner","admin"]).limit(1).maybeSingle();
-          const orgUsername = (mem as any)?.organization?.username;
-          if (orgUsername) setOrgAdminUsername(orgUsername);
-        }
       }
       setLoading(false);
     })();
@@ -286,17 +269,26 @@ const Profile = () => {
                 <Crown className="h-4 w-4" />
               </Link>
             )}
-            {affiliations.map((a) => <AffiliationChip key={a.id} data={a} />)}
+            {memberships.map((m) => (
+              <OrganizationMemberChip key={m.id} data={m} />
+            ))}
           </p>
           <p className="text-xs text-muted-foreground">@{profile.username}</p>
-          {affiliations[0]?.org && (
+          {primaryMembership?.organization && (
             <p className="text-xs text-muted-foreground">
-              {labelForRoleSafe(affiliations[0].role)} at {affiliations[0].org.name}
-              {affiliations[0].started_on && ` · Affiliated since ${new Date(affiliations[0].started_on).toLocaleDateString(undefined, { month: "short", year: "numeric" })}`}
+              {primaryMembership.is_owner
+                ? "Owner"
+                : primaryMembership.role_names[0] ?? "Member"}{" "}
+              at {primaryMembership.organization.name}
+              {primaryMembership.joined_at &&
+                ` · Joined ${new Date(primaryMembership.joined_at).toLocaleDateString(undefined, { month: "short", year: "numeric" })}`}
             </p>
           )}
-          {isMe && orgAdminUsername && (
-            <Link to={`/org/${orgAdminUsername}/admin`} className="inline-block text-xs text-primary font-semibold mt-1">
+          {isMe && ownerMembership?.organization && (
+            <Link
+              to={`/organization/${ownerMembership.organization.slug}/dashboard`}
+              className="mt-1 inline-block text-xs font-semibold text-primary"
+            >
               Open organization dashboard →
             </Link>
           )}

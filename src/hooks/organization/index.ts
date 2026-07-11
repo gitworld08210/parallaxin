@@ -7,3 +7,5 @@ export * from "./useOrganizationPermissions";
 export * from "./useOrganizationSettings";
 export * from "./useOrganizationDepartments";
 export * from "./useWorkspace";
+export * from "./useUserOrganizations";
+export * from "./useMyWorkspaces";

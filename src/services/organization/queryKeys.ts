@@ -32,4 +32,5 @@ export const orgKeys = {
   incomingInvites: (userId: string) => ["organization", "incoming-invites", userId] as const,
   membersPage: (orgId: string, page: number, pageSize: number, search: string) =>
     ["organization", orgId, "members", "page", { page, pageSize, search }] as const,
+  userMemberships: (userId: string) => ["organization", "user-memberships", userId] as const,
 };

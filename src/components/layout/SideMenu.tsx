@@ -7,12 +7,12 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useAuth } from "@/contexts/AuthProvider";
 import { AuraAvatar } from "@/components/vibe/AuraAvatar";
 import { gradientFor, initialsOf } from "@/lib/format";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useIsCreator } from "@/hooks/useIsCreator";
 import { BecomeCreatorSheet } from "@/components/creator/BecomeCreatorSheet";
 import { useTheme } from "@/contexts/ThemeProvider";
 import { AppearanceSheet } from "@/components/layout/AppearanceSheet";
-import { supabase } from "@/integrations/supabase/client";
+import { useMyWorkspaces } from "@/hooks/organization/useMyWorkspaces";
 
 export const SideMenu = ({ trigger }: { trigger: React.ReactNode }) => {
   const { user, profile, signOut } = useAuth();
@@ -21,18 +21,14 @@ export const SideMenu = ({ trigger }: { trigger: React.ReactNode }) => {
   const dark = theme === "dark";
   const [becomeOpen, setBecomeOpen] = useState(false);
   const [appearanceOpen, setAppearanceOpen] = useState(false);
-  const [orgAdminUsername, setOrgAdminUsername] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!user) { setOrgAdminUsername(null); return; }
-    (async () => {
-      const { data: mem } = await supabase
-        .from("organization_members" as any)
-        .select("organization:organizations(username)")
-        .eq("user_id", user.id).in("member_role", ["owner","admin"]).limit(1).maybeSingle();
-      setOrgAdminUsername((mem as any)?.organization?.username ?? null);
-    })();
-  }, [user?.id]);
+  // Uses OrganizationProvider primitives via the useMyWorkspaces hook — the
+  // signed-in user's workspaces. Admin entry surfaces only when the user owns
+  // an organization (server-side ownership → no client-only admin state).
+  const { workspaces } = useMyWorkspaces();
+  const ownedWorkspace = workspaces.find((w) => w.is_owner) ?? null;
+  const adminOrgSlug = ownedWorkspace?.slug ?? null;
+
 
   type Row = {
     to?: string;
@@ -54,9 +50,14 @@ export const SideMenu = ({ trigger }: { trigger: React.ReactNode }) => {
       { to: "/creator-hub", icon: LayoutGrid, label: "Creator Hub" },
       { to: "/monetization", icon: DollarSign, label: "Monetization" },
     ] as Row[] : []),
-    ...(orgAdminUsername ? [
-      { to: `/org/${orgAdminUsername}/admin`, icon: Building2, label: "Organization Admin", badge: "ADMIN" },
-    ] as Row[] : []),
+    ...(adminOrgSlug
+      ? ([{
+          to: `/organization/${adminOrgSlug}/dashboard`,
+          icon: Building2,
+          label: "Organization Admin",
+          badge: "ADMIN",
+        }] as Row[])
+      : []),
     { to: "/verification-center", icon: BadgeCheck, label: "Verification Center", badge: "NEW" },
     { to: "/wallet", icon: Wallet, label: "Aura Wallet", trailing: <span className="text-xs font-bold text-primary">0</span> },
     { to: "/profile?tab=saved", icon: Bookmark, label: "Saved" },
