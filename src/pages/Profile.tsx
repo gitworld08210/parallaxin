@@ -453,7 +453,7 @@ const Profile = () => {
 
       {/* Tabs (sticky under top bar) */}
       <div className="max-w-3xl mx-auto mt-4">
-        <ProfileTabs tabs={tabs} value={tab} onChange={setTab} stickyTop={56} />
+        <ProfileTabs<Tab> tabs={tabs} value={tab} onChange={setTab} stickyTop={56} />
 
         {/* Panels */}
         <div className="px-4 sm:px-6 pt-4">
