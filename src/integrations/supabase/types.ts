@@ -1447,6 +1447,7 @@ export type Database = {
           allow_member_invites: boolean
           allow_public_posts: boolean
           created_at: string
+          enabled_modules: string[]
           language: string
           logo_shape: string | null
           organization_id: string
@@ -1463,6 +1464,7 @@ export type Database = {
           allow_member_invites?: boolean
           allow_public_posts?: boolean
           created_at?: string
+          enabled_modules?: string[]
           language?: string
           logo_shape?: string | null
           organization_id: string
@@ -1479,6 +1481,7 @@ export type Database = {
           allow_member_invites?: boolean
           allow_public_posts?: boolean
           created_at?: string
+          enabled_modules?: string[]
           language?: string
           logo_shape?: string | null
           organization_id?: string
@@ -2740,10 +2743,25 @@ export type Database = {
         }[]
       }
       org_accept_invite: { Args: { _invite_token: string }; Returns: string }
+      org_assign_member_department: {
+        Args: { _department_id: string; _member_id: string }
+        Returns: undefined
+      }
       org_cancel_invite: { Args: { _invite_id: string }; Returns: undefined }
       org_change_member_role: {
         Args: { _member_id: string; _organization_id: string; _role_id: string }
         Returns: undefined
+      }
+      org_create_department: {
+        Args: {
+          _color?: string
+          _description?: string
+          _icon?: string
+          _name: string
+          _organization_id: string
+          _parent_department_id?: string
+        }
+        Returns: string
       }
       org_create_role: {
         Args: {
@@ -2757,6 +2775,10 @@ export type Database = {
       }
       org_decline_invite: {
         Args: { _invite_token: string }
+        Returns: undefined
+      }
+      org_delete_department: {
+        Args: { _department_id: string }
         Returns: undefined
       }
       org_delete_role: { Args: { _role_id: string }; Returns: undefined }
@@ -2773,12 +2795,27 @@ export type Database = {
         Args: { _member_id: string; _organization_id: string }
         Returns: undefined
       }
+      org_remove_member_department: {
+        Args: { _member_id: string }
+        Returns: undefined
+      }
       org_set_role_permissions: {
         Args: { _permission_keys: string[]; _role_id: string }
         Returns: undefined
       }
       org_transfer_ownership: {
         Args: { _new_owner_user_id: string; _organization_id: string }
+        Returns: undefined
+      }
+      org_update_department: {
+        Args: {
+          _color?: string
+          _department_id: string
+          _description?: string
+          _icon?: string
+          _name?: string
+          _parent_department_id?: string
+        }
         Returns: undefined
       }
       org_update_role: {
@@ -2788,6 +2825,23 @@ export type Database = {
           _name?: string
           _priority?: number
           _role_id: string
+        }
+        Returns: undefined
+      }
+      org_update_settings: {
+        Args: {
+          _cover_url?: string
+          _description?: string
+          _email?: string
+          _enabled_modules?: string[]
+          _logo_url?: string
+          _name?: string
+          _org_type?: string
+          _organization_id: string
+          _slug?: string
+          _timezone?: string
+          _visibility?: string
+          _website?: string
         }
         Returns: undefined
       }
