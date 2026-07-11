@@ -326,15 +326,25 @@ const Profile = () => {
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ type: "spring", stiffness: 300, damping: 24 }}
-            className="rounded-full ring-4 ring-background bg-background"
+            className="relative rounded-full ring-4 ring-background bg-background"
           >
-            <AuraAvatar
-              src={profile.avatar_url}
-              fallback={initialsOf(displayName)}
-              size={112}
-              gradient={gradientFor(profile.username)}
-              isFounder={!!profile.is_founder}
-            />
+            {profile.avatar_url ? (
+              <img
+                src={profile.avatar_url}
+                alt={displayName}
+                className="h-28 w-28 sm:h-32 sm:w-32 rounded-full object-cover"
+              />
+            ) : (
+              <div
+                className="h-28 w-28 sm:h-32 sm:w-32 rounded-full grid place-items-center text-2xl font-display font-semibold text-foreground"
+                style={{ backgroundImage: gradientFor(profile.username) }}
+              >
+                {initialsOf(displayName)}
+              </div>
+            )}
+            {profile.is_founder && (
+              <span aria-hidden className="absolute inset-0 rounded-full aura-ring pointer-events-none" />
+            )}
           </motion.div>
 
           <div className="flex items-center gap-2 pt-14 sm:pt-16">
