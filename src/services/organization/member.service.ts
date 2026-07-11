@@ -50,8 +50,53 @@ export const memberService = {
     }));
   },
 
+  /**
+   * Bounded recent-members query for the dashboard widget.
+   * Uses a server-side LIMIT + targeted lookups instead of fetching the full
+   * roster (fixes N+1/over-fetch on large orgs).
+   */
   async recent(orgId: string, limit = 4): Promise<MemberWithProfile[]> {
-    const all = await this.list(orgId);
-    return all.slice(0, limit);
+    const { data: rows, error } = await supabase
+      .from("organization_members")
+      .select(
+        "id, organization_id, user_id, department_id, status, joined_at, invited_by, created_at, updated_at",
+      )
+      .eq("organization_id", orgId)
+      .eq("status", "active")
+      .order("joined_at", { ascending: false, nullsFirst: false })
+      .limit(limit);
+    if (error) throw error;
+    const members = (rows ?? []) as Member[];
+    if (members.length === 0) return [];
+
+    const userIds = members.map((m) => m.user_id);
+    const memberIds = members.map((m) => m.id);
+    const [{ data: profiles }, { data: roleLinks }] = await Promise.all([
+      supabase
+        .from("profiles")
+        .select("user_id, username, display_name, avatar_url, verified")
+        .in("user_id", userIds),
+      supabase
+        .from("organization_member_roles")
+        .select("member_id, organization_roles(id, name)")
+        .in("member_id", memberIds),
+    ]);
+
+    const profileMap = new Map(
+      (profiles ?? []).map((p: any) => [p.user_id as string, p as MemberWithProfile["profile"]]),
+    );
+    const roleMap = new Map<string, string[]>();
+    for (const link of (roleLinks ?? []) as any[]) {
+      const bucket = roleMap.get(link.member_id) ?? [];
+      if (link.organization_roles?.name) bucket.push(link.organization_roles.name as string);
+      roleMap.set(link.member_id, bucket);
+    }
+
+    return members.map((m) => ({
+      ...m,
+      profile: profileMap.get(m.user_i
+d) ?? null,
+      role_names: roleMap.get(m.id) ?? [],
+    }));
   },
 };
