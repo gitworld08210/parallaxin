@@ -3,7 +3,7 @@ import type { OrgPermissionKey } from "@/features/organization/permissions.regis
 
 export type OrganizationId = string;
 
-export type OrgType = "company" | "startup" | "nonprofit" | "community" | "government" | "education" | "other";
+export type OrgType = "startup" | "company" | "education" | "ngo" | "government" | "creator" | "community" | "other";
 
 export interface Organization {
   id: OrganizationId;

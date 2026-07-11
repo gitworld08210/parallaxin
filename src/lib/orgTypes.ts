@@ -6,10 +6,11 @@ import type { OrgType } from "@/types/organization/organization";
 export const ORG_TYPES: ReadonlyArray<{ value: OrgType; label: string }> = [
   { value: "company", label: "Company" },
   { value: "startup", label: "Startup" },
-  { value: "nonprofit", label: "Nonprofit" },
+  { value: "ngo", label: "Nonprofit / NGO" },
   { value: "community", label: "Community" },
   { value: "government", label: "Government" },
   { value: "education", label: "Educational Institution" },
+  { value: "creator", label: "Creator" },
   { value: "other", label: "Other" },
 ];
 

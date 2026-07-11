@@ -21,12 +21,13 @@ export const getOrganizationVerificationKind = (
   switch (org.org_type) {
     case "government":
       return "gov";
-    case "nonprofit":
+    case "ngo":
     case "community":
     case "education":
       return "verified";
     case "company":
     case "startup":
+    case "creator":
     case "other":
       return "business";
     default:
