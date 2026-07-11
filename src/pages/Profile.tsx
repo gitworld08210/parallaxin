@@ -468,7 +468,7 @@ const Profile = () => {
           {memberships.length > 0 && (
             <div className="pt-2 -mx-1 flex gap-2 overflow-x-auto no-scrollbar" aria-label="Affiliated organizations">
               {memberships.slice(0, 8).map((m) => (
-                <OrgLogoCard key={m.organization_id} membership={m} className="first:ml-1 last:mr-1" />
+                <OrgLogoCard key={m.id} membership={m} className="first:ml-1 last:mr-1" />
               ))}
             </div>
           )}
@@ -565,7 +565,7 @@ const Profile = () => {
                 ) : (
                   <div className="flex flex-wrap gap-2">
                     {memberships.map((m) => (
-                      <OrgLogoCard key={m.organization_id} membership={m} />
+                      <OrgLogoCard key={m.id} membership={m} />
                     ))}
                   </div>
                 )}
