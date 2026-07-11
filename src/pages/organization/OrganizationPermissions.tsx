@@ -1,8 +1,17 @@
-// OrganizationPermissions — page scaffold. Build feature UI here.
+// OrganizationPermissions — permission matrix editor.
+import RolePermissionsTable from "@/components/organization/roles/RolePermissionsTable";
+
 export default function OrganizationPermissions() {
   return (
-    <div data-page="OrganizationPermissions" className="p-4">
-      <h1 className="text-lg font-semibold">OrganizationPermissions</h1>
+    <div className="space-y-6 p-6" data-page="OrganizationPermissions">
+      <header>
+        <h1 className="text-2xl font-bold">Permissions</h1>
+        <p className="text-sm text-muted-foreground">
+          Toggle which permissions each role grants. Changes save per role.
+        </p>
+      </header>
+
+      <RolePermissionsTable />
     </div>
   );
 }
