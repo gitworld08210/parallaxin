@@ -4,6 +4,7 @@ import {
   ArrowLeft,
   Ban,
   CalendarDays,
+  Camera,
   Check,
   Flag,
   Info,
@@ -16,6 +17,7 @@ import {
   VolumeX,
   Bookmark,
   Tag as TagIcon,
+  X as XIcon,
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 
