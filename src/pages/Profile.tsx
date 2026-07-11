@@ -81,6 +81,7 @@ const Profile = () => {
   const [commentPost, setCommentPost] = useState<string | null>(null);
   const [reportOpen, setReportOpen] = useState(false);
   const [becomeOpen, setBecomeOpen] = useState(false);
+  const [verifyOpen, setVerifyOpen] = useState(false);
 
   const { memberships: rawMemberships } = useUserOrganizations(profile?.user_id ?? null);
   const memberships = useMemo(
