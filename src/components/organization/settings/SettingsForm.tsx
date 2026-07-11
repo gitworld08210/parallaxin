@@ -103,14 +103,57 @@ export const SettingsForm = () => {
   const dirty = JSON.stringify(form) !== JSON.stringify(initial);
 
   const handleSave = () => {
-    update.mutate({
+    // Client-side validation — RPC is still the source of truth, this is UX.
+    const schema = z.object({
+      name: z.string().trim().min(1, "Name is required").max(100),
+      slug: z
+        .string()
+        .trim()
+        .toLowerCase()
+        .min(3, "Slug must be at least 3 characters")
+        .max(32, "Slug must be at most 32 characters")
+        .regex(
+          /^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/,
+          "Only lowercase letters, numbers, and single hyphens",
+        ),
+      website: z
+        .string()
+        .trim()
+        .max(255)
+        .optional()
+        .refine(
+          (v) => !v || /^https?:\/\/.+/i.test(v),
+          "Website must start with http:// or https://",
+        ),
+      email: z
+        .string()
+        .trim()
+        .max(255)
+        .optional()
+        .refine((v) => !v || z.string().email().safeParse(v).success, "Invalid email address"),
+      description: z.string().max(2000).optional(),
+    });
+
+    const parsed = schema.safeParse({
       name: form.name,
       slug: form.slug,
-      description: form.description,
-      logoUrl: form.logoUrl,
-      coverUrl: form.coverUrl,
-      website: form.website,
-      email: form.email,
+      website: form.website || undefined,
+      email: form.email || undefined,
+      description: form.description || undefined,
+    });
+    if (!parsed.success) {
+      toast.error(parsed.error.issues[0]?.message ?? "Invalid form");
+      return;
+    }
+
+    update.mutate({
+      name: parsed.data.name,
+      slug: parsed.data.slug,
+      description: form.description ? form.description : null,
+      logoUrl: form.logoUrl ? form.logoUrl : null,
+      coverUrl: form.coverUrl ? form.coverUrl : null,
+      website: form.website ? form.website : null,
+      email: form.email ? form.email : null,
       orgType: form.orgType,
       timezone: form.timezone,
       visibility: form.visibility,
