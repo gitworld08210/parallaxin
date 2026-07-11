@@ -25,6 +25,7 @@ const Messages = lazy(() => import("./pages/Messages"));
 const Conversation = lazy(() => import("./pages/Conversation"));
 const Notifications = lazy(() => import("./pages/Notifications"));
 const InviteAccept = lazy(() => import("./pages/InviteAccept"));
+const CollabInviteAccept = lazy(() => import("./pages/CollabInviteAccept"));
 const Compose = lazy(() => import("./pages/Compose"));
 const ReelCompose = lazy(() => import("./pages/ReelCompose"));
 const StoryCompose = lazy(() => import("./pages/StoryCompose"));
@@ -148,6 +149,7 @@ const App = () => (
                   <Route path="/messages/:id" element={<MessagesPasscodeGate><Conversation /></MessagesPasscodeGate>} />
                   <Route path="/notifications" element={<Notifications />} />
                   <Route path="/invite/:token" element={<InviteAccept />} />
+                  <Route path="/collab/:postId" element={<CollabInviteAccept />} />
                   <Route path="/compose" element={<CreatorGate><Compose /></CreatorGate>} />
                   <Route path="/compose/reel" element={<CreatorGate><ReelCompose /></CreatorGate>} />
                   <Route path="/compose/story" element={<CreatorGate><StoryCompose /></CreatorGate>} />
