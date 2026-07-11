@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { Menu, Sparkles, Users, PenSquare, MessageCircle } from "lucide-react";
+import { Menu, Sparkles, Users, PenSquare, Bell } from "lucide-react";
 import { motion } from "framer-motion";
 import { PostCard, FeedPost } from "@/components/social/PostCard";
 import { CommentSheet } from "@/components/social/CommentSheet";
