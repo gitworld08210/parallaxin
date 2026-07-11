@@ -10,6 +10,7 @@ import { AdminRoute } from "@/components/AdminRoute";
 import { AppShell } from "@/components/layout/AppShell";
 import { ThemeProvider } from "@/contexts/ThemeProvider";
 import { CallProvider } from "@/contexts/CallProvider";
+import { MessagesPasscodeGate } from "@/components/messages/MessagesPasscodeGate";
 
 // Eager: critical first-paint routes
 import Feed from "./pages/Feed";
@@ -143,8 +144,8 @@ const App = () => (
                   <Route path="/" element={<Feed />} />
                   <Route path="/reels" element={<Reels />} />
                   <Route path="/discover" element={<Discover />} />
-                  <Route path="/messages" element={<Messages />} />
-                  <Route path="/messages/:id" element={<Conversation />} />
+                  <Route path="/messages" element={<MessagesPasscodeGate><Messages /></MessagesPasscodeGate>} />
+                  <Route path="/messages/:id" element={<MessagesPasscodeGate><Conversation /></MessagesPasscodeGate>} />
                   <Route path="/notifications" element={<Notifications />} />
                   <Route path="/invite/:token" element={<InviteAccept />} />
                   <Route path="/compose" element={<CreatorGate><Compose /></CreatorGate>} />
