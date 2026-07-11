@@ -1,69 +1,58 @@
-// MemberCard — UI scaffold. Compose real markup as the feature ships.
-import { MoreVertical, Mail, Building2 } from "lucide-react";
+// MemberCard — profile card for a single organization member.
+import { Link } from "react-router-dom";
+import { Mail } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { useOrganizationContext } from "@/contexts/OrganizationProvider";
+import type { MemberWithProfile } from "@/types/organization/member";
 
 import MemberRoleBadge from "./MemberRoleBadge";
+import MemberActionsMenu from "./MemberActionsMenu";
 
 interface MemberCardProps {
-  id: string;
-  name: string;
-  email: string;
-  avatar?: string;
-  role: string;
-  department: string;
-  online?: boolean;
+  member: MemberWithProfile;
 }
 
-export const MemberCard = ({ name, email, avatar, role, department, online = false }: MemberCardProps) => {
+export const MemberCard = ({ member }: MemberCardProps) => {
+  const { organization } = useOrganizationContext();
+  const isOwnerRow = !!organization && member.user_id === organization.owner_user_id;
+  const primaryRole = member.role_names[0] ?? (isOwnerRow ? "Owner" : "Member");
+  const displayName =
+    member.profile?.display_name || member.profile?.username || "Unknown member";
+  const initial = displayName.charAt(0).toUpperCase();
+  const detailHref = organization?.slug
+    ? `/organization/${organization.slug}/members/${member.id}`
+    : `/organization/members/${member.id}`;
+
   return (
     <Card className="rounded-2xl border border-slate-200 bg-white p-5 transition-all duration-300 hover:-translate-y-1 hover:border-sky-300 hover:shadow-lg">
       <div className="flex items-start justify-between">
-        <div className="flex items-center gap-4">
-          <div className="relative">
-            <Avatar className="h-14 w-14">
-              <AvatarImage src={avatar} />
-
-              <AvatarFallback>{name.charAt(0)}</AvatarFallback>
-            </Avatar>
-
-            <span
-              className={`absolute bottom-0 right-0 h-3.5 w-3.5 rounded-full border-2 border-white ${
-                online ? "bg-emerald-500" : "bg-slate-300"
-              }`}
-            />
-          </div>
-
-          <div>
-            <h3 className="font-semibold text-slate-900">{name}</h3>
-
-            <div className="mt-1 flex items-center gap-2 text-sm text-slate-500">
-              <Mail className="h-4 w-4" />
-
-              {email}
-            </div>
-
-            <div className="mt-1 flex items-center gap-2 text-sm text-slate-500">
-              <Building2 className="h-4 w-4" />
-
-              {department}
+        <Link to={detailHref} className="flex items-center gap-4 min-w-0">
+          <Avatar className="h-14 w-14">
+            <AvatarImage src={member.profile?.avatar_url ?? undefined} alt={displayName} />
+            <AvatarFallback>{initial}</AvatarFallback>
+          </Avatar>
+          <div className="min-w-0">
+            <h3 className="font-semibold text-slate-900 truncate">{displayName}</h3>
+            {member.profile?.username && (
+              <div className="mt-1 flex items-center gap-2 text-sm text-slate-500 truncate">
+                <Mail className="h-4 w-4 flex-shrink-0" />
+                <span className="truncate">@{member.profile.username}</span>
+              </div>
+            )}
+            <div className="mt-1 text-xs text-slate-400">
+              {member.status === "active" && member.joined_at
+                ? `Joined ${new Date(member.joined_at).toLocaleDateString()}`
+                : member.status}
             </div>
           </div>
-        </div>
-
-        <Button variant="ghost" size="icon">
-          <MoreVertical className="h-5 w-5" />
-        </Button>
+        </Link>
+        <MemberActionsMenu member={member} isOwnerRow={isOwnerRow} />
       </div>
 
       <div className="mt-5 flex items-center justify-between">
-        <MemberRoleBadge role={role} />
-
-        <span className={`text-sm font-medium ${online ? "text-emerald-600" : "text-slate-500"}`}>
-          {online ? "Online" : "Offline"}
-        </span>
+        <MemberRoleBadge role={primaryRole} isOwner={isOwnerRow} />
       </div>
     </Card>
   );
