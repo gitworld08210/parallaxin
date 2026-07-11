@@ -63,7 +63,7 @@ const Notifications = () => {
   const [items, setItems] = useState<N[]>([]);
   const [collabOpen, setCollabOpen] = useState(false);
 
-  // Organization invites (org invitation flow — replaces legacy affiliations).
+  // Organization invites (join-workspace flow).
   const { invites: pendingInvites } = useIncomingInvites();
   const { accept: acceptInvite, decline: declineInvite } = useIncomingInviteActions();
 
@@ -90,7 +90,6 @@ const Notifications = () => {
         .select("id, type, read, created_at, actor_id, post_id, actor:profiles!notifications_actor_profile_fkey(username, display_name, avatar_url)")
         .eq("user_id", user.id).order("created_at", { ascending: false }).limit(80);
       setItems((data ?? []) as any);
-      await supabase.from("notifications").update({ read: true }).eq("user_id", user.id).eq("read", false);
       // Incoming organization invites are loaded via useIncomingInvites().
     })();
 

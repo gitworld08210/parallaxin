@@ -14,36 +14,6 @@ export type Database = {
   }
   public: {
     Tables: {
-      affiliation_audit_logs: {
-        Row: {
-          action: string
-          actor_user_id: string
-          affiliation_id: string | null
-          created_at: string
-          id: string
-          metadata: Json
-          org_id: string
-        }
-        Insert: {
-          action: string
-          actor_user_id: string
-          affiliation_id?: string | null
-          created_at?: string
-          id?: string
-          metadata?: Json
-          org_id: string
-        }
-        Update: {
-          action?: string
-          actor_user_id?: string
-          affiliation_id?: string | null
-          created_at?: string
-          id?: string
-          metadata?: Json
-          org_id?: string
-        }
-        Relationships: []
-      }
       app_config: {
         Row: {
           key: string
@@ -2720,17 +2690,6 @@ export type Database = {
         Args: { p_organization_id: string }
         Returns: boolean
       }
-      issue_affiliation: {
-        Args: {
-          _ended_on: string
-          _note: string
-          _org_id: string
-          _role: Database["public"]["Enums"]["affiliation_role"]
-          _started_on: string
-          _target_username: string
-        }
-        Returns: string
-      }
       leave_group: { Args: { _conv: string }; Returns: undefined }
       mark_conversation_read: {
         Args: { _conversation_id: string }
@@ -2860,25 +2819,10 @@ export type Database = {
           username: string
         }[]
       }
-      respond_affiliation: {
-        Args: { _accept: boolean; _aff_id: string }
-        Returns: undefined
-      }
-      revoke_affiliation: {
-        Args: { _aff_id: string; _reason: string }
-        Returns: undefined
-      }
       slugify_org_name: { Args: { _name: string }; Returns: string }
       start_dm: { Args: { other_user_id: string }; Returns: string }
       toggle_post_pin: {
         Args: { _pin: boolean; _post_id: string }
-        Returns: undefined
-      }
-      update_affiliation_role: {
-        Args: {
-          _aff_id: string
-          _role: Database["public"]["Enums"]["affiliation_role"]
-        }
         Returns: undefined
       }
       upsert_profile_private: {
@@ -2903,23 +2847,6 @@ export type Database = {
     }
     Enums: {
       account_type: "personal" | "organization"
-      affiliation_role:
-        | "founder"
-        | "co_founder"
-        | "ceo"
-        | "cto"
-        | "employee"
-        | "brand_ambassador"
-        | "official_representative"
-        | "advisor"
-        | "investor"
-        | "moderator"
-      affiliation_status:
-        | "pending"
-        | "active"
-        | "declined"
-        | "revoked"
-        | "ended"
       app_role: "admin" | "moderator" | "user"
       council_role: "architect" | "curator" | "sentinel" | "innovator"
       org_member_role: "owner" | "admin" | "manager" | "viewer"
@@ -3062,19 +2989,6 @@ export const Constants = {
   public: {
     Enums: {
       account_type: ["personal", "organization"],
-      affiliation_role: [
-        "founder",
-        "co_founder",
-        "ceo",
-        "cto",
-        "employee",
-        "brand_ambassador",
-        "official_representative",
-        "advisor",
-        "investor",
-        "moderator",
-      ],
-      affiliation_status: ["pending", "active", "declined", "revoked", "ended"],
       app_role: ["admin", "moderator", "user"],
       council_role: ["architect", "curator", "sentinel", "innovator"],
       org_member_role: ["owner", "admin", "manager", "viewer"],

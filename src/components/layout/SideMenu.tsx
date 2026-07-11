@@ -26,7 +26,12 @@ export const SideMenu = ({ trigger }: { trigger: React.ReactNode }) => {
   // signed-in user's workspaces. Admin entry surfaces only when the user owns
   // an organization (server-side ownership → no client-only admin state).
   const { workspaces } = useMyWorkspaces();
-  const ownedWorkspace = workspaces.find((w) => w.is_owner) ?? null;
+  // Deterministic pick when the user owns multiple workspaces: alphabetical by name.
+  const ownedWorkspace =
+    workspaces
+      .filter((w) => w.is_owner)
+      .slice()
+      .sort((a, b) => (a.name ?? "").localeCompare(b.name ?? ""))[0] ?? null;
   const adminOrgSlug = ownedWorkspace?.slug ?? null;
 
 
