@@ -21,6 +21,8 @@ export const OrganizationTopbar = () => {
 
   // Human-readable role label — owner outranks any assigned role name.
   const roleLabel = role.isOwner ? "Owner" : role.roleNames[0] ?? "Member";
+  const verificationKind = getOrganizationVerificationKind(organization);
+
 
   return (
     <header
