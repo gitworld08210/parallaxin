@@ -29,18 +29,21 @@ export const inviteService = {
     return hydrateInvites((data ?? []) as Invite[]);
   },
 
-  /** Pending invitations targeted at the signed-in user (by username or email). */
-  async listIncomingForUser(userId: string): Promise<InviteWithMeta[]> {
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("username, email")
-      .eq("user_id", userId)
-      .maybeSingle();
-    if (!profile) return [];
-
+  /**
+   * Pending invitations targeted at the signed-in user, matched by their
+   * username and/or auth email. Both are provided by the caller (auth.email
+   * lives on the auth user, not the profile row).
+   */
+  async listIncomingForUser({
+    username,
+    email,
+  }: {
+    username?: string | null;
+    email?: string | null;
+  }): Promise<InviteWithMeta[]> {
     const orClauses: string[] = [];
-    if (profile.username) orClauses.push(`username.eq.${profile.username.toLowerCase()}`);
-    if (profile.email) orClauses.push(`email.eq.${profile.email.toLowerCase()}`);
+    if (username) orClauses.push(`username.eq.${username.toLowerCase()}`);
+    if (email) orClauses.push(`email.eq.${email.toLowerCase()}`);
     if (orClauses.length === 0) return [];
 
     const { data, error } = await supabase
