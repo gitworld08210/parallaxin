@@ -18,8 +18,8 @@ import { fmt, gradientFor, initialsOf } from "@/lib/format";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { BecomeCreatorSheet } from "@/components/creator/BecomeCreatorSheet";
-import { AffiliationChip, AffiliationChipData } from "@/components/organizations/AffiliationBadge";
-import { labelForRole as labelForRoleSafe } from "@/lib/affiliationRoles";
+import { OrganizationMemberChip } from "@/components/organization/OrganizationMemberChip";
+import { useUserOrganizations } from "@/hooks/organization/useUserOrganizations";
 
 type ProfileRow = {
   user_id: string;
