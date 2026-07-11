@@ -122,6 +122,17 @@ const Notifications = () => {
     [items],
   );
 
+  // Map organization_id -> pending invite_token for quick row->accept-page routing.
+  const inviteTokenByOrg = useMemo(() => {
+    const m: Record<string, string> = {};
+    pendingInvites.forEach((inv: any) => {
+      const oid = inv.organization_id || inv.organization?.id;
+      if (oid && inv.invite_token) m[oid] = inv.invite_token;
+    });
+    return m;
+  }, [pendingInvites]);
+
+
   const groups = useMemo(() => {
     const g: Record<"today" | "yesterday" | "earlier", N[]> = { today: [], yesterday: [], earlier: [] };
     visibleItems.forEach((n) => g[bucketOf(n.created_at)].push(n));
