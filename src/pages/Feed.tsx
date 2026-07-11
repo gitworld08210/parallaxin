@@ -130,11 +130,11 @@ const Feed = () => {
           </div>
           <div className="flex items-center gap-1">
             <Link
-              to="/messages"
+              to="/notifications"
               className="p-2 rounded-full hover:bg-secondary/60 transition-colors"
-              aria-label="Messages"
+              aria-label="Notifications"
             >
-              <MessageCircle className="h-5 w-5 text-foreground" strokeWidth={2} />
+              <Bell className="h-5 w-5 text-foreground" strokeWidth={2} />
             </Link>
             <Link
               to="/discover"
