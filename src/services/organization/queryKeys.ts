@@ -19,6 +19,11 @@ export const orgKeys = {
     ["organization", orgId, "members", memberId, "roles"] as const,
   settings: (orgId: string) => ["organization", orgId, "settings"] as const,
   departments: (orgId: string) => ["organization", orgId, "departments"] as const,
+  department: (orgId: string, departmentId: string) =>
+    ["organization", orgId, "departments", departmentId] as const,
+  departmentMemberCounts: (orgId: string) =>
+    ["organization", orgId, "departments", "member-counts"] as const,
+  featureFlags: (orgId: string) => ["organization", orgId, "feature-flags"] as const,
   dashboard: (orgId: string) => ["organization", orgId, "dashboard"] as const,
   recentMembers: (orgId: string) => ["organization", orgId, "dashboard", "recent-members"] as const,
   recentActivity: (orgId: string) => ["organization", orgId, "dashboard", "recent-activity"] as const,

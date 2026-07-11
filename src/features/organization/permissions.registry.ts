@@ -21,8 +21,11 @@ export const ORG_PERMISSIONS = {
 
   ROLES_MANAGE: "roles.manage",
 
+  DEPARTMENTS_VIEW: "departments.view",
   DEPARTMENTS_CREATE: "departments.create",
   DEPARTMENTS_EDIT: "departments.edit",
+  DEPARTMENTS_UPDATE: "departments.update",
+  DEPARTMENTS_DELETE: "departments.delete",
   DEPARTMENTS_MANAGE: "departments.manage",
 
   SETTINGS_UPDATE: "settings.update",
@@ -51,8 +54,11 @@ export const ORG_PERMISSION_MODULES: Record<OrgPermissionKey, string> = {
   "members.change_role": "members",
   "members.manage_roles": "members",
   "roles.manage": "roles",
+  "departments.view": "departments",
   "departments.create": "departments",
   "departments.edit": "departments",
+  "departments.update": "departments",
+  "departments.delete": "departments",
   "departments.manage": "departments",
   "settings.update": "settings",
   "analytics.view": "analytics",

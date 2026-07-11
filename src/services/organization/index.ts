@@ -9,4 +9,6 @@ export * from "./settings.service";
 export * from "./dashboard.service";
 export * from "./audit.service";
 export * from "./invite.service";
+export * from "./department.service";
+export * from "./organizationDepartment.api";
 export * from "./queryKeys";

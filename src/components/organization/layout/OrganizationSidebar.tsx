@@ -24,7 +24,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import { useOrganizationContext } from "@/contexts/OrganizationProvider";
-import { isOrgFeatureEnabled, type OrgFeatureKey } from "@/features/organization/featureFlags";
+import { useOrgFeatureFlags, type OrgFeatureKey } from "@/features/organization/featureFlags";
 
 type NavItem = {
   name: string;
@@ -72,13 +72,14 @@ const NAV_SECTIONS: { title: string; items: NavItem[] }[] = [
 
 export const OrganizationSidebar = () => {
   const { organization, role } = useOrganizationContext();
+  const featureFlags = useOrgFeatureFlags();
   const slug = organization?.slug ?? "";
   const base = slug ? `/organization/${slug}` : "/organization";
   const fallback = organization?.name?.[0]?.toUpperCase() ?? "O";
 
   const sections = NAV_SECTIONS.map((section) => ({
     ...section,
-    items: section.items.filter((item) => isOrgFeatureEnabled(item.feature)),
+    items: section.items.filter((item) => featureFlags[item.feature]),
   })).filter((s) => s.items.length > 0);
 
   return (
