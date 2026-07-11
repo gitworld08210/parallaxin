@@ -16,6 +16,8 @@ import { useTheme } from "@/contexts/ThemeProvider";
 import { AppearanceSheet } from "@/components/layout/AppearanceSheet";
 import { useMyWorkspaces } from "@/hooks/organization/useMyWorkspaces";
 import { VerificationBadge } from "@/components/vibe/VerificationBadge";
+import { AccountSwitcherSheet } from "@/components/layout/AccountSwitcherSheet";
+
 import { cn } from "@/lib/utils";
 
 type Row = {
