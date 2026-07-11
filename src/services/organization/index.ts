@@ -8,4 +8,5 @@ export * from "./permission.service";
 export * from "./settings.service";
 export * from "./dashboard.service";
 export * from "./audit.service";
+export * from "./invite.service";
 export * from "./queryKeys";
