@@ -39,4 +39,24 @@ export const departmentService = {
 
   removeMember: (memberId: string): Promise<void> =>
     organizationDepartmentApi.removeMember(memberId),
+
+  /**
+   * Return { department_id -> active_member_count } for a given org.
+   * Uses a bounded aggregate query so the tree page doesn't fetch full members.
+   */
+  async memberCountsByDepartment(orgId: string): Promise<Record<string, number>> {
+    const { data, error } = await supabase
+      .from("organization_members")
+      .select("department_id")
+      .eq("organization_id", orgId)
+      .eq("status", "active")
+      .not("department_id", "is", null);
+    if (error) throw error;
+    const counts: Record<string, number> = {};
+    for (const row of (data ?? []) as Array<{ department_id: string | null }>) {
+      if (!row.department_id) continue;
+      counts[row.department_id] = (counts[row.department_id] ?? 0) + 1;
+    }
+    return counts;
+  },
 };
