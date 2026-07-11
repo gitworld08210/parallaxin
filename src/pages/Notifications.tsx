@@ -7,8 +7,11 @@ import { EmptyState } from "@/components/empty/EmptyState";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthProvider";
 import { gradientFor, initialsOf, timeAgo } from "@/lib/format";
-import { labelForRole } from "@/lib/affiliationRoles";
 import { toast } from "sonner";
+import {
+  useIncomingInvites,
+  useIncomingInviteActions,
+} from "@/hooks/organization/useOrganizationInvites";
 
 type N = {
   id: string;
