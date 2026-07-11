@@ -68,19 +68,19 @@ export const MessagesPasscodeGate = ({ children }: { children: React.ReactNode }
   useEffect(() => {
     if (!user) return;
     setStored(readStored(uid));
-    setUnlocked(sessionStorage.getItem(UNLOCK_SESSION_KEY(uid)) === "1");
+    setUnlocked(localStorage.getItem(UNLOCK_KEY(uid)) === "1");
     setReady(true);
   }, [uid, user]);
 
   const handleUnlocked = () => {
-    sessionStorage.setItem(UNLOCK_SESSION_KEY(uid), "1");
+    localStorage.setItem(UNLOCK_KEY(uid), "1");
     setUnlocked(true);
   };
 
   const handleCreated = (s: Stored) => {
     writeStored(uid, s);
     setStored(s);
-    sessionStorage.setItem(UNLOCK_SESSION_KEY(uid), "1");
+    localStorage.setItem(UNLOCK_KEY(uid), "1");
     setUnlocked(true);
     toast.success("Passcode set — Messages are now protected");
   };
