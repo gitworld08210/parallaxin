@@ -35,6 +35,7 @@ import {
 
 import { OrgLogoCard } from "@/components/profile/OrgLogoCard";
 import { StickyTabs } from "@/components/profile/StickyTabs";
+import { VerificationSheet } from "@/components/profile/VerificationSheet";
 
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthProvider";
