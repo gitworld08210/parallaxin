@@ -41,6 +41,7 @@ import { useOrganizationContext } from "@/contexts/OrganizationProvider";
 import { useOrganizationRoles } from "@/hooks/organization/useOrganizationRoles";
 import { useMemberMutations } from "@/hooks/organization/useOrganizationMembers";
 import { ORG_PERMISSIONS } from "@/features/organization/permissions.registry";
+import { isOwnerRole } from "@/types/organization/role";
 import type { MemberWithProfile } from "@/types/organization/member";
 
 interface MemberActionsMenuProps {
