@@ -312,16 +312,65 @@ const Profile = () => {
       </header>
 
       {/* Cover */}
-      <div className="relative w-full h-32 sm:h-44 bg-secondary overflow-hidden">
-        {profile.cover_url ? (
-          <img src={profile.cover_url} alt="" className="h-full w-full object-cover" loading="eager" />
-        ) : (
-          <div
-            className="h-full w-full"
-            style={{ background: `linear-gradient(135deg, ${gradientFor(profile.username)})` }}
-          />
+      <div className="relative w-full h-32 sm:h-44 bg-secondary overflow-hidden group">
+        <button
+          type="button"
+          onClick={() => profile.cover_url && setCoverPreviewOpen(true)}
+          aria-label={profile.cover_url ? "View banner" : "Banner"}
+          className="absolute inset-0 w-full h-full block focus:outline-none"
+          disabled={!profile.cover_url}
+        >
+          {profile.cover_url ? (
+            <img src={profile.cover_url} alt="" className="h-full w-full object-cover" loading="eager" />
+          ) : (
+            <div
+              className="h-full w-full"
+              style={{ background: `linear-gradient(135deg, ${gradientFor(profile.username)})` }}
+            />
+          )}
+        </button>
+        {isMe && (
+          <Link
+            to="/profile/edit"
+            aria-label={profile.cover_url ? "Change banner" : "Add banner"}
+            className="absolute bottom-2 right-2 h-9 px-3 rounded-full bg-black/55 text-white text-xs font-semibold backdrop-blur-md inline-flex items-center gap-1.5 hover:bg-black/70 transition-colors active:scale-95"
+          >
+            <Camera className="h-3.5 w-3.5" />
+            {profile.cover_url ? "Edit banner" : "Add banner"}
+          </Link>
         )}
       </div>
+
+      {/* Full-screen banner preview */}
+      <AnimatePresence>
+        {coverPreviewOpen && profile.cover_url && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setCoverPreviewOpen(false)}
+            className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-sm grid place-items-center p-4"
+          >
+            <button
+              type="button"
+              aria-label="Close"
+              onClick={() => setCoverPreviewOpen(false)}
+              className="absolute top-4 right-4 h-10 w-10 rounded-full bg-white/10 text-white grid place-items-center hover:bg-white/20"
+            >
+              <XIcon className="h-5 w-5" />
+            </button>
+            <motion.img
+              initial={{ scale: 0.96 }}
+              animate={{ scale: 1 }}
+              exit={{ scale: 0.96 }}
+              src={profile.cover_url}
+              alt="Banner"
+              className="max-w-full max-h-full rounded-2xl object-contain"
+              onClick={(e) => e.stopPropagation()}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Header block */}
       <div className="px-4 sm:px-6 max-w-3xl mx-auto">
