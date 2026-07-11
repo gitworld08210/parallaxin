@@ -4,6 +4,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/AuthProvider";
 import { useOrganizationContext } from "@/contexts/OrganizationProvider";
+import { useCurrentProfile } from "@/hooks/useCurrentProfile";
 import { inviteService } from "@/services/organization/invite.service";
 import { orgKeys } from "@/services/organization/queryKeys";
 import type { InviteWithMeta } from "@/types/organization/invite";
@@ -25,22 +26,31 @@ export const useOrganizationInvites = () => {
   };
 };
 
-/** Pending invites addressed to the signed-in user (accept/decline UI). */
+/**
+ * Pending invites addressed to the signed-in user (accept/decline UI).
+ * Username is read from public.profiles via useCurrentProfile — never from
+ * auth.user_metadata, which is not populated in this project.
+ */
 export const useIncomingInvites = () => {
   const { user } = useAuth();
+  const { profile, loading: profileLoading } = useCurrentProfile();
+  const ready = !!user?.id && !profileLoading;
+
   const query = useQuery({
-    queryKey: user?.id ? orgKeys.incomingInvites(user.id) : ["organization", "incoming-invites", "__anon__"],
+    queryKey: user?.id
+      ? [...orgKeys.incomingInvites(user.id), profile?.username ?? null]
+      : ["organization", "incoming-invites", "__anon__"],
     queryFn: () =>
       inviteService.listIncomingForUser({
-        username: (user?.user_metadata as { username?: string } | undefined)?.username ?? null,
+        username: profile?.username ?? null,
         email: user?.email ?? null,
       }),
-    enabled: !!user?.id,
+    enabled: ready,
     staleTime: 30_000,
   });
   return {
     invites: query.data ?? [],
-    loading: query.isLoading,
+    loading: profileLoading || query.isLoading,
     error: query.error as Error | null,
   };
 };
