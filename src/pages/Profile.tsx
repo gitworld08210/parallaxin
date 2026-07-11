@@ -57,8 +57,9 @@ const Profile = () => {
   const [commentPost, setCommentPost] = useState<string | null>(null);
   const [reportOpen, setReportOpen] = useState(false);
   const [becomeOpen, setBecomeOpen] = useState(false);
-  const [affiliations, setAffiliations] = useState<AffiliationChipData[]>([]);
-  const [orgAdminUsername, setOrgAdminUsername] = useState<string | null>(null);
+  const { memberships } = useUserOrganizations(profile?.user_id ?? null);
+  const primaryMembership = memberships[0] ?? null;
+  const ownerMembership = memberships.find((m) => m.is_owner) ?? null;
 
   const isMe = !username || (me && username === me.username);
 
