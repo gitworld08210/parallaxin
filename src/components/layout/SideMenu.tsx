@@ -3,7 +3,7 @@ import {
   Bookmark, BarChart3, Settings, HelpCircle, BadgeCheck, LogOut, Users,
   Film, Bell, DollarSign, Crown, Moon, Sun, Sparkles, ChevronDown, ChevronRight,
   Building2, Clock, Archive, QrCode, Heart, ShieldCheck, Wallet, Activity,
-  Palette, PlusSquare, LayoutGrid,
+  Palette, PlusSquare, LayoutGrid, MessageCircle,
 } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useAuth } from "@/contexts/AuthProvider";
