@@ -27,8 +27,7 @@ import {
   useUpdateOrganizationSettings,
 } from "@/hooks/organization/useOrganizationSettings";
 
-import { ORG_TYPES as ORG_TYPE_OPTIONS } from "@/lib/orgTypes";
-const ORG_TYPES = ORG_TYPE_OPTIONS.map((o) => o.value);
+import { ORG_TYPES } from "@/lib/orgTypes";
 
 const VISIBILITY_OPTIONS = ["public", "unlisted", "private"];
 
