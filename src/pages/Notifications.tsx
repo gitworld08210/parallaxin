@@ -181,43 +181,74 @@ const Notifications = () => {
 
       <div className="px-2 pb-8">
         {pendingInvites.length > 0 && (
-          <div className="mt-3 mx-1 space-y-2">
-            {pendingInvites.map((inv) => (
-              <div key={inv.id} className="rounded-2xl border border-primary/40 bg-primary/5 p-3 flex items-center gap-3">
-                <div className="h-10 w-10 rounded-xl bg-secondary grid place-items-center">
-                  <Building2 className="h-5 w-5 text-muted-foreground" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm leading-snug">
-                    <span className="font-semibold">
-                      {inv.inviter?.display_name || inv.inviter?.username || "Someone"}
-                    </span>{" "}
-                    <span className="text-muted-foreground">
-                      invited you to join an organization
-                      {inv.role_name ? ` as ${inv.role_name}` : ""}.
+          <div className="mt-3 mx-1 space-y-3">
+            <p className="px-2 text-[11px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
+              Pending invitations
+            </p>
+            {pendingInvites.map((inv) => {
+              const orgName = (inv as any).organization?.name || (inv as any).org_name || "an organization";
+              const orgLogo = (inv as any).organization?.logo_url || (inv as any).org_logo_url || null;
+              const inviterName = inv.inviter?.display_name || inv.inviter?.username || "Someone";
+              return (
+                <div
+                  key={inv.id}
+                  className="relative rounded-2xl border border-primary/30 bg-gradient-to-br from-primary/[0.08] via-background to-background overflow-hidden shadow-sm"
+                >
+                  {/* Official ribbon */}
+                  <div className="flex items-center gap-1.5 px-4 py-1.5 bg-primary/10 border-b border-primary/20">
+                    <Building2 className="h-3 w-3 text-primary" />
+                    <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-primary">
+                      Organization invitation
                     </span>
-                  </p>
+                  </div>
+
+                  <div className="p-4">
+                    <div className="flex items-start gap-3">
+                      <div className="relative shrink-0">
+                        {orgLogo ? (
+                          <img src={orgLogo} alt="" className="h-12 w-12 rounded-xl object-cover ring-1 ring-border" />
+                        ) : (
+                          <div className="h-12 w-12 rounded-xl bg-secondary grid place-items-center ring-1 ring-border">
+                            <Building2 className="h-6 w-6 text-muted-foreground" />
+                          </div>
+                        )}
+                        <span className="absolute -bottom-1 -right-1 h-5 w-5 rounded-full bg-primary grid place-items-center ring-2 ring-background">
+                          <BadgeCheck className="h-3 w-3 text-primary-foreground" strokeWidth={2.5} />
+                        </span>
+                      </div>
+
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[15px] font-bold leading-tight truncate">{orgName}</p>
+                        <p className="text-[13px] text-muted-foreground mt-0.5 leading-snug">
+                          <span className="text-foreground font-medium">{inviterName}</span> invited you to join
+                          {inv.role_name ? (
+                            <> as <span className="text-foreground font-semibold">{inv.role_name}</span></>
+                          ) : null}.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="mt-4 flex items-center gap-2">
+                      <button
+                        onClick={() => respondInvite(inv.invite_token, false)}
+                        disabled={acceptInvite.isPending || declineInvite.isPending}
+                        className="flex-1 h-10 rounded-full border border-border bg-background text-sm font-semibold hover:bg-secondary/60 disabled:opacity-50 active:scale-[0.98] transition"
+                      >
+                        Decline
+                      </button>
+                      <button
+                        onClick={() => respondInvite(inv.invite_token, true)}
+                        disabled={acceptInvite.isPending || declineInvite.isPending}
+                        className="flex-1 h-10 rounded-full bg-primary text-primary-foreground text-sm font-semibold inline-flex items-center justify-center gap-1.5 disabled:opacity-50 active:scale-[0.98] transition shadow-sm"
+                      >
+                        <Check className="h-4 w-4" strokeWidth={2.5} />
+                        Accept
+                      </button>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex flex-col gap-1">
-                  <button
-                    onClick={() => respondInvite(inv.invite_token, true)}
-                    disabled={acceptInvite.isPending || declineInvite.isPending}
-                    className="h-8 w-8 grid place-items-center rounded-full bg-primary text-primary-foreground disabled:opacity-50"
-                    aria-label="Accept"
-                  >
-                    <Check className="h-4 w-4" />
-                  </button>
-                  <button
-                    onClick={() => respondInvite(inv.invite_token, false)}
-                    disabled={acceptInvite.isPending || declineInvite.isPending}
-                    className="h-8 w-8 grid place-items-center rounded-full bg-secondary border border-border disabled:opacity-50"
-                    aria-label="Decline"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
         {items.length === 0 && pendingInvites.length === 0 ? (
