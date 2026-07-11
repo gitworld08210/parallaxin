@@ -631,4 +631,19 @@ const IconBtn = ({
   );
 };
 
+const AboutField = ({ label, value, href }: { label: string; value: string; href?: string }) => (
+  <div className="rounded-xl border border-border bg-card/50 px-3 py-2">
+    <dt className="text-[11px] uppercase tracking-wider text-muted-foreground">{label}</dt>
+    <dd className="text-sm font-medium mt-0.5 truncate">
+      {href ? (
+        <a href={href} target="_blank" rel="noreferrer noopener" className="text-primary hover:underline">
+          {value}
+        </a>
+      ) : (
+        value
+      )}
+    </dd>
+  </div>
+);
+
 export default Profile;
