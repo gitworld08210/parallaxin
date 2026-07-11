@@ -52,8 +52,10 @@ const writeStored = (uid: string, value: Stored) => {
   localStorage.setItem(KEY(uid), JSON.stringify(value));
 };
 
-// Session-scoped unlock so tab-navigation inside Messages doesn't re-prompt.
-const UNLOCK_SESSION_KEY = (uid: string) => `msg_unlocked:${uid}`;
+// Persistent unlock — once the user enters the passcode on this device we
+// remember it, so DM taps don't re-prompt every time. Cleared only if the
+// passcode is reset or storage is wiped.
+const UNLOCK_KEY = (uid: string) => `msg_unlocked:${uid}`;
 
 export const MessagesPasscodeGate = ({ children }: { children: React.ReactNode }) => {
   const { user } = useAuth();
