@@ -223,27 +223,27 @@ const Conversation = () => {
   const otherName = other?.display_name || other?.username || "Conversation";
 
   return (
-    <div className="flex flex-col min-h-screen" style={{ background: "#0a0a0a", color: "white" }}>
+    <div className="flex flex-col min-h-screen" style={{ background: "hsl(var(--background))", color: "hsl(var(--foreground))" }}>
       {/* Header */}
       <header
         className="h-16 px-2 flex items-center gap-2 sticky top-0 z-20 backdrop-blur"
-        style={{ background: "rgba(10,10,10,0.85)", borderBottom: "1px solid rgba(255,255,255,0.06)" }}
+        style={{ background: "hsl(var(--background) / 0.85)", borderBottom: "1px solid hsl(var(--border))" }}
       >
-        <button onClick={() => nav("/messages")} className="h-10 w-10 grid place-items-center rounded-full hover:bg-white/5" aria-label="Back">
-          <ChevronLeft className="h-6 w-6 text-white" />
+        <button onClick={() => nav("/messages")} className="h-10 w-10 grid place-items-center rounded-full hover:bg-muted/40" aria-label="Back">
+          <ChevronLeft className="h-6 w-6 text-foreground" />
         </button>
         <Link to={other ? `/u/${other.username}` : "#"} className="flex items-center gap-3 flex-1 min-w-0">
           <div className="rounded-full p-[2px] shrink-0" style={{ background: `linear-gradient(135deg, ${RED}, #ff3b47)` }}>
             {other?.avatar_url ? (
-              <img src={other.avatar_url} className="h-9 w-9 rounded-full object-cover" style={{ border: "2px solid #0a0a0a" }} alt="" />
+              <img src={other.avatar_url} className="h-9 w-9 rounded-full object-cover" style={{ border: "2px solid hsl(var(--background))" }} alt="" />
             ) : (
-              <div className="h-9 w-9 rounded-full overflow-hidden" style={{ border: "2px solid #0a0a0a" }}>
+              <div className="h-9 w-9 rounded-full overflow-hidden" style={{ border: "2px solid hsl(var(--background))" }}>
                 <AuraAvatar gradient={gradientFor(other?.username)} size="sm" initials={initialsOf(otherName)} />
               </div>
             )}
           </div>
           <div className="min-w-0">
-            <p className="text-[15px] font-semibold truncate leading-tight text-white inline-flex items-center gap-1">
+            <p className="text-[15px] font-semibold truncate leading-tight text-foreground inline-flex items-center gap-1">
               {otherName}
               {other?.verification_kind && <VerificationBadge kind={other.verification_kind as any} />}
             </p>
@@ -252,29 +252,29 @@ const Conversation = () => {
             </p>
           </div>
         </Link>
-        <button className="h-10 w-10 grid place-items-center rounded-full hover:bg-white/5" aria-label="Search">
-          <Search className="h-5 w-5" style={{ color: "rgba(255,255,255,0.85)" }} />
+        <button className="h-10 w-10 grid place-items-center rounded-full hover:bg-muted/40" aria-label="Search">
+          <Search className="h-5 w-5" style={{ color: "hsl(var(--foreground) / 0.9)" }} />
         </button>
         <button
           onClick={() => other && startCall(id!, {
             user_id: other.user_id, username: other.username, display_name: other.display_name, avatar_url: other.avatar_url,
           }, "voice")}
-          className="h-10 w-10 grid place-items-center rounded-full hover:bg-white/5"
+          className="h-10 w-10 grid place-items-center rounded-full hover:bg-muted/40"
           aria-label="Voice call"
         >
-          <Phone className="h-5 w-5" style={{ color: "rgba(255,255,255,0.85)" }} />
+          <Phone className="h-5 w-5" style={{ color: "hsl(var(--foreground) / 0.9)" }} />
         </button>
         <button
           onClick={() => other && startCall(id!, {
             user_id: other.user_id, username: other.username, display_name: other.display_name, avatar_url: other.avatar_url,
           }, "video")}
-          className="h-10 w-10 grid place-items-center rounded-full hover:bg-white/5"
+          className="h-10 w-10 grid place-items-center rounded-full hover:bg-muted/40"
           aria-label="Video call"
         >
-          <Video className="h-5 w-5" style={{ color: "rgba(255,255,255,0.85)" }} />
+          <Video className="h-5 w-5" style={{ color: "hsl(var(--foreground) / 0.9)" }} />
         </button>
-        <button className="h-10 w-10 grid place-items-center rounded-full hover:bg-white/5" aria-label="More">
-          <MoreVertical className="h-5 w-5" style={{ color: "rgba(255,255,255,0.85)" }} />
+        <button className="h-10 w-10 grid place-items-center rounded-full hover:bg-muted/40" aria-label="More">
+          <MoreVertical className="h-5 w-5" style={{ color: "hsl(var(--foreground) / 0.9)" }} />
         </button>
       </header>
 
@@ -286,7 +286,7 @@ const Conversation = () => {
               <div key={r.key} className="flex justify-center my-3">
                 <span
                   className="text-[11px] font-medium px-3 py-1 rounded-full"
-                  style={{ background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.7)" }}
+                  style={{ background: "hsl(var(--border))", color: "hsl(var(--muted-foreground))" }}
                 >
                   {r.label}
                 </span>
@@ -306,13 +306,13 @@ const Conversation = () => {
           const bubbleStyle: React.CSSProperties = mine
             ? {
                 background: `linear-gradient(135deg, #7a1014 0%, ${RED} 100%)`,
-                color: "white",
+                color: "hsl(var(--foreground))",
                 boxShadow: `0 4px 16px ${RED}33`,
                 ...radius,
               }
             : {
-                background: "#1f1f1f",
-                color: "white",
+                background: "hsl(var(--secondary))",
+                color: "hsl(var(--foreground))",
                 ...radius,
               };
 
@@ -338,13 +338,13 @@ const Conversation = () => {
                 {m.media_type === "audio" && m.media_url && <VoiceBubble url={m.media_url} mine={mine} />}
                 {m.content && <p className="whitespace-pre-wrap break-words">{m.content}</p>}
                 <div className="flex items-center justify-end gap-1 mt-0.5 -mb-0.5">
-                  <span className="text-[10px]" style={{ color: mine ? "rgba(255,255,255,0.75)" : "rgba(255,255,255,0.45)" }}>
+                  <span className="text-[10px]" style={{ color: mine ? "hsl(var(--foreground) / 0.75)" : "hsl(var(--muted-foreground))" }}>
                     {fmtTime(m.created_at)}
                   </span>
                   {mine && (
                     m.read_at
                       ? <CheckCheck className="h-3.5 w-3.5" style={{ color: "#ffd1d3" }} />
-                      : <Check className="h-3.5 w-3.5" style={{ color: "rgba(255,255,255,0.75)" }} />
+                      : <Check className="h-3.5 w-3.5" style={{ color: "hsl(var(--foreground) / 0.75)" }} />
                   )}
                 </div>
               </div>
@@ -353,10 +353,10 @@ const Conversation = () => {
         })}
         {otherTyping && (
           <div className="flex justify-start">
-            <div className="rounded-2xl rounded-bl-md px-3.5 py-3 inline-flex gap-1" style={{ background: "#1f1f1f" }}>
-              <span className="h-1.5 w-1.5 rounded-full animate-bounce" style={{ background: "rgba(255,255,255,0.6)", animationDelay: "0ms" }} />
-              <span className="h-1.5 w-1.5 rounded-full animate-bounce" style={{ background: "rgba(255,255,255,0.6)", animationDelay: "150ms" }} />
-              <span className="h-1.5 w-1.5 rounded-full animate-bounce" style={{ background: "rgba(255,255,255,0.6)", animationDelay: "300ms" }} />
+            <div className="rounded-2xl rounded-bl-md px-3.5 py-3 inline-flex gap-1" style={{ background: "hsl(var(--secondary))" }}>
+              <span className="h-1.5 w-1.5 rounded-full animate-bounce" style={{ background: "hsl(var(--muted-foreground))", animationDelay: "0ms" }} />
+              <span className="h-1.5 w-1.5 rounded-full animate-bounce" style={{ background: "hsl(var(--muted-foreground))", animationDelay: "150ms" }} />
+              <span className="h-1.5 w-1.5 rounded-full animate-bounce" style={{ background: "hsl(var(--muted-foreground))", animationDelay: "300ms" }} />
             </div>
           </div>
         )}
@@ -367,7 +367,7 @@ const Conversation = () => {
       <form
         onSubmit={send}
         className="fixed bottom-14 inset-x-0 mx-auto max-w-md p-3 flex flex-col gap-2"
-        style={{ background: "#0a0a0a", borderTop: "1px solid rgba(255,255,255,0.06)" }}
+        style={{ background: "hsl(var(--background))", borderTop: "1px solid hsl(var(--border))" }}
       >
         {aiSuggestions.length > 0 && (
           <div className="flex gap-1.5 overflow-x-auto -mx-1 px-1 pb-1">
@@ -387,19 +387,19 @@ const Conversation = () => {
         <div className="flex gap-2 items-center">
           <div
             className="flex items-center gap-2 flex-1 rounded-full px-3"
-            style={{ background: "#1a1a1a", border: "1px solid rgba(255,255,255,0.06)" }}
+            style={{ background: "hsl(var(--secondary))", border: "1px solid hsl(var(--border))" }}
           >
             <button type="button" className="h-9 w-9 grid place-items-center -ml-1" aria-label="Attach">
-              <Paperclip className="h-5 w-5" style={{ color: "rgba(255,255,255,0.6)" }} />
+              <Paperclip className="h-5 w-5" style={{ color: "hsl(var(--muted-foreground))" }} />
             </button>
             <input
               value={text}
               onChange={(e) => onType(e.target.value)}
               placeholder={`Message ${other?.display_name || other?.username || ""}…`}
-              className="flex-1 bg-transparent outline-none text-sm py-2.5 text-white placeholder:text-white/40"
+              className="flex-1 bg-transparent outline-none text-sm py-2.5 text-foreground placeholder:text-muted-foreground"
             />
             <button type="button" className="h-9 w-9 grid place-items-center" aria-label="Emoji">
-              <Smile className="h-5 w-5" style={{ color: "rgba(255,255,255,0.6)" }} />
+              <Smile className="h-5 w-5" style={{ color: "hsl(var(--muted-foreground))" }} />
             </button>
           </div>
           {text.trim() ? (
@@ -409,7 +409,7 @@ const Conversation = () => {
               style={{ background: RED, boxShadow: `0 6px 20px ${RED}66` }}
               aria-label="Send"
             >
-              <Send className="h-5 w-5 text-white" />
+              <Send className="h-5 w-5 text-foreground" />
             </button>
           ) : user ? (
             <div
