@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Heart, MessageCircle, UserPlus, Mail, Bell, BadgeCheck, Crown, SlidersHorizontal, Users, Building2, Check, X } from "lucide-react";
 import { CollabInviteSheet } from "@/components/social/CollabInviteSheet";
 import { AuraAvatar } from "@/components/vibe/AuraAvatar";
@@ -69,9 +69,41 @@ const Notifications = () => {
   const [items, setItems] = useState<N[]>([]);
   const [collabOpen, setCollabOpen] = useState(false);
 
+  const nav = useNavigate();
+
   // Organization invites (join-workspace flow).
   const { invites: pendingInvites } = useIncomingInvites();
   const { accept: acceptInvite, decline: declineInvite } = useIncomingInviteActions();
+
+  const openInvite = async (organizationId: string | null) => {
+    if (!organizationId) {
+      toast.error("Invitation not found");
+      return;
+    }
+    // Prefer the cached pending list; fall back to a direct lookup so this
+    // works even when the useIncomingInvites hook missed the row.
+    const cached = pendingInvites.find(
+      (i: any) => (i.organization_id || i.organization?.id) === organizationId,
+    );
+    let token = (cached as any)?.invite_token as string | undefined;
+    if (!token) {
+      const { data } = await supabase
+        .from("organization_invites")
+        .select("invite_token")
+        .eq("organization_id", organizationId)
+        .eq("status", "pending")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      token = (data as any)?.invite_token;
+    }
+    if (!token) {
+      toast.info("This invitation is no longer available.");
+      return;
+    }
+    nav(`/invite/${token}`);
+  };
+
 
   const respondInvite = async (token: string, accept: boolean) => {
     try {
@@ -185,21 +217,17 @@ const Notifications = () => {
       );
     }
     if (n.type === "organization_invite" || n.type === "affiliation_invite") {
-      const token = n.organization_id ? inviteTokenByOrg[n.organization_id] : undefined;
-      if (token) {
-        return <Link to={`/invite/${token}`} key={n.id} className={cls}>{inner}</Link>;
-      }
-      // No pending invite found (already answered / expired) — show a toast instead of routing to the profile.
       return (
         <button
           key={n.id}
-          onClick={() => toast.info("This invitation is no longer available.")}
+          onClick={() => openInvite(n.organization_id)}
           className={cls}
         >
           {inner}
         </button>
       );
     }
+
     const to = system
       ? (n.type.startsWith("founder_") ? "/hall-of-founders" : "/profile")
       : n.post_id ? `/p/${n.post_id}` : n.actor ? `/u/${n.actor.username}` : null;
