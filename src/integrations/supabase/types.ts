@@ -3218,6 +3218,50 @@ export type Database = {
         }
         Relationships: []
       }
+      executive_login_events: {
+        Row: {
+          created_at: string
+          device_id: string | null
+          event_type: string
+          id: string
+          ip: unknown
+          metadata: Json
+          outcome: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          device_id?: string | null
+          event_type: string
+          id?: string
+          ip?: unknown
+          metadata?: Json
+          outcome?: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          device_id?: string | null
+          event_type?: string
+          id?: string
+          ip?: unknown
+          metadata?: Json
+          outcome?: string
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "executive_login_events_device_id_fkey"
+            columns: ["device_id"]
+            isOneToOne: false
+            referencedRelation: "executive_trusted_devices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       executive_maintenance_windows: {
         Row: {
           created_at: string
@@ -3260,6 +3304,39 @@ export type Database = {
         }
         Relationships: []
       }
+      executive_mfa_settings: {
+        Row: {
+          created_at: string
+          id: string
+          is_enabled: boolean
+          method: string
+          secret_ref: string | null
+          updated_at: string
+          user_id: string
+          verified_at: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_enabled?: boolean
+          method: string
+          secret_ref?: string | null
+          updated_at?: string
+          user_id: string
+          verified_at?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_enabled?: boolean
+          method?: string
+          secret_ref?: string | null
+          updated_at?: string
+          user_id?: string
+          verified_at?: string | null
+        }
+        Relationships: []
+      }
       executive_notes: {
         Row: {
           author_id: string
@@ -3294,6 +3371,99 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      executive_password_history: {
+        Row: {
+          changed_by: string | null
+          created_at: string
+          id: string
+          ip: unknown
+          password_hash: string
+          user_id: string
+        }
+        Insert: {
+          changed_by?: string | null
+          created_at?: string
+          id?: string
+          ip?: unknown
+          password_hash: string
+          user_id: string
+        }
+        Update: {
+          changed_by?: string | null
+          created_at?: string
+          id?: string
+          ip?: unknown
+          password_hash?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      executive_recovery_codes: {
+        Row: {
+          code_hash: string
+          created_at: string
+          id: string
+          is_used: boolean
+          used_at: string | null
+          user_id: string
+        }
+        Insert: {
+          code_hash: string
+          created_at?: string
+          id?: string
+          is_used?: boolean
+          used_at?: string | null
+          user_id: string
+        }
+        Update: {
+          code_hash?: string
+          created_at?: string
+          id?: string
+          is_used?: boolean
+          used_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      executive_recovery_methods: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          is_verified: boolean
+          label: string | null
+          metadata: Json
+          method_type: string
+          updated_at: string
+          user_id: string
+          value: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          is_verified?: boolean
+          label?: string | null
+          metadata?: Json
+          method_type: string
+          updated_at?: string
+          user_id: string
+          value?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          is_verified?: boolean
+          label?: string | null
+          metadata?: Json
+          method_type?: string
+          updated_at?: string
+          user_id?: string
+          value?: string | null
+        }
+        Relationships: []
       }
       executive_report_definitions: {
         Row: {
@@ -3579,6 +3749,105 @@ export type Database = {
           },
         ]
       }
+      executive_security_alerts: {
+        Row: {
+          acknowledged_at: string | null
+          acknowledged_by: string | null
+          alert_type: string
+          created_at: string
+          description: string | null
+          id: string
+          is_acknowledged: boolean
+          metadata: Json
+          severity: string
+          title: string
+          user_id: string
+        }
+        Insert: {
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          alert_type: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_acknowledged?: boolean
+          metadata?: Json
+          severity?: string
+          title: string
+          user_id: string
+        }
+        Update: {
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          alert_type?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_acknowledged?: boolean
+          metadata?: Json
+          severity?: string
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      executive_security_policies: {
+        Row: {
+          created_at: string
+          device_approval_required: boolean
+          failed_login_threshold: number
+          id: string
+          max_concurrent_sessions: number
+          mfa_required: boolean
+          password_expiry_days: number
+          password_history_depth: number
+          password_min_length: number
+          password_require_lowercase: boolean
+          password_require_number: boolean
+          password_require_symbol: boolean
+          password_require_uppercase: boolean
+          session_timeout_minutes: number
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          device_approval_required?: boolean
+          failed_login_threshold?: number
+          id?: string
+          max_concurrent_sessions?: number
+          mfa_required?: boolean
+          password_expiry_days?: number
+          password_history_depth?: number
+          password_min_length?: number
+          password_require_lowercase?: boolean
+          password_require_number?: boolean
+          password_require_symbol?: boolean
+          password_require_uppercase?: boolean
+          session_timeout_minutes?: number
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          device_approval_required?: boolean
+          failed_login_threshold?: number
+          id?: string
+          max_concurrent_sessions?: number
+          mfa_required?: boolean
+          password_expiry_days?: number
+          password_history_depth?: number
+          password_min_length?: number
+          password_require_lowercase?: boolean
+          password_require_number?: boolean
+          password_require_symbol?: boolean
+          password_require_uppercase?: boolean
+          session_timeout_minutes?: number
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       executive_system_status: {
         Row: {
           id: string
@@ -3606,6 +3875,54 @@ export type Database = {
           service?: string
           status?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      executive_trusted_devices: {
+        Row: {
+          browser: string | null
+          created_at: string
+          device_fingerprint: string | null
+          device_name: string
+          id: string
+          is_approved: boolean
+          last_ip: unknown
+          last_used_at: string | null
+          metadata: Json
+          os: string | null
+          risk_level: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          browser?: string | null
+          created_at?: string
+          device_fingerprint?: string | null
+          device_name: string
+          id?: string
+          is_approved?: boolean
+          last_ip?: unknown
+          last_used_at?: string | null
+          metadata?: Json
+          os?: string | null
+          risk_level?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          browser?: string | null
+          created_at?: string
+          device_fingerprint?: string | null
+          device_name?: string
+          id?: string
+          is_approved?: boolean
+          last_ip?: unknown
+          last_used_at?: string | null
+          metadata?: Json
+          os?: string | null
+          risk_level?: string
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
