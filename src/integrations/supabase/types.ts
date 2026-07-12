@@ -11925,6 +11925,447 @@ export type Database = {
         }
         Relationships: []
       }
+      ver_affiliations: {
+        Row: {
+          affiliation_kind: Database["public"]["Enums"]["ver_affiliation_kind"]
+          approved_by: string | null
+          badge_id: string | null
+          created_at: string
+          effective_from: string
+          effective_to: string | null
+          id: string
+          metadata: Json
+          organization_id: string | null
+          organization_name: string
+          role_label: string | null
+          status: Database["public"]["Enums"]["ver_status"]
+          subject_user_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          affiliation_kind: Database["public"]["Enums"]["ver_affiliation_kind"]
+          approved_by?: string | null
+          badge_id?: string | null
+          created_at?: string
+          effective_from?: string
+          effective_to?: string | null
+          id?: string
+          metadata?: Json
+          organization_id?: string | null
+          organization_name: string
+          role_label?: string | null
+          status?: Database["public"]["Enums"]["ver_status"]
+          subject_user_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          affiliation_kind?: Database["public"]["Enums"]["ver_affiliation_kind"]
+          approved_by?: string | null
+          badge_id?: string | null
+          created_at?: string
+          effective_from?: string
+          effective_to?: string | null
+          id?: string
+          metadata?: Json
+          organization_id?: string | null
+          organization_name?: string
+          role_label?: string | null
+          status?: Database["public"]["Enums"]["ver_status"]
+          subject_user_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ver_affiliations_badge_id_fkey"
+            columns: ["badge_id"]
+            isOneToOne: false
+            referencedRelation: "ver_badges"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ver_appeals: {
+        Row: {
+          application_id: string
+          created_at: string
+          decided_at: string | null
+          decision_notes: string | null
+          evidence: Json
+          filed_by: string | null
+          id: string
+          original_review_id: string | null
+          reason: string
+          reviewer_id: string | null
+          status: Database["public"]["Enums"]["ver_status"]
+          updated_at: string
+        }
+        Insert: {
+          application_id: string
+          created_at?: string
+          decided_at?: string | null
+          decision_notes?: string | null
+          evidence?: Json
+          filed_by?: string | null
+          id?: string
+          original_review_id?: string | null
+          reason: string
+          reviewer_id?: string | null
+          status?: Database["public"]["Enums"]["ver_status"]
+          updated_at?: string
+        }
+        Update: {
+          application_id?: string
+          created_at?: string
+          decided_at?: string | null
+          decision_notes?: string | null
+          evidence?: Json
+          filed_by?: string | null
+          id?: string
+          original_review_id?: string | null
+          reason?: string
+          reviewer_id?: string | null
+          status?: Database["public"]["Enums"]["ver_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ver_appeals_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "ver_applications"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ver_appeals_original_review_id_fkey"
+            columns: ["original_review_id"]
+            isOneToOne: false
+            referencedRelation: "ver_reviews"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ver_applications: {
+        Row: {
+          application_number: string
+          assigned_to: string | null
+          created_at: string
+          decided_at: string | null
+          id: string
+          metadata: Json
+          priority: string
+          requires_dual_review: boolean
+          status: Database["public"]["Enums"]["ver_status"]
+          subject_display_name: string
+          subject_org_id: string | null
+          subject_user_id: string | null
+          submission_notes: string | null
+          submitted_at: string
+          submitted_by: string | null
+          updated_at: string
+          ver_type: Database["public"]["Enums"]["ver_type"]
+        }
+        Insert: {
+          application_number: string
+          assigned_to?: string | null
+          created_at?: string
+          decided_at?: string | null
+          id?: string
+          metadata?: Json
+          priority?: string
+          requires_dual_review?: boolean
+          status?: Database["public"]["Enums"]["ver_status"]
+          subject_display_name: string
+          subject_org_id?: string | null
+          subject_user_id?: string | null
+          submission_notes?: string | null
+          submitted_at?: string
+          submitted_by?: string | null
+          updated_at?: string
+          ver_type: Database["public"]["Enums"]["ver_type"]
+        }
+        Update: {
+          application_number?: string
+          assigned_to?: string | null
+          created_at?: string
+          decided_at?: string | null
+          id?: string
+          metadata?: Json
+          priority?: string
+          requires_dual_review?: boolean
+          status?: Database["public"]["Enums"]["ver_status"]
+          subject_display_name?: string
+          subject_org_id?: string | null
+          subject_user_id?: string | null
+          submission_notes?: string | null
+          submitted_at?: string
+          submitted_by?: string | null
+          updated_at?: string
+          ver_type?: Database["public"]["Enums"]["ver_type"]
+        }
+        Relationships: []
+      }
+      ver_badges: {
+        Row: {
+          application_id: string | null
+          badge_kind: Database["public"]["Enums"]["ver_badge_kind"]
+          created_at: string
+          expires_at: string | null
+          id: string
+          issued_at: string
+          issued_by: string | null
+          metadata: Json
+          revoked_at: string | null
+          revoked_reason: string | null
+          status: Database["public"]["Enums"]["ver_status"]
+          subject_org_id: string | null
+          subject_user_id: string | null
+          updated_at: string
+          verification_id: string
+        }
+        Insert: {
+          application_id?: string | null
+          badge_kind: Database["public"]["Enums"]["ver_badge_kind"]
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          issued_at?: string
+          issued_by?: string | null
+          metadata?: Json
+          revoked_at?: string | null
+          revoked_reason?: string | null
+          status?: Database["public"]["Enums"]["ver_status"]
+          subject_org_id?: string | null
+          subject_user_id?: string | null
+          updated_at?: string
+          verification_id: string
+        }
+        Update: {
+          application_id?: string | null
+          badge_kind?: Database["public"]["Enums"]["ver_badge_kind"]
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          issued_at?: string
+          issued_by?: string | null
+          metadata?: Json
+          revoked_at?: string | null
+          revoked_reason?: string | null
+          status?: Database["public"]["Enums"]["ver_status"]
+          subject_org_id?: string | null
+          subject_user_id?: string | null
+          updated_at?: string
+          verification_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ver_badges_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "ver_applications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ver_documents: {
+        Row: {
+          application_id: string
+          content_hash: string | null
+          created_at: string
+          doc_type: string
+          file_name: string | null
+          file_url: string
+          id: string
+          notes: string | null
+          uploaded_by: string | null
+        }
+        Insert: {
+          application_id: string
+          content_hash?: string | null
+          created_at?: string
+          doc_type: string
+          file_name?: string | null
+          file_url: string
+          id?: string
+          notes?: string | null
+          uploaded_by?: string | null
+        }
+        Update: {
+          application_id?: string
+          content_hash?: string | null
+          created_at?: string
+          doc_type?: string
+          file_name?: string | null
+          file_url?: string
+          id?: string
+          notes?: string | null
+          uploaded_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ver_documents_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "ver_applications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ver_history: {
+        Row: {
+          actor_id: string | null
+          affiliation_id: string | null
+          application_id: string | null
+          badge_id: string | null
+          created_at: string
+          details: Json
+          event_type: string
+          id: string
+        }
+        Insert: {
+          actor_id?: string | null
+          affiliation_id?: string | null
+          application_id?: string | null
+          badge_id?: string | null
+          created_at?: string
+          details?: Json
+          event_type: string
+          id?: string
+        }
+        Update: {
+          actor_id?: string | null
+          affiliation_id?: string | null
+          application_id?: string | null
+          badge_id?: string | null
+          created_at?: string
+          details?: Json
+          event_type?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ver_history_affiliation_id_fkey"
+            columns: ["affiliation_id"]
+            isOneToOne: false
+            referencedRelation: "ver_affiliations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ver_history_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "ver_applications"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ver_history_badge_id_fkey"
+            columns: ["badge_id"]
+            isOneToOne: false
+            referencedRelation: "ver_badges"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ver_renewals: {
+        Row: {
+          application_id: string | null
+          badge_id: string
+          created_at: string
+          decided_by: string | null
+          decision_notes: string | null
+          id: string
+          new_expiry: string | null
+          reminder_sent_at: string | null
+          status: Database["public"]["Enums"]["ver_status"]
+          updated_at: string
+        }
+        Insert: {
+          application_id?: string | null
+          badge_id: string
+          created_at?: string
+          decided_by?: string | null
+          decision_notes?: string | null
+          id?: string
+          new_expiry?: string | null
+          reminder_sent_at?: string | null
+          status?: Database["public"]["Enums"]["ver_status"]
+          updated_at?: string
+        }
+        Update: {
+          application_id?: string | null
+          badge_id?: string
+          created_at?: string
+          decided_by?: string | null
+          decision_notes?: string | null
+          id?: string
+          new_expiry?: string | null
+          reminder_sent_at?: string | null
+          status?: Database["public"]["Enums"]["ver_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ver_renewals_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "ver_applications"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ver_renewals_badge_id_fkey"
+            columns: ["badge_id"]
+            isOneToOne: false
+            referencedRelation: "ver_badges"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ver_reviews: {
+        Row: {
+          application_id: string
+          created_at: string
+          decision: Database["public"]["Enums"]["ver_status"]
+          evidence: Json
+          id: string
+          is_final: boolean
+          policy_refs: string[]
+          reason: string
+          reviewer_id: string
+          round: number
+        }
+        Insert: {
+          application_id: string
+          created_at?: string
+          decision: Database["public"]["Enums"]["ver_status"]
+          evidence?: Json
+          id?: string
+          is_final?: boolean
+          policy_refs?: string[]
+          reason: string
+          reviewer_id: string
+          round?: number
+        }
+        Update: {
+          application_id?: string
+          created_at?: string
+          decision?: Database["public"]["Enums"]["ver_status"]
+          evidence?: Json
+          id?: string
+          is_final?: boolean
+          policy_refs?: string[]
+          reason?: string
+          reviewer_id?: string
+          round?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ver_reviews_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "ver_applications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       verification_requests: {
         Row: {
           approved: boolean
@@ -12307,6 +12748,7 @@ export type Database = {
         Returns: boolean
       }
       is_trust_safety_staff: { Args: { _user_id: string }; Returns: boolean }
+      is_verification_staff: { Args: { _user: string }; Returns: boolean }
       kip_can_access_collection: {
         Args: { _collection_id: string; _user_id: string }
         Returns: boolean
@@ -12868,6 +13310,38 @@ export type Database = {
         | "deputy_head"
         | "team_lead"
         | "specialist"
+      ver_affiliation_kind:
+        | "employee_org"
+        | "creator_brand"
+        | "executive_company"
+        | "partner_org"
+      ver_badge_kind:
+        | "blue"
+        | "organization"
+        | "business"
+        | "employee_affiliation"
+        | "creator"
+        | "public_figure"
+        | "government"
+        | "education"
+      ver_status:
+        | "pending"
+        | "under_review"
+        | "info_required"
+        | "approved"
+        | "rejected"
+        | "suspended"
+        | "revoked"
+        | "expired"
+      ver_type:
+        | "individual"
+        | "creator"
+        | "organization"
+        | "business"
+        | "employee"
+        | "public_figure"
+        | "government"
+        | "education"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -13362,6 +13836,42 @@ export const Constants = {
         "deputy_head",
         "team_lead",
         "specialist",
+      ],
+      ver_affiliation_kind: [
+        "employee_org",
+        "creator_brand",
+        "executive_company",
+        "partner_org",
+      ],
+      ver_badge_kind: [
+        "blue",
+        "organization",
+        "business",
+        "employee_affiliation",
+        "creator",
+        "public_figure",
+        "government",
+        "education",
+      ],
+      ver_status: [
+        "pending",
+        "under_review",
+        "info_required",
+        "approved",
+        "rejected",
+        "suspended",
+        "revoked",
+        "expired",
+      ],
+      ver_type: [
+        "individual",
+        "creator",
+        "organization",
+        "business",
+        "employee",
+        "public_figure",
+        "government",
+        "education",
       ],
     },
   },
