@@ -402,6 +402,15 @@ const App = () => (
                   <Route path="people-ops/attendance/holidays" element={<HolidayCalendar />} />
                   <Route path="people-ops/attendance/corrections" element={<AttendanceCorrections />} />
                   <Route path="people-ops/attendance/availability" element={<WorkforceAvailability />} />
+                  <Route path="people-ops/payroll" element={<PayrollIndex />} />
+                  <Route path="people-ops/payroll/cycles" element={<PayrollCycles />} />
+                  <Route path="people-ops/payroll/cycles/:id" element={<PayrollCycleDetail />} />
+                  <Route path="people-ops/payroll/plans" element={<CompensationPlansPage />} />
+                  <Route path="people-ops/payroll/salaries" element={<SalaryStructuresPage />} />
+                  <Route path="people-ops/payroll/revisions" element={<SalaryRevisionsPage />} />
+                  <Route path="people-ops/payroll/bonuses" element={<BonusCenter />} />
+                  <Route path="people-ops/payroll/benefits" element={<BenefitsCenter />} />
+                  <Route path="people-ops/payroll/reimbursements" element={<ReimbursementCenter />} />
                   <Route
                     path="founder-office"
                     element={<FounderOfficeDashboard />}
