@@ -52,7 +52,7 @@ export const usePassport = (employeeId?: string) =>
              joining_date, exit_date, photo_url, level,
              department:admin_departments!employees_department_id_fkey(id,name,slug),
              role:admin_roles!employees_role_id_fkey(id,name),
-             reporting_manager:employees!employees_reporting_manager_id_fkey(id,full_name,employee_number)`,
+             reporting_manager:employees!reporting_manager_id(id,full_name,employee_number)`,
           )
           .eq("id", employeeId!)
           .maybeSingle(),
