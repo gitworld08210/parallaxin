@@ -268,6 +268,9 @@ const WatchlistPanelPage = lazy(() => import("./pages/admin-os/executive/command
 const FounderOfficeDashboard = lazy(
   () => import("./pages/admin-os/founder-office/FounderOfficeDashboard"),
 );
+const AppointmentsPanel = lazy(
+  () => import("./pages/admin-os/founder-office/AppointmentsPanel"),
+);
 const AuditCenter = lazy(() => import("./pages/admin-os/audit/AuditCenter"));
 const DepartmentsIndex = lazy(
   () => import("./pages/admin-os/departments/DepartmentsIndex"),
@@ -700,8 +703,13 @@ const App = () => (
                     path="founder-office"
                     element={<FounderOfficeDashboard />}
                   />
+                  <Route
+                    path="founder-office/appointments"
+                    element={<AppointmentsPanel />}
+                  />
                   <Route path="audit" element={<AuditCenter />} />
                   <Route path="departments" element={<DepartmentsIndex />} />
+                  <Route path="departments/:id" element={<DepartmentDetail />} />
                   <Route path="departments/:id" element={<DepartmentDetail />} />
                   <Route path="trust-safety" element={<TrustSafetyShell />}>
                     <Route index element={<TsDashboard />} />
