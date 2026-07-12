@@ -320,7 +320,7 @@ const FinProcurementCenter = lazy(() => import("./pages/admin-os/finance-legal/P
 const FinVendorCenter = lazy(() => import("./pages/admin-os/finance-legal/VendorCenter"));
 const FinContractCenter = lazy(() => import("./pages/admin-os/finance-legal/ContractCenter"));
 const FinComplianceDashboard = lazy(() => import("./pages/admin-os/finance-legal/ComplianceDashboard"));
-const SecurityShell = lazy(() => import("./pages/admin-os/security/SecurityShell"));
+const SecurityDeptShell = lazy(() => import("./pages/admin-os/security/SecurityShell"));
 const SecurityDashboardPage = lazy(() => import("./pages/admin-os/security/SecurityDashboard"));
 const SecIncidentCenter = lazy(() => import("./pages/admin-os/security/IncidentCenter"));
 const SecIncidentWorkspace = lazy(() => import("./pages/admin-os/security/IncidentWorkspace"));
