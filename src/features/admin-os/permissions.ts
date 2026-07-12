@@ -38,6 +38,19 @@ export const ADMIN_PERMISSIONS = {
 
   FOUNDER_OFFICE_ACCESS: "founder_office.access",
   FOUNDER_OFFICE_OVERRIDES: "founder_office.overrides",
+
+  // Platform engines (Phase 1.12)
+  APPROVALS_VIEW: "approvals.view",
+  APPROVALS_DECIDE: "approvals.decide",
+  WORKFLOWS_VIEW: "workflows.view",
+  WORKFLOWS_MANAGE: "workflows.manage",
+  PLATFORM_ACTIVITY_VIEW: "platform.activity.view",
+  ASSIGNMENTS_VIEW: "assignments.view",
+  ASSIGNMENTS_MANAGE: "assignments.manage",
+  DOCUMENTS_VIEW: "documents.view",
+  REPORTS_VIEW: "reports.view",
+  DASHBOARDS_VIEW: "dashboards.view",
+  SCHEDULER_VIEW: "scheduler.view",
 } as const;
 
 export type AdminPermissionKey =

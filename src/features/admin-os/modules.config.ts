@@ -22,6 +22,7 @@ import {
   Ticket,
   ScrollText,
   Settings,
+  Layers,
   type LucideIcon,
 } from "lucide-react";
 import {
@@ -166,6 +167,15 @@ export const ADMIN_MODULES: AdminModule[] = [
     permission: ADMIN_PERMISSIONS.ADS_VIEW,
     section: "platform",
     phase: "3.2",
+  },
+  {
+    slug: "platform",
+    label: "Platform Engines",
+    tagline: "Approvals, workflows, docs, more",
+    icon: Layers,
+    permission: ADMIN_PERMISSIONS.ADMIN_OS_ACCESS,
+    section: "platform",
+    phase: "1.12",
   },
 
   // Governance
