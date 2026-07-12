@@ -320,6 +320,8 @@ const App = () => (
                   <Route path="people-ops/movements" element={<MovementCenter />} />
                   <Route path="people-ops/movements/new" element={<MovementWizard />} />
                   <Route path="people-ops/movements/:id" element={<MovementDetail />} />
+                  <Route path="people-ops/reporting" element={<ReportingStructure />} />
+                  <Route path="people-ops/documents" element={<DocumentsCenter />} />
                   <Route
                     path="founder-office"
                     element={<FounderOfficeDashboard />}
