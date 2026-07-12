@@ -11543,6 +11543,349 @@ export type Database = {
           },
         ]
       }
+      ts_appeals: {
+        Row: {
+          appellant_id: string | null
+          case_id: string
+          created_at: string
+          decided_at: string | null
+          decision: string | null
+          decision_notes: string | null
+          enforcement_action_id: string | null
+          id: string
+          reason: string
+          reviewer_id: string | null
+          status: string
+        }
+        Insert: {
+          appellant_id?: string | null
+          case_id: string
+          created_at?: string
+          decided_at?: string | null
+          decision?: string | null
+          decision_notes?: string | null
+          enforcement_action_id?: string | null
+          id?: string
+          reason: string
+          reviewer_id?: string | null
+          status?: string
+        }
+        Update: {
+          appellant_id?: string | null
+          case_id?: string
+          created_at?: string
+          decided_at?: string | null
+          decision?: string | null
+          decision_notes?: string | null
+          enforcement_action_id?: string | null
+          id?: string
+          reason?: string
+          reviewer_id?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ts_appeals_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "ts_cases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ts_appeals_enforcement_action_id_fkey"
+            columns: ["enforcement_action_id"]
+            isOneToOne: false
+            referencedRelation: "ts_enforcement_actions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ts_case_timeline: {
+        Row: {
+          actor_id: string | null
+          case_id: string
+          created_at: string
+          description: string | null
+          event_type: string
+          id: string
+          metadata: Json
+        }
+        Insert: {
+          actor_id?: string | null
+          case_id: string
+          created_at?: string
+          description?: string | null
+          event_type: string
+          id?: string
+          metadata?: Json
+        }
+        Update: {
+          actor_id?: string | null
+          case_id?: string
+          created_at?: string
+          description?: string | null
+          event_type?: string
+          id?: string
+          metadata?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ts_case_timeline_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "ts_cases"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ts_cases: {
+        Row: {
+          assigned_to: string | null
+          case_number: string
+          category: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          priority: string
+          reporter_id: string | null
+          requires_founder_review: boolean
+          resolved_at: string | null
+          severity: string
+          source: string
+          status: string
+          subject_content_id: string | null
+          subject_content_type: string | null
+          subject_org_id: string | null
+          subject_user_id: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          case_number?: string
+          category: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          priority?: string
+          reporter_id?: string | null
+          requires_founder_review?: boolean
+          resolved_at?: string | null
+          severity?: string
+          source?: string
+          status?: string
+          subject_content_id?: string | null
+          subject_content_type?: string | null
+          subject_org_id?: string | null
+          subject_user_id?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_to?: string | null
+          case_number?: string
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          priority?: string
+          reporter_id?: string | null
+          requires_founder_review?: boolean
+          resolved_at?: string | null
+          severity?: string
+          source?: string
+          status?: string
+          subject_content_id?: string | null
+          subject_content_type?: string | null
+          subject_org_id?: string | null
+          subject_user_id?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ts_cases_subject_org_id_fkey"
+            columns: ["subject_org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ts_enforcement_actions: {
+        Row: {
+          action_type: string
+          approver_id: string | null
+          case_id: string
+          created_at: string
+          created_by: string | null
+          effective_from: string
+          effective_until: string | null
+          evidence_ids: Json
+          id: string
+          is_active: boolean
+          policy_reference: string
+          reason: string
+          target_id: string | null
+          target_type: string
+        }
+        Insert: {
+          action_type: string
+          approver_id?: string | null
+          case_id: string
+          created_at?: string
+          created_by?: string | null
+          effective_from?: string
+          effective_until?: string | null
+          evidence_ids?: Json
+          id?: string
+          is_active?: boolean
+          policy_reference: string
+          reason: string
+          target_id?: string | null
+          target_type: string
+        }
+        Update: {
+          action_type?: string
+          approver_id?: string | null
+          case_id?: string
+          created_at?: string
+          created_by?: string | null
+          effective_from?: string
+          effective_until?: string | null
+          evidence_ids?: Json
+          id?: string
+          is_active?: boolean
+          policy_reference?: string
+          reason?: string
+          target_id?: string | null
+          target_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ts_enforcement_actions_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "ts_cases"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ts_evidence: {
+        Row: {
+          case_id: string
+          content: string | null
+          description: string | null
+          evidence_type: string
+          file_url: string | null
+          id: string
+          is_locked: boolean
+          submitted_at: string
+          submitted_by: string | null
+        }
+        Insert: {
+          case_id: string
+          content?: string | null
+          description?: string | null
+          evidence_type: string
+          file_url?: string | null
+          id?: string
+          is_locked?: boolean
+          submitted_at?: string
+          submitted_by?: string | null
+        }
+        Update: {
+          case_id?: string
+          content?: string | null
+          description?: string | null
+          evidence_type?: string
+          file_url?: string | null
+          id?: string
+          is_locked?: boolean
+          submitted_at?: string
+          submitted_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ts_evidence_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "ts_cases"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ts_internal_notes: {
+        Row: {
+          author_id: string | null
+          case_id: string
+          created_at: string
+          id: string
+          is_private: boolean
+          note: string
+        }
+        Insert: {
+          author_id?: string | null
+          case_id: string
+          created_at?: string
+          id?: string
+          is_private?: boolean
+          note: string
+        }
+        Update: {
+          author_id?: string | null
+          case_id?: string
+          created_at?: string
+          id?: string
+          is_private?: boolean
+          note?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ts_internal_notes_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "ts_cases"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ts_policy_references: {
+        Row: {
+          category: string | null
+          code: string
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string | null
+          code: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string | null
+          code?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_interest_vectors: {
         Row: {
           embedding: string
@@ -11963,6 +12306,7 @@ export type Database = {
         Args: { p_organization_id: string }
         Returns: boolean
       }
+      is_trust_safety_staff: { Args: { _user_id: string }; Returns: boolean }
       kip_can_access_collection: {
         Args: { _collection_id: string; _user_id: string }
         Returns: boolean

@@ -275,6 +275,13 @@ const DepartmentsIndex = lazy(
 const DepartmentDetail = lazy(
   () => import("./pages/admin-os/departments/DepartmentDetail"),
 );
+// Phase 4.1 — Trust & Safety
+const TrustSafetyShell = lazy(() => import("./pages/admin-os/trust-safety/TrustSafetyShell"));
+const TsDashboard = lazy(() => import("./pages/admin-os/trust-safety/TsDashboard"));
+const TsCaseQueue = lazy(() => import("./pages/admin-os/trust-safety/CaseQueue"));
+const TsCaseDetail = lazy(() => import("./pages/admin-os/trust-safety/CaseDetail"));
+const TsAppealsCenter = lazy(() => import("./pages/admin-os/trust-safety/AppealsCenter"));
+const TsPolicyReference = lazy(() => import("./pages/admin-os/trust-safety/PolicyReference"));
 const PlatformIndex = lazy(() => import("./pages/admin-os/platform/PlatformIndex"));
 const ApprovalCenter = lazy(() => import("./pages/admin-os/platform/ApprovalCenter"));
 const WorkflowViewer = lazy(() => import("./pages/admin-os/platform/WorkflowViewer"));
@@ -648,6 +655,13 @@ const App = () => (
                   <Route path="audit" element={<AuditCenter />} />
                   <Route path="departments" element={<DepartmentsIndex />} />
                   <Route path="departments/:id" element={<DepartmentDetail />} />
+                  <Route path="trust-safety" element={<TrustSafetyShell />}>
+                    <Route index element={<TsDashboard />} />
+                    <Route path="queue" element={<TsCaseQueue />} />
+                    <Route path="cases/:id" element={<TsCaseDetail />} />
+                    <Route path="appeals" element={<TsAppealsCenter />} />
+                    <Route path="policies" element={<TsPolicyReference />} />
+                  </Route>
                   <Route path="platform" element={<PlatformIndex />} />
                   <Route path="platform/approvals" element={<ApprovalCenter />} />
                   <Route path="platform/workflows" element={<WorkflowViewer />} />
