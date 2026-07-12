@@ -186,6 +186,17 @@ const FeatureFlagsManagerPage = lazy(() => import("./pages/admin-os/executive/co
 const ModuleManagerPage = lazy(() => import("./pages/admin-os/executive/company/ModuleManager"));
 const CompanyCalendarPage = lazy(() => import("./pages/admin-os/executive/company/CompanyCalendar"));
 const MetadataManagerPage = lazy(() => import("./pages/admin-os/executive/company/MetadataManager"));
+// Phase 3.10 — Automation
+const AutomationShell = lazy(() => import("./pages/admin-os/executive/automation/AutomationShell"));
+const AutomationOverview = lazy(() => import("./pages/admin-os/executive/automation/AutomationOverview"));
+const AutomationsList = lazy(() => import("./pages/admin-os/executive/automation/AutomationsList"));
+const AutomationBuilder = lazy(() => import("./pages/admin-os/executive/automation/AutomationBuilder"));
+const AutomationSchedulesPage = lazy(() => import("./pages/admin-os/executive/automation/SchedulesPage"));
+const AutomationRemindersPage = lazy(() => import("./pages/admin-os/executive/automation/RemindersPage"));
+const AutomationEscalationsPage = lazy(() => import("./pages/admin-os/executive/automation/EscalationsPage"));
+const AutomationTemplatesPage = lazy(() => import("./pages/admin-os/executive/automation/TemplatesPage"));
+const AutomationHistoryPage = lazy(() => import("./pages/admin-os/executive/automation/HistoryPage"));
+const AutomationMonitorPage = lazy(() => import("./pages/admin-os/executive/automation/MonitorPage"));
 const ExecutiveNotificationsPage = lazy(() => ExecutivePlaceholders().then((m) => ({ default: m.ExecutiveNotifications })));
 // Phase 3.4 — Governance
 const GovernanceIndex = lazy(() => import("./pages/admin-os/executive/governance/GovernanceIndex"));
@@ -485,6 +496,18 @@ const App = () => (
                     <Route path="modules" element={<ModuleManagerPage />} />
                     <Route path="calendar" element={<CompanyCalendarPage />} />
                     <Route path="metadata" element={<MetadataManagerPage />} />
+                  </Route>
+                  <Route path="automation" element={<AutomationShell />}>
+                    <Route index element={<AutomationOverview />} />
+                    <Route path="automations" element={<AutomationsList />} />
+                    <Route path="builder" element={<AutomationBuilder />} />
+                    <Route path="builder/:id" element={<AutomationBuilder />} />
+                    <Route path="schedules" element={<AutomationSchedulesPage />} />
+                    <Route path="reminders" element={<AutomationRemindersPage />} />
+                    <Route path="escalations" element={<AutomationEscalationsPage />} />
+                    <Route path="templates" element={<AutomationTemplatesPage />} />
+                    <Route path="history" element={<AutomationHistoryPage />} />
+                    <Route path="monitor" element={<AutomationMonitorPage />} />
                   </Route>
                   <Route path="profile" element={<ExecutiveProfile />} />
                   <Route path="notifications" element={<ExecutiveNotificationsPage />} />

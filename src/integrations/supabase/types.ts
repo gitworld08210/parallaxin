@@ -2718,6 +2718,274 @@ export type Database = {
         }
         Relationships: []
       }
+      executive_automation_escalations: {
+        Row: {
+          created_at: string
+          escalated_by: string | null
+          escalated_to: string | null
+          id: string
+          level: number
+          metadata: Json
+          notes: string | null
+          reason: string
+          resolved_at: string | null
+          source_id: string | null
+          source_type: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          escalated_by?: string | null
+          escalated_to?: string | null
+          id?: string
+          level?: number
+          metadata?: Json
+          notes?: string | null
+          reason: string
+          resolved_at?: string | null
+          source_id?: string | null
+          source_type: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          escalated_by?: string | null
+          escalated_to?: string | null
+          id?: string
+          level?: number
+          metadata?: Json
+          notes?: string | null
+          reason?: string
+          resolved_at?: string | null
+          source_id?: string | null
+          source_type?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      executive_automation_runs: {
+        Row: {
+          automation_id: string
+          created_at: string
+          duration_ms: number | null
+          error: string | null
+          finished_at: string | null
+          id: string
+          input: Json | null
+          output: Json | null
+          retry_count: number
+          started_at: string
+          status: string
+          trigger_source: string | null
+        }
+        Insert: {
+          automation_id: string
+          created_at?: string
+          duration_ms?: number | null
+          error?: string | null
+          finished_at?: string | null
+          id?: string
+          input?: Json | null
+          output?: Json | null
+          retry_count?: number
+          started_at?: string
+          status?: string
+          trigger_source?: string | null
+        }
+        Update: {
+          automation_id?: string
+          created_at?: string
+          duration_ms?: number | null
+          error?: string | null
+          finished_at?: string | null
+          id?: string
+          input?: Json | null
+          output?: Json | null
+          retry_count?: number
+          started_at?: string
+          status?: string
+          trigger_source?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "executive_automation_runs_automation_id_fkey"
+            columns: ["automation_id"]
+            isOneToOne: false
+            referencedRelation: "executive_automations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      executive_automation_schedules: {
+        Row: {
+          automation_id: string
+          created_at: string
+          cron_expression: string | null
+          end_at: string | null
+          frequency: string
+          id: string
+          is_active: boolean
+          start_at: string | null
+          timezone: string
+          updated_at: string
+        }
+        Insert: {
+          automation_id: string
+          created_at?: string
+          cron_expression?: string | null
+          end_at?: string | null
+          frequency: string
+          id?: string
+          is_active?: boolean
+          start_at?: string | null
+          timezone?: string
+          updated_at?: string
+        }
+        Update: {
+          automation_id?: string
+          created_at?: string
+          cron_expression?: string | null
+          end_at?: string | null
+          frequency?: string
+          id?: string
+          is_active?: boolean
+          start_at?: string | null
+          timezone?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "executive_automation_schedules_automation_id_fkey"
+            columns: ["automation_id"]
+            isOneToOne: false
+            referencedRelation: "executive_automations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      executive_automation_templates: {
+        Row: {
+          actions: Json
+          category: string
+          created_at: string
+          created_by: string | null
+          department: string | null
+          description: string | null
+          id: string
+          is_system: boolean
+          name: string
+          tags: string[]
+          trigger_config: Json
+          trigger_type: string
+          updated_at: string
+        }
+        Insert: {
+          actions?: Json
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          department?: string | null
+          description?: string | null
+          id?: string
+          is_system?: boolean
+          name: string
+          tags?: string[]
+          trigger_config?: Json
+          trigger_type: string
+          updated_at?: string
+        }
+        Update: {
+          actions?: Json
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          department?: string | null
+          description?: string | null
+          id?: string
+          is_system?: boolean
+          name?: string
+          tags?: string[]
+          trigger_config?: Json
+          trigger_type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      executive_automations: {
+        Row: {
+          actions: Json
+          category: string
+          conditions: Json
+          created_at: string
+          created_by: string | null
+          department: string | null
+          description: string | null
+          failure_count: number
+          id: string
+          is_enabled: boolean
+          last_run_at: string | null
+          name: string
+          next_run_at: string | null
+          owner_id: string | null
+          priority: string
+          run_count: number
+          status: string
+          tags: string[]
+          trigger_config: Json
+          trigger_type: string
+          updated_at: string
+        }
+        Insert: {
+          actions?: Json
+          category?: string
+          conditions?: Json
+          created_at?: string
+          created_by?: string | null
+          department?: string | null
+          description?: string | null
+          failure_count?: number
+          id?: string
+          is_enabled?: boolean
+          last_run_at?: string | null
+          name: string
+          next_run_at?: string | null
+          owner_id?: string | null
+          priority?: string
+          run_count?: number
+          status?: string
+          tags?: string[]
+          trigger_config?: Json
+          trigger_type: string
+          updated_at?: string
+        }
+        Update: {
+          actions?: Json
+          category?: string
+          conditions?: Json
+          created_at?: string
+          created_by?: string | null
+          department?: string | null
+          description?: string | null
+          failure_count?: number
+          id?: string
+          is_enabled?: boolean
+          last_run_at?: string | null
+          name?: string
+          next_run_at?: string | null
+          owner_id?: string | null
+          priority?: string
+          run_count?: number
+          status?: string
+          tags?: string[]
+          trigger_config?: Json
+          trigger_type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       executive_broadcast_deliveries: {
         Row: {
           acknowledged_at: string | null
@@ -3464,6 +3732,65 @@ export type Database = {
           value?: string | null
         }
         Relationships: []
+      }
+      executive_reminders: {
+        Row: {
+          acknowledged_at: string | null
+          automation_id: string | null
+          category: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          metadata: Json
+          recipient_id: string | null
+          remind_at: string
+          snoozed_until: string | null
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          acknowledged_at?: string | null
+          automation_id?: string | null
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          metadata?: Json
+          recipient_id?: string | null
+          remind_at: string
+          snoozed_until?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          acknowledged_at?: string | null
+          automation_id?: string | null
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          metadata?: Json
+          recipient_id?: string | null
+          remind_at?: string
+          snoozed_until?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "executive_reminders_automation_id_fkey"
+            columns: ["automation_id"]
+            isOneToOne: false
+            referencedRelation: "executive_automations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       executive_report_definitions: {
         Row: {
