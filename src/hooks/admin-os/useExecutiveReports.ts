@@ -384,19 +384,26 @@ export const useDepartmentAnalytics = () =>
         .from("admin_departments")
         .select("id,name,code");
       if (error) throw error;
+      const since = new Date(Date.now() - 30 * 864e5).toISOString();
       const rows = await Promise.all(
         (depts ?? []).map(async (d: any) => {
-          const [emp, leaves] = await Promise.all([
+          const [emp, deptEmps] = await Promise.all([
             supabase
               .from("employees")
               .select("id", { count: "exact", head: true })
               .eq("department_id", d.id),
-            supabase
+            supabase.from("employees").select("id").eq("department_id", d.id),
+          ]);
+          const empIds = (deptEmps.data ?? []).map((e: any) => e.id);
+          let leaveCount = 0;
+          if (empIds.length) {
+            const { count } = await supabase
               .from("leave_requests")
               .select("id", { count: "exact", head: true })
-              .eq("department_id", d.id)
-              .gte("created_at", new Date(Date.now() - 30 * 864e5).toISOString()),
-          ]);
+              .in("employee_id", empIds)
+              .gte("created_at", since);
+            leaveCount = count ?? 0;
+          }
           const employeeCount = emp.count ?? 0;
           const leaveCount = leaves.count ?? 0;
           const health = Math.max(
