@@ -105,6 +105,17 @@ const DepartmentsIndex = lazy(
 const DepartmentDetail = lazy(
   () => import("./pages/admin-os/departments/DepartmentDetail"),
 );
+const PlatformIndex = lazy(() => import("./pages/admin-os/platform/PlatformIndex"));
+const ApprovalCenter = lazy(() => import("./pages/admin-os/platform/ApprovalCenter"));
+const WorkflowViewer = lazy(() => import("./pages/admin-os/platform/WorkflowViewer"));
+const NotificationCenter = lazy(() => import("./pages/admin-os/platform/NotificationCenter"));
+const ActivityFeed = lazy(() => import("./pages/admin-os/platform/ActivityFeed"));
+const AssignmentQueue = lazy(() => import("./pages/admin-os/platform/AssignmentQueue"));
+const GlobalSearch = lazy(() => import("./pages/admin-os/platform/GlobalSearch"));
+const DocumentManager = lazy(() => import("./pages/admin-os/platform/DocumentManager"));
+const ReportsCenter = lazy(() => import("./pages/admin-os/platform/ReportsCenter"));
+const DashboardConsole = lazy(() => import("./pages/admin-os/platform/DashboardConsole"));
+const SchedulerConsole = lazy(() => import("./pages/admin-os/platform/SchedulerConsole"));
 
 
 
