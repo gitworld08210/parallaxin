@@ -233,9 +233,9 @@ export const useCompanyHealth = () =>
             .select("id", { count: "exact", head: true })
             .is("revoked_at", null),
           supabase
-            .from("login_events")
+            .from("admin_audit_logs")
             .select("id", { count: "exact", head: true })
-            .eq("success", false)
+            .ilike("action", "%login_failed%")
             .gte("created_at", since7),
           supabase
             .from("admin_audit_logs")
