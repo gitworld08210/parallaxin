@@ -671,6 +671,15 @@ const App = () => (
                     <Route path="appeals" element={<TsAppealsCenter />} />
                     <Route path="policies" element={<TsPolicyReference />} />
                   </Route>
+                  <Route path="verification" element={<VerificationShell />}>
+                    <Route index element={<VerificationDashboard />} />
+                    <Route path="queue" element={<VerApplicationQueue />} />
+                    <Route path="applications/:id" element={<VerCaseWorkspace />} />
+                    <Route path="badges" element={<VerBadgeManager />} />
+                    <Route path="affiliations" element={<VerAffiliationManager />} />
+                    <Route path="appeals" element={<VerAppealsCenter />} />
+                    <Route path="history" element={<VerHistoryPage />} />
+                  </Route>
                   <Route path="platform" element={<PlatformIndex />} />
                   <Route path="platform/approvals" element={<ApprovalCenter />} />
                   <Route path="platform/workflows" element={<WorkflowViewer />} />
