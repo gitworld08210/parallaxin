@@ -65,7 +65,7 @@ const ExecutiveApprovalDetail = () => {
   const { data: delegations = [] } = useDelegations(id);
   const { data: notes = [] } = useNotes(id);
   const { data: escalations = [] } = useEscalations(id);
-  const { data: employees = [] } = useEmployees();
+  const { data: employees = [] } = useEmployeesList();
 
   const decide = useDecideRequest();
   const createDelegation = useCreateDelegation();
@@ -88,10 +88,10 @@ const ExecutiveApprovalDetail = () => {
     (async () => {
       const { data } = await supabase
         .from("profiles")
-        .select("full_name, username")
-        .eq("user_id", request.requested_by)
-        .single();
-      setRequesterName(data?.full_name ?? data?.username ?? null);
+        .select("display_name, username")
+        .eq("user_id", request.requested_by!)
+        .maybeSingle();
+      setRequesterName((data as any)?.display_name ?? (data as any)?.username ?? null);
     })();
   }, [request?.requested_by]);
 
