@@ -18,6 +18,10 @@ import { AppearanceSheet } from "@/components/layout/AppearanceSheet";
 import { useMyWorkspaces } from "@/hooks/organization/useMyWorkspaces";
 import { VerificationBadge } from "@/components/vibe/VerificationBadge";
 import { AccountSwitcherSheet } from "@/components/layout/AccountSwitcherSheet";
+import { useEmployee } from "@/hooks/admin-os/useEmployee";
+import { ADMIN_PERMISSIONS, ACTIVE_EMPLOYMENT_STATUSES } from "@/features/admin-os/permissions";
+
+
 
 import { cn } from "@/lib/utils";
 
