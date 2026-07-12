@@ -85,6 +85,13 @@ export const ADMIN_PERMISSIONS = {
   PEOPLE_OPS_RECRUITMENT_MANAGE: "people_ops.recruitment.manage",
   PEOPLE_OPS_RECRUITMENT_INTERVIEW: "people_ops.recruitment.interview",
   PEOPLE_OPS_RECRUITMENT_OFFER: "people_ops.recruitment.offer",
+
+  // Attendance, Leave, Shifts, Holidays (Phase 2.9)
+  PEOPLE_OPS_ATTENDANCE_VIEW: "people_ops.attendance.view",
+  PEOPLE_OPS_ATTENDANCE_MANAGE: "people_ops.attendance.manage",
+  PEOPLE_OPS_LEAVE_APPROVE: "people_ops.leave.approve",
+  PEOPLE_OPS_SHIFT_MANAGE: "people_ops.shift.manage",
+  PEOPLE_OPS_HOLIDAY_MANAGE: "people_ops.holiday.manage",
 } as const;
 
 export type AdminPermissionKey =
