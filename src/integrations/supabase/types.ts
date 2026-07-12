@@ -7896,6 +7896,336 @@ export type Database = {
           },
         ]
       }
+      strategic_decision_attachments: {
+        Row: {
+          created_at: string
+          decision_id: string
+          file_name: string
+          id: string
+          mime_type: string | null
+          size_bytes: number | null
+          storage_path: string
+          uploaded_by: string | null
+          version: number
+        }
+        Insert: {
+          created_at?: string
+          decision_id: string
+          file_name: string
+          id?: string
+          mime_type?: string | null
+          size_bytes?: number | null
+          storage_path: string
+          uploaded_by?: string | null
+          version?: number
+        }
+        Update: {
+          created_at?: string
+          decision_id?: string
+          file_name?: string
+          id?: string
+          mime_type?: string | null
+          size_bytes?: number | null
+          storage_path?: string
+          uploaded_by?: string | null
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "strategic_decision_attachments_decision_id_fkey"
+            columns: ["decision_id"]
+            isOneToOne: false
+            referencedRelation: "strategic_decisions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      strategic_decision_dependencies: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          decision_id: string
+          id: string
+          kind: string
+          related_approval_request_id: string | null
+          related_decision_id: string | null
+          related_policy_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          decision_id: string
+          id?: string
+          kind?: string
+          related_approval_request_id?: string | null
+          related_decision_id?: string | null
+          related_policy_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          decision_id?: string
+          id?: string
+          kind?: string
+          related_approval_request_id?: string | null
+          related_decision_id?: string | null
+          related_policy_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "strategic_decision_dependencie_related_approval_request_id_fkey"
+            columns: ["related_approval_request_id"]
+            isOneToOne: false
+            referencedRelation: "platform_approval_requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "strategic_decision_dependencies_decision_id_fkey"
+            columns: ["decision_id"]
+            isOneToOne: false
+            referencedRelation: "strategic_decisions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "strategic_decision_dependencies_related_decision_id_fkey"
+            columns: ["related_decision_id"]
+            isOneToOne: false
+            referencedRelation: "strategic_decisions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "strategic_decision_dependencies_related_policy_id_fkey"
+            columns: ["related_policy_id"]
+            isOneToOne: false
+            referencedRelation: "governance_policies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      strategic_decision_impact: {
+        Row: {
+          decision_id: string
+          id: string
+          kind: string
+          metrics: Json
+          recorded_at: string
+          recorded_by: string | null
+          summary: string
+        }
+        Insert: {
+          decision_id: string
+          id?: string
+          kind: string
+          metrics?: Json
+          recorded_at?: string
+          recorded_by?: string | null
+          summary: string
+        }
+        Update: {
+          decision_id?: string
+          id?: string
+          kind?: string
+          metrics?: Json
+          recorded_at?: string
+          recorded_by?: string | null
+          summary?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "strategic_decision_impact_decision_id_fkey"
+            columns: ["decision_id"]
+            isOneToOne: false
+            referencedRelation: "strategic_decisions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      strategic_decision_participants: {
+        Row: {
+          added_by: string | null
+          created_at: string
+          decision_id: string
+          id: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          added_by?: string | null
+          created_at?: string
+          decision_id: string
+          id?: string
+          role: string
+          user_id: string
+        }
+        Update: {
+          added_by?: string | null
+          created_at?: string
+          decision_id?: string
+          id?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "strategic_decision_participants_decision_id_fkey"
+            columns: ["decision_id"]
+            isOneToOne: false
+            referencedRelation: "strategic_decisions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      strategic_decision_timeline: {
+        Row: {
+          actor_id: string | null
+          created_at: string
+          decision_id: string
+          event_type: string
+          id: string
+          metadata: Json
+          note: string | null
+        }
+        Insert: {
+          actor_id?: string | null
+          created_at?: string
+          decision_id: string
+          event_type: string
+          id?: string
+          metadata?: Json
+          note?: string | null
+        }
+        Update: {
+          actor_id?: string | null
+          created_at?: string
+          decision_id?: string
+          event_type?: string
+          id?: string
+          metadata?: Json
+          note?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "strategic_decision_timeline_decision_id_fkey"
+            columns: ["decision_id"]
+            isOneToOne: false
+            referencedRelation: "strategic_decisions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      strategic_decision_versions: {
+        Row: {
+          changelog: string | null
+          created_at: string
+          created_by: string | null
+          decision_id: string
+          id: string
+          snapshot: Json
+          version: number
+        }
+        Insert: {
+          changelog?: string | null
+          created_at?: string
+          created_by?: string | null
+          decision_id: string
+          id?: string
+          snapshot: Json
+          version: number
+        }
+        Update: {
+          changelog?: string | null
+          created_at?: string
+          created_by?: string | null
+          decision_id?: string
+          id?: string
+          snapshot?: Json
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "strategic_decision_versions_decision_id_fkey"
+            columns: ["decision_id"]
+            isOneToOne: false
+            referencedRelation: "strategic_decisions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      strategic_decisions: {
+        Row: {
+          affected_departments: string[]
+          alternatives_considered: string | null
+          business_problem: string | null
+          category: string
+          completed_date: string | null
+          created_at: string
+          created_by: string | null
+          current_version: number
+          decision_code: string
+          effective_date: string | null
+          expected_benefits: string | null
+          id: string
+          objectives: string | null
+          owner_id: string | null
+          priority: string
+          review_date: string | null
+          risk_assessment: string | null
+          status: string
+          summary: string | null
+          tags: string[]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          affected_departments?: string[]
+          alternatives_considered?: string | null
+          business_problem?: string | null
+          category: string
+          completed_date?: string | null
+          created_at?: string
+          created_by?: string | null
+          current_version?: number
+          decision_code: string
+          effective_date?: string | null
+          expected_benefits?: string | null
+          id?: string
+          objectives?: string | null
+          owner_id?: string | null
+          priority?: string
+          review_date?: string | null
+          risk_assessment?: string | null
+          status?: string
+          summary?: string | null
+          tags?: string[]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          affected_departments?: string[]
+          alternatives_considered?: string | null
+          business_problem?: string | null
+          category?: string
+          completed_date?: string | null
+          created_at?: string
+          created_by?: string | null
+          current_version?: number
+          decision_code?: string
+          effective_date?: string | null
+          expected_benefits?: string | null
+          id?: string
+          objectives?: string | null
+          owner_id?: string | null
+          priority?: string
+          review_date?: string | null
+          risk_assessment?: string | null
+          status?: string
+          summary?: string | null
+          tags?: string[]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       subscriptions: {
         Row: {
           cancel_at_period_end: boolean | null
