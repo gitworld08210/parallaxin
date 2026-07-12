@@ -928,14 +928,27 @@ Deno.serve(async (req) => {
 
     // Generate creds
     const tempPassword = generateTempPassword(18);
-    const baseLocal = slot.key.replace(/_/g, ".");
 
-    // Pick a company email that isn't already used (previous holders may still exist as revoked/suspended)
+    // Derive email local part from the appointee's name (e.g. "Mukul Sharma" -> "mukul").
+    // Fallback to slot key if name is unusable. Sanitize to [a-z0-9.] only.
+    const sanitize = (s: string) =>
+      s.toLowerCase().normalize("NFKD").replace(/[^a-z0-9]+/g, "").slice(0, 32);
+    const nameParts = fullName.trim().split(/\s+/).filter(Boolean);
+    const firstName = sanitize(nameParts[0] || "");
+    const lastName = sanitize(nameParts.slice(1).join("") || "");
+    const baseLocal = firstName || slot.key.replace(/_/g, ".");
+
+    // Pick a company email that isn't already used (previous holders may still exist as revoked/suspended).
+    // Try: first, first.last, first1, first2, ...
     let companyEmail = `${baseLocal}@aurelix.com`;
     let created: any = null;
     let createErr: any = null;
-    for (let attempt = 0; attempt < 20; attempt++) {
-      const candidate = attempt === 0 ? `${baseLocal}@aurelix.com` : `${baseLocal}.${attempt + 1}@aurelix.com`;
+    for (let attempt = 0; attempt < 25; attempt++) {
+      let localPart: string;
+      if (attempt === 0) localPart = baseLocal;
+      else if (attempt === 1 && lastName) localPart = `${baseLocal}.${lastName}`;
+      else localPart = `${baseLocal}${attempt}`;
+      const candidate = `${localPart}@aurelix.com`;
       const res = await admin.auth.admin.createUser({
         email: candidate,
         password: tempPassword,
