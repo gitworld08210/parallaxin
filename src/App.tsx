@@ -275,6 +275,15 @@ const DepartmentsIndex = lazy(
 const DepartmentDetail = lazy(
   () => import("./pages/admin-os/departments/DepartmentDetail"),
 );
+// Phase 4.1 — Trust & Safety
+const TrustSafetyShell = lazy(() => import("./pages/admin-os/trust-safety/TrustSafetyShell"));
+const TsDashboard = lazy(() => import("./pages/admin-os/trust-safety/TsDashboard"));
+const TsCaseQueue = lazy(() => import("./pages/admin-os/trust-safety/CaseQueue"));
+const TsCaseDetail = lazy(() => import("./pages/admin-os/trust-safety/CaseDetail"));
+const TsAppealsCenter = lazy(() => import("./pages/admin-os/trust-safety/AppealsCenter"));
+const TsPolicyReference = lazy(() => import("./pages/admin-os/trust-safety/PolicyReference"));
+const _TrustSafetyRoutesEnd = (
+);
 const PlatformIndex = lazy(() => import("./pages/admin-os/platform/PlatformIndex"));
 const ApprovalCenter = lazy(() => import("./pages/admin-os/platform/ApprovalCenter"));
 const WorkflowViewer = lazy(() => import("./pages/admin-os/platform/WorkflowViewer"));
