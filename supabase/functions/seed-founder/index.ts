@@ -145,7 +145,7 @@ Deno.serve(async (req) => {
     }
 
     // Insert employee row
-    const employeeNumber = `AUR-FND-${Date.now().toString().slice(-6)}`;
+    const employeeNumber = "AURE-F01";
     const { error: empErr } = await admin.from("employees").insert({
       user_id: userId,
       employee_number: employeeNumber,
