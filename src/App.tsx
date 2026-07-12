@@ -197,6 +197,15 @@ const AutomationEscalationsPage = lazy(() => import("./pages/admin-os/executive/
 const AutomationTemplatesPage = lazy(() => import("./pages/admin-os/executive/automation/TemplatesPage"));
 const AutomationHistoryPage = lazy(() => import("./pages/admin-os/executive/automation/HistoryPage"));
 const AutomationMonitorPage = lazy(() => import("./pages/admin-os/executive/automation/MonitorPage"));
+// Phase 3.11 — Executive AI
+const AiShell = lazy(() => import("./pages/admin-os/executive/ai/AiShell"));
+const AiChat = lazy(() => import("./pages/admin-os/executive/ai/AiChat"));
+const AiRecommendationsPage = lazy(() => import("./pages/admin-os/executive/ai/RecommendationsPage"));
+const AiPredictionsPage = lazy(() => import("./pages/admin-os/executive/ai/PredictionsPage"));
+const AiRisksPage = lazy(() => import("./pages/admin-os/executive/ai/RisksPage"));
+const AiSummariesPage = lazy(() => import("./pages/admin-os/executive/ai/SummariesPage"));
+const AiKnowledgePage = lazy(() => import("./pages/admin-os/executive/ai/KnowledgeSearchPage"));
+const AiPromptsPage = lazy(() => import("./pages/admin-os/executive/ai/PromptsPage"));
 const ExecutiveNotificationsPage = lazy(() => ExecutivePlaceholders().then((m) => ({ default: m.ExecutiveNotifications })));
 // Phase 3.4 — Governance
 const GovernanceIndex = lazy(() => import("./pages/admin-os/executive/governance/GovernanceIndex"));
