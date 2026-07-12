@@ -103,6 +103,8 @@ const PassportPrint = lazy(() => import("./pages/admin-os/people-ops/PassportPri
 const MovementCenter = lazy(() => import("./pages/admin-os/people-ops/MovementCenter"));
 const MovementWizard = lazy(() => import("./pages/admin-os/people-ops/MovementWizard"));
 const MovementDetail = lazy(() => import("./pages/admin-os/people-ops/MovementDetail"));
+const ReportingStructure = lazy(() => import("./pages/admin-os/people-ops/ReportingStructure"));
+const DocumentsCenter = lazy(() => import("./pages/admin-os/people-ops/DocumentsCenter"));
 const FounderOfficeDashboard = lazy(
   () => import("./pages/admin-os/founder-office/FounderOfficeDashboard"),
 );
