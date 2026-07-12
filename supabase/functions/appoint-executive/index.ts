@@ -1001,16 +1001,16 @@ Deno.serve(async (req) => {
       action: "executive.appointed",
       module: "founder_office",
       actor_user_id: user.id,
-      actor_employee_id: callerEmp.id,
       target_type: "employee",
       target_id: emp.id,
-      diff: {
+      after: {
         slot: slotKey,
         label: slot.label,
         employee_number: employeeNumber,
+        company_email: companyEmail,
         personal_email: personalEmail,
         email_sent: !!gmailMessageId,
-      },
+      } as any,
     });
 
     return json({
