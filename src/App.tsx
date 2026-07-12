@@ -98,6 +98,8 @@ const EmployeeForm = lazy(() => import("./pages/admin-os/people-ops/EmployeeForm
 const OnboardingQueue = lazy(() => import("./pages/admin-os/people-ops/OnboardingQueue"));
 const OnboardingWizard = lazy(() => import("./pages/admin-os/people-ops/OnboardingWizard"));
 const OnboardingDetail = lazy(() => import("./pages/admin-os/people-ops/OnboardingDetail"));
+const EmployeePassport = lazy(() => import("./pages/admin-os/people-ops/EmployeePassport"));
+const PassportPrint = lazy(() => import("./pages/admin-os/people-ops/PassportPrint"));
 const FounderOfficeDashboard = lazy(
   () => import("./pages/admin-os/founder-office/FounderOfficeDashboard"),
 );
@@ -308,6 +310,8 @@ const App = () => (
                   <Route path="people-ops/onboarding" element={<OnboardingQueue />} />
                   <Route path="people-ops/onboarding/new" element={<OnboardingWizard />} />
                   <Route path="people-ops/onboarding/:employeeId" element={<OnboardingDetail />} />
+                  <Route path="people-ops/:employeeId/passport" element={<EmployeePassport />} />
+                  <Route path="people-ops/:employeeId/passport/print" element={<PassportPrint />} />
                   <Route
                     path="founder-office"
                     element={<FounderOfficeDashboard />}

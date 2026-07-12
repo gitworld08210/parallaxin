@@ -881,6 +881,62 @@ export type Database = {
           },
         ]
       }
+      employee_passports: {
+        Row: {
+          archived_at: string | null
+          created_at: string
+          emergency_contact_name: string | null
+          emergency_contact_phone: string | null
+          emergency_contact_relation: string | null
+          employee_id: string
+          id: string
+          issued_at: string
+          metadata: Json
+          office_location: string | null
+          passport_number: string
+          photo_url: string | null
+          updated_at: string
+        }
+        Insert: {
+          archived_at?: string | null
+          created_at?: string
+          emergency_contact_name?: string | null
+          emergency_contact_phone?: string | null
+          emergency_contact_relation?: string | null
+          employee_id: string
+          id?: string
+          issued_at?: string
+          metadata?: Json
+          office_location?: string | null
+          passport_number: string
+          photo_url?: string | null
+          updated_at?: string
+        }
+        Update: {
+          archived_at?: string | null
+          created_at?: string
+          emergency_contact_name?: string | null
+          emergency_contact_phone?: string | null
+          emergency_contact_relation?: string | null
+          employee_id?: string
+          id?: string
+          issued_at?: string
+          metadata?: Json
+          office_location?: string | null
+          passport_number?: string
+          photo_url?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employee_passports_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: true
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       employee_sessions: {
         Row: {
           device_id: string | null
@@ -2206,6 +2262,548 @@ export type Database = {
             columns: ["post_id"]
             isOneToOne: true
             referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      passport_awards: {
+        Row: {
+          award_date: string
+          award_name: string
+          awarded_by: string | null
+          category: string | null
+          created_at: string
+          employee_id: string
+          evidence: Json
+          id: string
+          reason: string | null
+        }
+        Insert: {
+          award_date: string
+          award_name: string
+          awarded_by?: string | null
+          category?: string | null
+          created_at?: string
+          employee_id: string
+          evidence?: Json
+          id?: string
+          reason?: string | null
+        }
+        Update: {
+          award_date?: string
+          award_name?: string
+          awarded_by?: string | null
+          category?: string | null
+          created_at?: string
+          employee_id?: string
+          evidence?: Json
+          id?: string
+          reason?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "passport_awards_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      passport_certifications: {
+        Row: {
+          certification_name: string
+          created_at: string
+          department_id: string | null
+          document_url: string | null
+          employee_id: string
+          expiry_date: string | null
+          id: string
+          issue_date: string
+          issued_by: string | null
+          status: string
+        }
+        Insert: {
+          certification_name: string
+          created_at?: string
+          department_id?: string | null
+          document_url?: string | null
+          employee_id: string
+          expiry_date?: string | null
+          id?: string
+          issue_date: string
+          issued_by?: string | null
+          status?: string
+        }
+        Update: {
+          certification_name?: string
+          created_at?: string
+          department_id?: string | null
+          document_url?: string | null
+          employee_id?: string
+          expiry_date?: string | null
+          id?: string
+          issue_date?: string
+          issued_by?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "passport_certifications_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "admin_departments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "passport_certifications_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      passport_department_history: {
+        Row: {
+          approved_by: string | null
+          audit_reference: string | null
+          created_at: string
+          date_joined: string
+          date_left: string | null
+          department_id: string | null
+          department_slug: string | null
+          employee_id: string
+          id: string
+          reason: string | null
+        }
+        Insert: {
+          approved_by?: string | null
+          audit_reference?: string | null
+          created_at?: string
+          date_joined: string
+          date_left?: string | null
+          department_id?: string | null
+          department_slug?: string | null
+          employee_id: string
+          id?: string
+          reason?: string | null
+        }
+        Update: {
+          approved_by?: string | null
+          audit_reference?: string | null
+          created_at?: string
+          date_joined?: string
+          date_left?: string | null
+          department_id?: string | null
+          department_slug?: string | null
+          employee_id?: string
+          id?: string
+          reason?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "passport_department_history_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "admin_departments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "passport_department_history_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      passport_documents: {
+        Row: {
+          access_scope: string
+          created_at: string
+          description: string | null
+          doc_type: Database["public"]["Enums"]["passport_doc_type"]
+          employee_id: string
+          id: string
+          metadata: Json
+          storage_bucket: string
+          storage_path: string
+          supersedes_id: string | null
+          title: string
+          uploaded_by: string | null
+          version: number
+        }
+        Insert: {
+          access_scope?: string
+          created_at?: string
+          description?: string | null
+          doc_type: Database["public"]["Enums"]["passport_doc_type"]
+          employee_id: string
+          id?: string
+          metadata?: Json
+          storage_bucket?: string
+          storage_path: string
+          supersedes_id?: string | null
+          title: string
+          uploaded_by?: string | null
+          version?: number
+        }
+        Update: {
+          access_scope?: string
+          created_at?: string
+          description?: string | null
+          doc_type?: Database["public"]["Enums"]["passport_doc_type"]
+          employee_id?: string
+          id?: string
+          metadata?: Json
+          storage_bucket?: string
+          storage_path?: string
+          supersedes_id?: string | null
+          title?: string
+          uploaded_by?: string | null
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "passport_documents_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "passport_documents_supersedes_id_fkey"
+            columns: ["supersedes_id"]
+            isOneToOne: false
+            referencedRelation: "passport_documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      passport_projects: {
+        Row: {
+          created_at: string
+          department_id: string | null
+          employee_id: string
+          end_date: string | null
+          id: string
+          outcome: string | null
+          project_name: string
+          role_in_project: string | null
+          start_date: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          department_id?: string | null
+          employee_id: string
+          end_date?: string | null
+          id?: string
+          outcome?: string | null
+          project_name: string
+          role_in_project?: string | null
+          start_date?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          department_id?: string | null
+          employee_id?: string
+          end_date?: string | null
+          id?: string
+          outcome?: string | null
+          project_name?: string
+          role_in_project?: string | null
+          start_date?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "passport_projects_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "admin_departments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "passport_projects_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      passport_promotion_history: {
+        Row: {
+          approver_id: string | null
+          created_at: string
+          employee_id: string
+          id: string
+          new_level: string
+          new_role_id: string | null
+          old_level: string | null
+          old_role_id: string | null
+          promotion_date: string
+          reason: string | null
+          recommendation: string | null
+          supporting_documents: Json
+        }
+        Insert: {
+          approver_id?: string | null
+          created_at?: string
+          employee_id: string
+          id?: string
+          new_level: string
+          new_role_id?: string | null
+          old_level?: string | null
+          old_role_id?: string | null
+          promotion_date: string
+          reason?: string | null
+          recommendation?: string | null
+          supporting_documents?: Json
+        }
+        Update: {
+          approver_id?: string | null
+          created_at?: string
+          employee_id?: string
+          id?: string
+          new_level?: string
+          new_role_id?: string | null
+          old_level?: string | null
+          old_role_id?: string | null
+          promotion_date?: string
+          reason?: string | null
+          recommendation?: string | null
+          supporting_documents?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "passport_promotion_history_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "passport_promotion_history_new_role_id_fkey"
+            columns: ["new_role_id"]
+            isOneToOne: false
+            referencedRelation: "admin_roles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "passport_promotion_history_old_role_id_fkey"
+            columns: ["old_role_id"]
+            isOneToOne: false
+            referencedRelation: "admin_roles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      passport_skills: {
+        Row: {
+          created_at: string
+          department_id: string | null
+          employee_id: string
+          evidence: Json
+          id: string
+          skill_level: string | null
+          skill_name: string
+          status: Database["public"]["Enums"]["passport_skill_status"]
+          updated_at: string
+          verified_at: string | null
+          verified_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          department_id?: string | null
+          employee_id: string
+          evidence?: Json
+          id?: string
+          skill_level?: string | null
+          skill_name: string
+          status?: Database["public"]["Enums"]["passport_skill_status"]
+          updated_at?: string
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          department_id?: string | null
+          employee_id?: string
+          evidence?: Json
+          id?: string
+          skill_level?: string | null
+          skill_name?: string
+          status?: Database["public"]["Enums"]["passport_skill_status"]
+          updated_at?: string
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "passport_skills_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "admin_departments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "passport_skills_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      passport_team_history: {
+        Row: {
+          created_at: string
+          date_joined: string
+          date_left: string | null
+          employee_id: string
+          id: string
+          notes: string | null
+          reporting_manager_id: string | null
+          role_in_team: string | null
+          team_name: string
+        }
+        Insert: {
+          created_at?: string
+          date_joined: string
+          date_left?: string | null
+          employee_id: string
+          id?: string
+          notes?: string | null
+          reporting_manager_id?: string | null
+          role_in_team?: string | null
+          team_name: string
+        }
+        Update: {
+          created_at?: string
+          date_joined?: string
+          date_left?: string | null
+          employee_id?: string
+          id?: string
+          notes?: string | null
+          reporting_manager_id?: string | null
+          role_in_team?: string | null
+          team_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "passport_team_history_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "passport_team_history_reporting_manager_id_fkey"
+            columns: ["reporting_manager_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      passport_timeline: {
+        Row: {
+          actor_user_id: string | null
+          created_at: string
+          description: string | null
+          employee_id: string
+          event_type: Database["public"]["Enums"]["passport_event_type"]
+          id: string
+          occurred_at: string
+          payload: Json
+          title: string
+        }
+        Insert: {
+          actor_user_id?: string | null
+          created_at?: string
+          description?: string | null
+          employee_id: string
+          event_type: Database["public"]["Enums"]["passport_event_type"]
+          id?: string
+          occurred_at?: string
+          payload?: Json
+          title: string
+        }
+        Update: {
+          actor_user_id?: string | null
+          created_at?: string
+          description?: string | null
+          employee_id?: string
+          event_type?: Database["public"]["Enums"]["passport_event_type"]
+          id?: string
+          occurred_at?: string
+          payload?: Json
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "passport_timeline_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      passport_training: {
+        Row: {
+          certificate_url: string | null
+          completion_date: string | null
+          course_name: string
+          created_at: string
+          department_id: string | null
+          employee_id: string
+          id: string
+          result: string | null
+          trainer: string | null
+        }
+        Insert: {
+          certificate_url?: string | null
+          completion_date?: string | null
+          course_name: string
+          created_at?: string
+          department_id?: string | null
+          employee_id: string
+          id?: string
+          result?: string | null
+          trainer?: string | null
+        }
+        Update: {
+          certificate_url?: string | null
+          completion_date?: string | null
+          course_name?: string
+          created_at?: string
+          department_id?: string | null
+          employee_id?: string
+          id?: string
+          result?: string | null
+          trainer?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "passport_training_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "admin_departments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "passport_training_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
             referencedColumns: ["id"]
           },
         ]
@@ -4136,6 +4734,7 @@ export type Database = {
         Returns: undefined
       }
       become_creator: { Args: { _terms_version: string }; Returns: undefined }
+      can_manage_passports: { Args: { _uid: string }; Returns: boolean }
       create_group: {
         Args: { _member_ids: string[]; _title: string }
         Returns: string
@@ -4191,6 +4790,7 @@ export type Database = {
         }
         Returns: undefined
       }
+      current_employee_id: { Args: never; Returns: string }
       generate_employee_number: { Args: never; Returns: string }
       generate_unique_org_slug: {
         Args: { _name: string; _self?: string }
@@ -4440,6 +5040,16 @@ export type Database = {
         Args: { _organization_id: string; _patch: Json }
         Returns: undefined
       }
+      passport_log_event: {
+        Args: {
+          _description?: string
+          _employee_id: string
+          _event: Database["public"]["Enums"]["passport_event_type"]
+          _payload?: Json
+          _title: string
+        }
+        Returns: string
+      }
       platform_search: {
         Args: { _limit?: number; _q: string }
         Returns: {
@@ -4547,6 +5157,39 @@ export type Database = {
         | "creator"
         | "community"
         | "other"
+      passport_doc_type:
+        | "offer_letter"
+        | "appointment_letter"
+        | "nda"
+        | "government_document"
+        | "educational_document"
+        | "promotion_letter"
+        | "warning"
+        | "transfer_letter"
+        | "exit_document"
+        | "certificate"
+        | "other"
+      passport_event_type:
+        | "joined"
+        | "department_changed"
+        | "manager_changed"
+        | "team_changed"
+        | "promotion"
+        | "transfer"
+        | "award"
+        | "training_completed"
+        | "skill_verified"
+        | "certification_earned"
+        | "warning_issued"
+        | "suspension"
+        | "leave"
+        | "resignation"
+        | "exit"
+        | "archive"
+        | "document_uploaded"
+        | "project_added"
+        | "note"
+      passport_skill_status: "proposed" | "verified" | "revoked"
       post_status: "draft" | "scheduled" | "published"
       story_audience: "public" | "close_friends"
     }
@@ -4722,6 +5365,41 @@ export const Constants = {
         "community",
         "other",
       ],
+      passport_doc_type: [
+        "offer_letter",
+        "appointment_letter",
+        "nda",
+        "government_document",
+        "educational_document",
+        "promotion_letter",
+        "warning",
+        "transfer_letter",
+        "exit_document",
+        "certificate",
+        "other",
+      ],
+      passport_event_type: [
+        "joined",
+        "department_changed",
+        "manager_changed",
+        "team_changed",
+        "promotion",
+        "transfer",
+        "award",
+        "training_completed",
+        "skill_verified",
+        "certification_earned",
+        "warning_issued",
+        "suspension",
+        "leave",
+        "resignation",
+        "exit",
+        "archive",
+        "document_uploaded",
+        "project_added",
+        "note",
+      ],
+      passport_skill_status: ["proposed", "verified", "revoked"],
       post_status: ["draft", "scheduled", "published"],
       story_audience: ["public", "close_friends"],
     },

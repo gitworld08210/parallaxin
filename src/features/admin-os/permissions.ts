@@ -51,6 +51,10 @@ export const ADMIN_PERMISSIONS = {
   REPORTS_VIEW: "reports.view",
   DASHBOARDS_VIEW: "dashboards.view",
   SCHEDULER_VIEW: "scheduler.view",
+
+  // Employee Passport (Phase 2.3)
+  PEOPLE_OPS_PASSPORT_VIEW: "people_ops.passport.view",
+  PEOPLE_OPS_PASSPORT_MANAGE: "people_ops.passport.manage",
 } as const;
 
 export type AdminPermissionKey =
