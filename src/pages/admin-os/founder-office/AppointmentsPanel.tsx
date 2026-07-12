@@ -37,7 +37,17 @@ const AppointmentsPanel = () => {
 
   const roleKey = (employee as any)?.role?.key;
   const isFounder = roleKey === "founder" || roleKey === "co_founder";
-  if (!isFounder) return <Navigate to="/admin-os/no-access" replace />;
+
+  // Also allow whoever currently holds the Operations Head or HR Head
+  // appointment — they can appoint downstream members.
+  const holdsOpsOrHr = (appointments ?? []).some(
+    (a) =>
+      !a.revoked_at &&
+      a.employee_id === (employee as any).id &&
+      (a.slot_key === "coo" || a.slot_key === "hr_head"),
+  );
+
+  if (!isFounder && !holdsOpsOrHr) return <Navigate to="/admin-os/no-access" replace />;
 
   const activeBySlot = new Map<string, any>();
   (appointments ?? []).filter((a) => !a.revoked_at).forEach((a) => activeBySlot.set(a.slot_key, a));
