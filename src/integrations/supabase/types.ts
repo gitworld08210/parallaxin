@@ -14895,6 +14895,7 @@ export type Database = {
         Args: { _department_key: string; _uid: string }
         Returns: boolean
       }
+      is_admin_os_account: { Args: { _user_id: string }; Returns: boolean }
       is_conversation_member: {
         Args: { _conv: string; _user: string }
         Returns: boolean
