@@ -49,17 +49,29 @@ export const usePassport = (employeeId?: string) =>
           .from("employees")
           .select(
             `id, full_name, company_email, employee_number, employment_status,
-             joining_date, exit_date, photo_url, level,
+             joining_date, exit_date, photo_url, level, reporting_manager_id,
              department:admin_departments!employees_department_id_fkey(id,name,slug),
-             role:admin_roles!employees_role_id_fkey(id,name),
-             reporting_manager:employees!employees_reporting_manager_id_fkey(id,full_name,employee_number)`,
+             role:admin_roles!employees_role_id_fkey(id,name)`,
           )
           .eq("id", employeeId!)
           .maybeSingle(),
       ]);
       if (passport.error) throw passport.error;
       if (employee.error) throw employee.error;
-      return { passport: passport.data, employee: employee.data };
+      let reporting_manager: { id: string; full_name: string; employee_number: string | null } | null = null;
+      const mgrId = (employee.data as any)?.reporting_manager_id as string | null | undefined;
+      if (mgrId) {
+        const { data: mgr } = await supabase
+          .from("employees")
+          .select("id, full_name, employee_number")
+          .eq("id", mgrId)
+          .maybeSingle();
+        reporting_manager = (mgr as any) ?? null;
+      }
+      return {
+        passport: passport.data,
+        employee: employee.data ? { ...(employee.data as any), reporting_manager } : null,
+      };
     },
   });
 
