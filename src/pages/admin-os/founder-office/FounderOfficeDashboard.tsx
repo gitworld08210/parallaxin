@@ -177,6 +177,31 @@ const FounderOfficeDashboard = () => {
         </div>
       </div>
 
+      {/* Executive Appointments CTA */}
+      <Link
+        to="/admin-os/founder-office/appointments"
+        className="block rounded-2xl border-2 border-primary/40 bg-gradient-to-br from-primary/10 to-primary/5 p-5 hover:border-primary transition group"
+      >
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex items-start gap-3">
+            <div className="rounded-xl bg-primary/20 p-2.5 text-primary">
+              <Crown className="h-5 w-5" />
+            </div>
+            <div>
+              <p className="text-[10px] font-bold tracking-[0.2em] text-primary">
+                EXECUTIVE APPOINTMENTS
+              </p>
+              <h2 className="text-base font-bold mt-0.5">Appoint your C-Suite</h2>
+              <p className="text-[11px] text-muted-foreground mt-1 max-w-md">
+                One-click appointment for Co-Founder, HR Head, CTO, CFO, and all C-level heads.
+                Auto-generated employee ID + branded PDF joining letter emailed via Gmail.
+              </p>
+            </div>
+          </div>
+          <ArrowRight className="h-4 w-4 text-primary group-hover:translate-x-0.5 transition" />
+        </div>
+      </Link>
+
       {/* Executive nav */}
       <div className="rounded-2xl border border-dashed border-border p-5 bg-muted/20">
         <div className="flex items-start gap-3">

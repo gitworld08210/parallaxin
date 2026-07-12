@@ -95,7 +95,7 @@ export const useEmployeeDetail = (id: string | undefined) =>
 export interface CreateEmployeeInput {
   full_name: string;
   company_email: string;
-  employee_number: string;
+  employee_number?: string;
   department_id: string;
   role_id: string;
   user_type: string;
@@ -110,12 +110,19 @@ export const useCreateEmployee = () => {
   const { user } = useAuth();
   return useMutation({
     mutationFn: async (input: CreateEmployeeInput) => {
+      // Auto-generate AURE### employee number if not provided
+      let employeeNumber = input.employee_number;
+      if (!employeeNumber) {
+        const { data: genData, error: genErr } = await supabase.rpc("gen_employee_number" as any);
+        if (genErr) throw genErr;
+        employeeNumber = genData as string;
+      }
       const { data, error } = await supabase
         .from("employees")
         .insert({
           full_name: input.full_name,
           company_email: input.company_email,
-          employee_number: input.employee_number,
+          employee_number: employeeNumber,
           department_id: input.department_id,
           role_id: input.role_id,
           user_type: input.user_type as any,

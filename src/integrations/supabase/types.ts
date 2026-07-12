@@ -3600,6 +3600,82 @@ export type Database = {
         }
         Relationships: []
       }
+      executive_appointments: {
+        Row: {
+          appointed_at: string
+          appointed_by: string | null
+          created_at: string
+          department_id: string | null
+          employee_id: string
+          gmail_message_id: string | null
+          id: string
+          notes: string | null
+          pdf_path: string | null
+          personal_email: string
+          revoked_at: string | null
+          revoked_reason: string | null
+          slot_key: string
+          slot_label: string
+          updated_at: string
+        }
+        Insert: {
+          appointed_at?: string
+          appointed_by?: string | null
+          created_at?: string
+          department_id?: string | null
+          employee_id: string
+          gmail_message_id?: string | null
+          id?: string
+          notes?: string | null
+          pdf_path?: string | null
+          personal_email: string
+          revoked_at?: string | null
+          revoked_reason?: string | null
+          slot_key: string
+          slot_label: string
+          updated_at?: string
+        }
+        Update: {
+          appointed_at?: string
+          appointed_by?: string | null
+          created_at?: string
+          department_id?: string | null
+          employee_id?: string
+          gmail_message_id?: string | null
+          id?: string
+          notes?: string | null
+          pdf_path?: string | null
+          personal_email?: string
+          revoked_at?: string | null
+          revoked_reason?: string | null
+          slot_key?: string
+          slot_label?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "executive_appointments_appointed_by_fkey"
+            columns: ["appointed_by"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "executive_appointments_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "admin_departments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "executive_appointments_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       executive_automation_escalations: {
         Row: {
           created_at: string
@@ -14709,6 +14785,7 @@ export type Database = {
       }
       current_employee_id: { Args: never; Returns: string }
       expire_temporary_assignments: { Args: never; Returns: number }
+      gen_employee_number: { Args: never; Returns: string }
       gen_eng_id: { Args: { _prefix: string }; Returns: string }
       gen_fin_id: { Args: { _prefix: string }; Returns: string }
       gen_sec_id: { Args: { _prefix: string }; Returns: string }
@@ -15074,6 +15151,7 @@ export type Database = {
         | "employee"
         | "contractor"
         | "temporary"
+        | "executive"
       app_role: "admin" | "moderator" | "user"
       application_status:
         | "active"
@@ -15605,6 +15683,7 @@ export const Constants = {
         "employee",
         "contractor",
         "temporary",
+        "executive",
       ],
       app_role: ["admin", "moderator", "user"],
       application_status: [

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, Navigate, useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Save } from "lucide-react";
+import { ArrowLeft, Save, AlertTriangle } from "lucide-react";
 import { useEmployee } from "@/hooks/admin-os/useEmployee";
 import {
   useCreateEmployee,
@@ -9,27 +9,36 @@ import {
   useRoles,
   useUpdateEmployee,
 } from "@/hooks/admin-os/useEmployees";
+import { useAppointments } from "@/hooks/admin-os/useAppointments";
 import {
   ADMIN_PERMISSIONS,
   EMPLOYMENT_STATUS_LABELS,
 } from "@/features/admin-os/permissions";
 import { toast } from "sonner";
 
-const USER_TYPES = ["founder", "co_founder", "employee", "contractor", "temporary"];
+const USER_TYPES = ["founder", "co_founder", "executive", "employee", "contractor", "temporary"];
 
 interface Props {
   mode: "create" | "edit";
 }
 
 const EmployeeForm = ({ mode }: Props) => {
-  const { hasPermission } = useEmployee();
+  const { hasPermission, employee } = useEmployee();
   const nav = useNavigate();
   const params = useParams<{ id: string }>();
   const { data: existing } = useEmployeeDetail(mode === "edit" ? params.id : undefined);
   const { data: departments } = useDepartments();
   const { data: roles } = useRoles();
+  const { data: appointments } = useAppointments();
   const create = useCreateEmployee();
   const update = useUpdateEmployee();
+
+  const callerRoleKey = (employee as any)?.role?.key;
+  const isFounder = callerRoleKey === "founder" || callerRoleKey === "co_founder";
+  const hrHeadActive = (appointments ?? []).some(
+    (a) => a.slot_key === "hr_head" && !a.revoked_at,
+  );
+  const hrLocked = mode === "create" && !isFounder && !hrHeadActive;
 
   const [form, setForm] = useState({
     full_name: "",
@@ -66,10 +75,17 @@ const EmployeeForm = ({ mode }: Props) => {
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (hrLocked) {
+      toast.error("HR Head must be appointed by the Founder Office before hiring employees.");
+      return;
+    }
     try {
       if (mode === "create") {
+        // employee_number is auto-generated server-side; omit if empty
+        const payload: any = { ...form };
+        if (!payload.employee_number) delete payload.employee_number;
         const created = await create.mutateAsync({
-          ...form,
+          ...payload,
           level: form.level || null,
           joining_date: form.joining_date || null,
           reporting_manager_id: form.reporting_manager_id || null,
@@ -128,6 +144,30 @@ const EmployeeForm = ({ mode }: Props) => {
         </h1>
       </div>
 
+      {hrLocked && (
+        <div className="rounded-2xl border-2 border-amber-500/50 bg-amber-500/10 p-4">
+          <div className="flex items-start gap-3">
+            <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm font-bold text-amber-700 dark:text-amber-400">
+                HR Head not yet appointed
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Only the Founder Office can hire employees before the Head of Human Resources is
+                appointed. Ask a founder to appoint an HR Head from{" "}
+                <Link
+                  to="/admin-os/founder-office/appointments"
+                  className="text-primary font-semibold underline"
+                >
+                  Founder Office → Executive Appointments
+                </Link>
+                .
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       <form onSubmit={submit} className="rounded-2xl border border-border/60 bg-card p-6 space-y-4">
         <div className="grid sm:grid-cols-2 gap-4">
           {field(
@@ -152,11 +192,10 @@ const EmployeeForm = ({ mode }: Props) => {
           {field(
             "Employee ID",
             <input
-              required
-              className={inp}
-              value={form.employee_number}
-              onChange={(e) => setForm({ ...form, employee_number: e.target.value })}
-              disabled={mode === "edit"}
+              className={`${inp} bg-muted/40 text-muted-foreground`}
+              value={mode === "edit" ? form.employee_number : "Auto-generated (AURE###)"}
+              disabled
+              readOnly
             />,
           )}
           {field(
@@ -253,7 +292,7 @@ const EmployeeForm = ({ mode }: Props) => {
         <div className="pt-2 flex gap-2">
           <button
             type="submit"
-            disabled={create.isPending || update.isPending}
+            disabled={create.isPending || update.isPending || hrLocked}
             className="inline-flex items-center gap-1.5 rounded-lg bg-primary text-primary-foreground px-4 py-2 text-xs font-semibold hover:bg-primary/90 disabled:opacity-50"
           >
             <Save className="h-3.5 w-3.5" />
