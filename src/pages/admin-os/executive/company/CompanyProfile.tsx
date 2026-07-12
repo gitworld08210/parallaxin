@@ -37,7 +37,7 @@ const CompanyProfile = () => {
 
 
   const save = async (key: string, label: string) => {
-    const existing = cfgs.find((c: any) => c.key === key);
+    const existing = cfgs?.find((c: any) => c.key === key);
     await upsert.mutateAsync({
       id: existing?.id,
       category: "company_profile",
