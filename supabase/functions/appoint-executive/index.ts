@@ -764,18 +764,6 @@ async function buildJoiningLetter(input: {
 }
 
 
-  // Footer bar
-  page.drawRectangle({
-    x: 12, y: 12, width: W - 24, height: 22, color: NAVY,
-  });
-  const footer = "AURELIX TECHNOLOGIES PRIVATE LIMITED   ·   www.aurelix.com";
-  page.drawText(footer, {
-    x: (W - helv.widthOfTextAtSize(footer, 8)) / 2,
-    y: 20, size: 8, font: helv, color: GOLD,
-  });
-
-  return await pdf.save();
-}
 
 function drawWrapped(
   page: any, text: string, x: number, y: number, maxW: number,
