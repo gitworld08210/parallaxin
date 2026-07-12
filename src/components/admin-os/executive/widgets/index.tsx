@@ -124,7 +124,7 @@ export function CompanyHealthWidget() {
           <div className="space-y-2.5">
             <HealthBar label="Operational" value={data.operational} />
             <HealthBar label="Security" value={data.security} />
-            <HealthBar label="HR" value={data.hr} />
+            <HealthBar label="People Ops" value={data.hr} />
             <HealthBar label="Finance" value={data.finance} />
             <HealthBar label="System" value={data.system} />
           </div>
