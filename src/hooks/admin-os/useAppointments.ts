@@ -110,3 +110,49 @@ export async function getSignedLetterUrl(path: string): Promise<string | null> {
     .createSignedUrl(path, 60 * 60);
   return data?.signedUrl ?? null;
 }
+
+export interface RevokeAppointmentInput {
+  appointment_id: string;
+  employee_id: string;
+  slot_label: string;
+  reason: string;
+  suspend_employee: boolean;
+}
+
+export function useRevokeAppointment() {
+  const qc = useQueryClient();
+  return useMutation<void, Error, RevokeAppointmentInput>({
+    mutationFn: async ({ appointment_id, employee_id, slot_label, reason, suspend_employee }) => {
+      const { error: revErr } = await supabase
+        .from("executive_appointments" as any)
+        .update({ revoked_at: new Date().toISOString(), revoke_reason: reason })
+        .eq("id", appointment_id);
+      if (revErr) throw revErr;
+
+      if (suspend_employee) {
+        const { error: empErr } = await supabase
+          .from("employees")
+          .update({ employment_status: "suspended" as any })
+          .eq("id", employee_id);
+        if (empErr) throw empErr;
+      }
+
+      const { data: auth } = await supabase.auth.getUser();
+      await supabase.from("admin_audit_logs").insert({
+        actor_user_id: auth.user?.id ?? null,
+        module: "founder_office",
+        action: "executive.appointment_revoked",
+        target_type: "executive_appointment",
+        target_id: appointment_id,
+        before: { slot: slot_label } as any,
+        after: { reason, suspended: suspend_employee } as any,
+      });
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["executive-appointments"] });
+      qc.invalidateQueries({ queryKey: ["admin-os", "employees"] });
+      qc.invalidateQueries({ queryKey: ["admin-os", "employee-detail"] });
+    },
+  });
+}
+
