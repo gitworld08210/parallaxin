@@ -193,7 +193,7 @@ const FounderOfficeDashboard = () => {
               </p>
               <h2 className="text-base font-bold mt-0.5">Appoint your C-Suite</h2>
               <p className="text-[11px] text-muted-foreground mt-1 max-w-md">
-                One-click appointment for Co-Founder, HR Head, CTO, CFO, and all C-level heads.
+                One-click appointment for Co-Founder, Head of People Operations, CTO, CFO, and all C-level heads.
                 Auto-generated employee ID + branded PDF joining letter emailed via Gmail.
               </p>
             </div>

@@ -10,7 +10,7 @@ export interface ExecutiveSlot {
 
 export const EXECUTIVE_SLOTS: ExecutiveSlot[] = [
   { key: "co_founder", label: "Co-Founder", department: "Founder Office", description: "Co-lead of Aurelix with full founder-level authority." },
-  { key: "hr_head", label: "Head of Human Resources", department: "People Operations", description: "Owns hiring, onboarding, HR policies, and employee lifecycle." },
+  { key: "hr_head", label: "Head of People Operations", department: "People Operations", description: "Owns hiring, onboarding, People Operations policies, and employee lifecycle." },
   { key: "cto", label: "Chief Technology Officer", department: "Engineering & Product", description: "Leads engineering strategy, delivery, and platform reliability." },
   { key: "cfo", label: "Chief Financial Officer", department: "Finance & Legal", description: "Owns financial planning, treasury, and compliance." },
   { key: "coo", label: "Chief Operating Officer", department: "Founder Office", description: "Coordinates cross-department operations and KPIs." },

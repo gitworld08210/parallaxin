@@ -82,7 +82,7 @@ const AppointmentsPanel = () => {
           <span className="font-semibold text-primary">One-click appointment.</span> System
           auto-generates a unique <span className="font-mono">AURE###</span> employee ID, creates
           the account, and emails a branded PDF joining letter to the executive's personal email
-          from your Gmail. Non-founder hiring in People Ops unlocks after HR Head is appointed.
+          from your Gmail. Non-founder hiring in People Ops unlocks after Head of People Operations is appointed.
         </p>
       </div>
 

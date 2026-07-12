@@ -76,7 +76,7 @@ const EmployeeForm = ({ mode }: Props) => {
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (hrLocked) {
-      toast.error("HR Head must be appointed by the Founder Office before hiring employees.");
+      toast.error("Head of People Operations must be appointed by the Founder Office before hiring employees.");
       return;
     }
     try {
@@ -150,11 +150,11 @@ const EmployeeForm = ({ mode }: Props) => {
             <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
             <div>
               <p className="text-sm font-bold text-amber-700 dark:text-amber-400">
-                HR Head not yet appointed
+                Head of People Operations not yet appointed
               </p>
               <p className="text-xs text-muted-foreground mt-1">
-                Only the Founder Office can hire employees before the Head of Human Resources is
-                appointed. Ask a founder to appoint an HR Head from{" "}
+                Only the Founder Office can hire employees before the Head of People Operations is
+                appointed. Ask a founder to appoint a Head of People Operations from{" "}
                 <Link
                   to="/admin-os/founder-office/appointments"
                   className="text-primary font-semibold underline"

@@ -3,15 +3,15 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 const MODULES = [
-  "HR", "Employee Passport", "Performance", "Learning", "Recruitment",
+  "People Operations", "Employee Passport", "Performance", "Learning", "Recruitment",
   "Attendance", "Payroll", "Executive Dashboard", "Executive Inbox",
   "Governance Center", "Decision Center", "Reports", "Command Center",
   "Automation Center", "Executive AI", "Knowledge (KIP)",
 ] as const;
 
 const INTEGRATIONS: Array<{ source: string; target: string; name: string }> = [
-  { source: "HR", target: "Employee Passport", name: "Employee sync" },
-  { source: "HR", target: "Payroll", name: "Salary sync" },
+  { source: "People Operations", target: "Employee Passport", name: "Employee sync" },
+  { source: "People Operations", target: "Payroll", name: "Salary sync" },
   { source: "Performance", target: "Executive Dashboard", name: "KPI feed" },
   { source: "Governance Center", target: "Decision Center", name: "Policy binding" },
   { source: "Automation Center", target: "Reports", name: "Scheduled runs" },
