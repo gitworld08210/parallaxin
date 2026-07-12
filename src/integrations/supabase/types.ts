@@ -422,6 +422,159 @@ export type Database = {
           },
         ]
       }
+      career_roadmap_requirements: {
+        Row: {
+          certification_id: string | null
+          course_id: string | null
+          created_at: string
+          id: string
+          notes: string | null
+          requirement_type: Database["public"]["Enums"]["roadmap_requirement_type"]
+          roadmap_id: string
+          sequence: number
+          skill_id: string | null
+        }
+        Insert: {
+          certification_id?: string | null
+          course_id?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          requirement_type: Database["public"]["Enums"]["roadmap_requirement_type"]
+          roadmap_id: string
+          sequence?: number
+          skill_id?: string | null
+        }
+        Update: {
+          certification_id?: string | null
+          course_id?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          requirement_type?: Database["public"]["Enums"]["roadmap_requirement_type"]
+          roadmap_id?: string
+          sequence?: number
+          skill_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "career_roadmap_requirements_certification_id_fkey"
+            columns: ["certification_id"]
+            isOneToOne: false
+            referencedRelation: "certifications_catalog"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "career_roadmap_requirements_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "learning_courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "career_roadmap_requirements_roadmap_id_fkey"
+            columns: ["roadmap_id"]
+            isOneToOne: false
+            referencedRelation: "career_roadmaps"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "career_roadmap_requirements_skill_id_fkey"
+            columns: ["skill_id"]
+            isOneToOne: false
+            referencedRelation: "skills_catalog"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      career_roadmaps: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          department_id: string | null
+          description: string | null
+          id: string
+          name: string
+          target_level: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          department_id?: string | null
+          description?: string | null
+          id?: string
+          name: string
+          target_level: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          department_id?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+          target_level?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "career_roadmaps_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "admin_departments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      certifications_catalog: {
+        Row: {
+          category: Database["public"]["Enums"]["cert_category"]
+          created_at: string
+          created_by: string | null
+          department_id: string | null
+          description: string | null
+          id: string
+          is_mandatory: boolean
+          title: string
+          updated_at: string
+          validity_months: number | null
+        }
+        Insert: {
+          category?: Database["public"]["Enums"]["cert_category"]
+          created_at?: string
+          created_by?: string | null
+          department_id?: string | null
+          description?: string | null
+          id?: string
+          is_mandatory?: boolean
+          title: string
+          updated_at?: string
+          validity_months?: number | null
+        }
+        Update: {
+          category?: Database["public"]["Enums"]["cert_category"]
+          created_at?: string
+          created_by?: string | null
+          department_id?: string | null
+          description?: string | null
+          id?: string
+          is_mandatory?: boolean
+          title?: string
+          updated_at?: string
+          validity_months?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "certifications_catalog_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "admin_departments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       close_friends: {
         Row: {
           created_at: string
@@ -641,6 +794,69 @@ export type Database = {
         }
         Relationships: []
       }
+      course_enrollments: {
+        Row: {
+          assigned_at: string
+          assigned_by: string | null
+          completed_at: string | null
+          course_id: string
+          created_at: string
+          due_date: string | null
+          employee_id: string
+          id: string
+          notes: string | null
+          progress: number
+          started_at: string | null
+          status: Database["public"]["Enums"]["enrollment_status"]
+          updated_at: string
+        }
+        Insert: {
+          assigned_at?: string
+          assigned_by?: string | null
+          completed_at?: string | null
+          course_id: string
+          created_at?: string
+          due_date?: string | null
+          employee_id: string
+          id?: string
+          notes?: string | null
+          progress?: number
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["enrollment_status"]
+          updated_at?: string
+        }
+        Update: {
+          assigned_at?: string
+          assigned_by?: string | null
+          completed_at?: string | null
+          course_id?: string
+          created_at?: string
+          due_date?: string | null
+          employee_id?: string
+          id?: string
+          notes?: string | null
+          progress?: number
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["enrollment_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "course_enrollments_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "learning_courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "course_enrollments_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       creator_balance: {
         Row: {
           available_cents: number
@@ -777,6 +993,60 @@ export type Database = {
           stripe_session_id?: string | null
         }
         Relationships: []
+      }
+      employee_certifications: {
+        Row: {
+          certification_id: string
+          created_at: string
+          employee_id: string
+          expires_at: string | null
+          id: string
+          issued_at: string
+          issued_by: string | null
+          notes: string | null
+          status: Database["public"]["Enums"]["cert_status"]
+          updated_at: string
+        }
+        Insert: {
+          certification_id: string
+          created_at?: string
+          employee_id: string
+          expires_at?: string | null
+          id?: string
+          issued_at?: string
+          issued_by?: string | null
+          notes?: string | null
+          status?: Database["public"]["Enums"]["cert_status"]
+          updated_at?: string
+        }
+        Update: {
+          certification_id?: string
+          created_at?: string
+          employee_id?: string
+          expires_at?: string | null
+          id?: string
+          issued_at?: string
+          issued_by?: string | null
+          notes?: string | null
+          status?: Database["public"]["Enums"]["cert_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employee_certifications_certification_id_fkey"
+            columns: ["certification_id"]
+            isOneToOne: false
+            referencedRelation: "certifications_catalog"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "employee_certifications_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       employee_credential_issuances: {
         Row: {
@@ -1676,6 +1946,151 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      learning_courses: {
+        Row: {
+          category: Database["public"]["Enums"]["course_category"]
+          created_at: string
+          created_by: string | null
+          department_id: string | null
+          description: string | null
+          difficulty: Database["public"]["Enums"]["course_difficulty"]
+          duration_minutes: number
+          id: string
+          is_mandatory: boolean
+          owner_id: string | null
+          prerequisites: string[]
+          status: Database["public"]["Enums"]["course_status"]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category?: Database["public"]["Enums"]["course_category"]
+          created_at?: string
+          created_by?: string | null
+          department_id?: string | null
+          description?: string | null
+          difficulty?: Database["public"]["Enums"]["course_difficulty"]
+          duration_minutes?: number
+          id?: string
+          is_mandatory?: boolean
+          owner_id?: string | null
+          prerequisites?: string[]
+          status?: Database["public"]["Enums"]["course_status"]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category?: Database["public"]["Enums"]["course_category"]
+          created_at?: string
+          created_by?: string | null
+          department_id?: string | null
+          description?: string | null
+          difficulty?: Database["public"]["Enums"]["course_difficulty"]
+          duration_minutes?: number
+          id?: string
+          is_mandatory?: boolean
+          owner_id?: string | null
+          prerequisites?: string[]
+          status?: Database["public"]["Enums"]["course_status"]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "learning_courses_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "admin_departments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      learning_path_courses: {
+        Row: {
+          course_id: string
+          created_at: string
+          id: string
+          is_required: boolean
+          path_id: string
+          sequence: number
+        }
+        Insert: {
+          course_id: string
+          created_at?: string
+          id?: string
+          is_required?: boolean
+          path_id: string
+          sequence?: number
+        }
+        Update: {
+          course_id?: string
+          created_at?: string
+          id?: string
+          is_required?: boolean
+          path_id?: string
+          sequence?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "learning_path_courses_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "learning_courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "learning_path_courses_path_id_fkey"
+            columns: ["path_id"]
+            isOneToOne: false
+            referencedRelation: "learning_paths"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      learning_paths: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          department_id: string | null
+          description: string | null
+          id: string
+          name: string
+          status: Database["public"]["Enums"]["course_status"]
+          target_role: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          department_id?: string | null
+          description?: string | null
+          id?: string
+          name: string
+          status?: Database["public"]["Enums"]["course_status"]
+          target_role?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          department_id?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+          status?: Database["public"]["Enums"]["course_status"]
+          target_role?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "learning_paths_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "admin_departments"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -5220,6 +5635,107 @@ export type Database = {
           },
         ]
       }
+      skill_verifications: {
+        Row: {
+          assessor_id: string | null
+          created_at: string
+          decided_at: string | null
+          dept_head_id: string | null
+          employee_id: string
+          evidence: string | null
+          id: string
+          notes: string | null
+          requested_level: string
+          skill_id: string
+          status: Database["public"]["Enums"]["skill_verify_status"]
+          updated_at: string
+        }
+        Insert: {
+          assessor_id?: string | null
+          created_at?: string
+          decided_at?: string | null
+          dept_head_id?: string | null
+          employee_id: string
+          evidence?: string | null
+          id?: string
+          notes?: string | null
+          requested_level?: string
+          skill_id: string
+          status?: Database["public"]["Enums"]["skill_verify_status"]
+          updated_at?: string
+        }
+        Update: {
+          assessor_id?: string | null
+          created_at?: string
+          decided_at?: string | null
+          dept_head_id?: string | null
+          employee_id?: string
+          evidence?: string | null
+          id?: string
+          notes?: string | null
+          requested_level?: string
+          skill_id?: string
+          status?: Database["public"]["Enums"]["skill_verify_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "skill_verifications_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "skill_verifications_skill_id_fkey"
+            columns: ["skill_id"]
+            isOneToOne: false
+            referencedRelation: "skills_catalog"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      skills_catalog: {
+        Row: {
+          category: string | null
+          created_at: string
+          created_by: string | null
+          department_id: string | null
+          description: string | null
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          created_by?: string | null
+          department_id?: string | null
+          description?: string | null
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          created_by?: string | null
+          department_id?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "skills_catalog_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "admin_departments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       stories: {
         Row: {
           audience: Database["public"]["Enums"]["story_audience"]
@@ -6287,8 +6803,27 @@ export type Database = {
         | "temporary"
       app_role: "admin" | "moderator" | "user"
       approval_decision: "pending" | "approved" | "rejected" | "skipped"
+      cert_category:
+        | "technical"
+        | "leadership"
+        | "compliance"
+        | "security"
+        | "department"
+        | "process"
+      cert_status: "active" | "expired" | "revoked"
       checklist_owner: "hr" | "employee"
       council_role: "architect" | "curator" | "sentinel" | "innovator"
+      course_category:
+        | "department"
+        | "policy"
+        | "technical"
+        | "leadership"
+        | "security"
+        | "compliance"
+        | "ai"
+        | "onboarding"
+      course_difficulty: "beginner" | "intermediate" | "advanced" | "expert"
+      course_status: "draft" | "published" | "archived"
       employment_status:
         | "candidate"
         | "offer_sent"
@@ -6301,6 +6836,12 @@ export type Database = {
         | "resigned"
         | "exited"
         | "archived"
+      enrollment_status:
+        | "assigned"
+        | "in_progress"
+        | "completed"
+        | "overdue"
+        | "cancelled"
       leave_kind:
         | "annual"
         | "medical"
@@ -6432,6 +6973,13 @@ export type Database = {
         | "innovation"
         | "leadership"
         | "special"
+      roadmap_requirement_type: "course" | "skill" | "certification"
+      skill_verify_status:
+        | "pending"
+        | "assessing"
+        | "dept_head_review"
+        | "verified"
+        | "rejected"
       story_audience: "public" | "close_friends"
       succession_readiness: "not_ready" | "dev_1y" | "dev_6m" | "ready_now"
       succession_scope:
@@ -6576,8 +7124,29 @@ export const Constants = {
       ],
       app_role: ["admin", "moderator", "user"],
       approval_decision: ["pending", "approved", "rejected", "skipped"],
+      cert_category: [
+        "technical",
+        "leadership",
+        "compliance",
+        "security",
+        "department",
+        "process",
+      ],
+      cert_status: ["active", "expired", "revoked"],
       checklist_owner: ["hr", "employee"],
       council_role: ["architect", "curator", "sentinel", "innovator"],
+      course_category: [
+        "department",
+        "policy",
+        "technical",
+        "leadership",
+        "security",
+        "compliance",
+        "ai",
+        "onboarding",
+      ],
+      course_difficulty: ["beginner", "intermediate", "advanced", "expert"],
+      course_status: ["draft", "published", "archived"],
       employment_status: [
         "candidate",
         "offer_sent",
@@ -6590,6 +7159,13 @@ export const Constants = {
         "resigned",
         "exited",
         "archived",
+      ],
+      enrollment_status: [
+        "assigned",
+        "in_progress",
+        "completed",
+        "overdue",
+        "cancelled",
       ],
       leave_kind: [
         "annual",
@@ -6734,6 +7310,14 @@ export const Constants = {
         "innovation",
         "leadership",
         "special",
+      ],
+      roadmap_requirement_type: ["course", "skill", "certification"],
+      skill_verify_status: [
+        "pending",
+        "assessing",
+        "dept_head_review",
+        "verified",
+        "rejected",
       ],
       story_audience: ["public", "close_friends"],
       succession_readiness: ["not_ready", "dev_1y", "dev_6m", "ready_now"],
