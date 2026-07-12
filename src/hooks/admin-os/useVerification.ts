@@ -120,11 +120,11 @@ export function useUpdateApplicationStatus() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, status }: { id: string; status: VerStatus }) => {
-      const patch: Record<string, unknown> = { status };
-      if (["approved", "rejected", "revoked", "suspended"].includes(status)) {
-        patch.decided_at = new Date().toISOString();
-      }
-      const { error } = await supabase.from("ver_applications").update(patch).eq("id", id);
+      const decided = ["approved", "rejected", "revoked", "suspended"].includes(status);
+      const { error } = await supabase.from("ver_applications").update({
+        status,
+        ...(decided ? { decided_at: new Date().toISOString() } : {}),
+      }).eq("id", id);
       if (error) throw error;
     },
     onSuccess: (_r, v) => {
