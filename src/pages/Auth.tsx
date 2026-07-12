@@ -36,6 +36,38 @@ const Auth = () => {
 
   const routeForUser = async (uid: string) => {
     if (nextPath) { nav(nextPath, { replace: true }); return; }
+
+    // Role routing (Phase 3.1) — active employees enter Admin OS.
+    // Founder Office members land inside the Executive Workspace.
+    const { data: emp } = await supabase
+      .from("employees")
+      .select("id, employment_status, department:admin_departments!employees_department_id_fkey(key)")
+      .eq("user_id", uid)
+      .maybeSingle();
+    if (emp && ["active", "on_leave", "joining_today"].includes((emp as any).employment_status)) {
+      const deptKey = (emp as any).department?.key;
+      if (deptKey === "founder_office") {
+        // Best-effort audit + session ping — RLS-guarded, ignore failures.
+        try {
+          await supabase.from("admin_audit_logs").insert({
+            actor_user_id: uid, module: "founder_office", action: "founder.login",
+            target_type: "employee", target_id: (emp as any).id,
+          });
+          await supabase.from("employee_sessions").insert({
+            employee_id: (emp as any).id,
+            user_agent: navigator.userAgent,
+          });
+          await supabase.from("login_events").insert({
+            user_id: uid, user_agent: navigator.userAgent,
+          });
+        } catch { /* ignore */ }
+        nav("/admin-os/executive", { replace: true });
+        return;
+      }
+      nav("/admin-os", { replace: true });
+      return;
+    }
+
     const { data: role } = await supabase
       .from("user_roles").select("role").eq("user_id", uid).eq("role", "admin").maybeSingle();
     if (role) { nav("/admin", { replace: true }); return; }
