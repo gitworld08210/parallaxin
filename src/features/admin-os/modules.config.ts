@@ -168,6 +168,15 @@ export const ADMIN_MODULES: AdminModule[] = [
     section: "platform",
     phase: "3.2",
   },
+  {
+    slug: "platform",
+    label: "Platform Engines",
+    tagline: "Approvals, workflows, docs, more",
+    icon: Layers,
+    permission: ADMIN_PERMISSIONS.ADMIN_OS_ACCESS,
+    section: "platform",
+    phase: "1.12",
+  },
 
   // Governance
   {
