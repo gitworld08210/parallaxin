@@ -405,7 +405,6 @@ export const useDepartmentAnalytics = () =>
             leaveCount = count ?? 0;
           }
           const employeeCount = emp.count ?? 0;
-          const leaveCount = leaves.count ?? 0;
           const health = Math.max(
             0,
             Math.min(
