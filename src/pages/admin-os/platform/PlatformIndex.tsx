@@ -10,6 +10,7 @@ import {
   BarChart3,
   LayoutGrid,
   Clock,
+  Palette,
 } from "lucide-react";
 
 const ENGINES = [
@@ -23,6 +24,7 @@ const ENGINES = [
   { slug: "reports", label: "Reporting Engine", icon: BarChart3, tagline: "Standardised, exportable reports." },
   { slug: "dashboards", label: "Dashboard Engine", icon: LayoutGrid, tagline: "Reusable widget dashboards." },
   { slug: "scheduler", label: "Scheduler Engine", icon: Clock, tagline: "Cron for the whole company." },
+  { slug: "design-system", label: "Design System", icon: Palette, tagline: "Shared UI library for every module." },
 ];
 
 const PlatformIndex = () => (
