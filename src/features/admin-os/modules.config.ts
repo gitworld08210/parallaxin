@@ -95,7 +95,7 @@ export const ADMIN_MODULES: AdminModule[] = [
     phase: "2.3",
   },
   {
-    slug: "finance",
+    slug: "finance-legal",
     label: "Finance",
     tagline: "Payouts, ledgers, tax",
     icon: Landmark,

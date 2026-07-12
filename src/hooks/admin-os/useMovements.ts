@@ -85,10 +85,9 @@ export const useMovement = (id?: string) =>
         supabase
           .from("employee_movements")
           .select(
-            `*, employee:employees!employee_movements_employee_id_fkey(id,full_name,employee_number,employment_status,photo_url,
+            `*, employee:employees!employee_movements_employee_id_fkey(id,full_name,employee_number,employment_status,photo_url,reporting_manager_id,
                department:admin_departments!employees_department_id_fkey(id,name),
-               role:admin_roles!employees_role_id_fkey(id,name),
-               reporting_manager:employees!employees_reporting_manager_id_fkey(id,full_name)),
+               role:admin_roles!employees_role_id_fkey(id,name)),
              target_department:admin_departments!employee_movements_target_department_id_fkey(id,name),
              target_role:admin_roles!employee_movements_target_role_id_fkey(id,name),
              target_manager:employees!employee_movements_target_manager_id_fkey(id,full_name,employee_number)`,

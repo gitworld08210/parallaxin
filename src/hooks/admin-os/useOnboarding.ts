@@ -76,10 +76,9 @@ export const useOnboardingQueue = (stage?: OnboardingStage | "all") =>
            activated_at, created_at, updated_at,
            employee:employees!onboarding_sessions_employee_id_fkey(
              id, full_name, company_email, employee_number,
-             employment_status, joining_date, photo_url,
+             employment_status, joining_date, photo_url, reporting_manager_id,
              department:admin_departments!employees_department_id_fkey(id,name),
-             role:admin_roles!employees_role_id_fkey(id,name),
-             reporting_manager:employees!employees_reporting_manager_id_fkey(id,full_name)
+             role:admin_roles!employees_role_id_fkey(id,name)
            )`,
         )
         .order("created_at", { ascending: false })
@@ -105,10 +104,9 @@ export const useOnboardingSession = (employeeId: string | undefined) =>
            activated_at, created_at, updated_at,
            employee:employees!onboarding_sessions_employee_id_fkey(
              id, full_name, company_email, employee_number,
-             employment_status, joining_date, photo_url,
+             employment_status, joining_date, photo_url, reporting_manager_id,
              department:admin_departments!employees_department_id_fkey(id,name),
-             role:admin_roles!employees_role_id_fkey(id,name),
-             reporting_manager:employees!employees_reporting_manager_id_fkey(id,full_name)
+             role:admin_roles!employees_role_id_fkey(id,name)
            )`,
         )
         .eq("employee_id", employeeId)
