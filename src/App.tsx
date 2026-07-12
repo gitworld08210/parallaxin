@@ -192,6 +192,19 @@ const ReportLibrary = lazy(() => import("./pages/admin-os/executive/reports/Repo
 const ScheduledReportsPage = lazy(() => import("./pages/admin-os/executive/reports/ScheduledReports"));
 const ExportCenterPage = lazy(() => import("./pages/admin-os/executive/reports/ExportCenter"));
 const DepartmentReportCompliance = lazy(() => import("./pages/admin-os/executive/reports/DepartmentReportCompliance"));
+
+// Phase 3.7 — Executive Command Center
+const CommandShell = lazy(() => import("./pages/admin-os/executive/command/CommandShell"));
+const CommandOverview = lazy(() => import("./pages/admin-os/executive/command/CommandOverview"));
+const EmergencyPanel = lazy(() => import("./pages/admin-os/executive/command/EmergencyPanel"));
+const MaintenanceCenterPage = lazy(() => import("./pages/admin-os/executive/command/MaintenanceCenter"));
+const AnnouncementCenterPage = lazy(() => import("./pages/admin-os/executive/command/AnnouncementCenter"));
+const BroadcastCenterPage = lazy(() => import("./pages/admin-os/executive/command/BroadcastCenter"));
+const SystemStatusDashboard = lazy(() => import("./pages/admin-os/executive/command/SystemStatusDashboard"));
+const IncidentCenterPage = lazy(() => import("./pages/admin-os/executive/command/IncidentCenter"));
+const ContinuityCenterPage = lazy(() => import("./pages/admin-os/executive/command/ContinuityCenter"));
+const LockdownPanelPage = lazy(() => import("./pages/admin-os/executive/command/LockdownPanel"));
+const WatchlistPanelPage = lazy(() => import("./pages/admin-os/executive/command/WatchlistPanel"));
 const FounderOfficeDashboard = lazy(
   () => import("./pages/admin-os/founder-office/FounderOfficeDashboard"),
 );
@@ -419,6 +432,18 @@ const App = () => (
                   <Route path="governance/delegations" element={<DelegationCenter />} />
                   <Route path="governance/charters" element={<DepartmentCharters />} />
                   <Route path="governance/search" element={<GovernanceSearchPage />} />
+                  <Route path="command" element={<CommandShell />}>
+                    <Route index element={<CommandOverview />} />
+                    <Route path="emergency" element={<EmergencyPanel />} />
+                    <Route path="maintenance" element={<MaintenanceCenterPage />} />
+                    <Route path="announcements" element={<AnnouncementCenterPage />} />
+                    <Route path="broadcasts" element={<BroadcastCenterPage />} />
+                    <Route path="status" element={<SystemStatusDashboard />} />
+                    <Route path="incidents" element={<IncidentCenterPage />} />
+                    <Route path="continuity" element={<ContinuityCenterPage />} />
+                    <Route path="lockdowns" element={<LockdownPanelPage />} />
+                    <Route path="watchlists" element={<WatchlistPanelPage />} />
+                  </Route>
                   <Route path="security" element={<ExecutiveSecurity />} />
                   <Route path="company" element={<CompanySettingsPage />} />
                   <Route path="profile" element={<ExecutiveProfile />} />
