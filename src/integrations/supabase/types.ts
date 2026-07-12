@@ -5206,6 +5206,717 @@ export type Database = {
         }
         Relationships: []
       }
+      fin_budgets: {
+        Row: {
+          allocated_amount: number
+          approved_at: string | null
+          approved_by: string | null
+          created_at: string
+          currency: string
+          department_id: string | null
+          fiscal_year: number
+          id: string
+          name: string
+          notes: string | null
+          period: string
+          requested_by: string | null
+          spent_amount: number
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          allocated_amount?: number
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          currency?: string
+          department_id?: string | null
+          fiscal_year: number
+          id?: string
+          name: string
+          notes?: string | null
+          period: string
+          requested_by?: string | null
+          spent_amount?: number
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          allocated_amount?: number
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          currency?: string
+          department_id?: string | null
+          fiscal_year?: number
+          id?: string
+          name?: string
+          notes?: string | null
+          period?: string
+          requested_by?: string | null
+          spent_amount?: number
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fin_budgets_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "admin_departments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      fin_compliance_records: {
+        Row: {
+          completed_at: string | null
+          compliance_id: string
+          created_at: string
+          description: string | null
+          due_on: string | null
+          evidence_url: string | null
+          framework: string | null
+          id: string
+          owner_id: string | null
+          severity: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          completed_at?: string | null
+          compliance_id?: string
+          created_at?: string
+          description?: string | null
+          due_on?: string | null
+          evidence_url?: string | null
+          framework?: string | null
+          id?: string
+          owner_id?: string | null
+          severity?: string
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          completed_at?: string | null
+          compliance_id?: string
+          created_at?: string
+          description?: string | null
+          due_on?: string | null
+          evidence_url?: string | null
+          framework?: string | null
+          id?: string
+          owner_id?: string | null
+          severity?: string
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      fin_contract_versions: {
+        Row: {
+          change_summary: string | null
+          changed_by: string | null
+          content: string | null
+          contract_id: string
+          created_at: string
+          id: string
+          version: number
+        }
+        Insert: {
+          change_summary?: string | null
+          changed_by?: string | null
+          content?: string | null
+          contract_id: string
+          created_at?: string
+          id?: string
+          version: number
+        }
+        Update: {
+          change_summary?: string | null
+          changed_by?: string | null
+          content?: string | null
+          contract_id?: string
+          created_at?: string
+          id?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fin_contract_versions_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "fin_contracts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      fin_contracts: {
+        Row: {
+          archived_at: string | null
+          contract_id: string
+          contract_type: string
+          counterparty: string
+          created_at: string
+          currency: string
+          current_version: number
+          end_date: string | null
+          executive_approved_at: string | null
+          executive_approved_by: string | null
+          id: string
+          legal_reviewed_at: string | null
+          legal_reviewed_by: string | null
+          notes: string | null
+          renewal_date: string | null
+          signed_at: string | null
+          start_date: string | null
+          status: string
+          title: string
+          updated_at: string
+          value: number | null
+          vendor_id: string | null
+        }
+        Insert: {
+          archived_at?: string | null
+          contract_id?: string
+          contract_type?: string
+          counterparty: string
+          created_at?: string
+          currency?: string
+          current_version?: number
+          end_date?: string | null
+          executive_approved_at?: string | null
+          executive_approved_by?: string | null
+          id?: string
+          legal_reviewed_at?: string | null
+          legal_reviewed_by?: string | null
+          notes?: string | null
+          renewal_date?: string | null
+          signed_at?: string | null
+          start_date?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+          value?: number | null
+          vendor_id?: string | null
+        }
+        Update: {
+          archived_at?: string | null
+          contract_id?: string
+          contract_type?: string
+          counterparty?: string
+          created_at?: string
+          currency?: string
+          current_version?: number
+          end_date?: string | null
+          executive_approved_at?: string | null
+          executive_approved_by?: string | null
+          id?: string
+          legal_reviewed_at?: string | null
+          legal_reviewed_by?: string | null
+          notes?: string | null
+          renewal_date?: string | null
+          signed_at?: string | null
+          start_date?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+          value?: number | null
+          vendor_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fin_contracts_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "fin_vendors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      fin_expenses: {
+        Row: {
+          amount: number
+          budget_id: string | null
+          category: string | null
+          created_at: string
+          currency: string
+          department_id: string | null
+          description: string | null
+          employee_id: string | null
+          expense_id: string
+          finance_approved: boolean
+          finance_approved_at: string | null
+          finance_approved_by: string | null
+          id: string
+          incurred_on: string | null
+          manager_approved: boolean
+          manager_approved_at: string | null
+          manager_approved_by: string | null
+          paid_at: string | null
+          receipt_url: string | null
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          budget_id?: string | null
+          category?: string | null
+          created_at?: string
+          currency?: string
+          department_id?: string | null
+          description?: string | null
+          employee_id?: string | null
+          expense_id?: string
+          finance_approved?: boolean
+          finance_approved_at?: string | null
+          finance_approved_by?: string | null
+          id?: string
+          incurred_on?: string | null
+          manager_approved?: boolean
+          manager_approved_at?: string | null
+          manager_approved_by?: string | null
+          paid_at?: string | null
+          receipt_url?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          budget_id?: string | null
+          category?: string | null
+          created_at?: string
+          currency?: string
+          department_id?: string | null
+          description?: string | null
+          employee_id?: string | null
+          expense_id?: string
+          finance_approved?: boolean
+          finance_approved_at?: string | null
+          finance_approved_by?: string | null
+          id?: string
+          incurred_on?: string | null
+          manager_approved?: boolean
+          manager_approved_at?: string | null
+          manager_approved_by?: string | null
+          paid_at?: string | null
+          receipt_url?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fin_expenses_budget_id_fkey"
+            columns: ["budget_id"]
+            isOneToOne: false
+            referencedRelation: "fin_budgets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fin_expenses_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "admin_departments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      fin_history: {
+        Row: {
+          action: string
+          actor_id: string | null
+          created_at: string
+          details: Json | null
+          entity_id: string
+          entity_type: string
+          id: string
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          created_at?: string
+          details?: Json | null
+          entity_id: string
+          entity_type: string
+          id?: string
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          created_at?: string
+          details?: Json | null
+          entity_id?: string
+          entity_type?: string
+          id?: string
+        }
+        Relationships: []
+      }
+      fin_invoices: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string
+          due_on: string | null
+          external_invoice_number: string | null
+          id: string
+          invoice_id: string
+          issued_on: string | null
+          notes: string | null
+          paid_at: string | null
+          po_id: string | null
+          status: string
+          updated_at: string
+          vendor_id: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          currency?: string
+          due_on?: string | null
+          external_invoice_number?: string | null
+          id?: string
+          invoice_id?: string
+          issued_on?: string | null
+          notes?: string | null
+          paid_at?: string | null
+          po_id?: string | null
+          status?: string
+          updated_at?: string
+          vendor_id?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          due_on?: string | null
+          external_invoice_number?: string | null
+          id?: string
+          invoice_id?: string
+          issued_on?: string | null
+          notes?: string | null
+          paid_at?: string | null
+          po_id?: string | null
+          status?: string
+          updated_at?: string
+          vendor_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fin_invoices_po_id_fkey"
+            columns: ["po_id"]
+            isOneToOne: false
+            referencedRelation: "fin_purchase_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fin_invoices_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "fin_vendors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      fin_legal_records: {
+        Row: {
+          created_at: string
+          description: string | null
+          expires_on: string | null
+          filed_on: string | null
+          id: string
+          owner_id: string | null
+          record_id: string
+          record_type: string
+          reference_url: string | null
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          expires_on?: string | null
+          filed_on?: string | null
+          id?: string
+          owner_id?: string | null
+          record_id?: string
+          record_type?: string
+          reference_url?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          expires_on?: string | null
+          filed_on?: string | null
+          id?: string
+          owner_id?: string | null
+          record_id?: string
+          record_type?: string
+          reference_url?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      fin_payments: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string
+          expense_id: string | null
+          id: string
+          invoice_id: string | null
+          method: string | null
+          notes: string | null
+          payee_type: string
+          processed_at: string | null
+          processed_by: string | null
+          reference: string | null
+          status: string
+          transaction_id: string
+          updated_at: string
+          vendor_id: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          currency?: string
+          expense_id?: string | null
+          id?: string
+          invoice_id?: string | null
+          method?: string | null
+          notes?: string | null
+          payee_type?: string
+          processed_at?: string | null
+          processed_by?: string | null
+          reference?: string | null
+          status?: string
+          transaction_id?: string
+          updated_at?: string
+          vendor_id?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          expense_id?: string | null
+          id?: string
+          invoice_id?: string | null
+          method?: string | null
+          notes?: string | null
+          payee_type?: string
+          processed_at?: string | null
+          processed_by?: string | null
+          reference?: string | null
+          status?: string
+          transaction_id?: string
+          updated_at?: string
+          vendor_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fin_payments_expense_id_fkey"
+            columns: ["expense_id"]
+            isOneToOne: false
+            referencedRelation: "fin_expenses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fin_payments_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "fin_invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fin_payments_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "fin_vendors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      fin_purchase_orders: {
+        Row: {
+          amount: number
+          approved_at: string | null
+          approved_by: string | null
+          created_at: string
+          currency: string
+          description: string | null
+          id: string
+          po_id: string
+          received_at: string | null
+          request_id: string | null
+          status: string
+          title: string
+          updated_at: string
+          vendor_id: string | null
+        }
+        Insert: {
+          amount: number
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          currency?: string
+          description?: string | null
+          id?: string
+          po_id?: string
+          received_at?: string | null
+          request_id?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+          vendor_id?: string | null
+        }
+        Update: {
+          amount?: number
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          currency?: string
+          description?: string | null
+          id?: string
+          po_id?: string
+          received_at?: string | null
+          request_id?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+          vendor_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fin_purchase_orders_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "fin_purchase_requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fin_purchase_orders_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "fin_vendors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      fin_purchase_requests: {
+        Row: {
+          created_at: string
+          currency: string
+          department_id: string | null
+          description: string | null
+          estimated_amount: number | null
+          id: string
+          justification: string | null
+          request_id: string
+          requester_id: string | null
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          currency?: string
+          department_id?: string | null
+          description?: string | null
+          estimated_amount?: number | null
+          id?: string
+          justification?: string | null
+          request_id?: string
+          requester_id?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          currency?: string
+          department_id?: string | null
+          description?: string | null
+          estimated_amount?: number | null
+          id?: string
+          justification?: string | null
+          request_id?: string
+          requester_id?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fin_purchase_requests_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "admin_departments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      fin_vendors: {
+        Row: {
+          address: string | null
+          category: string | null
+          contact_email: string | null
+          contact_phone: string | null
+          created_at: string
+          id: string
+          name: string
+          notes: string | null
+          performance_rating: number | null
+          risk_level: string
+          status: string
+          tax_id: string | null
+          updated_at: string
+          vendor_id: string
+        }
+        Insert: {
+          address?: string | null
+          category?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          id?: string
+          name: string
+          notes?: string | null
+          performance_rating?: number | null
+          risk_level?: string
+          status?: string
+          tax_id?: string | null
+          updated_at?: string
+          vendor_id?: string
+        }
+        Update: {
+          address?: string | null
+          category?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+          notes?: string | null
+          performance_rating?: number | null
+          risk_level?: string
+          status?: string
+          tax_id?: string | null
+          updated_at?: string
+          vendor_id?: string
+        }
+        Relationships: []
+      }
       follows: {
         Row: {
           created_at: string
@@ -13571,6 +14282,7 @@ export type Database = {
       current_employee_id: { Args: never; Returns: string }
       expire_temporary_assignments: { Args: never; Returns: number }
       gen_eng_id: { Args: { _prefix: string }; Returns: string }
+      gen_fin_id: { Args: { _prefix: string }; Returns: string }
       generate_employee_number: { Args: never; Returns: string }
       generate_unique_org_slug: {
         Args: { _name: string; _self?: string }
@@ -13683,6 +14395,7 @@ export type Database = {
       }
       is_creator: { Args: { _user_id: string }; Returns: boolean }
       is_engineering_staff: { Args: { _user_id: string }; Returns: boolean }
+      is_finance_staff: { Args: { _user_id: string }; Returns: boolean }
       is_org_admin: { Args: { _org: string; _user: string }; Returns: boolean }
       is_org_member: { Args: { _org: string; _user: string }; Returns: boolean }
       is_organization_admin: {
