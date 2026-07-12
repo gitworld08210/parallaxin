@@ -26,8 +26,12 @@ import { toast } from "sonner";
 const AppointmentsPanel = () => {
   const { employee } = useEmployee();
   const { data: appointments } = useAppointments();
+  const revoke = useRevokeAppointment();
   const [openSlot, setOpenSlot] = useState<ExecutiveSlot | null>(null);
   const [result, setResult] = useState<{ result: AppointResult; label: string; email: string } | null>(null);
+  const [revokeTarget, setRevokeTarget] = useState<any | null>(null);
+  const [revokeReason, setRevokeReason] = useState("");
+  const [alsoSuspend, setAlsoSuspend] = useState(true);
 
   if (!employee) return <div className="p-6 text-sm text-muted-foreground">Loading…</div>;
 
