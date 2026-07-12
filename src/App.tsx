@@ -366,7 +366,9 @@ const App = () => (
                 <Route path="/admin-os/executive" element={<ExecutiveLayout />}>
                   <Route index element={<ExecutiveDashboard />} />
                   <Route path="inbox" element={<ExecutiveInbox />} />
-                  <Route path="approvals" element={<ExecutiveApprovals />} />
+                  <Route path="inbox/:id" element={<ExecutiveApprovalDetail />} />
+                  <Route path="approvals" element={<ExecutiveInbox />} />
+                  <Route path="approvals/:id" element={<ExecutiveApprovalDetail />} />
                   <Route path="departments" element={<ExecutiveDepartments />} />
                   <Route path="employees" element={<ExecutiveEmployees />} />
                   <Route path="reports" element={<ExecutiveReports />} />
