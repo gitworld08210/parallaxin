@@ -74,6 +74,12 @@ const PeopleOpsIndex = () => {
               Onboarding queue
             </Link>
             <Link
+              to="/admin-os/people-ops/movements"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-3.5 py-2 text-xs font-semibold hover:bg-muted"
+            >
+              Movements
+            </Link>
+            <Link
               to="/admin-os/people-ops/onboarding/new"
               className="inline-flex items-center gap-1.5 rounded-lg bg-primary text-primary-foreground px-3.5 py-2 text-xs font-semibold hover:bg-primary/90"
             >

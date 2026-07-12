@@ -766,6 +766,67 @@ export type Database = {
           },
         ]
       }
+      employee_leaves: {
+        Row: {
+          coverage_notes: string | null
+          created_at: string
+          employee_id: string
+          end_date: string
+          id: string
+          kind: Database["public"]["Enums"]["leave_kind"]
+          movement_id: string | null
+          start_date: string
+          status: string
+          workload_covered_by: string | null
+        }
+        Insert: {
+          coverage_notes?: string | null
+          created_at?: string
+          employee_id: string
+          end_date: string
+          id?: string
+          kind: Database["public"]["Enums"]["leave_kind"]
+          movement_id?: string | null
+          start_date: string
+          status?: string
+          workload_covered_by?: string | null
+        }
+        Update: {
+          coverage_notes?: string | null
+          created_at?: string
+          employee_id?: string
+          end_date?: string
+          id?: string
+          kind?: Database["public"]["Enums"]["leave_kind"]
+          movement_id?: string | null
+          start_date?: string
+          status?: string
+          workload_covered_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employee_leaves_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "employee_leaves_movement_id_fkey"
+            columns: ["movement_id"]
+            isOneToOne: false
+            referencedRelation: "employee_movements"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "employee_leaves_workload_covered_by_fkey"
+            columns: ["workload_covered_by"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       employee_manager_history: {
         Row: {
           changed_at: string
@@ -814,6 +875,114 @@ export type Database = {
             columns: ["previous_manager_id"]
             isOneToOne: false
             referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      employee_movements: {
+        Row: {
+          applied_at: string | null
+          applied_by: string | null
+          business_justification: string | null
+          created_at: string
+          effective_date: string | null
+          employee_id: string
+          end_date: string | null
+          id: string
+          kind: Database["public"]["Enums"]["movement_kind"]
+          payload: Json
+          reason: string | null
+          requested_by: string | null
+          source_snapshot: Json
+          status: Database["public"]["Enums"]["movement_status"]
+          target_department_id: string | null
+          target_level: string | null
+          target_manager_id: string | null
+          target_role_id: string | null
+          target_team_name: string | null
+          updated_at: string
+          workflow_run_id: string | null
+        }
+        Insert: {
+          applied_at?: string | null
+          applied_by?: string | null
+          business_justification?: string | null
+          created_at?: string
+          effective_date?: string | null
+          employee_id: string
+          end_date?: string | null
+          id?: string
+          kind: Database["public"]["Enums"]["movement_kind"]
+          payload?: Json
+          reason?: string | null
+          requested_by?: string | null
+          source_snapshot?: Json
+          status?: Database["public"]["Enums"]["movement_status"]
+          target_department_id?: string | null
+          target_level?: string | null
+          target_manager_id?: string | null
+          target_role_id?: string | null
+          target_team_name?: string | null
+          updated_at?: string
+          workflow_run_id?: string | null
+        }
+        Update: {
+          applied_at?: string | null
+          applied_by?: string | null
+          business_justification?: string | null
+          created_at?: string
+          effective_date?: string | null
+          employee_id?: string
+          end_date?: string | null
+          id?: string
+          kind?: Database["public"]["Enums"]["movement_kind"]
+          payload?: Json
+          reason?: string | null
+          requested_by?: string | null
+          source_snapshot?: Json
+          status?: Database["public"]["Enums"]["movement_status"]
+          target_department_id?: string | null
+          target_level?: string | null
+          target_manager_id?: string | null
+          target_role_id?: string | null
+          target_team_name?: string | null
+          updated_at?: string
+          workflow_run_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employee_movements_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "employee_movements_target_department_id_fkey"
+            columns: ["target_department_id"]
+            isOneToOne: false
+            referencedRelation: "admin_departments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "employee_movements_target_manager_id_fkey"
+            columns: ["target_manager_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "employee_movements_target_role_id_fkey"
+            columns: ["target_role_id"]
+            isOneToOne: false
+            referencedRelation: "admin_roles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "employee_movements_workflow_run_id_fkey"
+            columns: ["workflow_run_id"]
+            isOneToOne: false
+            referencedRelation: "platform_workflow_runs"
             referencedColumns: ["id"]
           },
         ]
@@ -983,6 +1152,57 @@ export type Database = {
             columns: ["employee_id"]
             isOneToOne: false
             referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      employee_suspensions: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          employee_id: string
+          ended_at: string | null
+          id: string
+          investigation_reference: string | null
+          movement_id: string | null
+          reason: string
+          started_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          employee_id: string
+          ended_at?: string | null
+          id?: string
+          investigation_reference?: string | null
+          movement_id?: string | null
+          reason: string
+          started_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          employee_id?: string
+          ended_at?: string | null
+          id?: string
+          investigation_reference?: string | null
+          movement_id?: string | null
+          reason?: string
+          started_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employee_suspensions_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "employee_suspensions_movement_id_fkey"
+            columns: ["movement_id"]
+            isOneToOne: false
+            referencedRelation: "employee_movements"
             referencedColumns: ["id"]
           },
         ]
@@ -1175,6 +1395,64 @@ export type Database = {
             columns: ["highlight_id"]
             isOneToOne: false
             referencedRelation: "story_highlights"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      knowledge_transfers: {
+        Row: {
+          checklist: Json
+          completed_at: string | null
+          created_at: string
+          from_employee_id: string
+          id: string
+          movement_id: string | null
+          notes: string | null
+          status: string
+          to_employee_id: string | null
+        }
+        Insert: {
+          checklist?: Json
+          completed_at?: string | null
+          created_at?: string
+          from_employee_id: string
+          id?: string
+          movement_id?: string | null
+          notes?: string | null
+          status?: string
+          to_employee_id?: string | null
+        }
+        Update: {
+          checklist?: Json
+          completed_at?: string | null
+          created_at?: string
+          from_employee_id?: string
+          id?: string
+          movement_id?: string | null
+          notes?: string | null
+          status?: string
+          to_employee_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "knowledge_transfers_from_employee_id_fkey"
+            columns: ["from_employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "knowledge_transfers_movement_id_fkey"
+            columns: ["movement_id"]
+            isOneToOne: false
+            referencedRelation: "employee_movements"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "knowledge_transfers_to_employee_id_fkey"
+            columns: ["to_employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
             referencedColumns: ["id"]
           },
         ]
@@ -1455,6 +1733,50 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      movement_approvals: {
+        Row: {
+          approver_user_id: string | null
+          created_at: string
+          decided_at: string | null
+          decision: Database["public"]["Enums"]["approval_decision"]
+          id: string
+          movement_id: string
+          note: string | null
+          role_key: string
+          step_order: number
+        }
+        Insert: {
+          approver_user_id?: string | null
+          created_at?: string
+          decided_at?: string | null
+          decision?: Database["public"]["Enums"]["approval_decision"]
+          id?: string
+          movement_id: string
+          note?: string | null
+          role_key: string
+          step_order: number
+        }
+        Update: {
+          approver_user_id?: string | null
+          created_at?: string
+          decided_at?: string | null
+          decision?: Database["public"]["Enums"]["approval_decision"]
+          id?: string
+          movement_id?: string
+          note?: string | null
+          role_key?: string
+          step_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "movement_approvals_movement_id_fkey"
+            columns: ["movement_id"]
+            isOneToOne: false
+            referencedRelation: "employee_movements"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -4458,6 +4780,76 @@ export type Database = {
         }
         Relationships: []
       }
+      temporary_assignments: {
+        Row: {
+          acting_role: string | null
+          approver_user_id: string | null
+          assignment_kind: string
+          created_at: string
+          employee_id: string
+          end_date: string
+          expired: boolean
+          id: string
+          movement_id: string | null
+          reason: string | null
+          start_date: string
+          target_department_id: string | null
+          target_project: string | null
+        }
+        Insert: {
+          acting_role?: string | null
+          approver_user_id?: string | null
+          assignment_kind: string
+          created_at?: string
+          employee_id: string
+          end_date: string
+          expired?: boolean
+          id?: string
+          movement_id?: string | null
+          reason?: string | null
+          start_date: string
+          target_department_id?: string | null
+          target_project?: string | null
+        }
+        Update: {
+          acting_role?: string | null
+          approver_user_id?: string | null
+          assignment_kind?: string
+          created_at?: string
+          employee_id?: string
+          end_date?: string
+          expired?: boolean
+          id?: string
+          movement_id?: string | null
+          reason?: string | null
+          start_date?: string
+          target_department_id?: string | null
+          target_project?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "temporary_assignments_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "temporary_assignments_movement_id_fkey"
+            columns: ["movement_id"]
+            isOneToOne: false
+            referencedRelation: "employee_movements"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "temporary_assignments_target_department_id_fkey"
+            columns: ["target_department_id"]
+            isOneToOne: false
+            referencedRelation: "admin_departments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tips: {
         Row: {
           amount_cents: number
@@ -4729,6 +5121,7 @@ export type Database = {
         Args: { _reason: string; _tip_id: string }
         Returns: undefined
       }
+      apply_movement: { Args: { _movement_id: string }; Returns: undefined }
       assign_owner_role: {
         Args: { p_member_id: string; p_organization_id: string }
         Returns: undefined
@@ -4791,6 +5184,7 @@ export type Database = {
         Returns: undefined
       }
       current_employee_id: { Args: never; Returns: string }
+      expire_temporary_assignments: { Args: never; Returns: number }
       generate_employee_number: { Args: never; Returns: string }
       generate_unique_org_slug: {
         Args: { _name: string; _self?: string }
@@ -5123,6 +5517,7 @@ export type Database = {
         | "contractor"
         | "temporary"
       app_role: "admin" | "moderator" | "user"
+      approval_decision: "pending" | "approved" | "rejected" | "skipped"
       checklist_owner: "hr" | "employee"
       council_role: "architect" | "curator" | "sentinel" | "innovator"
       employment_status:
@@ -5137,6 +5532,38 @@ export type Database = {
         | "resigned"
         | "exited"
         | "archived"
+      leave_kind:
+        | "annual"
+        | "medical"
+        | "emergency"
+        | "unpaid"
+        | "sabbatical"
+        | "other"
+      movement_kind:
+        | "department_transfer"
+        | "team_transfer"
+        | "manager_change"
+        | "promotion"
+        | "demotion"
+        | "temporary_assignment"
+        | "cross_department_assignment"
+        | "acting_assignment"
+        | "leave"
+        | "suspension"
+        | "reinstatement"
+        | "resignation"
+        | "exit"
+        | "rejoin"
+        | "workload_transfer"
+        | "knowledge_transfer"
+      movement_status:
+        | "draft"
+        | "pending_approval"
+        | "approved"
+        | "rejected"
+        | "applied"
+        | "expired"
+        | "cancelled"
       onboarding_stage:
         | "draft"
         | "hr_review"
@@ -5328,6 +5755,7 @@ export const Constants = {
         "temporary",
       ],
       app_role: ["admin", "moderator", "user"],
+      approval_decision: ["pending", "approved", "rejected", "skipped"],
       checklist_owner: ["hr", "employee"],
       council_role: ["architect", "curator", "sentinel", "innovator"],
       employment_status: [
@@ -5342,6 +5770,41 @@ export const Constants = {
         "resigned",
         "exited",
         "archived",
+      ],
+      leave_kind: [
+        "annual",
+        "medical",
+        "emergency",
+        "unpaid",
+        "sabbatical",
+        "other",
+      ],
+      movement_kind: [
+        "department_transfer",
+        "team_transfer",
+        "manager_change",
+        "promotion",
+        "demotion",
+        "temporary_assignment",
+        "cross_department_assignment",
+        "acting_assignment",
+        "leave",
+        "suspension",
+        "reinstatement",
+        "resignation",
+        "exit",
+        "rejoin",
+        "workload_transfer",
+        "knowledge_transfer",
+      ],
+      movement_status: [
+        "draft",
+        "pending_approval",
+        "approved",
+        "rejected",
+        "applied",
+        "expired",
+        "cancelled",
       ],
       onboarding_stage: [
         "draft",
