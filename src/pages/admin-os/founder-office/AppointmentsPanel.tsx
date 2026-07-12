@@ -8,11 +8,13 @@ import {
   CheckCircle2,
   Circle,
   Mail,
+  UserMinus,
 } from "lucide-react";
 import { useEmployee } from "@/hooks/admin-os/useEmployee";
 import {
   EXECUTIVE_SLOTS,
   useAppointments,
+  useRevokeAppointment,
   getSignedLetterUrl,
   type ExecutiveSlot,
   type AppointResult,
