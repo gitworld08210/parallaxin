@@ -273,6 +273,137 @@ export type Database = {
           },
         ]
       }
+      attendance_corrections: {
+        Row: {
+          created_at: string
+          current_status:
+            | Database["public"]["Enums"]["attendance_status"]
+            | null
+          employee_id: string
+          id: string
+          reason: string
+          requested_by: string | null
+          requested_check_in: string | null
+          requested_check_out: string | null
+          requested_status: Database["public"]["Enums"]["attendance_status"]
+          review_notes: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: Database["public"]["Enums"]["correction_status"]
+          updated_at: string
+          work_date: string
+        }
+        Insert: {
+          created_at?: string
+          current_status?:
+            | Database["public"]["Enums"]["attendance_status"]
+            | null
+          employee_id: string
+          id?: string
+          reason: string
+          requested_by?: string | null
+          requested_check_in?: string | null
+          requested_check_out?: string | null
+          requested_status: Database["public"]["Enums"]["attendance_status"]
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["correction_status"]
+          updated_at?: string
+          work_date: string
+        }
+        Update: {
+          created_at?: string
+          current_status?:
+            | Database["public"]["Enums"]["attendance_status"]
+            | null
+          employee_id?: string
+          id?: string
+          reason?: string
+          requested_by?: string | null
+          requested_check_in?: string | null
+          requested_check_out?: string | null
+          requested_status?: Database["public"]["Enums"]["attendance_status"]
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["correction_status"]
+          updated_at?: string
+          work_date?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "attendance_corrections_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      attendance_records: {
+        Row: {
+          check_in_at: string | null
+          check_out_at: string | null
+          created_at: string
+          employee_id: string
+          hours_worked: number | null
+          id: string
+          notes: string | null
+          recorded_by: string | null
+          shift_id: string | null
+          source: Database["public"]["Enums"]["attendance_source"]
+          status: Database["public"]["Enums"]["attendance_status"]
+          updated_at: string
+          work_date: string
+        }
+        Insert: {
+          check_in_at?: string | null
+          check_out_at?: string | null
+          created_at?: string
+          employee_id: string
+          hours_worked?: number | null
+          id?: string
+          notes?: string | null
+          recorded_by?: string | null
+          shift_id?: string | null
+          source?: Database["public"]["Enums"]["attendance_source"]
+          status?: Database["public"]["Enums"]["attendance_status"]
+          updated_at?: string
+          work_date: string
+        }
+        Update: {
+          check_in_at?: string | null
+          check_out_at?: string | null
+          created_at?: string
+          employee_id?: string
+          hours_worked?: number | null
+          id?: string
+          notes?: string | null
+          recorded_by?: string | null
+          shift_id?: string | null
+          source?: Database["public"]["Enums"]["attendance_source"]
+          status?: Database["public"]["Enums"]["attendance_status"]
+          updated_at?: string
+          work_date?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "attendance_records_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "attendance_records_shift_id_fkey"
+            columns: ["shift_id"]
+            isOneToOne: false
+            referencedRelation: "shifts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       blocks: {
         Row: {
           blocked_id: string
@@ -1682,6 +1813,51 @@ export type Database = {
           },
         ]
       }
+      employee_shifts: {
+        Row: {
+          assigned_by: string | null
+          created_at: string
+          effective_from: string
+          effective_to: string | null
+          employee_id: string
+          id: string
+          shift_id: string
+        }
+        Insert: {
+          assigned_by?: string | null
+          created_at?: string
+          effective_from?: string
+          effective_to?: string | null
+          employee_id: string
+          id?: string
+          shift_id: string
+        }
+        Update: {
+          assigned_by?: string | null
+          created_at?: string
+          effective_from?: string
+          effective_to?: string | null
+          employee_id?: string
+          id?: string
+          shift_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employee_shifts_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "employee_shifts_shift_id_fkey"
+            columns: ["shift_id"]
+            isOneToOne: false
+            referencedRelation: "shifts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       employee_suspensions: {
         Row: {
           created_at: string
@@ -1992,6 +2168,50 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "hiring_requests_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "admin_departments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      holidays: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          department_id: string | null
+          description: string | null
+          holiday_date: string
+          id: string
+          kind: Database["public"]["Enums"]["holiday_kind"]
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          department_id?: string | null
+          description?: string | null
+          holiday_date: string
+          id?: string
+          kind?: Database["public"]["Enums"]["holiday_kind"]
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          department_id?: string | null
+          description?: string | null
+          holiday_date?: string
+          id?: string
+          kind?: Database["public"]["Enums"]["holiday_kind"]
+          name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "holidays_department_id_fkey"
             columns: ["department_id"]
             isOneToOne: false
             referencedRelation: "admin_departments"
@@ -2441,6 +2661,163 @@ export type Database = {
             columns: ["department_id"]
             isOneToOne: false
             referencedRelation: "admin_departments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      leave_balances: {
+        Row: {
+          allocated: number
+          created_at: string
+          employee_id: string
+          id: string
+          leave_type: Database["public"]["Enums"]["leave_type"]
+          pending: number
+          updated_at: string
+          used: number
+          year: number
+        }
+        Insert: {
+          allocated?: number
+          created_at?: string
+          employee_id: string
+          id?: string
+          leave_type: Database["public"]["Enums"]["leave_type"]
+          pending?: number
+          updated_at?: string
+          used?: number
+          year: number
+        }
+        Update: {
+          allocated?: number
+          created_at?: string
+          employee_id?: string
+          id?: string
+          leave_type?: Database["public"]["Enums"]["leave_type"]
+          pending?: number
+          updated_at?: string
+          used?: number
+          year?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leave_balances_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      leave_policies: {
+        Row: {
+          annual_allowance: number
+          carryover_days: number
+          created_at: string
+          description: string | null
+          id: string
+          is_paid: boolean
+          leave_type: Database["public"]["Enums"]["leave_type"]
+          requires_medical: boolean
+          updated_at: string
+        }
+        Insert: {
+          annual_allowance?: number
+          carryover_days?: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_paid?: boolean
+          leave_type: Database["public"]["Enums"]["leave_type"]
+          requires_medical?: boolean
+          updated_at?: string
+        }
+        Update: {
+          annual_allowance?: number
+          carryover_days?: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_paid?: boolean
+          leave_type?: Database["public"]["Enums"]["leave_type"]
+          requires_medical?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      leave_requests: {
+        Row: {
+          created_at: string
+          days: number
+          dept_reviewed_at: string | null
+          dept_reviewer: string | null
+          employee_id: string
+          end_date: string
+          handover_notes: string | null
+          hr_reviewed_at: string | null
+          hr_reviewer: string | null
+          id: string
+          lead_reviewed_at: string | null
+          lead_reviewer: string | null
+          leave_type: Database["public"]["Enums"]["leave_type"]
+          medical_doc_url: string | null
+          reason: string
+          rejection_reason: string | null
+          request_number: string
+          start_date: string
+          status: Database["public"]["Enums"]["leave_request_status"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          days: number
+          dept_reviewed_at?: string | null
+          dept_reviewer?: string | null
+          employee_id: string
+          end_date: string
+          handover_notes?: string | null
+          hr_reviewed_at?: string | null
+          hr_reviewer?: string | null
+          id?: string
+          lead_reviewed_at?: string | null
+          lead_reviewer?: string | null
+          leave_type: Database["public"]["Enums"]["leave_type"]
+          medical_doc_url?: string | null
+          reason: string
+          rejection_reason?: string | null
+          request_number?: string
+          start_date: string
+          status?: Database["public"]["Enums"]["leave_request_status"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          days?: number
+          dept_reviewed_at?: string | null
+          dept_reviewer?: string | null
+          employee_id?: string
+          end_date?: string
+          handover_notes?: string | null
+          hr_reviewed_at?: string | null
+          hr_reviewer?: string | null
+          id?: string
+          lead_reviewed_at?: string | null
+          lead_reviewer?: string | null
+          leave_type?: Database["public"]["Enums"]["leave_type"]
+          medical_doc_url?: string | null
+          reason?: string
+          rejection_reason?: string | null
+          request_number?: string
+          start_date?: string
+          status?: Database["public"]["Enums"]["leave_request_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leave_requests_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
             referencedColumns: ["id"]
           },
         ]
@@ -6079,6 +6456,59 @@ export type Database = {
           },
         ]
       }
+      shifts: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          days_of_week: number[]
+          department_id: string | null
+          description: string | null
+          end_time: string
+          id: string
+          is_default: boolean
+          kind: Database["public"]["Enums"]["shift_kind"]
+          name: string
+          start_time: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          days_of_week?: number[]
+          department_id?: string | null
+          description?: string | null
+          end_time?: string
+          id?: string
+          is_default?: boolean
+          kind?: Database["public"]["Enums"]["shift_kind"]
+          name: string
+          start_time?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          days_of_week?: number[]
+          department_id?: string | null
+          description?: string | null
+          end_time?: string
+          id?: string
+          is_default?: boolean
+          kind?: Database["public"]["Enums"]["shift_kind"]
+          name?: string
+          start_time?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shifts_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "admin_departments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       skill_verifications: {
         Row: {
           assessor_id: string | null
@@ -7254,6 +7684,18 @@ export type Database = {
         | "offer_extended"
         | "hired"
       approval_decision: "pending" | "approved" | "rejected" | "skipped"
+      attendance_source: "self" | "manager" | "system" | "import" | "correction"
+      attendance_status:
+        | "present"
+        | "absent"
+        | "late"
+        | "half_day"
+        | "wfh"
+        | "business_travel"
+        | "training"
+        | "holiday"
+        | "weekend"
+        | "leave"
       candidate_event_type:
         | "application"
         | "stage_change"
@@ -7296,6 +7738,7 @@ export type Database = {
         | "process"
       cert_status: "active" | "expired" | "revoked"
       checklist_owner: "hr" | "employee"
+      correction_status: "pending" | "approved" | "rejected"
       council_role: "architect" | "curator" | "sentinel" | "innovator"
       course_category:
         | "department"
@@ -7336,6 +7779,7 @@ export type Database = {
         | "rejected"
         | "closed"
         | "filled"
+      holiday_kind: "national" | "company" | "department" | "regional"
       interview_decision: "pending" | "pass" | "hold" | "reject" | "reopen"
       interview_recommendation:
         | "strong_hire"
@@ -7354,6 +7798,23 @@ export type Database = {
         | "unpaid"
         | "sabbatical"
         | "other"
+      leave_request_status:
+        | "draft"
+        | "pending_lead"
+        | "pending_dept_head"
+        | "pending_hr"
+        | "approved"
+        | "rejected"
+        | "cancelled"
+      leave_type:
+        | "annual"
+        | "medical"
+        | "emergency"
+        | "maternity"
+        | "paternity"
+        | "bereavement"
+        | "compensatory"
+        | "unpaid"
       movement_kind:
         | "department_transfer"
         | "team_transfer"
@@ -7488,6 +7949,13 @@ export type Database = {
         | "leadership"
         | "special"
       roadmap_requirement_type: "course" | "skill" | "certification"
+      shift_kind:
+        | "general"
+        | "morning"
+        | "evening"
+        | "night"
+        | "flexible"
+        | "remote"
       skill_verify_status:
         | "pending"
         | "assessing"
@@ -7646,6 +8114,19 @@ export const Constants = {
         "hired",
       ],
       approval_decision: ["pending", "approved", "rejected", "skipped"],
+      attendance_source: ["self", "manager", "system", "import", "correction"],
+      attendance_status: [
+        "present",
+        "absent",
+        "late",
+        "half_day",
+        "wfh",
+        "business_travel",
+        "training",
+        "holiday",
+        "weekend",
+        "leave",
+      ],
       candidate_event_type: [
         "application",
         "stage_change",
@@ -7686,6 +8167,7 @@ export const Constants = {
       ],
       cert_status: ["active", "expired", "revoked"],
       checklist_owner: ["hr", "employee"],
+      correction_status: ["pending", "approved", "rejected"],
       council_role: ["architect", "curator", "sentinel", "innovator"],
       course_category: [
         "department",
@@ -7730,6 +8212,7 @@ export const Constants = {
         "closed",
         "filled",
       ],
+      holiday_kind: ["national", "company", "department", "regional"],
       interview_decision: ["pending", "pass", "hold", "reject", "reopen"],
       interview_recommendation: [
         "strong_hire",
@@ -7750,6 +8233,25 @@ export const Constants = {
         "unpaid",
         "sabbatical",
         "other",
+      ],
+      leave_request_status: [
+        "draft",
+        "pending_lead",
+        "pending_dept_head",
+        "pending_hr",
+        "approved",
+        "rejected",
+        "cancelled",
+      ],
+      leave_type: [
+        "annual",
+        "medical",
+        "emergency",
+        "maternity",
+        "paternity",
+        "bereavement",
+        "compensatory",
+        "unpaid",
       ],
       movement_kind: [
         "department_transfer",
@@ -7898,6 +8400,14 @@ export const Constants = {
         "special",
       ],
       roadmap_requirement_type: ["course", "skill", "certification"],
+      shift_kind: [
+        "general",
+        "morning",
+        "evening",
+        "night",
+        "flexible",
+        "remote",
+      ],
       skill_verify_status: [
         "pending",
         "assessing",

@@ -133,6 +133,13 @@ const CandidateDetail = lazy(() => import("./pages/admin-os/people-ops/recruitme
 const InterviewPipeline = lazy(() => import("./pages/admin-os/people-ops/recruitment/InterviewPipeline"));
 const OfferCenter = lazy(() => import("./pages/admin-os/people-ops/recruitment/OfferCenter"));
 const RecruitmentAnalytics = lazy(() => import("./pages/admin-os/people-ops/recruitment/RecruitmentAnalytics"));
+const AttendanceIndex = lazy(() => import("./pages/admin-os/people-ops/attendance/AttendanceIndex"));
+const MyAttendance = lazy(() => import("./pages/admin-os/people-ops/attendance/MyAttendance"));
+const LeaveCenter = lazy(() => import("./pages/admin-os/people-ops/attendance/LeaveCenter"));
+const ShiftManagement = lazy(() => import("./pages/admin-os/people-ops/attendance/ShiftManagement"));
+const HolidayCalendar = lazy(() => import("./pages/admin-os/people-ops/attendance/HolidayCalendar"));
+const AttendanceCorrections = lazy(() => import("./pages/admin-os/people-ops/attendance/AttendanceCorrections"));
+const WorkforceAvailability = lazy(() => import("./pages/admin-os/people-ops/attendance/WorkforceAvailability"));
 const FounderOfficeDashboard = lazy(
   () => import("./pages/admin-os/founder-office/FounderOfficeDashboard"),
 );
@@ -379,6 +386,13 @@ const App = () => (
                   <Route path="people-ops/recruitment/applications/:applicationId" element={<InterviewPipeline />} />
                   <Route path="people-ops/recruitment/offers" element={<OfferCenter />} />
                   <Route path="people-ops/recruitment/analytics" element={<RecruitmentAnalytics />} />
+                  <Route path="people-ops/attendance" element={<AttendanceIndex />} />
+                  <Route path="people-ops/attendance/my" element={<MyAttendance />} />
+                  <Route path="people-ops/attendance/leave" element={<LeaveCenter />} />
+                  <Route path="people-ops/attendance/shifts" element={<ShiftManagement />} />
+                  <Route path="people-ops/attendance/holidays" element={<HolidayCalendar />} />
+                  <Route path="people-ops/attendance/corrections" element={<AttendanceCorrections />} />
+                  <Route path="people-ops/attendance/availability" element={<WorkforceAvailability />} />
                   <Route
                     path="founder-office"
                     element={<FounderOfficeDashboard />}
