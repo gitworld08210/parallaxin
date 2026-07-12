@@ -11379,6 +11379,343 @@ export type Database = {
           },
         ]
       }
+      sup_escalations: {
+        Row: {
+          created_at: string
+          escalated_by: string | null
+          from_department_id: string | null
+          id: string
+          reason: string
+          resolved_at: string | null
+          resolved_notes: string | null
+          status: string
+          target_department_key: string
+          ticket_id: string
+          to_department_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          escalated_by?: string | null
+          from_department_id?: string | null
+          id?: string
+          reason: string
+          resolved_at?: string | null
+          resolved_notes?: string | null
+          status?: string
+          target_department_key: string
+          ticket_id: string
+          to_department_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          escalated_by?: string | null
+          from_department_id?: string | null
+          id?: string
+          reason?: string
+          resolved_at?: string | null
+          resolved_notes?: string | null
+          status?: string
+          target_department_key?: string
+          ticket_id?: string
+          to_department_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sup_escalations_from_department_id_fkey"
+            columns: ["from_department_id"]
+            isOneToOne: false
+            referencedRelation: "admin_departments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sup_escalations_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "sup_tickets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sup_escalations_to_department_id_fkey"
+            columns: ["to_department_id"]
+            isOneToOne: false
+            referencedRelation: "admin_departments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sup_feedback: {
+        Row: {
+          agent_id: string | null
+          comment: string | null
+          created_at: string
+          id: string
+          rating: number
+          submitted_by: string | null
+          suggestions: string | null
+          ticket_id: string
+        }
+        Insert: {
+          agent_id?: string | null
+          comment?: string | null
+          created_at?: string
+          id?: string
+          rating: number
+          submitted_by?: string | null
+          suggestions?: string | null
+          ticket_id: string
+        }
+        Update: {
+          agent_id?: string | null
+          comment?: string | null
+          created_at?: string
+          id?: string
+          rating?: number
+          submitted_by?: string | null
+          suggestions?: string | null
+          ticket_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sup_feedback_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "sup_tickets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sup_history: {
+        Row: {
+          actor_id: string | null
+          created_at: string
+          details: Json
+          event_type: string
+          id: string
+          ticket_id: string
+        }
+        Insert: {
+          actor_id?: string | null
+          created_at?: string
+          details?: Json
+          event_type: string
+          id?: string
+          ticket_id: string
+        }
+        Update: {
+          actor_id?: string | null
+          created_at?: string
+          details?: Json
+          event_type?: string
+          id?: string
+          ticket_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sup_history_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "sup_tickets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sup_messages: {
+        Row: {
+          attachments: Json
+          author_id: string | null
+          author_role: string
+          body: string
+          created_at: string
+          id: string
+          ticket_id: string
+        }
+        Insert: {
+          attachments?: Json
+          author_id?: string | null
+          author_role?: string
+          body: string
+          created_at?: string
+          id?: string
+          ticket_id: string
+        }
+        Update: {
+          attachments?: Json
+          author_id?: string | null
+          author_role?: string
+          body?: string
+          created_at?: string
+          id?: string
+          ticket_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sup_messages_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "sup_tickets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sup_notes: {
+        Row: {
+          author_id: string | null
+          body: string
+          created_at: string
+          id: string
+          note_type: string
+          ticket_id: string
+        }
+        Insert: {
+          author_id?: string | null
+          body: string
+          created_at?: string
+          id?: string
+          note_type?: string
+          ticket_id: string
+        }
+        Update: {
+          author_id?: string | null
+          body?: string
+          created_at?: string
+          id?: string
+          note_type?: string
+          ticket_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sup_notes_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "sup_tickets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sup_sla_events: {
+        Row: {
+          actor_id: string | null
+          created_at: string
+          details: Json
+          event_type: string
+          id: string
+          policy_ref: string | null
+          ticket_id: string
+        }
+        Insert: {
+          actor_id?: string | null
+          created_at?: string
+          details?: Json
+          event_type: string
+          id?: string
+          policy_ref?: string | null
+          ticket_id: string
+        }
+        Update: {
+          actor_id?: string | null
+          created_at?: string
+          details?: Json
+          event_type?: string
+          id?: string
+          policy_ref?: string | null
+          ticket_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sup_sla_events_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "sup_tickets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sup_tickets: {
+        Row: {
+          assignee_id: string | null
+          category: Database["public"]["Enums"]["sup_category"]
+          closed_at: string | null
+          created_at: string
+          description: string | null
+          first_responded_at: string | null
+          first_response_due_at: string | null
+          id: string
+          metadata: Json
+          owning_department_id: string | null
+          priority: Database["public"]["Enums"]["sup_priority"]
+          reopened_at: string | null
+          requester_display: string | null
+          requester_id: string | null
+          resolution_due_at: string | null
+          resolved_at: string | null
+          sla_paused: boolean
+          source: Database["public"]["Enums"]["sup_source"]
+          status: Database["public"]["Enums"]["sup_status"]
+          subject: string
+          tags: string[]
+          ticket_number: string
+          updated_at: string
+        }
+        Insert: {
+          assignee_id?: string | null
+          category?: Database["public"]["Enums"]["sup_category"]
+          closed_at?: string | null
+          created_at?: string
+          description?: string | null
+          first_responded_at?: string | null
+          first_response_due_at?: string | null
+          id?: string
+          metadata?: Json
+          owning_department_id?: string | null
+          priority?: Database["public"]["Enums"]["sup_priority"]
+          reopened_at?: string | null
+          requester_display?: string | null
+          requester_id?: string | null
+          resolution_due_at?: string | null
+          resolved_at?: string | null
+          sla_paused?: boolean
+          source?: Database["public"]["Enums"]["sup_source"]
+          status?: Database["public"]["Enums"]["sup_status"]
+          subject: string
+          tags?: string[]
+          ticket_number: string
+          updated_at?: string
+        }
+        Update: {
+          assignee_id?: string | null
+          category?: Database["public"]["Enums"]["sup_category"]
+          closed_at?: string | null
+          created_at?: string
+          description?: string | null
+          first_responded_at?: string | null
+          first_response_due_at?: string | null
+          id?: string
+          metadata?: Json
+          owning_department_id?: string | null
+          priority?: Database["public"]["Enums"]["sup_priority"]
+          reopened_at?: string | null
+          requester_display?: string | null
+          requester_id?: string | null
+          resolution_due_at?: string | null
+          resolved_at?: string | null
+          sla_paused?: boolean
+          source?: Database["public"]["Enums"]["sup_source"]
+          status?: Database["public"]["Enums"]["sup_status"]
+          subject?: string
+          tags?: string[]
+          ticket_number?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sup_tickets_owning_department_id_fkey"
+            columns: ["owning_department_id"]
+            isOneToOne: false
+            referencedRelation: "admin_departments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       temporary_assignments: {
         Row: {
           acting_role: string | null
@@ -12747,6 +13084,7 @@ export type Database = {
         Args: { p_organization_id: string }
         Returns: boolean
       }
+      is_support_staff: { Args: { _user: string }; Returns: boolean }
       is_trust_safety_staff: { Args: { _user_id: string }; Returns: boolean }
       is_verification_staff: { Args: { _user: string }; Returns: boolean }
       kip_can_access_collection: {
@@ -13310,6 +13648,41 @@ export type Database = {
         | "deputy_head"
         | "team_lead"
         | "specialist"
+      sup_category:
+        | "account"
+        | "verification"
+        | "trust_safety"
+        | "technical"
+        | "billing"
+        | "creator"
+        | "organization"
+        | "bug"
+        | "feature_request"
+        | "appeal"
+        | "it"
+        | "hr"
+        | "other"
+      sup_priority: "critical" | "high" | "medium" | "low"
+      sup_source:
+        | "user"
+        | "creator"
+        | "organization"
+        | "employee"
+        | "verification"
+        | "trust_safety"
+        | "founder_office"
+        | "system"
+        | "api"
+      sup_status:
+        | "open"
+        | "assigned"
+        | "in_progress"
+        | "waiting_customer"
+        | "waiting_internal"
+        | "escalated"
+        | "resolved"
+        | "closed"
+        | "reopened"
       ver_affiliation_kind:
         | "employee_org"
         | "creator_brand"
@@ -13836,6 +14209,44 @@ export const Constants = {
         "deputy_head",
         "team_lead",
         "specialist",
+      ],
+      sup_category: [
+        "account",
+        "verification",
+        "trust_safety",
+        "technical",
+        "billing",
+        "creator",
+        "organization",
+        "bug",
+        "feature_request",
+        "appeal",
+        "it",
+        "hr",
+        "other",
+      ],
+      sup_priority: ["critical", "high", "medium", "low"],
+      sup_source: [
+        "user",
+        "creator",
+        "organization",
+        "employee",
+        "verification",
+        "trust_safety",
+        "founder_office",
+        "system",
+        "api",
+      ],
+      sup_status: [
+        "open",
+        "assigned",
+        "in_progress",
+        "waiting_customer",
+        "waiting_internal",
+        "escalated",
+        "resolved",
+        "closed",
+        "reopened",
       ],
       ver_affiliation_kind: [
         "employee_org",
