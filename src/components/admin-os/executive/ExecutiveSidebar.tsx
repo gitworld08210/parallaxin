@@ -1,6 +1,6 @@
 import { NavLink } from "react-router-dom";
 import {
-  Crown, LayoutDashboard, Inbox, CheckCircle2, Building2, Users,
+  Crown, LayoutDashboard, Inbox, CheckCircle2, Building2, Users, Command,
   BarChart3, ScrollText, ShieldCheck, Settings, Bell, User as UserIcon, Scale,
 } from "lucide-react";
 import { useEmployee } from "@/hooks/admin-os/useEmployee";
