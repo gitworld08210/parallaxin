@@ -23,6 +23,8 @@ export interface EmployeeFilters {
   search?: string;
   status?: string;
   departmentId?: string;
+  /** Include newly appointed executives who haven't logged in yet (temp password). */
+  includePending?: boolean;
 }
 
 export const useEmployeesList = (filters: EmployeeFilters = {}) =>
