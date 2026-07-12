@@ -16,7 +16,7 @@ const IdentityProfile = () => {
     { label: "Full Name", value: employee?.full_name ?? "—" },
     { label: "Role", value: employee?.role?.name ?? "Founder" },
     { label: "Department", value: "Founder Office" },
-    { label: "Status", value: employee?.status ?? "active" },
+    { label: "Status", value: (employee as any)?.status ?? "active" },
     { label: "Security Level", value: score >= 80 ? "Excellent" : score >= 50 ? "Adequate" : "At Risk" },
     { label: "Security Score", value: `${score}/100` },
     { label: "Last Login", value: user?.last_sign_in_at ? new Date(user.last_sign_in_at).toLocaleString() : "—" },
