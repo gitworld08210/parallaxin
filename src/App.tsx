@@ -149,6 +149,23 @@ const SalaryRevisionsPage = lazy(() => import("./pages/admin-os/people-ops/payro
 const BonusCenter = lazy(() => import("./pages/admin-os/people-ops/payroll/BonusCenter"));
 const BenefitsCenter = lazy(() => import("./pages/admin-os/people-ops/payroll/BenefitsCenter"));
 const ReimbursementCenter = lazy(() => import("./pages/admin-os/people-ops/payroll/ReimbursementCenter"));
+// Executive Workspace (Phase 3.1)
+const ExecutiveGate = lazy(() =>
+  import("./components/admin-os/executive/ExecutiveGate").then((m) => ({ default: m.ExecutiveGate })),
+);
+const ExecutiveLayout = lazy(() => import("./components/admin-os/executive/ExecutiveLayout"));
+const ExecutiveDashboard = lazy(() => import("./pages/admin-os/executive/ExecutiveDashboard"));
+const ExecutiveProfile = lazy(() => import("./pages/admin-os/executive/ExecutiveProfile"));
+const ExecutiveSecurity = lazy(() => import("./pages/admin-os/executive/ExecutiveSecurity"));
+const ExecutivePlaceholders = () => import("./pages/admin-os/executive/ExecutivePlaceholders");
+const ExecutiveInbox = lazy(() => ExecutivePlaceholders().then((m) => ({ default: m.ExecutiveInbox })));
+const ExecutiveApprovals = lazy(() => ExecutivePlaceholders().then((m) => ({ default: m.ExecutiveApprovals })));
+const ExecutiveDepartments = lazy(() => ExecutivePlaceholders().then((m) => ({ default: m.ExecutiveDepartments })));
+const ExecutiveEmployees = lazy(() => ExecutivePlaceholders().then((m) => ({ default: m.ExecutiveEmployees })));
+const ExecutiveReports = lazy(() => ExecutivePlaceholders().then((m) => ({ default: m.ExecutiveReports })));
+const DecisionLogPage = lazy(() => ExecutivePlaceholders().then((m) => ({ default: m.DecisionLog })));
+const CompanySettingsPage = lazy(() => ExecutivePlaceholders().then((m) => ({ default: m.CompanySettings })));
+const ExecutiveNotificationsPage = lazy(() => ExecutivePlaceholders().then((m) => ({ default: m.ExecutiveNotifications })));
 const FounderOfficeDashboard = lazy(
   () => import("./pages/admin-os/founder-office/FounderOfficeDashboard"),
 );
@@ -342,6 +359,24 @@ const App = () => (
 
               {/* Aurelix Admin OS — internal enterprise workspace */}
               <Route path="/admin-os/no-access" element={<AdminOSNoAccess />} />
+
+              {/* Founder Office Executive Workspace (Phase 3.1) */}
+              <Route element={<ExecutiveGate />}>
+                <Route path="/admin-os/executive" element={<ExecutiveLayout />}>
+                  <Route index element={<ExecutiveDashboard />} />
+                  <Route path="inbox" element={<ExecutiveInbox />} />
+                  <Route path="approvals" element={<ExecutiveApprovals />} />
+                  <Route path="departments" element={<ExecutiveDepartments />} />
+                  <Route path="employees" element={<ExecutiveEmployees />} />
+                  <Route path="reports" element={<ExecutiveReports />} />
+                  <Route path="decisions" element={<DecisionLogPage />} />
+                  <Route path="security" element={<ExecutiveSecurity />} />
+                  <Route path="company" element={<CompanySettingsPage />} />
+                  <Route path="profile" element={<ExecutiveProfile />} />
+                  <Route path="notifications" element={<ExecutiveNotificationsPage />} />
+                </Route>
+              </Route>
+
               <Route element={<AdminOSGate />}>
                 <Route path="/admin-os/first-login" element={<AdminOSFirstLogin />} />
                 <Route path="/admin-os" element={<AdminOSLayout />}>
