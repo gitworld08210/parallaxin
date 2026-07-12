@@ -22,14 +22,22 @@ interface Props {
 }
 
 const EmployeeForm = ({ mode }: Props) => {
-  const { hasPermission } = useEmployee();
+  const { hasPermission, employee } = useEmployee();
   const nav = useNavigate();
   const params = useParams<{ id: string }>();
   const { data: existing } = useEmployeeDetail(mode === "edit" ? params.id : undefined);
   const { data: departments } = useDepartments();
   const { data: roles } = useRoles();
+  const { data: appointments } = useAppointments();
   const create = useCreateEmployee();
   const update = useUpdateEmployee();
+
+  const callerRoleKey = (employee as any)?.role?.key;
+  const isFounder = callerRoleKey === "founder" || callerRoleKey === "co_founder";
+  const hrHeadActive = (appointments ?? []).some(
+    (a) => a.slot_key === "hr_head" && !a.revoked_at,
+  );
+  const hrLocked = mode === "create" && !isFounder && !hrHeadActive;
 
   const [form, setForm] = useState({
     full_name: "",
@@ -152,11 +160,10 @@ const EmployeeForm = ({ mode }: Props) => {
           {field(
             "Employee ID",
             <input
-              required
-              className={inp}
-              value={form.employee_number}
-              onChange={(e) => setForm({ ...form, employee_number: e.target.value })}
-              disabled={mode === "edit"}
+              className={`${inp} bg-muted/40 text-muted-foreground`}
+              value={mode === "edit" ? form.employee_number : "Auto-generated (AURE###)"}
+              disabled
+              readOnly
             />,
           )}
           {field(
