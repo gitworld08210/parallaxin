@@ -95,6 +95,9 @@ const AdminOSFirstLogin = lazy(() => import("./pages/admin-os/AdminOSFirstLogin"
 const PeopleOpsIndex = lazy(() => import("./pages/admin-os/people-ops/PeopleOpsIndex"));
 const EmployeeDetailPage = lazy(() => import("./pages/admin-os/people-ops/EmployeeDetail"));
 const EmployeeForm = lazy(() => import("./pages/admin-os/people-ops/EmployeeForm"));
+const OnboardingQueue = lazy(() => import("./pages/admin-os/people-ops/OnboardingQueue"));
+const OnboardingWizard = lazy(() => import("./pages/admin-os/people-ops/OnboardingWizard"));
+const OnboardingDetail = lazy(() => import("./pages/admin-os/people-ops/OnboardingDetail"));
 const FounderOfficeDashboard = lazy(
   () => import("./pages/admin-os/founder-office/FounderOfficeDashboard"),
 );
@@ -302,6 +305,9 @@ const App = () => (
                     path="people-ops/:id/edit"
                     element={<EmployeeForm mode="edit" />}
                   />
+                  <Route path="people-ops/onboarding" element={<OnboardingQueue />} />
+                  <Route path="people-ops/onboarding/new" element={<OnboardingWizard />} />
+                  <Route path="people-ops/onboarding/:employeeId" element={<OnboardingDetail />} />
                   <Route
                     path="founder-office"
                     element={<FounderOfficeDashboard />}
