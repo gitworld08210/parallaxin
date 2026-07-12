@@ -385,7 +385,11 @@ export const assignments = {
     id: string,
     status: "open" | "accepted" | "in_progress" | "completed" | "cancelled",
   ) {
-    const patch: Record<string, unknown> = { status };
+    const patch: {
+      status: string;
+      accepted_at?: string;
+      completed_at?: string;
+    } = { status };
     if (status === "accepted") patch.accepted_at = new Date().toISOString();
     if (status === "completed") patch.completed_at = new Date().toISOString();
     const { error } = await supabase
