@@ -2268,6 +2268,303 @@ export type Database = {
           },
         ]
       }
+      platform_assignment_rules: {
+        Row: {
+          candidates: Json
+          created_at: string
+          filter: Json
+          id: string
+          is_active: boolean
+          module: string
+          name: string
+          strategy: string
+          updated_at: string
+        }
+        Insert: {
+          candidates?: Json
+          created_at?: string
+          filter?: Json
+          id?: string
+          is_active?: boolean
+          module: string
+          name: string
+          strategy?: string
+          updated_at?: string
+        }
+        Update: {
+          candidates?: Json
+          created_at?: string
+          filter?: Json
+          id?: string
+          is_active?: boolean
+          module?: string
+          name?: string
+          strategy?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      platform_assignments: {
+        Row: {
+          accepted_at: string | null
+          assigned_by: string | null
+          assignee_user_id: string | null
+          completed_at: string | null
+          created_at: string
+          department: string | null
+          entity_id: string
+          entity_type: string
+          id: string
+          metadata: Json
+          method: string
+          module: string
+          priority: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          assigned_by?: string | null
+          assignee_user_id?: string | null
+          completed_at?: string | null
+          created_at?: string
+          department?: string | null
+          entity_id: string
+          entity_type: string
+          id?: string
+          metadata?: Json
+          method?: string
+          module: string
+          priority?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          accepted_at?: string | null
+          assigned_by?: string | null
+          assignee_user_id?: string | null
+          completed_at?: string | null
+          created_at?: string
+          department?: string | null
+          entity_id?: string
+          entity_type?: string
+          id?: string
+          metadata?: Json
+          method?: string
+          module?: string
+          priority?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      platform_dashboard_widgets: {
+        Row: {
+          config: Json
+          created_at: string
+          dashboard_id: string
+          id: string
+          position: number
+          title: string | null
+          updated_at: string
+          widget_type: string
+        }
+        Insert: {
+          config?: Json
+          created_at?: string
+          dashboard_id: string
+          id?: string
+          position?: number
+          title?: string | null
+          updated_at?: string
+          widget_type: string
+        }
+        Update: {
+          config?: Json
+          created_at?: string
+          dashboard_id?: string
+          id?: string
+          position?: number
+          title?: string | null
+          updated_at?: string
+          widget_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "platform_dashboard_widgets_dashboard_id_fkey"
+            columns: ["dashboard_id"]
+            isOneToOne: false
+            referencedRelation: "platform_dashboards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      platform_dashboards: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          is_active: boolean
+          key: string
+          layout: string
+          name: string
+          owner_department: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          key: string
+          layout?: string
+          name: string
+          owner_department?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          key?: string
+          layout?: string
+          name?: string
+          owner_department?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      platform_document_permissions: {
+        Row: {
+          created_at: string
+          department: string | null
+          document_id: string
+          id: string
+          permission_level: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          department?: string | null
+          document_id: string
+          id?: string
+          permission_level?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          department?: string | null
+          document_id?: string
+          id?: string
+          permission_level?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "platform_document_permissions_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "platform_documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      platform_document_versions: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          document_id: string
+          id: string
+          note: string | null
+          size_bytes: number | null
+          storage_path: string | null
+          version: number
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          document_id: string
+          id?: string
+          note?: string | null
+          size_bytes?: number | null
+          storage_path?: string | null
+          version: number
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          document_id?: string
+          id?: string
+          note?: string | null
+          size_bytes?: number | null
+          storage_path?: string | null
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "platform_document_versions_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "platform_documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      platform_documents: {
+        Row: {
+          category: string | null
+          created_at: string
+          current_version: number
+          deleted_at: string | null
+          department: string | null
+          id: string
+          is_archived: boolean
+          metadata: Json
+          mime_type: string | null
+          name: string
+          owner_user_id: string
+          size_bytes: number | null
+          storage_path: string | null
+          updated_at: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          current_version?: number
+          deleted_at?: string | null
+          department?: string | null
+          id?: string
+          is_archived?: boolean
+          metadata?: Json
+          mime_type?: string | null
+          name: string
+          owner_user_id: string
+          size_bytes?: number | null
+          storage_path?: string | null
+          updated_at?: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          current_version?: number
+          deleted_at?: string | null
+          department?: string | null
+          id?: string
+          is_archived?: boolean
+          metadata?: Json
+          mime_type?: string | null
+          name?: string
+          owner_user_id?: string
+          size_bytes?: number | null
+          storage_path?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       platform_notification_deliveries: {
         Row: {
           channel: string
@@ -2369,6 +2666,232 @@ export type Database = {
           id?: string
           key?: string
           title_template?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      platform_report_definitions: {
+        Row: {
+          category: string
+          columns: Json
+          created_at: string
+          created_by: string | null
+          default_schedule: string | null
+          description: string | null
+          id: string
+          is_active: boolean
+          key: string
+          name: string
+          parameters: Json
+          source: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string
+          columns?: Json
+          created_at?: string
+          created_by?: string | null
+          default_schedule?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          key: string
+          name: string
+          parameters?: Json
+          source: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          columns?: Json
+          created_at?: string
+          created_by?: string | null
+          default_schedule?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          key?: string
+          name?: string
+          parameters?: Json
+          source?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      platform_report_runs: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          definition_id: string
+          error: string | null
+          id: string
+          output_url: string | null
+          parameters: Json
+          requested_by: string | null
+          row_count: number | null
+          started_at: string | null
+          status: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          definition_id: string
+          error?: string | null
+          id?: string
+          output_url?: string | null
+          parameters?: Json
+          requested_by?: string | null
+          row_count?: number | null
+          started_at?: string | null
+          status?: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          definition_id?: string
+          error?: string | null
+          id?: string
+          output_url?: string | null
+          parameters?: Json
+          requested_by?: string | null
+          row_count?: number | null
+          started_at?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "platform_report_runs_definition_id_fkey"
+            columns: ["definition_id"]
+            isOneToOne: false
+            referencedRelation: "platform_report_definitions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      platform_scheduled_job_runs: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          error: string | null
+          id: string
+          job_id: string
+          output: Json | null
+          started_at: string | null
+          status: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          error?: string | null
+          id?: string
+          job_id: string
+          output?: Json | null
+          started_at?: string | null
+          status?: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          error?: string | null
+          id?: string
+          job_id?: string
+          output?: Json | null
+          started_at?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "platform_scheduled_job_runs_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "platform_scheduled_jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      platform_scheduled_jobs: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          cron: string
+          id: string
+          is_active: boolean
+          job_type: string
+          key: string
+          last_run_at: string | null
+          name: string
+          next_run_at: string | null
+          payload: Json
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          cron: string
+          id?: string
+          is_active?: boolean
+          job_type: string
+          key: string
+          last_run_at?: string | null
+          name: string
+          next_run_at?: string | null
+          payload?: Json
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          cron?: string
+          id?: string
+          is_active?: boolean
+          job_type?: string
+          key?: string
+          last_run_at?: string | null
+          name?: string
+          next_run_at?: string | null
+          payload?: Json
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      platform_search_index: {
+        Row: {
+          body: string | null
+          department: string | null
+          document: unknown
+          id: string
+          metadata: Json
+          object_id: string
+          object_type: string
+          permission_key: string | null
+          tags: string[]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          body?: string | null
+          department?: string | null
+          document?: unknown
+          id?: string
+          metadata?: Json
+          object_id: string
+          object_type: string
+          permission_key?: string | null
+          tags?: string[]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          body?: string | null
+          department?: string | null
+          document?: unknown
+          id?: string
+          metadata?: Json
+          object_id?: string
+          object_type?: string
+          permission_key?: string | null
+          tags?: string[]
+          title?: string
           updated_at?: string
         }
         Relationships: []
@@ -3654,6 +4177,17 @@ export type Database = {
       org_update_settings: {
         Args: { _organization_id: string; _patch: Json }
         Returns: undefined
+      }
+      platform_search: {
+        Args: { _limit?: number; _q: string }
+        Returns: {
+          body: string
+          department: string
+          object_id: string
+          object_type: string
+          rank: number
+          title: string
+        }[]
       }
       remove_group_member: {
         Args: { _conv: string; _user: string }
