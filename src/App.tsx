@@ -298,6 +298,18 @@ const SupportTicketQueue = lazy(() => import("./pages/admin-os/support/TicketQue
 const SupportTicketWorkspace = lazy(() => import("./pages/admin-os/support/TicketWorkspace"));
 const SupportSlaDashboard = lazy(() => import("./pages/admin-os/support/SlaDashboard"));
 const SupportAnalyticsPage = lazy(() => import("./pages/admin-os/support/SupportAnalytics"));
+
+const EngineeringShell = lazy(() => import("./pages/admin-os/engineering/EngineeringShell"));
+const EngDashboard = lazy(() => import("./pages/admin-os/engineering/EngDashboard"));
+const EngProjectsPage = lazy(() => import("./pages/admin-os/engineering/ProjectsPage"));
+const EngSprintsPage = lazy(() => import("./pages/admin-os/engineering/SprintsPage"));
+const EngKanbanBoard = lazy(() => import("./pages/admin-os/engineering/KanbanBoard"));
+const EngTaskCenter = lazy(() => import("./pages/admin-os/engineering/TaskCenter"));
+const EngBugCenter = lazy(() => import("./pages/admin-os/engineering/BugCenter"));
+const EngReleaseCenter = lazy(() => import("./pages/admin-os/engineering/ReleaseCenter"));
+const EngDesignCenter = lazy(() => import("./pages/admin-os/engineering/DesignCenter"));
+const EngDocumentationCenter = lazy(() => import("./pages/admin-os/engineering/DocumentationCenter"));
+const EngReports = lazy(() => import("./pages/admin-os/engineering/EngReports"));
 const PlatformIndex = lazy(() => import("./pages/admin-os/platform/PlatformIndex"));
 const ApprovalCenter = lazy(() => import("./pages/admin-os/platform/ApprovalCenter"));
 const WorkflowViewer = lazy(() => import("./pages/admin-os/platform/WorkflowViewer"));
@@ -686,6 +698,18 @@ const App = () => (
                     <Route path="affiliations" element={<VerAffiliationManager />} />
                     <Route path="appeals" element={<VerAppealsCenter />} />
                     <Route path="history" element={<VerHistoryPage />} />
+                  </Route>
+                  <Route path="engineering" element={<EngineeringShell />}>
+                    <Route index element={<EngDashboard />} />
+                    <Route path="projects" element={<EngProjectsPage />} />
+                    <Route path="sprints" element={<EngSprintsPage />} />
+                    <Route path="board" element={<EngKanbanBoard />} />
+                    <Route path="tasks" element={<EngTaskCenter />} />
+                    <Route path="bugs" element={<EngBugCenter />} />
+                    <Route path="releases" element={<EngReleaseCenter />} />
+                    <Route path="design" element={<EngDesignCenter />} />
+                    <Route path="docs" element={<EngDocumentationCenter />} />
+                    <Route path="reports" element={<EngReports />} />
                   </Route>
                   <Route path="support" element={<SupportShell />}>
                     <Route index element={<SupportDashboardPage />} />
