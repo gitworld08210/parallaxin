@@ -57,7 +57,10 @@ const EmployeeDetailPage = () => {
   if (!hasPermission(ADMIN_PERMISSIONS.PEOPLE_OPS_EMPLOYEES_VIEW))
     return <Navigate to="/admin-os/no-access" replace />;
 
-  const canManage = hasPermission(ADMIN_PERMISSIONS.PEOPLE_OPS_EMPLOYEES_MANAGE);
+  const canManageBase = hasPermission(ADMIN_PERMISSIONS.PEOPLE_OPS_EMPLOYEES_MANAGE);
+  const canFounderOverride = hasPermission(
+    ADMIN_PERMISSIONS.FOUNDER_OFFICE_OVERRIDES,
+  );
 
   if (isLoading)
     return <div className="p-10 text-center text-sm text-muted-foreground">Loading…</div>;
@@ -70,7 +73,13 @@ const EmployeeDetailPage = () => {
   if (!emp)
     return <div className="p-10 text-center text-sm text-muted-foreground">Not found.</div>;
 
-  const options = STATUS_TRANSITIONS[emp.employment_status] ?? [];
+  // Founders & co-founders are protected: only the Founder Office can
+  // change their role, department, or lifecycle status.
+  const isProtectedPrincipal =
+    emp.user_type === "founder" || emp.user_type === "co_founder";
+  const canManage = canManageBase && (!isProtectedPrincipal || canFounderOverride);
+
+  const options = canManage ? STATUS_TRANSITIONS[emp.employment_status] ?? [] : [];
 
   const doTransition = async () => {
     if (!nextStatus || !reason.trim()) {
