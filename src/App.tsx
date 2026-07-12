@@ -92,6 +92,9 @@ const AdminOSDashboard = lazy(() => import("./pages/admin-os/AdminOSDashboard"))
 const AdminOSModulePlaceholder = lazy(() => import("./pages/admin-os/ModulePlaceholder"));
 const AdminOSNoAccess = lazy(() => import("./pages/admin-os/AdminOSNoAccess"));
 const AdminOSFirstLogin = lazy(() => import("./pages/admin-os/AdminOSFirstLogin"));
+const PeopleOpsIndex = lazy(() => import("./pages/admin-os/people-ops/PeopleOpsIndex"));
+const EmployeeDetailPage = lazy(() => import("./pages/admin-os/people-ops/EmployeeDetail"));
+const EmployeeForm = lazy(() => import("./pages/admin-os/people-ops/EmployeeForm"));
 
 
 
@@ -267,6 +270,16 @@ const App = () => (
                 <Route path="/admin-os/first-login" element={<AdminOSFirstLogin />} />
                 <Route path="/admin-os" element={<AdminOSLayout />}>
                   <Route index element={<AdminOSDashboard />} />
+                  <Route path="people-ops" element={<PeopleOpsIndex />} />
+                  <Route
+                    path="people-ops/new"
+                    element={<EmployeeForm mode="create" />}
+                  />
+                  <Route path="people-ops/:id" element={<EmployeeDetailPage />} />
+                  <Route
+                    path="people-ops/:id/edit"
+                    element={<EmployeeForm mode="edit" />}
+                  />
                   <Route path=":slug" element={<AdminOSModulePlaceholder />} />
                 </Route>
               </Route>
