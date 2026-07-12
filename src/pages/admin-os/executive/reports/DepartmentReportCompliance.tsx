@@ -26,8 +26,8 @@ const useDepartments = () =>
   });
 
 const DepartmentReportCompliance = () => {
-  const [statusFilter, setStatusFilter] = useState<string>("");
-  const { data: reports } = usePeriodicReports({ status: statusFilter || undefined });
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const { data: reports } = usePeriodicReports({ status: statusFilter && statusFilter !== "all" ? statusFilter : undefined });
   const { data: compliance } = useReportCompliance();
   const { data: depts } = useDepartments();
   const save = useSavePeriodicReport();
