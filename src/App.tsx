@@ -464,7 +464,17 @@ const App = () => (
                     <Route path="lockdowns" element={<LockdownPanelPage />} />
                     <Route path="watchlists" element={<WatchlistPanelPage />} />
                   </Route>
-                  <Route path="security" element={<ExecutiveSecurity />} />
+                  <Route path="security" element={<SecurityShell />}>
+                    <Route index element={<SecurityOverview />} />
+                    <Route path="identity" element={<IdentityProfile />} />
+                    <Route path="sessions" element={<SessionManagerPage />} />
+                    <Route path="devices" element={<TrustedDevicesPage />} />
+                    <Route path="recovery" element={<RecoveryCenterPage />} />
+                    <Route path="password" element={<PasswordAndMFAPage />} />
+                    <Route path="alerts" element={<SecurityAlertsPage />} />
+                    <Route path="history" element={<LoginHistoryPage />} />
+                    <Route path="policies" element={<SecurityPoliciesPage />} />
+                  </Route>
                   <Route path="company" element={<CompanyShell />}>
                     <Route index element={<CompanyOverview />} />
                     <Route path="profile" element={<CompanyProfilePage />} />
