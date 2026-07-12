@@ -528,6 +528,16 @@ const App = () => (
                     <Route path="history" element={<AutomationHistoryPage />} />
                     <Route path="monitor" element={<AutomationMonitorPage />} />
                   </Route>
+                  <Route path="knowledge" element={<KipShell />}>
+                    <Route index element={<KnowledgeHome />} />
+                    <Route path="chat" element={<KipChatWorkspace />} />
+                    <Route path="library" element={<KipDocumentLibrary />} />
+                    <Route path="collections" element={<KipCollectionsList />} />
+                    <Route path="collections/:id" element={<KipCollectionDetail />} />
+                    <Route path="search" element={<KipKnowledgeSearch />} />
+                    <Route path="bookmarks" element={<KipBookmarksPage />} />
+                    <Route path="history" element={<KipConversationHistory />} />
+                  </Route>
                   <Route path="ai" element={<AiShell />}>
                     <Route index element={<AiChat />} />
                     <Route path="recommendations" element={<AiRecommendationsPage />} />
