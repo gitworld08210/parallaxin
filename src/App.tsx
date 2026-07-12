@@ -100,6 +100,9 @@ const OnboardingWizard = lazy(() => import("./pages/admin-os/people-ops/Onboardi
 const OnboardingDetail = lazy(() => import("./pages/admin-os/people-ops/OnboardingDetail"));
 const EmployeePassport = lazy(() => import("./pages/admin-os/people-ops/EmployeePassport"));
 const PassportPrint = lazy(() => import("./pages/admin-os/people-ops/PassportPrint"));
+const MovementCenter = lazy(() => import("./pages/admin-os/people-ops/MovementCenter"));
+const MovementWizard = lazy(() => import("./pages/admin-os/people-ops/MovementWizard"));
+const MovementDetail = lazy(() => import("./pages/admin-os/people-ops/MovementDetail"));
 const FounderOfficeDashboard = lazy(
   () => import("./pages/admin-os/founder-office/FounderOfficeDashboard"),
 );
