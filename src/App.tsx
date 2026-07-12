@@ -341,6 +341,13 @@ const App = () => (
                   <Route path="people-ops/org/positions" element={<OpenPositions />} />
                   <Route path="people-ops/org/succession" element={<SuccessionPage />} />
                   <Route path="people-ops/org/planning" element={<WorkforcePlanning />} />
+                  <Route path="people-ops/performance" element={<PerformanceIndex />} />
+                  <Route path="people-ops/performance/goals" element={<GoalsCenter />} />
+                  <Route path="people-ops/performance/reviews" element={<ReviewCenter />} />
+                  <Route path="people-ops/performance/recognition" element={<RecognitionCenter />} />
+                  <Route path="people-ops/performance/pip" element={<PipCenter />} />
+                  <Route path="people-ops/performance/career" element={<CareerGrowth />} />
+                  <Route path="people-ops/performance/promotion" element={<PromotionReadinessPage />} />
                   <Route
                     path="founder-office"
                     element={<FounderOfficeDashboard />}
