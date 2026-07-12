@@ -142,14 +142,26 @@ const AppointmentsPanel = () => {
                       </p>
                     )}
                   </div>
-                  {active.pdf_path && (
+                  <div className="flex flex-wrap items-center gap-3 pt-1">
+                    {active.pdf_path && (
+                      <button
+                        onClick={() => downloadLetter(active.pdf_path)}
+                        className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary hover:underline"
+                      >
+                        <Download className="h-3 w-3" /> Download letter
+                      </button>
+                    )}
                     <button
-                      onClick={() => downloadLetter(active.pdf_path)}
-                      className="mt-2 inline-flex items-center gap-1 text-[11px] font-semibold text-primary hover:underline"
+                      onClick={() => {
+                        setRevokeTarget({ appointment: active, slot });
+                        setRevokeReason("");
+                        setAlsoSuspend(true);
+                      }}
+                      className="inline-flex items-center gap-1 text-[11px] font-semibold text-destructive hover:underline"
                     >
-                      <Download className="h-3 w-3" /> Download letter
+                      <UserMinus className="h-3 w-3" /> Revoke
                     </button>
-                  )}
+                  </div>
                 </div>
               ) : (
                 <>
