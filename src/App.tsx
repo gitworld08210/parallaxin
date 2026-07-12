@@ -95,6 +95,10 @@ const AdminOSFirstLogin = lazy(() => import("./pages/admin-os/AdminOSFirstLogin"
 const PeopleOpsIndex = lazy(() => import("./pages/admin-os/people-ops/PeopleOpsIndex"));
 const EmployeeDetailPage = lazy(() => import("./pages/admin-os/people-ops/EmployeeDetail"));
 const EmployeeForm = lazy(() => import("./pages/admin-os/people-ops/EmployeeForm"));
+const FounderOfficeDashboard = lazy(
+  () => import("./pages/admin-os/founder-office/FounderOfficeDashboard"),
+);
+const AuditCenter = lazy(() => import("./pages/admin-os/audit/AuditCenter"));
 
 
 
@@ -280,6 +284,11 @@ const App = () => (
                     path="people-ops/:id/edit"
                     element={<EmployeeForm mode="edit" />}
                   />
+                  <Route
+                    path="founder-office"
+                    element={<FounderOfficeDashboard />}
+                  />
+                  <Route path="audit" element={<AuditCenter />} />
                   <Route path=":slug" element={<AdminOSModulePlaceholder />} />
                 </Route>
               </Route>
