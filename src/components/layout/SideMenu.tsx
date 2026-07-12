@@ -63,6 +63,7 @@ export const SideMenu = ({ trigger }: { trigger: React.ReactNode }) => {
     { to: "/analytics", icon: BarChart3, label: "Insights" },
     { to: "/profile?tab=saved", icon: Bookmark, label: "Saved" },
     { to: "/close-friends", icon: Heart, label: "Close friends" },
+    { to: "/support", icon: HelpCircle, label: "Help & support" },
   ];
 
   const money: Row[] = [
