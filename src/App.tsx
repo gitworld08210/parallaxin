@@ -690,6 +690,8 @@ const App = () => (
                   <Route path="people-ops/recruitment/applications/:applicationId" element={<InterviewPipeline />} />
                   <Route path="people-ops/recruitment/offers" element={<OfferCenter />} />
                   <Route path="people-ops/recruitment/analytics" element={<RecruitmentAnalytics />} />
+                  <Route path="people-ops/recruitment/hire-compensation" element={<HireCompensationPage />} />
+                  <Route path="employee/finance-onboarding" element={<EmployeeFinanceOnboarding />} />
                   <Route path="people-ops/attendance" element={<AttendanceIndex />} />
                   <Route path="people-ops/attendance/my" element={<MyAttendance />} />
                   <Route path="people-ops/attendance/leave" element={<LeaveCenter />} />
