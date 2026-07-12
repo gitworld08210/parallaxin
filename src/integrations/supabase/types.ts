@@ -9759,6 +9759,276 @@ export type Database = {
           },
         ]
       }
+      production_health_checks: {
+        Row: {
+          category: string
+          check_name: string
+          checked_at: string
+          details: Json
+          id: string
+          message: string | null
+          module: string
+          run_id: string | null
+          severity: string
+          status: string
+        }
+        Insert: {
+          category: string
+          check_name: string
+          checked_at?: string
+          details?: Json
+          id?: string
+          message?: string | null
+          module: string
+          run_id?: string | null
+          severity?: string
+          status: string
+        }
+        Update: {
+          category?: string
+          check_name?: string
+          checked_at?: string
+          details?: Json
+          id?: string
+          message?: string | null
+          module?: string
+          run_id?: string | null
+          severity?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "production_health_checks_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: false
+            referencedRelation: "production_validation_runs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      production_integration_results: {
+        Row: {
+          checked_at: string
+          error_message: string | null
+          id: string
+          integration_name: string
+          latency_ms: number | null
+          metadata: Json
+          run_id: string | null
+          source_module: string
+          status: string
+          target_module: string
+        }
+        Insert: {
+          checked_at?: string
+          error_message?: string | null
+          id?: string
+          integration_name: string
+          latency_ms?: number | null
+          metadata?: Json
+          run_id?: string | null
+          source_module: string
+          status: string
+          target_module: string
+        }
+        Update: {
+          checked_at?: string
+          error_message?: string | null
+          id?: string
+          integration_name?: string
+          latency_ms?: number | null
+          metadata?: Json
+          run_id?: string | null
+          source_module?: string
+          status?: string
+          target_module?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "production_integration_results_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: false
+            referencedRelation: "production_validation_runs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      production_issues: {
+        Row: {
+          assigned_to: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          detected_by: string | null
+          id: string
+          module: string
+          resolved_at: string | null
+          severity: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          detected_by?: string | null
+          id?: string
+          module: string
+          resolved_at?: string | null
+          severity?: string
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_to?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          detected_by?: string | null
+          id?: string
+          module?: string
+          resolved_at?: string | null
+          severity?: string
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      production_readiness_status: {
+        Row: {
+          category: string
+          id: string
+          last_checked_at: string | null
+          notes: string | null
+          score: number
+          status: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          category: string
+          id?: string
+          last_checked_at?: string | null
+          notes?: string | null
+          score?: number
+          status?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          category?: string
+          id?: string
+          last_checked_at?: string | null
+          notes?: string | null
+          score?: number
+          status?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
+      production_release_history: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          blockers: Json
+          created_at: string
+          created_by: string | null
+          id: string
+          release_notes: string | null
+          release_type: string
+          released_at: string | null
+          status: string
+          validation_run_id: string | null
+          version: string
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          blockers?: Json
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          release_notes?: string | null
+          release_type?: string
+          released_at?: string | null
+          status?: string
+          validation_run_id?: string | null
+          version: string
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          blockers?: Json
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          release_notes?: string | null
+          release_type?: string
+          released_at?: string | null
+          status?: string
+          validation_run_id?: string | null
+          version?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "production_release_history_validation_run_id_fkey"
+            columns: ["validation_run_id"]
+            isOneToOne: false
+            referencedRelation: "production_validation_runs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      production_validation_runs: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          failed_checks: number
+          id: string
+          passed_checks: number
+          run_type: string
+          started_at: string
+          status: string
+          summary: Json
+          total_checks: number
+          triggered_by: string | null
+          warning_checks: number
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          failed_checks?: number
+          id?: string
+          passed_checks?: number
+          run_type: string
+          started_at?: string
+          status?: string
+          summary?: Json
+          total_checks?: number
+          triggered_by?: string | null
+          warning_checks?: number
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          failed_checks?: number
+          id?: string
+          passed_checks?: number
+          run_type?: string
+          started_at?: string
+          status?: string
+          summary?: Json
+          total_checks?: number
+          triggered_by?: string | null
+          warning_checks?: number
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           account_type: Database["public"]["Enums"]["account_type"]
