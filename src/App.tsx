@@ -103,6 +103,8 @@ const PassportPrint = lazy(() => import("./pages/admin-os/people-ops/PassportPri
 const MovementCenter = lazy(() => import("./pages/admin-os/people-ops/MovementCenter"));
 const MovementWizard = lazy(() => import("./pages/admin-os/people-ops/MovementWizard"));
 const MovementDetail = lazy(() => import("./pages/admin-os/people-ops/MovementDetail"));
+const ReportingStructure = lazy(() => import("./pages/admin-os/people-ops/ReportingStructure"));
+const DocumentsCenter = lazy(() => import("./pages/admin-os/people-ops/DocumentsCenter"));
 const FounderOfficeDashboard = lazy(
   () => import("./pages/admin-os/founder-office/FounderOfficeDashboard"),
 );
@@ -318,6 +320,8 @@ const App = () => (
                   <Route path="people-ops/movements" element={<MovementCenter />} />
                   <Route path="people-ops/movements/new" element={<MovementWizard />} />
                   <Route path="people-ops/movements/:id" element={<MovementDetail />} />
+                  <Route path="people-ops/reporting" element={<ReportingStructure />} />
+                  <Route path="people-ops/documents" element={<DocumentsCenter />} />
                   <Route
                     path="founder-office"
                     element={<FounderOfficeDashboard />}
