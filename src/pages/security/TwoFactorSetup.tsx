@@ -78,18 +78,75 @@ export default function TwoFactorSetup() {
 
         {phase === "verify" && qr && (
           <div className="space-y-4">
-            <div className="rounded-3xl border border-aurum/30 p-4 flex flex-col items-center gap-3 bg-[#06070B]">
-              <img src={qr} alt="QR" className="rounded-xl" />
-              <p className="text-[11px] text-muted-foreground">Scan with your authenticator app</p>
-              <button onClick={() => { navigator.clipboard.writeText(secret); toast.success("Secret copied"); }}
-                className="text-xs flex items-center gap-1.5 text-aurum"><Copy className="h-3 w-3" /> Copy secret</button>
+            {/* Step A — Install an authenticator app */}
+            <div className="rounded-2xl border border-border/40 bg-card/40 p-4">
+              <p className="text-[11px] font-bold tracking-[0.2em] text-aurum">STEP 1</p>
+              <p className="mt-1 text-sm font-semibold">Install an authenticator app on your phone</p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                If you don't have one yet, install any of these free apps:
+              </p>
+              <div className="mt-3 grid grid-cols-1 gap-2">
+                <a href="https://apps.apple.com/app/google-authenticator/id388497605" target="_blank" rel="noreferrer"
+                  className="rounded-xl border border-border/40 px-3 py-2 text-xs flex items-center justify-between hover:bg-muted/20">
+                  <span>Google Authenticator</span><span className="text-aurum">iOS ↗</span>
+                </a>
+                <a href="https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2" target="_blank" rel="noreferrer"
+                  className="rounded-xl border border-border/40 px-3 py-2 text-xs flex items-center justify-between hover:bg-muted/20">
+                  <span>Google Authenticator</span><span className="text-aurum">Android ↗</span>
+                </a>
+                <a href="https://authy.com/download/" target="_blank" rel="noreferrer"
+                  className="rounded-xl border border-border/40 px-3 py-2 text-xs flex items-center justify-between hover:bg-muted/20">
+                  <span>Authy</span><span className="text-aurum">iOS / Android ↗</span>
+                </a>
+                <a href="https://1password.com/downloads" target="_blank" rel="noreferrer"
+                  className="rounded-xl border border-border/40 px-3 py-2 text-xs flex items-center justify-between hover:bg-muted/20">
+                  <span>1Password</span><span className="text-aurum">All platforms ↗</span>
+                </a>
+              </div>
             </div>
-            <input value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0,6))}
-              placeholder="Enter 6-digit code" inputMode="numeric"
-              className="w-full rounded-2xl bg-card/40 border border-border/40 px-4 py-3.5 text-center text-2xl tracking-[0.5em] font-mono" />
-            <button disabled={busy || code.length !== 6} onClick={verify} className="w-full rounded-2xl bg-aurum text-[#06070B] py-3.5 font-semibold disabled:opacity-50">
-              Verify
-            </button>
+
+            {/* Step B — Scan the QR */}
+            <div className="rounded-2xl border border-border/40 bg-card/40 p-4">
+              <p className="text-[11px] font-bold tracking-[0.2em] text-aurum">STEP 2</p>
+              <p className="mt-1 text-sm font-semibold">Scan this QR with the app</p>
+              <ol className="mt-2 space-y-1 text-xs text-muted-foreground list-decimal list-inside">
+                <li>Open the authenticator app on your phone.</li>
+                <li>Tap the <span className="text-foreground font-medium">"+"</span> or <span className="text-foreground font-medium">"Add account"</span> button.</li>
+                <li>Choose <span className="text-foreground font-medium">"Scan a QR code"</span> and point your camera at the code below.</li>
+                <li>The app will add "Aurelix" and start showing a 6-digit code that changes every 30 seconds.</li>
+              </ol>
+
+              <div className="mt-4 rounded-2xl border border-aurum/30 p-4 flex flex-col items-center gap-3 bg-[#06070B]">
+                <img src={qr} alt="QR" className="rounded-xl" />
+                <p className="text-[11px] text-muted-foreground">Scan with your authenticator app</p>
+              </div>
+
+              <div className="mt-3 rounded-xl border border-border/40 bg-background/40 p-3">
+                <p className="text-[11px] text-muted-foreground">
+                  Can't scan? Type this secret manually into the app instead:
+                </p>
+                <p className="mt-1 font-mono text-xs break-all text-foreground">{secret}</p>
+                <button onClick={() => { navigator.clipboard.writeText(secret); toast.success("Secret copied"); }}
+                  className="mt-2 text-xs flex items-center gap-1.5 text-aurum">
+                  <Copy className="h-3 w-3" /> Copy secret
+                </button>
+              </div>
+            </div>
+
+            {/* Step C — Enter the code */}
+            <div className="rounded-2xl border border-border/40 bg-card/40 p-4">
+              <p className="text-[11px] font-bold tracking-[0.2em] text-aurum">STEP 3</p>
+              <p className="mt-1 text-sm font-semibold">Enter the 6-digit code from the app</p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Open the app, find the "Aurelix" entry, and type the current 6-digit code below to finish setup.
+              </p>
+              <input value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0,6))}
+                placeholder="000000" inputMode="numeric"
+                className="mt-3 w-full rounded-2xl bg-background/40 border border-border/40 px-4 py-3.5 text-center text-2xl tracking-[0.5em] font-mono" />
+              <button disabled={busy || code.length !== 6} onClick={verify} className="mt-3 w-full rounded-2xl bg-aurum text-[#06070B] py-3.5 font-semibold disabled:opacity-50">
+                Verify & activate
+              </button>
+            </div>
           </div>
         )}
 
