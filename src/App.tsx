@@ -140,6 +140,15 @@ const ShiftManagement = lazy(() => import("./pages/admin-os/people-ops/attendanc
 const HolidayCalendar = lazy(() => import("./pages/admin-os/people-ops/attendance/HolidayCalendar"));
 const AttendanceCorrections = lazy(() => import("./pages/admin-os/people-ops/attendance/AttendanceCorrections"));
 const WorkforceAvailability = lazy(() => import("./pages/admin-os/people-ops/attendance/WorkforceAvailability"));
+const PayrollIndex = lazy(() => import("./pages/admin-os/people-ops/payroll/PayrollIndex"));
+const PayrollCycles = lazy(() => import("./pages/admin-os/people-ops/payroll/PayrollCycles"));
+const PayrollCycleDetail = lazy(() => import("./pages/admin-os/people-ops/payroll/PayrollCycleDetail"));
+const CompensationPlansPage = lazy(() => import("./pages/admin-os/people-ops/payroll/CompensationPlansPage"));
+const SalaryStructuresPage = lazy(() => import("./pages/admin-os/people-ops/payroll/SalaryStructuresPage"));
+const SalaryRevisionsPage = lazy(() => import("./pages/admin-os/people-ops/payroll/SalaryRevisionsPage"));
+const BonusCenter = lazy(() => import("./pages/admin-os/people-ops/payroll/BonusCenter"));
+const BenefitsCenter = lazy(() => import("./pages/admin-os/people-ops/payroll/BenefitsCenter"));
+const ReimbursementCenter = lazy(() => import("./pages/admin-os/people-ops/payroll/ReimbursementCenter"));
 const FounderOfficeDashboard = lazy(
   () => import("./pages/admin-os/founder-office/FounderOfficeDashboard"),
 );
@@ -393,6 +402,15 @@ const App = () => (
                   <Route path="people-ops/attendance/holidays" element={<HolidayCalendar />} />
                   <Route path="people-ops/attendance/corrections" element={<AttendanceCorrections />} />
                   <Route path="people-ops/attendance/availability" element={<WorkforceAvailability />} />
+                  <Route path="people-ops/payroll" element={<PayrollIndex />} />
+                  <Route path="people-ops/payroll/cycles" element={<PayrollCycles />} />
+                  <Route path="people-ops/payroll/cycles/:id" element={<PayrollCycleDetail />} />
+                  <Route path="people-ops/payroll/plans" element={<CompensationPlansPage />} />
+                  <Route path="people-ops/payroll/salaries" element={<SalaryStructuresPage />} />
+                  <Route path="people-ops/payroll/revisions" element={<SalaryRevisionsPage />} />
+                  <Route path="people-ops/payroll/bonuses" element={<BonusCenter />} />
+                  <Route path="people-ops/payroll/benefits" element={<BenefitsCenter />} />
+                  <Route path="people-ops/payroll/reimbursements" element={<ReimbursementCenter />} />
                   <Route
                     path="founder-office"
                     element={<FounderOfficeDashboard />}
