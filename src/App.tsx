@@ -310,6 +310,8 @@ const App = () => (
                   <Route path="people-ops/onboarding" element={<OnboardingQueue />} />
                   <Route path="people-ops/onboarding/new" element={<OnboardingWizard />} />
                   <Route path="people-ops/onboarding/:employeeId" element={<OnboardingDetail />} />
+                  <Route path="people-ops/:employeeId/passport" element={<EmployeePassport />} />
+                  <Route path="people-ops/:employeeId/passport/print" element={<PassportPrint />} />
                   <Route
                     path="founder-office"
                     element={<FounderOfficeDashboard />}
