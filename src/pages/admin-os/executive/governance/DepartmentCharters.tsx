@@ -46,7 +46,7 @@ const CharterDialog = ({ existing }: { existing?: any }) => {
           {(["mission","responsibilities","kpis","approval_rights","escalation_path",
              "reporting_structure","training_standards","documentation_standards"] as const).map((k) => (
             <div key={k} className="space-y-1.5 col-span-2">
-              <Label className="capitalize">{k.replaceAll("_"," ")}</Label>
+              <Label className="capitalize">{k.replace(/_/g, " ")}</Label>
               <Textarea rows={2} value={(f as any)[k]}
                 onChange={(e) => setF({ ...f, [k]: e.target.value } as any)} />
             </div>
