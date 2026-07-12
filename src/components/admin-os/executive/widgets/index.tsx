@@ -66,7 +66,7 @@ export function CompanyOverviewWidget() {
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
       <StatCard
-        icon={Users}
+        
         label="Total employees"
         value={data?.totalEmployees ?? 0}
         delta={data ? `${data.activeEmployees} active` : undefined}
@@ -79,14 +79,14 @@ export function CompanyOverviewWidget() {
         loading={isLoading}
       />
       <StatCard
-        icon={Rocket}
+        
         label="Open positions"
         value={data?.openPositions ?? 0}
         delta={data ? `${data.onboarding} onboarding` : undefined}
         loading={isLoading}
       />
       <StatCard
-        icon={Activity}
+        
         label="30d growth"
         value={data ? `${growth >= 0 ? "+" : ""}${growth.toFixed(1)}%` : "—"}
         delta={data ? `${data.newLast30} joined` : undefined}
@@ -124,7 +124,7 @@ export function CompanyHealthWidget() {
     <SectionCard
       title="Company Health"
       description="Composite score across all critical functions"
-      icon={Heart}
+      
     >
       {isLoading || !data ? (
         <div className="h-40 animate-pulse bg-muted/40 rounded-lg" />
@@ -281,7 +281,7 @@ export function CriticalAlertsWidget() {
     <SectionCard
       title="Critical Alerts"
       description="Security, policy and system events (last 7 days)"
-      icon={ShieldAlert}
+      
     >
       {isLoading ? (
         <div className="h-32 animate-pulse bg-muted/40 rounded-lg" />
@@ -289,7 +289,7 @@ export function CriticalAlertsWidget() {
         <EmptyState
           title="All clear"
           description="No critical alerts in the last week."
-          icon={ShieldCheck}
+          
         />
       ) : (
         <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
@@ -320,7 +320,7 @@ export function ExecutiveCalendarWidget() {
     <SectionCard
       title="Executive Calendar"
       description="Upcoming reviews and company events"
-      icon={Calendar}
+      
     >
       {isLoading ? (
         <div className="h-32 animate-pulse bg-muted/40 rounded-lg" />
@@ -357,7 +357,7 @@ export function RecentActivityWidget() {
     <SectionCard
       title="Recent Executive Activity"
       description="Governance, security, HR and policy changes"
-      icon={ScrollText}
+      
       actions={
         <Link
           to="/admin-os/audit"
@@ -411,7 +411,7 @@ export function QuickActionsWidget() {
     <SectionCard
       title="Quick Actions"
       description="Jump to any executive workspace surface"
-      icon={Crown}
+      
     >
       <div className="grid grid-cols-2 gap-2">
         {QUICK_ACTIONS.map((a) => (
@@ -441,7 +441,7 @@ export function SystemStatusWidget() {
     <SectionCard
       title="System Status"
       description="Live operational signals"
-      icon={CircuitBoard}
+      
     >
       {isLoading || !data ? (
         <div className="h-20 animate-pulse bg-muted/40 rounded-lg" />
@@ -491,7 +491,7 @@ export function AnnouncementsWidget() {
     <SectionCard
       title="Announcements"
       description="Company-wide broadcasts"
-      icon={Gauge}
+      
     >
       <EmptyState
         title="No announcements"
