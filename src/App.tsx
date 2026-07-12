@@ -328,6 +328,12 @@ const App = () => (
                   <Route path="people-ops/movements/:id" element={<MovementDetail />} />
                   <Route path="people-ops/reporting" element={<ReportingStructure />} />
                   <Route path="people-ops/documents" element={<DocumentsCenter />} />
+                  <Route path="people-ops/org" element={<OrganizationIndex />} />
+                  <Route path="people-ops/org/chart" element={<OrgChart />} />
+                  <Route path="people-ops/org/capacity" element={<CapacityDashboard />} />
+                  <Route path="people-ops/org/positions" element={<OpenPositions />} />
+                  <Route path="people-ops/org/succession" element={<SuccessionPage />} />
+                  <Route path="people-ops/org/planning" element={<WorkforcePlanning />} />
                   <Route
                     path="founder-office"
                     element={<FounderOfficeDashboard />}
