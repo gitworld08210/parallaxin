@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { Link, Navigate } from "react-router-dom";
-import { ChevronRight, Network } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { useEmployee } from "@/hooks/admin-os/useEmployee";
 import { useEmployeesList } from "@/hooks/admin-os/useEmployees";
 import { ADMIN_PERMISSIONS } from "@/features/admin-os/permissions";
