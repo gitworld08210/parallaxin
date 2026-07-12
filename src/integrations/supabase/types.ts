@@ -2195,6 +2195,129 @@ export type Database = {
           },
         ]
       }
+      executive_delegations: {
+        Row: {
+          created_at: string
+          delegated_by: string
+          delegated_to: string
+          expires_at: string | null
+          id: string
+          reason: string | null
+          request_id: string
+          responded_at: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          delegated_by: string
+          delegated_to: string
+          expires_at?: string | null
+          id?: string
+          reason?: string | null
+          request_id: string
+          responded_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          delegated_by?: string
+          delegated_to?: string
+          expires_at?: string | null
+          id?: string
+          reason?: string | null
+          request_id?: string
+          responded_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "executive_delegations_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "platform_approval_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      executive_escalations: {
+        Row: {
+          created_at: string
+          from_priority: string | null
+          id: string
+          reason: string
+          request_id: string
+          to_priority: string | null
+          triggered_by: string
+          triggered_by_user: string | null
+        }
+        Insert: {
+          created_at?: string
+          from_priority?: string | null
+          id?: string
+          reason: string
+          request_id: string
+          to_priority?: string | null
+          triggered_by?: string
+          triggered_by_user?: string | null
+        }
+        Update: {
+          created_at?: string
+          from_priority?: string | null
+          id?: string
+          reason?: string
+          request_id?: string
+          to_priority?: string | null
+          triggered_by?: string
+          triggered_by_user?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "executive_escalations_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "platform_approval_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      executive_notes: {
+        Row: {
+          author_id: string
+          body: string
+          created_at: string
+          id: string
+          request_id: string
+          visibility: string
+        }
+        Insert: {
+          author_id: string
+          body: string
+          created_at?: string
+          id?: string
+          request_id: string
+          visibility?: string
+        }
+        Update: {
+          author_id?: string
+          body?: string
+          created_at?: string
+          id?: string
+          request_id?: string
+          visibility?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "executive_notes_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "platform_approval_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       follows: {
         Row: {
           created_at: string
@@ -7829,7 +7952,17 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      executive_approval_timeline: {
+        Row: {
+          actor_id: string | null
+          event_at: string | null
+          event_kind: string | null
+          metadata: Json | null
+          request_id: string | null
+          summary: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       _org_is_system_role_name: { Args: { _name: string }; Returns: boolean }

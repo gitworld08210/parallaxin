@@ -158,12 +158,13 @@ const ExecutiveDashboard = lazy(() => import("./pages/admin-os/executive/Executi
 const ExecutiveProfile = lazy(() => import("./pages/admin-os/executive/ExecutiveProfile"));
 const ExecutiveSecurity = lazy(() => import("./pages/admin-os/executive/ExecutiveSecurity"));
 const ExecutivePlaceholders = () => import("./pages/admin-os/executive/ExecutivePlaceholders");
-const ExecutiveInbox = lazy(() => ExecutivePlaceholders().then((m) => ({ default: m.ExecutiveInbox })));
-const ExecutiveApprovals = lazy(() => ExecutivePlaceholders().then((m) => ({ default: m.ExecutiveApprovals })));
+const ExecutiveInbox = lazy(() => import("./pages/admin-os/executive/ExecutiveInbox"));
+const ExecutiveApprovalDetail = lazy(() => import("./pages/admin-os/executive/ExecutiveApprovalDetail"));
+
 const ExecutiveDepartments = lazy(() => ExecutivePlaceholders().then((m) => ({ default: m.ExecutiveDepartments })));
 const ExecutiveEmployees = lazy(() => ExecutivePlaceholders().then((m) => ({ default: m.ExecutiveEmployees })));
 const ExecutiveReports = lazy(() => ExecutivePlaceholders().then((m) => ({ default: m.ExecutiveReports })));
-const DecisionLogPage = lazy(() => ExecutivePlaceholders().then((m) => ({ default: m.DecisionLog })));
+const DecisionLogPage = lazy(() => import("./pages/admin-os/executive/DecisionLog"));
 const CompanySettingsPage = lazy(() => ExecutivePlaceholders().then((m) => ({ default: m.CompanySettings })));
 const ExecutiveNotificationsPage = lazy(() => ExecutivePlaceholders().then((m) => ({ default: m.ExecutiveNotifications })));
 const FounderOfficeDashboard = lazy(
@@ -365,7 +366,9 @@ const App = () => (
                 <Route path="/admin-os/executive" element={<ExecutiveLayout />}>
                   <Route index element={<ExecutiveDashboard />} />
                   <Route path="inbox" element={<ExecutiveInbox />} />
-                  <Route path="approvals" element={<ExecutiveApprovals />} />
+                  <Route path="inbox/:id" element={<ExecutiveApprovalDetail />} />
+                  <Route path="approvals" element={<ExecutiveInbox />} />
+                  <Route path="approvals/:id" element={<ExecutiveApprovalDetail />} />
                   <Route path="departments" element={<ExecutiveDepartments />} />
                   <Route path="employees" element={<ExecutiveEmployees />} />
                   <Route path="reports" element={<ExecutiveReports />} />
