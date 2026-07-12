@@ -76,7 +76,7 @@ export const useCreateIncident = () => {
 export const useUpdateIncident = () => {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, patch }: { id: string; patch: Record<string, unknown> }) => {
+    mutationFn: async ({ id, patch }: { id: string; patch: Partial<{ status: string; severity: string; assignee_id: string; root_cause: string; contained_at: string; recovered_at: string; closed_at: string }> }) => {
       const { data, error } = await supabase.from("sec_incidents").update(patch).eq("id", id).select().single();
       if (error) throw error;
       return data;
