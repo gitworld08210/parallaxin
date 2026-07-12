@@ -324,6 +324,10 @@ const FinProcurementCenter = lazy(() => import("./pages/admin-os/finance-legal/P
 const FinVendorCenter = lazy(() => import("./pages/admin-os/finance-legal/VendorCenter"));
 const FinContractCenter = lazy(() => import("./pages/admin-os/finance-legal/ContractCenter"));
 const FinComplianceDashboard = lazy(() => import("./pages/admin-os/finance-legal/ComplianceDashboard"));
+const FinHireApprovals = lazy(() => import("./pages/admin-os/finance-legal/HireApprovals"));
+const FinNewHireBankDetails = lazy(() => import("./pages/admin-os/finance-legal/NewHireBankDetails"));
+const HireCompensationPage = lazy(() => import("./pages/admin-os/people-ops/recruitment/HireCompensation"));
+const EmployeeFinanceOnboarding = lazy(() => import("./pages/admin-os/employee/FinanceOnboardingForm"));
 const SecurityDeptShell = lazy(() => import("./pages/admin-os/security/SecurityShell"));
 const SecurityDashboardPage = lazy(() => import("./pages/admin-os/security/SecurityDashboard"));
 const SecIncidentCenter = lazy(() => import("./pages/admin-os/security/IncidentCenter"));
@@ -686,6 +690,8 @@ const App = () => (
                   <Route path="people-ops/recruitment/applications/:applicationId" element={<InterviewPipeline />} />
                   <Route path="people-ops/recruitment/offers" element={<OfferCenter />} />
                   <Route path="people-ops/recruitment/analytics" element={<RecruitmentAnalytics />} />
+                  <Route path="people-ops/recruitment/hire-compensation" element={<HireCompensationPage />} />
+                  <Route path="employee/finance-onboarding" element={<EmployeeFinanceOnboarding />} />
                   <Route path="people-ops/attendance" element={<AttendanceIndex />} />
                   <Route path="people-ops/attendance/my" element={<MyAttendance />} />
                   <Route path="people-ops/attendance/leave" element={<LeaveCenter />} />
@@ -758,6 +764,8 @@ const App = () => (
                     <Route path="vendors" element={<FinVendorCenter />} />
                     <Route path="contracts" element={<FinContractCenter />} />
                     <Route path="compliance" element={<FinComplianceDashboard />} />
+                    <Route path="hire-approvals" element={<FinHireApprovals />} />
+                    <Route path="new-hire-bank" element={<FinNewHireBankDetails />} />
                   </Route>
                   <Route path="security" element={<SecurityDeptShell />}>
                     <Route index element={<SecurityDashboardPage />} />

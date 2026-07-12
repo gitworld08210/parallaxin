@@ -1,5 +1,5 @@
 import { Link, Navigate } from "react-router-dom";
-import { Briefcase, Users, MessagesSquare, FileText, BarChart3 } from "lucide-react";
+import { Briefcase, Users, MessagesSquare, FileText, BarChart3, BadgeDollarSign } from "lucide-react";
 import { useEmployee } from "@/hooks/admin-os/useEmployee";
 import { ADMIN_PERMISSIONS } from "@/features/admin-os/permissions";
 import { useRecruitmentAnalytics } from "@/hooks/admin-os/useRecruitment";
@@ -17,6 +17,7 @@ const RecruitmentIndex = () => {
     { to: "candidates", label: "Candidates", icon: Users, desc: "Directory & applications" },
     { to: "pipeline", label: "Interview Pipeline", icon: MessagesSquare, desc: "Rounds & feedback" },
     { to: "offers", label: "Offer Center", icon: FileText, desc: "Generate & track offers" },
+    { to: "hire-compensation", label: "Salary → Finance", icon: BadgeDollarSign, desc: "Salary proposal Finance ko bhejo" },
     { to: "analytics", label: "Analytics", icon: BarChart3, desc: "Funnel, conversion, time-to-hire" },
   ];
 

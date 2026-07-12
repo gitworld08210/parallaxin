@@ -6511,6 +6511,211 @@ export type Database = {
           },
         ]
       }
+      hire_compensation_proposals: {
+        Row: {
+          allowances: Json
+          base_monthly: number
+          candidate_id: string | null
+          created_at: string
+          currency: string
+          employee_id: string | null
+          hiring_request_id: string | null
+          id: string
+          joining_bonus: number
+          l1_at: string | null
+          l1_decision: string | null
+          l1_reason: string | null
+          l1_reviewer_id: string | null
+          l2_at: string | null
+          l2_decision: string | null
+          l2_reason: string | null
+          l2_reviewer_id: string | null
+          level: string | null
+          notes: string | null
+          proposal_number: string
+          role_title: string
+          status: Database["public"]["Enums"]["hire_comp_status"]
+          submitted_at: string | null
+          submitted_by: string | null
+          updated_at: string
+          variable_bonus: number
+        }
+        Insert: {
+          allowances?: Json
+          base_monthly?: number
+          candidate_id?: string | null
+          created_at?: string
+          currency?: string
+          employee_id?: string | null
+          hiring_request_id?: string | null
+          id?: string
+          joining_bonus?: number
+          l1_at?: string | null
+          l1_decision?: string | null
+          l1_reason?: string | null
+          l1_reviewer_id?: string | null
+          l2_at?: string | null
+          l2_decision?: string | null
+          l2_reason?: string | null
+          l2_reviewer_id?: string | null
+          level?: string | null
+          notes?: string | null
+          proposal_number?: string
+          role_title: string
+          status?: Database["public"]["Enums"]["hire_comp_status"]
+          submitted_at?: string | null
+          submitted_by?: string | null
+          updated_at?: string
+          variable_bonus?: number
+        }
+        Update: {
+          allowances?: Json
+          base_monthly?: number
+          candidate_id?: string | null
+          created_at?: string
+          currency?: string
+          employee_id?: string | null
+          hiring_request_id?: string | null
+          id?: string
+          joining_bonus?: number
+          l1_at?: string | null
+          l1_decision?: string | null
+          l1_reason?: string | null
+          l1_reviewer_id?: string | null
+          l2_at?: string | null
+          l2_decision?: string | null
+          l2_reason?: string | null
+          l2_reviewer_id?: string | null
+          level?: string | null
+          notes?: string | null
+          proposal_number?: string
+          role_title?: string
+          status?: Database["public"]["Enums"]["hire_comp_status"]
+          submitted_at?: string | null
+          submitted_by?: string | null
+          updated_at?: string
+          variable_bonus?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hire_compensation_proposals_candidate_id_fkey"
+            columns: ["candidate_id"]
+            isOneToOne: false
+            referencedRelation: "candidates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hire_compensation_proposals_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hire_compensation_proposals_hiring_request_id_fkey"
+            columns: ["hiring_request_id"]
+            isOneToOne: false
+            referencedRelation: "hiring_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hire_finance_onboarding: {
+        Row: {
+          aadhaar_doc_path: string | null
+          aadhaar_last4: string | null
+          account_number: string | null
+          address: string | null
+          address_proof_path: string | null
+          bank_account_holder_name: string | null
+          bank_name: string | null
+          branch: string | null
+          cancelled_cheque_path: string | null
+          created_at: string
+          emergency_contact: string | null
+          employee_id: string
+          finance_verified_at: string | null
+          finance_verified_by: string | null
+          id: string
+          ifsc_swift: string | null
+          pan_doc_path: string | null
+          pan_number: string | null
+          proposal_id: string | null
+          rejection_reason: string | null
+          status: Database["public"]["Enums"]["hire_fin_onboarding_status"]
+          submitted_at: string | null
+          tax_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          aadhaar_doc_path?: string | null
+          aadhaar_last4?: string | null
+          account_number?: string | null
+          address?: string | null
+          address_proof_path?: string | null
+          bank_account_holder_name?: string | null
+          bank_name?: string | null
+          branch?: string | null
+          cancelled_cheque_path?: string | null
+          created_at?: string
+          emergency_contact?: string | null
+          employee_id: string
+          finance_verified_at?: string | null
+          finance_verified_by?: string | null
+          id?: string
+          ifsc_swift?: string | null
+          pan_doc_path?: string | null
+          pan_number?: string | null
+          proposal_id?: string | null
+          rejection_reason?: string | null
+          status?: Database["public"]["Enums"]["hire_fin_onboarding_status"]
+          submitted_at?: string | null
+          tax_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          aadhaar_doc_path?: string | null
+          aadhaar_last4?: string | null
+          account_number?: string | null
+          address?: string | null
+          address_proof_path?: string | null
+          bank_account_holder_name?: string | null
+          bank_name?: string | null
+          branch?: string | null
+          cancelled_cheque_path?: string | null
+          created_at?: string
+          emergency_contact?: string | null
+          employee_id?: string
+          finance_verified_at?: string | null
+          finance_verified_by?: string | null
+          id?: string
+          ifsc_swift?: string | null
+          pan_doc_path?: string | null
+          pan_number?: string | null
+          proposal_id?: string | null
+          rejection_reason?: string | null
+          status?: Database["public"]["Enums"]["hire_fin_onboarding_status"]
+          submitted_at?: string | null
+          tax_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hire_finance_onboarding_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: true
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hire_finance_onboarding_proposal_id_fkey"
+            columns: ["proposal_id"]
+            isOneToOne: false
+            referencedRelation: "hire_compensation_proposals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       hiring_requests: {
         Row: {
           approved_at: string | null
@@ -14691,6 +14896,60 @@ export type Database = {
         }
         Relationships: []
       }
+      hire_finance_onboarding_status_public: {
+        Row: {
+          employee_id: string | null
+          finance_verified_at: string | null
+          id: string | null
+          is_verified: boolean | null
+          proposal_id: string | null
+          status:
+            | Database["public"]["Enums"]["hire_fin_onboarding_status"]
+            | null
+          submitted_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          employee_id?: string | null
+          finance_verified_at?: string | null
+          id?: string | null
+          is_verified?: never
+          proposal_id?: string | null
+          status?:
+            | Database["public"]["Enums"]["hire_fin_onboarding_status"]
+            | null
+          submitted_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          employee_id?: string | null
+          finance_verified_at?: string | null
+          id?: string | null
+          is_verified?: never
+          proposal_id?: string | null
+          status?:
+            | Database["public"]["Enums"]["hire_fin_onboarding_status"]
+            | null
+          submitted_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hire_finance_onboarding_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: true
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hire_finance_onboarding_proposal_id_fkey"
+            columns: ["proposal_id"]
+            isOneToOne: false
+            referencedRelation: "hire_compensation_proposals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       _org_is_system_role_name: { Args: { _name: string }; Returns: boolean }
@@ -15262,6 +15521,18 @@ export type Database = {
         | "completed"
         | "overdue"
         | "cancelled"
+      hire_comp_status:
+        | "draft"
+        | "pending_finance_l1"
+        | "pending_finance_l2"
+        | "approved"
+        | "rejected"
+        | "sent_back"
+      hire_fin_onboarding_status:
+        | "awaiting_employee"
+        | "submitted_by_employee"
+        | "verified_by_finance"
+        | "rejected"
       hiring_priority: "low" | "medium" | "high" | "critical"
       hiring_request_status:
         | "draft"
@@ -15799,6 +16070,20 @@ export const Constants = {
         "completed",
         "overdue",
         "cancelled",
+      ],
+      hire_comp_status: [
+        "draft",
+        "pending_finance_l1",
+        "pending_finance_l2",
+        "approved",
+        "rejected",
+        "sent_back",
+      ],
+      hire_fin_onboarding_status: [
+        "awaiting_employee",
+        "submitted_by_employee",
+        "verified_by_finance",
+        "rejected",
       ],
       hiring_priority: ["low", "medium", "high", "critical"],
       hiring_request_status: [

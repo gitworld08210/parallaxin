@@ -1,97 +1,80 @@
-# Phase 4.7 — Executive Appointment Flow (Founder → C-Suite) with Gmail Joining Letter PDF
+# Hiring ka Payment + Finance Onboarding Flow
 
-Founder Office se Co-Founder + all C-level heads (HR, CTO, CFO, COO, CSO, CPO, GC, Head of T&S, Head of Verification, Head of Support) ko one-click appoint. System auto employee ID + random temp password generate karega, ek beautifully designed **PDF joining letter** banayega, aur founder ke connected Gmail account se executive ki personal email par PDF attachment ke saath bhejega. Founder ko screen pe bhi ek-baar copy of credentials milega as fallback.
+## Goal
 
-## Employee ID scheme
+Jab HR kisi ko hire kare, to payment (salary/joining bonus/allowances) HR khud decide na kare. Wo ek proposal Finance ko bhejegi. Finance department step-by-step approve kare, aur naye employee ke bank/documents Finance collect kare.
 
-- Founder: `AURE-F01` (existing `AUR-FND-177051` → migrate to `AURE-F01`)
-- Co-Founder: `AURE-F02`
-- All hired: `AURE001`, `AURE002`, `AURE003`, … (Postgres sequence, race-safe)
-- Manual employee_number input hata denge; server auto-generate.
+## User roles + authority
 
-## Founder Office — Executive Appointments panel
 
-Route: `/admin-os/founder-office/appointments`. Founder-only (role check + RLS).
+| Role                                     | Kya kar sakta hai                                                                                                             |
+| ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| HR Head / HR Manager                     | Naye hire ka salary proposal banata hai (CTC, base, bonus, joining bonus, allowances, currency). Finance ko submit karta hai. |
+| Finance L1 (analyst / associate)         | Proposal review kare. Approve → L2 par jaye. Reject/Reason ke saath return kar sake.                                          |
+| Finance L2 (finance head / CFO delegate) | Final decision. Approve, Reject, ya Send-back-with-reason. L2 tak hi max approval hai.                                        |
+| Founder / Co-Founder                     | Sab kuch dekh sakte hain, override kar sakte hain, but normal flow me involve nahi honge.                                     |
+| Naya Employee                            | Apna bank account, PAN, Aadhaar, cancelled cheque etc. Finance ke secure form me upload kare (HR ke paas nahi jayegi).        |
 
-- Pre-defined C-level slot cards: Co-Founder, HR Head, CTO, CFO, COO, CSO, CPO, General Counsel, Head of T&S, Head of Verification, Head of Support.
-- Status per slot: Vacant / Appointed / Suspended. Appointed dikhaye person + employee ID + joining date.
-- "Appoint" button → modal (full name, personal email address, phone, joining date, notes).
-- CTA card on Founder Office Dashboard.
 
-## Gmail Connector setup
+## Data model (naye tables)
 
-- Connect Gmail via `standard_connectors--connect` (connector_id `google_mail`). Scopes needed: `gmail.send` for sending, `gmail.compose` for drafts fallback.
-- Founder connects his Google account once. Sender identity = founder's Gmail address.
-- Env vars available in edge functions: `LOVABLE_API_KEY`, `GOOGLE_MAIL_API_KEY`.
+1. `hire_compensation_proposals`
+  - employee_id, hiring_request_id (optional), candidate_id (optional)
+  - currency, base_monthly, joining_bonus, variable_bonus, allowances (jsonb), notes
+  - status: `draft` → `pending_finance_l1` → `pending_finance_l2` → `approved` / `rejected` / `sent_back`
+  - submitted_by (HR user), submitted_at
+  - l1_reviewer_id, l1_decision, l1_reason, l1_at
+  - l2_reviewer_id, l2_decision, l2_reason, l2_at
+2. `hire_finance_onboarding`
+  - employee_id (unique), proposal_id
+  - status: `awaiting_employee` → `submitted_by_employee` → `verified_by_finance` → `rejected`
+  - Fields collected from the new employee:
+    - bank_account_holder_name, bank_name, account_number (encrypted view), ifsc/swift, branch
+    - pan_number, aadhaar_last4, tax_id (country agnostic)
+    - address, emergency_contact
+    - Documents (storage bucket, private): cancelled_cheque_path, pan_doc_path, aadhaar_doc_path, address_proof_path
+  - finance_verified_by, finance_verified_at, rejection_reason
+  - HR ke liye ye table read-only + masked hoga (sirf status dikhega, account number nahi).
 
-## `appoint-executive` edge function
+## Access rules
 
-Steps (service role):
-1. Verify caller is active founder.
-2. Ensure department + role exist for slot; reject if slot already has active head.
-3. Generate 20-char temp password.
-4. Create `auth.users` (email_confirm true, metadata full_name).
-5. Insert into `employees`: auto `employee_number`, `user_type = 'executive'`, `level = 'L6'`, `employment_status = 'active'`, `requires_password_change = true`, `requires_2fa_setup = true`, reporting to founder.
-6. Insert into `user_roles`.
-7. Generate joining-letter PDF server-side (using `pdf-lib` via npm specifier in Deno) with Aurelix branding: logo mark, header "Aurelix — Letter of Appointment", executive name, employee ID, role, department, joining date, effective from, welcome paragraph, terms footer, signatures block. First-login URL, temp password inside a boxed "Confidential Access Details" section.
-8. Upload PDF to Storage bucket `joining-letters` (private) at `appointments/<employee_number>.pdf`. Return signed URL (30-day) for founder's fallback download.
-9. Build RFC 2822 MIME message with multipart/mixed: text/html body (short welcome + note that attached PDF has details) + PDF attachment (base64). Post to Gmail API `users/me/messages/send` via gateway.
-10. Insert into `executive_appointments` audit + `admin_audit_logs`.
-11. Return `{ employee_number, email_sent: true, gmail_message_id, pdf_signed_url, temp_password }` (temp_password shown once as fallback if user prefers to hand over securely).
+- HR: `hire_compensation_proposals` me insert + update apne proposals; Finance approval fields readonly.
+- Finance L1/L2: `hire_compensation_proposals` full read + update apne decision columns.
+- `hire_finance_onboarding` par HR sirf status column dekhe (secure view use karenge, base table par HR ka SELECT deny).
+- Employee: apna hi row read/update kar sakega jab tak `submitted_by_employee` na ho.
+- Documents storage bucket private, RLS: Finance + owner-employee only.
 
-## Frontend appointment result modal
+Roles ka setup:
 
-- Success: "Joining letter emailed to <personal_email> from <founder's gmail>" + "Download PDF copy" button + "Reveal credentials" toggle (masked temp password, copy button). Warning: "Credentials not shown again."
-- On email failure: PDF download + credentials block prominent, retry-email button.
+- 2 nayi admin roles: `finance_l1`, `finance_l2` (Finance department me jodenge).
+- 4 nayi permissions: `finance.hire_comp.submit` (HR), `finance.hire_comp.review_l1`, `finance.hire_comp.approve_l2`, `finance.hire_onboarding.verify`.
+- Auto-grant HR-permission wali roles ko `submit`; Finance L1 ko `review_l1`; L2 ko `approve_l2` + `verify`.
 
-## People Ops gating
+## UI additions
 
-- `EmployeeForm`: employee_number auto/readonly.
-- Non-founder create disabled with tooltip when HR Head slot is Vacant. Founder unrestricted.
+- **People Ops → Recruitment → Hire flow me “Salary proposal” step add**. HR fill karke Finance ko submit karega.
+- **People Ops → Hire tracking**: HR ko status dikhta rahega (pending L1 / L2 / approved / rejected). Reject hone par edit karke resubmit kar sake.
+- **Finance & Legal → Payroll → Hire Approvals** (nayi screen)
+  - L1 tab: `pending_finance_l1` list, Approve/Reject/Reason.
+  - L2 tab: `pending_finance_l2` list, Approve/Reject/Reason.
+  - Sab decisions audit log me jayenge.
+- **Finance & Legal → New Hire Bank Details** (nayi screen)
+  - Approved proposals ki list.
+  - Finance status dekhe, verify/reject kare.
+  - Documents preview + download.
+- **Naye employee ko first-login pe ek secure form**: “Complete your finance onboarding” — bank + PAN + document uploads. HR ko iska link/data nahi milega.
 
-## Storage
+## Notifications
 
-- Private bucket `joining-letters`; RLS: founder + owning executive can read; admin write via service role only.
+- Har state change par in-app notification: HR ko, L1 ko, L2 ko, employee ko.
+- Audit log entry (module: `finance`) har transition par.
 
-## Database migration (single)
+## Guardrails
 
-1. `CREATE SEQUENCE employees_hire_seq;`
-2. `CREATE FUNCTION gen_employee_number()` returning `'AURE' || lpad(nextval::text, 3, '0')`.
-3. Backfill existing rows to `AURE-F01`, `AURE001`, `AURE002`, `AURE003`. Reset sequence to 4.
-4. `admin_user_type` enum: add `executive` if missing.
-5. New table `executive_appointments` (slot_key, employee_id, appointed_by, personal_email, appointed_at, revoked_at, gmail_message_id, pdf_path, notes) with GRANTs + RLS + policies.
-6. Seed missing C-level `admin_departments` + `admin_roles`.
+- HR full appointment tabhi complete maani jayegi jab proposal `approved` + finance onboarding `verified_by_finance` ho. Warna employee ka status `pre_onboarding` par rahega, `active` nahi hoga.
+- Founders/co-founders is flow se bypass — unke liye ye required na out)
 
-## Files
+- Actual salary disbursement / bank transfer integration — sirf approval + data collection tak.
+- Payroll run / payslip generation — future step.
 
-Add:
-- `supabase/functions/appoint-executive/index.ts`
-- `supabase/functions/_shared/joining-letter-pdf.ts` (PDF builder using pdf-lib)
-- `supabase/migrations/<ts>_executive_appointments.sql`
-- `src/pages/admin-os/founder-office/AppointmentsPanel.tsx`
-- `src/pages/admin-os/founder-office/AppointmentModal.tsx`
-- `src/pages/admin-os/founder-office/AppointmentResultDialog.tsx`
-- `src/hooks/admin-os/useAppointments.ts`
-
-Edit:
-- `src/App.tsx` (new route + sidebar link).
-- `src/pages/admin-os/founder-office/FounderOfficeDashboard.tsx` (CTA card).
-- `src/pages/admin-os/people-ops/EmployeeForm.tsx` (auto employee_number + HR-Head guard).
-- `supabase/functions/seed-founder/index.ts` (new founders → `AURE-F01`).
-
-## Pre-build steps (need user action once)
-
-1. Connect Gmail via `standard_connectors--connect` (I'll trigger the dialog).
-2. Create Storage bucket `joining-letters` (I'll do it via tool).
-
-## Verification
-
-- Playwright login as founder → appoint HR Head with real personal email → check Gmail Sent folder for email with PDF attached → open PDF confirms branding + AURE001 + temp password.
-- Logout, login with HR Head creds → forced password change screen.
-- `psql`: employee_number order = `AURE-F01`, `AURE001`, `AURE002`, `AURE003`, `AURE004` (new HR Head).
-
-## Out of scope
-
-- Auth email templates (unchanged, using Lovable defaults).
-- Accept/decline flow — direct joining letter as agreed.
-- Bulk / re-appointment flows — future phase.
+Approve karo to main sab kuch build kar deta hoon (migrations + UI + edge function for the employee-side secure form).

@@ -101,6 +101,12 @@ export const ADMIN_PERMISSIONS = {
   PEOPLE_OPS_BENEFITS_MANAGE: "people_ops.benefits.manage",
   PEOPLE_OPS_REIMBURSEMENT_MANAGE: "people_ops.reimbursement.manage",
 
+  // Hire compensation + finance onboarding
+  FINANCE_HIRE_COMP_SUBMIT: "finance.hire_comp.submit",
+  FINANCE_HIRE_COMP_REVIEW_L1: "finance.hire_comp.review_l1",
+  FINANCE_HIRE_COMP_APPROVE_L2: "finance.hire_comp.approve_l2",
+  FINANCE_HIRE_ONBOARDING_VERIFY: "finance.hire_onboarding.verify",
+
 } as const;
 
 export type AdminPermissionKey =
