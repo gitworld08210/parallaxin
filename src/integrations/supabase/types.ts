@@ -11932,6 +11932,434 @@ export type Database = {
           },
         ]
       }
+      sec_access_review_items: {
+        Row: {
+          created_at: string
+          decided_at: string | null
+          decided_by: string | null
+          decision: string
+          decision_reason: string | null
+          id: string
+          permission_key: string | null
+          review_id: string
+          role_key: string | null
+          subject_user_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          decision?: string
+          decision_reason?: string | null
+          id?: string
+          permission_key?: string | null
+          review_id: string
+          role_key?: string | null
+          subject_user_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          decision?: string
+          decision_reason?: string | null
+          id?: string
+          permission_key?: string | null
+          review_id?: string
+          role_key?: string | null
+          subject_user_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sec_access_review_items_review_id_fkey"
+            columns: ["review_id"]
+            isOneToOne: false
+            referencedRelation: "sec_access_reviews"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sec_access_reviews: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          due_date: string | null
+          id: string
+          notes: string | null
+          owner_id: string | null
+          scope: string
+          scope_ref: string | null
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          due_date?: string | null
+          id?: string
+          notes?: string | null
+          owner_id?: string | null
+          scope?: string
+          scope_ref?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          due_date?: string | null
+          id?: string
+          notes?: string | null
+          owner_id?: string | null
+          scope?: string
+          scope_ref?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      sec_audit_logs: {
+        Row: {
+          action: string
+          actor_id: string | null
+          created_at: string
+          details: Json | null
+          entity_id: string | null
+          entity_type: string
+          id: string
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          created_at?: string
+          details?: Json | null
+          entity_id?: string | null
+          entity_type: string
+          id?: string
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          created_at?: string
+          details?: Json | null
+          entity_id?: string | null
+          entity_type?: string
+          id?: string
+        }
+        Relationships: []
+      }
+      sec_compliance_records: {
+        Row: {
+          checked_at: string
+          checked_by: string | null
+          created_at: string
+          evidence: string | null
+          id: string
+          next_check_at: string | null
+          policy_code: string
+          status: string
+          subject_ref: string | null
+          subject_type: string
+          updated_at: string
+        }
+        Insert: {
+          checked_at?: string
+          checked_by?: string | null
+          created_at?: string
+          evidence?: string | null
+          id?: string
+          next_check_at?: string | null
+          policy_code: string
+          status?: string
+          subject_ref?: string | null
+          subject_type?: string
+          updated_at?: string
+        }
+        Update: {
+          checked_at?: string
+          checked_by?: string | null
+          created_at?: string
+          evidence?: string | null
+          id?: string
+          next_check_at?: string | null
+          policy_code?: string
+          status?: string
+          subject_ref?: string | null
+          subject_type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      sec_incident_updates: {
+        Row: {
+          author_id: string | null
+          body: string
+          created_at: string
+          id: string
+          incident_id: string
+          update_type: string
+        }
+        Insert: {
+          author_id?: string | null
+          body: string
+          created_at?: string
+          id?: string
+          incident_id: string
+          update_type?: string
+        }
+        Update: {
+          author_id?: string | null
+          body?: string
+          created_at?: string
+          id?: string
+          incident_id?: string
+          update_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sec_incident_updates_incident_id_fkey"
+            columns: ["incident_id"]
+            isOneToOne: false
+            referencedRelation: "sec_incidents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sec_incidents: {
+        Row: {
+          affected_systems: string[] | null
+          affected_users: string[] | null
+          assignee_id: string | null
+          category: string | null
+          closed_at: string | null
+          contained_at: string | null
+          created_at: string
+          description: string | null
+          detected_at: string
+          id: string
+          incident_code: string
+          policy_refs: string[] | null
+          recovered_at: string | null
+          reporter_id: string | null
+          root_cause: string | null
+          severity: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          affected_systems?: string[] | null
+          affected_users?: string[] | null
+          assignee_id?: string | null
+          category?: string | null
+          closed_at?: string | null
+          contained_at?: string | null
+          created_at?: string
+          description?: string | null
+          detected_at?: string
+          id?: string
+          incident_code?: string
+          policy_refs?: string[] | null
+          recovered_at?: string | null
+          reporter_id?: string | null
+          root_cause?: string | null
+          severity?: string
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          affected_systems?: string[] | null
+          affected_users?: string[] | null
+          assignee_id?: string | null
+          category?: string | null
+          closed_at?: string | null
+          contained_at?: string | null
+          created_at?: string
+          description?: string | null
+          detected_at?: string
+          id?: string
+          incident_code?: string
+          policy_refs?: string[] | null
+          recovered_at?: string | null
+          reporter_id?: string | null
+          root_cause?: string | null
+          severity?: string
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      sec_investigations: {
+        Row: {
+          actions_taken: string | null
+          affected_systems: string[] | null
+          affected_users: string[] | null
+          closed_at: string | null
+          created_at: string
+          evidence: Json | null
+          id: string
+          incident_id: string | null
+          lead_investigator_id: string | null
+          lessons_learned: string | null
+          recommendations: string | null
+          status: string
+          timeline: Json | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          actions_taken?: string | null
+          affected_systems?: string[] | null
+          affected_users?: string[] | null
+          closed_at?: string | null
+          created_at?: string
+          evidence?: Json | null
+          id?: string
+          incident_id?: string | null
+          lead_investigator_id?: string | null
+          lessons_learned?: string | null
+          recommendations?: string | null
+          status?: string
+          timeline?: Json | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          actions_taken?: string | null
+          affected_systems?: string[] | null
+          affected_users?: string[] | null
+          closed_at?: string | null
+          created_at?: string
+          evidence?: Json | null
+          id?: string
+          incident_id?: string | null
+          lead_investigator_id?: string | null
+          lessons_learned?: string | null
+          recommendations?: string | null
+          status?: string
+          timeline?: Json | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sec_investigations_incident_id_fkey"
+            columns: ["incident_id"]
+            isOneToOne: false
+            referencedRelation: "sec_incidents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sec_policies: {
+        Row: {
+          body: string | null
+          category: string
+          code: string
+          created_at: string
+          effective_from: string | null
+          id: string
+          owner_id: string | null
+          status: string
+          title: string
+          updated_at: string
+          version: string
+        }
+        Insert: {
+          body?: string | null
+          category?: string
+          code: string
+          created_at?: string
+          effective_from?: string | null
+          id?: string
+          owner_id?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+          version?: string
+        }
+        Update: {
+          body?: string | null
+          category?: string
+          code?: string
+          created_at?: string
+          effective_from?: string | null
+          id?: string
+          owner_id?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+          version?: string
+        }
+        Relationships: []
+      }
+      sec_threat_events: {
+        Row: {
+          created_at: string
+          detected_at: string
+          id: string
+          incident_id: string | null
+          resolved_at: string | null
+          severity: string
+          signal_data: Json | null
+          source_ip: string | null
+          status: string
+          target_resource: string | null
+          target_user_id: string | null
+          threat_code: string
+          threat_type: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          detected_at?: string
+          id?: string
+          incident_id?: string | null
+          resolved_at?: string | null
+          severity?: string
+          signal_data?: Json | null
+          source_ip?: string | null
+          status?: string
+          target_resource?: string | null
+          target_user_id?: string | null
+          threat_code?: string
+          threat_type: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          detected_at?: string
+          id?: string
+          incident_id?: string | null
+          resolved_at?: string | null
+          severity?: string
+          signal_data?: Json | null
+          source_ip?: string | null
+          status?: string
+          target_resource?: string | null
+          target_user_id?: string | null
+          threat_code?: string
+          threat_type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sec_threat_events_incident_id_fkey"
+            columns: ["incident_id"]
+            isOneToOne: false
+            referencedRelation: "sec_incidents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       shifts: {
         Row: {
           created_at: string
@@ -14283,6 +14711,7 @@ export type Database = {
       expire_temporary_assignments: { Args: never; Returns: number }
       gen_eng_id: { Args: { _prefix: string }; Returns: string }
       gen_fin_id: { Args: { _prefix: string }; Returns: string }
+      gen_sec_id: { Args: { _prefix: string }; Returns: string }
       generate_employee_number: { Args: never; Returns: string }
       generate_unique_org_slug: {
         Args: { _name: string; _self?: string }
@@ -14410,6 +14839,7 @@ export type Database = {
         Args: { p_organization_id: string }
         Returns: boolean
       }
+      is_security_staff: { Args: { _user_id: string }; Returns: boolean }
       is_support_staff: { Args: { _user: string }; Returns: boolean }
       is_trust_safety_staff: { Args: { _user_id: string }; Returns: boolean }
       is_verification_staff: { Args: { _user: string }; Returns: boolean }
