@@ -1380,6 +1380,89 @@ export type Database = {
           },
         ]
       }
+      department_periodic_reports: {
+        Row: {
+          attachments: Json
+          cadence: string
+          created_at: string
+          created_by: string | null
+          department_id: string
+          due_date: string
+          highlights: string | null
+          id: string
+          metrics: Json
+          period_end: string
+          period_start: string
+          reopen_reason: string | null
+          reopened_at: string | null
+          reopened_by: string | null
+          revision: number
+          risks: string | null
+          status: string
+          submitted_at: string | null
+          submitted_by: string | null
+          summary: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          attachments?: Json
+          cadence: string
+          created_at?: string
+          created_by?: string | null
+          department_id: string
+          due_date: string
+          highlights?: string | null
+          id?: string
+          metrics?: Json
+          period_end: string
+          period_start: string
+          reopen_reason?: string | null
+          reopened_at?: string | null
+          reopened_by?: string | null
+          revision?: number
+          risks?: string | null
+          status?: string
+          submitted_at?: string | null
+          submitted_by?: string | null
+          summary?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          attachments?: Json
+          cadence?: string
+          created_at?: string
+          created_by?: string | null
+          department_id?: string
+          due_date?: string
+          highlights?: string | null
+          id?: string
+          metrics?: Json
+          period_end?: string
+          period_start?: string
+          reopen_reason?: string | null
+          reopened_at?: string | null
+          reopened_by?: string | null
+          revision?: number
+          risks?: string | null
+          status?: string
+          submitted_at?: string | null
+          submitted_by?: string | null
+          summary?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "department_periodic_reports_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "admin_departments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       dm_unlocks: {
         Row: {
           amount_cents: number
@@ -2195,6 +2278,45 @@ export type Database = {
           },
         ]
       }
+      executive_analytics_snapshots: {
+        Row: {
+          captured_at: string
+          id: string
+          kpi_code: string
+          metadata: Json
+          period: string
+          period_end: string
+          period_start: string
+          scope: string
+          scope_ref: string | null
+          value: number | null
+        }
+        Insert: {
+          captured_at?: string
+          id?: string
+          kpi_code: string
+          metadata?: Json
+          period: string
+          period_end: string
+          period_start: string
+          scope?: string
+          scope_ref?: string | null
+          value?: number | null
+        }
+        Update: {
+          captured_at?: string
+          id?: string
+          kpi_code?: string
+          metadata?: Json
+          period?: string
+          period_end?: string
+          period_start?: string
+          scope?: string
+          scope_ref?: string | null
+          value?: number | null
+        }
+        Relationships: []
+      }
       executive_delegations: {
         Row: {
           created_at: string
@@ -2283,6 +2405,66 @@ export type Database = {
           },
         ]
       }
+      executive_kpi_configs: {
+        Row: {
+          alert_threshold: number | null
+          category: string
+          code: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          direction: string
+          formula: string | null
+          id: string
+          is_active: boolean
+          name: string
+          scope: string
+          source_module: string | null
+          target_value: number | null
+          unit: string | null
+          updated_at: string
+          warn_threshold: number | null
+        }
+        Insert: {
+          alert_threshold?: number | null
+          category: string
+          code: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          direction?: string
+          formula?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          scope?: string
+          source_module?: string | null
+          target_value?: number | null
+          unit?: string | null
+          updated_at?: string
+          warn_threshold?: number | null
+        }
+        Update: {
+          alert_threshold?: number | null
+          category?: string
+          code?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          direction?: string
+          formula?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          scope?: string
+          source_module?: string | null
+          target_value?: number | null
+          unit?: string | null
+          updated_at?: string
+          warn_threshold?: number | null
+        }
+        Relationships: []
+      }
       executive_notes: {
         Row: {
           author_id: string
@@ -2314,6 +2496,290 @@ export type Database = {
             columns: ["request_id"]
             isOneToOne: false
             referencedRelation: "platform_approval_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      executive_report_definitions: {
+        Row: {
+          category: string
+          code: string
+          created_at: string
+          created_by: string | null
+          default_filters: Json
+          description: string | null
+          id: string
+          is_active: boolean
+          is_system: boolean
+          name: string
+          query_config: Json
+          scope: string
+          source_module: string | null
+          updated_at: string
+          visibility: string
+        }
+        Insert: {
+          category: string
+          code: string
+          created_at?: string
+          created_by?: string | null
+          default_filters?: Json
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          is_system?: boolean
+          name: string
+          query_config?: Json
+          scope?: string
+          source_module?: string | null
+          updated_at?: string
+          visibility?: string
+        }
+        Update: {
+          category?: string
+          code?: string
+          created_at?: string
+          created_by?: string | null
+          default_filters?: Json
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          is_system?: boolean
+          name?: string
+          query_config?: Json
+          scope?: string
+          source_module?: string | null
+          updated_at?: string
+          visibility?: string
+        }
+        Relationships: []
+      }
+      executive_report_history: {
+        Row: {
+          definition_id: string | null
+          duration_ms: number | null
+          error: string | null
+          file_path: string | null
+          filters: Json
+          format: string | null
+          generated_at: string
+          generated_by: string | null
+          id: string
+          row_count: number | null
+          scheduled_id: string | null
+          status: string
+          triggered_by: string
+        }
+        Insert: {
+          definition_id?: string | null
+          duration_ms?: number | null
+          error?: string | null
+          file_path?: string | null
+          filters?: Json
+          format?: string | null
+          generated_at?: string
+          generated_by?: string | null
+          id?: string
+          row_count?: number | null
+          scheduled_id?: string | null
+          status?: string
+          triggered_by?: string
+        }
+        Update: {
+          definition_id?: string | null
+          duration_ms?: number | null
+          error?: string | null
+          file_path?: string | null
+          filters?: Json
+          format?: string | null
+          generated_at?: string
+          generated_by?: string | null
+          id?: string
+          row_count?: number | null
+          scheduled_id?: string | null
+          status?: string
+          triggered_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "executive_report_history_definition_id_fkey"
+            columns: ["definition_id"]
+            isOneToOne: false
+            referencedRelation: "executive_report_definitions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "executive_report_history_scheduled_id_fkey"
+            columns: ["scheduled_id"]
+            isOneToOne: false
+            referencedRelation: "executive_scheduled_reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      executive_report_shares: {
+        Row: {
+          can_export: boolean
+          created_at: string
+          history_id: string | null
+          id: string
+          message: string | null
+          saved_id: string | null
+          shared_by: string | null
+          shared_with_department: string | null
+          shared_with_user: string | null
+        }
+        Insert: {
+          can_export?: boolean
+          created_at?: string
+          history_id?: string | null
+          id?: string
+          message?: string | null
+          saved_id?: string | null
+          shared_by?: string | null
+          shared_with_department?: string | null
+          shared_with_user?: string | null
+        }
+        Update: {
+          can_export?: boolean
+          created_at?: string
+          history_id?: string | null
+          id?: string
+          message?: string | null
+          saved_id?: string | null
+          shared_by?: string | null
+          shared_with_department?: string | null
+          shared_with_user?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "executive_report_shares_history_id_fkey"
+            columns: ["history_id"]
+            isOneToOne: false
+            referencedRelation: "executive_report_history"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "executive_report_shares_saved_id_fkey"
+            columns: ["saved_id"]
+            isOneToOne: false
+            referencedRelation: "executive_saved_reports"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "executive_report_shares_shared_with_department_fkey"
+            columns: ["shared_with_department"]
+            isOneToOne: false
+            referencedRelation: "admin_departments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      executive_saved_reports: {
+        Row: {
+          created_at: string
+          definition_id: string | null
+          description: string | null
+          filters: Json
+          id: string
+          is_pinned: boolean
+          owner_id: string
+          snapshot: Json | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          definition_id?: string | null
+          description?: string | null
+          filters?: Json
+          id?: string
+          is_pinned?: boolean
+          owner_id: string
+          snapshot?: Json | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          definition_id?: string | null
+          description?: string | null
+          filters?: Json
+          id?: string
+          is_pinned?: boolean
+          owner_id?: string
+          snapshot?: Json | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "executive_saved_reports_definition_id_fkey"
+            columns: ["definition_id"]
+            isOneToOne: false
+            referencedRelation: "executive_report_definitions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      executive_scheduled_reports: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          cron_expression: string | null
+          definition_id: string
+          filters: Json
+          format: string
+          frequency: string
+          id: string
+          is_active: boolean
+          last_run_at: string | null
+          name: string
+          next_run_at: string | null
+          recipients: Json
+          timezone: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          cron_expression?: string | null
+          definition_id: string
+          filters?: Json
+          format?: string
+          frequency: string
+          id?: string
+          is_active?: boolean
+          last_run_at?: string | null
+          name: string
+          next_run_at?: string | null
+          recipients?: Json
+          timezone?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          cron_expression?: string | null
+          definition_id?: string
+          filters?: Json
+          format?: string
+          frequency?: string
+          id?: string
+          is_active?: boolean
+          last_run_at?: string | null
+          name?: string
+          next_run_at?: string | null
+          recipients?: Json
+          timezone?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "executive_scheduled_reports_definition_id_fkey"
+            columns: ["definition_id"]
+            isOneToOne: false
+            referencedRelation: "executive_report_definitions"
             referencedColumns: ["id"]
           },
         ]

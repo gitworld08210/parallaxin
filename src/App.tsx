@@ -181,6 +181,17 @@ const DecisionCenter = lazy(() => import("./pages/admin-os/executive/decisions/D
 const DecisionEditor = lazy(() => import("./pages/admin-os/executive/decisions/DecisionEditor"));
 const DecisionDetail = lazy(() => import("./pages/admin-os/executive/decisions/DecisionDetail"));
 const DecisionSearchPage = lazy(() => import("./pages/admin-os/executive/decisions/DecisionSearch"));
+
+// Phase 3.6 — Executive Reports & Analytics
+const ReportsShell = lazy(() => import("./pages/admin-os/executive/reports/ReportsHome"));
+const ReportsOverview = lazy(() => import("./pages/admin-os/executive/reports/ReportsOverview"));
+const AnalyticsCenter = lazy(() => import("./pages/admin-os/executive/reports/AnalyticsCenter"));
+const ScorecardsPage = lazy(() => import("./pages/admin-os/executive/reports/ScorecardsPage"));
+const TrendAnalysis = lazy(() => import("./pages/admin-os/executive/reports/TrendAnalysis"));
+const ReportLibrary = lazy(() => import("./pages/admin-os/executive/reports/ReportLibrary"));
+const ScheduledReportsPage = lazy(() => import("./pages/admin-os/executive/reports/ScheduledReports"));
+const ExportCenterPage = lazy(() => import("./pages/admin-os/executive/reports/ExportCenter"));
+const DepartmentReportCompliance = lazy(() => import("./pages/admin-os/executive/reports/DepartmentReportCompliance"));
 const FounderOfficeDashboard = lazy(
   () => import("./pages/admin-os/founder-office/FounderOfficeDashboard"),
 );
@@ -385,7 +396,16 @@ const App = () => (
                   <Route path="approvals/:id" element={<ExecutiveApprovalDetail />} />
                   <Route path="departments" element={<ExecutiveDepartments />} />
                   <Route path="employees" element={<ExecutiveEmployees />} />
-                  <Route path="reports" element={<ExecutiveReports />} />
+                  <Route path="reports" element={<ReportsShell />}>
+                    <Route index element={<ReportsOverview />} />
+                    <Route path="analytics" element={<AnalyticsCenter />} />
+                    <Route path="scorecards" element={<ScorecardsPage />} />
+                    <Route path="trends" element={<TrendAnalysis />} />
+                    <Route path="library" element={<ReportLibrary />} />
+                    <Route path="scheduled" element={<ScheduledReportsPage />} />
+                    <Route path="exports" element={<ExportCenterPage />} />
+                    <Route path="compliance" element={<DepartmentReportCompliance />} />
+                  </Route>
                   <Route path="decisions" element={<DecisionCenter />} />
                   <Route path="decisions/new" element={<DecisionEditor />} />
                   <Route path="decisions/search" element={<DecisionSearchPage />} />
