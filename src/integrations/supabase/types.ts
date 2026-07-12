@@ -5412,6 +5412,490 @@ export type Database = {
           },
         ]
       }
+      kip_bookmarks: {
+        Row: {
+          created_at: string
+          id: string
+          label: string | null
+          note: string | null
+          target_id: string
+          target_type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          label?: string | null
+          note?: string | null
+          target_id: string
+          target_type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          label?: string | null
+          note?: string | null
+          target_id?: string
+          target_type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      kip_citations: {
+        Row: {
+          chunk_id: string | null
+          created_at: string
+          document_id: string
+          id: string
+          message_id: string
+          relevance: number | null
+          section: string | null
+          snippet: string | null
+          version_number: number | null
+        }
+        Insert: {
+          chunk_id?: string | null
+          created_at?: string
+          document_id: string
+          id?: string
+          message_id: string
+          relevance?: number | null
+          section?: string | null
+          snippet?: string | null
+          version_number?: number | null
+        }
+        Update: {
+          chunk_id?: string | null
+          created_at?: string
+          document_id?: string
+          id?: string
+          message_id?: string
+          relevance?: number | null
+          section?: string | null
+          snippet?: string | null
+          version_number?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kip_citations_chunk_id_fkey"
+            columns: ["chunk_id"]
+            isOneToOne: false
+            referencedRelation: "kip_document_chunks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "kip_citations_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "kip_documents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "kip_citations_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "kip_conversation_messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      kip_collection_members: {
+        Row: {
+          access_level: string
+          added_by: string | null
+          collection_id: string
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          access_level?: string
+          added_by?: string | null
+          collection_id: string
+          created_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          access_level?: string
+          added_by?: string | null
+          collection_id?: string
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kip_collection_members_collection_id_fkey"
+            columns: ["collection_id"]
+            isOneToOne: false
+            referencedRelation: "kip_collections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      kip_collections: {
+        Row: {
+          color: string | null
+          created_at: string
+          department: string | null
+          description: string | null
+          document_count: number
+          icon: string | null
+          id: string
+          is_archived: boolean
+          metadata: Json
+          name: string
+          owner_id: string
+          slug: string | null
+          updated_at: string
+          visibility: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          department?: string | null
+          description?: string | null
+          document_count?: number
+          icon?: string | null
+          id?: string
+          is_archived?: boolean
+          metadata?: Json
+          name: string
+          owner_id: string
+          slug?: string | null
+          updated_at?: string
+          visibility?: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          department?: string | null
+          description?: string | null
+          document_count?: number
+          icon?: string | null
+          id?: string
+          is_archived?: boolean
+          metadata?: Json
+          name?: string
+          owner_id?: string
+          slug?: string | null
+          updated_at?: string
+          visibility?: string
+        }
+        Relationships: []
+      }
+      kip_conversation_messages: {
+        Row: {
+          confidence: string | null
+          content: string
+          conversation_id: string
+          created_at: string
+          id: string
+          is_saved: boolean
+          metadata: Json
+          role: string
+        }
+        Insert: {
+          confidence?: string | null
+          content: string
+          conversation_id: string
+          created_at?: string
+          id?: string
+          is_saved?: boolean
+          metadata?: Json
+          role: string
+        }
+        Update: {
+          confidence?: string | null
+          content?: string
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          is_saved?: boolean
+          metadata?: Json
+          role?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kip_conversation_messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "kip_conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      kip_conversations: {
+        Row: {
+          collection_id: string | null
+          created_at: string
+          department: string | null
+          document_ids: string[]
+          id: string
+          is_archived: boolean
+          is_pinned: boolean
+          last_message_at: string | null
+          metadata: Json
+          owner_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          collection_id?: string | null
+          created_at?: string
+          department?: string | null
+          document_ids?: string[]
+          id?: string
+          is_archived?: boolean
+          is_pinned?: boolean
+          last_message_at?: string | null
+          metadata?: Json
+          owner_id: string
+          title?: string
+          updated_at?: string
+        }
+        Update: {
+          collection_id?: string | null
+          created_at?: string
+          department?: string | null
+          document_ids?: string[]
+          id?: string
+          is_archived?: boolean
+          is_pinned?: boolean
+          last_message_at?: string | null
+          metadata?: Json
+          owner_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kip_conversations_collection_id_fkey"
+            columns: ["collection_id"]
+            isOneToOne: false
+            referencedRelation: "kip_collections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      kip_document_chunks: {
+        Row: {
+          chunk_index: number
+          collection_id: string
+          content: string
+          created_at: string
+          document_id: string
+          embedding: string | null
+          id: string
+          metadata: Json
+          section: string | null
+          token_count: number | null
+        }
+        Insert: {
+          chunk_index: number
+          collection_id: string
+          content: string
+          created_at?: string
+          document_id: string
+          embedding?: string | null
+          id?: string
+          metadata?: Json
+          section?: string | null
+          token_count?: number | null
+        }
+        Update: {
+          chunk_index?: number
+          collection_id?: string
+          content?: string
+          created_at?: string
+          document_id?: string
+          embedding?: string | null
+          id?: string
+          metadata?: Json
+          section?: string | null
+          token_count?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kip_document_chunks_collection_id_fkey"
+            columns: ["collection_id"]
+            isOneToOne: false
+            referencedRelation: "kip_collections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "kip_document_chunks_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "kip_documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      kip_document_versions: {
+        Row: {
+          change_summary: string | null
+          content_preview: string | null
+          created_at: string
+          document_id: string
+          file_path: string | null
+          file_size: number | null
+          id: string
+          uploaded_by: string
+          version_number: number
+        }
+        Insert: {
+          change_summary?: string | null
+          content_preview?: string | null
+          created_at?: string
+          document_id: string
+          file_path?: string | null
+          file_size?: number | null
+          id?: string
+          uploaded_by: string
+          version_number: number
+        }
+        Update: {
+          change_summary?: string | null
+          content_preview?: string | null
+          created_at?: string
+          document_id?: string
+          file_path?: string | null
+          file_size?: number | null
+          id?: string
+          uploaded_by?: string
+          version_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kip_document_versions_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "kip_documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      kip_documents: {
+        Row: {
+          chunk_count: number
+          collection_id: string
+          content_preview: string | null
+          created_at: string
+          current_version: number
+          description: string | null
+          document_type: string
+          file_name: string | null
+          file_path: string | null
+          file_size: number | null
+          file_type: string | null
+          id: string
+          indexed_at: string | null
+          indexing_error: string | null
+          is_deleted: boolean
+          metadata: Json
+          status: string
+          tags: string[]
+          title: string
+          updated_at: string
+          uploaded_by: string
+        }
+        Insert: {
+          chunk_count?: number
+          collection_id: string
+          content_preview?: string | null
+          created_at?: string
+          current_version?: number
+          description?: string | null
+          document_type?: string
+          file_name?: string | null
+          file_path?: string | null
+          file_size?: number | null
+          file_type?: string | null
+          id?: string
+          indexed_at?: string | null
+          indexing_error?: string | null
+          is_deleted?: boolean
+          metadata?: Json
+          status?: string
+          tags?: string[]
+          title: string
+          updated_at?: string
+          uploaded_by: string
+        }
+        Update: {
+          chunk_count?: number
+          collection_id?: string
+          content_preview?: string | null
+          created_at?: string
+          current_version?: number
+          description?: string | null
+          document_type?: string
+          file_name?: string | null
+          file_path?: string | null
+          file_size?: number | null
+          file_type?: string | null
+          id?: string
+          indexed_at?: string | null
+          indexing_error?: string | null
+          is_deleted?: boolean
+          metadata?: Json
+          status?: string
+          tags?: string[]
+          title?: string
+          updated_at?: string
+          uploaded_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kip_documents_collection_id_fkey"
+            columns: ["collection_id"]
+            isOneToOne: false
+            referencedRelation: "kip_collections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      kip_search_history: {
+        Row: {
+          collection_id: string | null
+          created_at: string
+          id: string
+          metadata: Json
+          query: string
+          result_count: number | null
+          user_id: string
+        }
+        Insert: {
+          collection_id?: string | null
+          created_at?: string
+          id?: string
+          metadata?: Json
+          query: string
+          result_count?: number | null
+          user_id: string
+        }
+        Update: {
+          collection_id?: string | null
+          created_at?: string
+          id?: string
+          metadata?: Json
+          query?: string
+          result_count?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kip_search_history_collection_id_fkey"
+            columns: ["collection_id"]
+            isOneToOne: false
+            referencedRelation: "kip_collections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       knowledge_transfers: {
         Row: {
           checklist: Json
@@ -11208,6 +11692,31 @@ export type Database = {
       is_organization_owner: {
         Args: { p_organization_id: string }
         Returns: boolean
+      }
+      kip_can_access_collection: {
+        Args: { _collection_id: string; _user_id: string }
+        Returns: boolean
+      }
+      kip_can_edit_collection: {
+        Args: { _collection_id: string; _user_id: string }
+        Returns: boolean
+      }
+      kip_match_chunks: {
+        Args: {
+          filter_collection_ids?: string[]
+          filter_document_ids?: string[]
+          match_count?: number
+          query_embedding: string
+        }
+        Returns: {
+          chunk_index: number
+          collection_id: string
+          content: string
+          document_id: string
+          id: string
+          section: string
+          similarity: number
+        }[]
       }
       leave_group: { Args: { _conv: string }; Returns: undefined }
       list_incoming_organization_invites: {
