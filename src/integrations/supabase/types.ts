@@ -1054,6 +1054,356 @@ export type Database = {
           },
         ]
       }
+      company_brand_assets: {
+        Row: {
+          asset_type: string
+          created_at: string
+          id: string
+          is_active: boolean
+          is_dark_mode: boolean
+          metadata: Json
+          name: string
+          updated_at: string
+          updated_by: string | null
+          url: string | null
+          value: string | null
+        }
+        Insert: {
+          asset_type: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          is_dark_mode?: boolean
+          metadata?: Json
+          name: string
+          updated_at?: string
+          updated_by?: string | null
+          url?: string | null
+          value?: string | null
+        }
+        Update: {
+          asset_type?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          is_dark_mode?: boolean
+          metadata?: Json
+          name?: string
+          updated_at?: string
+          updated_by?: string | null
+          url?: string | null
+          value?: string | null
+        }
+        Relationships: []
+      }
+      company_calendar_events: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          ends_at: string | null
+          event_type: string
+          id: string
+          is_recurring: boolean
+          is_working_day: boolean | null
+          metadata: Json
+          recurrence_pattern: string | null
+          starts_at: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          ends_at?: string | null
+          event_type: string
+          id?: string
+          is_recurring?: boolean
+          is_working_day?: boolean | null
+          metadata?: Json
+          recurrence_pattern?: string | null
+          starts_at: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          ends_at?: string | null
+          event_type?: string
+          id?: string
+          is_recurring?: boolean
+          is_working_day?: boolean | null
+          metadata?: Json
+          recurrence_pattern?: string | null
+          starts_at?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      company_configuration_versions: {
+        Row: {
+          change_reason: string | null
+          changed_by: string | null
+          config_id: string
+          created_at: string
+          id: string
+          value: Json
+          version: number
+        }
+        Insert: {
+          change_reason?: string | null
+          changed_by?: string | null
+          config_id: string
+          created_at?: string
+          id?: string
+          value: Json
+          version: number
+        }
+        Update: {
+          change_reason?: string | null
+          changed_by?: string | null
+          config_id?: string
+          created_at?: string
+          id?: string
+          value?: Json
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_configuration_versions_config_id_fkey"
+            columns: ["config_id"]
+            isOneToOne: false
+            referencedRelation: "company_configurations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      company_configurations: {
+        Row: {
+          category: string
+          created_at: string
+          current_version: number
+          description: string | null
+          id: string
+          is_critical: boolean
+          key: string
+          requires_dual_approval: boolean
+          updated_at: string
+          updated_by: string | null
+          value: Json
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          current_version?: number
+          description?: string | null
+          id?: string
+          is_critical?: boolean
+          key: string
+          requires_dual_approval?: boolean
+          updated_at?: string
+          updated_by?: string | null
+          value?: Json
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          current_version?: number
+          description?: string | null
+          id?: string
+          is_critical?: boolean
+          key?: string
+          requires_dual_approval?: boolean
+          updated_at?: string
+          updated_by?: string | null
+          value?: Json
+        }
+        Relationships: []
+      }
+      company_feature_flags: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_beta: boolean
+          is_enabled: boolean
+          is_internal: boolean
+          key: string
+          name: string
+          rollout_percentage: number
+          target_departments: string[]
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_beta?: boolean
+          is_enabled?: boolean
+          is_internal?: boolean
+          key: string
+          name: string
+          rollout_percentage?: number
+          target_departments?: string[]
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_beta?: boolean
+          is_enabled?: boolean
+          is_internal?: boolean
+          key?: string
+          name?: string
+          rollout_percentage?: number
+          target_departments?: string[]
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
+      company_localization: {
+        Row: {
+          created_at: string
+          currency: string
+          date_format: string
+          display_name: string
+          id: string
+          is_default: boolean
+          is_enabled: boolean
+          language_code: string
+          measurement_units: string
+          region_code: string | null
+          time_format: string
+          timezone: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          currency?: string
+          date_format?: string
+          display_name: string
+          id?: string
+          is_default?: boolean
+          is_enabled?: boolean
+          language_code: string
+          measurement_units?: string
+          region_code?: string | null
+          time_format?: string
+          timezone?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          currency?: string
+          date_format?: string
+          display_name?: string
+          id?: string
+          is_default?: boolean
+          is_enabled?: boolean
+          language_code?: string
+          measurement_units?: string
+          region_code?: string | null
+          time_format?: string
+          timezone?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
+      company_metadata: {
+        Row: {
+          created_at: string
+          current_sequence: number
+          description: string | null
+          format_pattern: string | null
+          id: string
+          key: string
+          metadata: Json
+          name: string
+          prefix: string | null
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          current_sequence?: number
+          description?: string | null
+          format_pattern?: string | null
+          id?: string
+          key: string
+          metadata?: Json
+          name: string
+          prefix?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          current_sequence?: number
+          description?: string | null
+          format_pattern?: string | null
+          id?: string
+          key?: string
+          metadata?: Json
+          name?: string
+          prefix?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
+      company_modules: {
+        Row: {
+          created_at: string
+          dependencies: string[]
+          description: string | null
+          id: string
+          is_visible: boolean
+          metadata: Json
+          module_key: string
+          name: string
+          status: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          dependencies?: string[]
+          description?: string | null
+          id?: string
+          is_visible?: boolean
+          metadata?: Json
+          module_key: string
+          name: string
+          status?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          dependencies?: string[]
+          description?: string | null
+          id?: string
+          is_visible?: boolean
+          metadata?: Json
+          module_key?: string
+          name?: string
+          status?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       compensation_bonuses: {
         Row: {
           amount: number
