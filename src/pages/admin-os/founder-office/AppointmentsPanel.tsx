@@ -22,12 +22,12 @@ import { AppointmentResultDialog } from "./AppointmentResultDialog";
 import { toast } from "sonner";
 
 const AppointmentsPanel = () => {
-  const { employee, isLoading } = useEmployee();
+  const { employee } = useEmployee();
   const { data: appointments } = useAppointments();
   const [openSlot, setOpenSlot] = useState<ExecutiveSlot | null>(null);
   const [result, setResult] = useState<{ result: AppointResult; label: string; email: string } | null>(null);
 
-  if (isLoading) return <div className="p-6 text-sm text-muted-foreground">Loading…</div>;
+  if (!employee) return <div className="p-6 text-sm text-muted-foreground">Loading…</div>;
 
   const roleKey = (employee as any)?.role?.key;
   const isFounder = roleKey === "founder" || roleKey === "co_founder";
