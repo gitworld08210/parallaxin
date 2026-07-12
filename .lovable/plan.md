@@ -1,111 +1,53 @@
-# Phase 1.12 — Core Platform Engines
+# Phase 2.5 — Organization Structure & Workforce Planning
 
-Ten reusable engines that every Admin OS module consumes. No department-specific logic inside engines. Built incrementally in three shippable waves so the app never breaks.
+Builds the shared org-planning layer on top of the existing People Ops foundation. Every view is generated from live `employees` + `admin_departments` data, plus four new planning tables. No new recruitment/payroll surface.
 
-## Scope
+## New database tables (single migration)
 
-Engines: Approval, Workflow, Notification, Global Search, Assignment, Reporting, Dashboard, Activity Feed, File/Document, Scheduler.
+All in `public` with RLS, GRANTs, `updated_at` triggers, and audit-log writes.
 
-Every engine ships with: DB tables (RLS + GRANTs + audit), a typed service layer (`src/services/platform/<engine>.ts`), a React hook (`src/hooks/platform/use<Engine>.ts`), and a reusable UI surface under `src/components/platform/<engine>/` + a console page under `src/pages/admin-os/platform/<engine>/`.
+- `department_capacity` — one row per `admin_departments`, holds `max_capacity`, `target_capacity`, `workload_score`, `notes`, `updated_by`.
+- `open_positions` — hiring requests: `department_id`, `role_id`, `level`, `title`, `reason`, `priority` (low/med/high/critical), `status` (draft/pending_approval/approved/filled/cancelled), `requested_by`, `approved_by`, `expected_joining`, `filled_by_employee_id`, `notes`.
+- `succession_plans` — one row per critical position: `scope` (department_head/deputy_head/team_lead/specialist), `department_id`, `incumbent_employee_id`, `primary_successor_id`, `secondary_successor_id`, `readiness_level` (not_ready/dev_1y/dev_6m/ready_now), `training_progress` (0–100), `notes`.
+- `workforce_forecasts` — per-department planning windows: `department_id`, `period_start`, `period_end`, `planned_headcount`, `notes`.
 
-All engines integrate with existing RBAC (`has_role`, admin permissions), `admin_audit_logs`, and existing `notifications` table where possible (extended, not duplicated).
+Access: read = `is_active_employee(auth.uid())` + `people_ops.org.view`. Write = `has_admin_permission(auth.uid(), 'people_ops.org.manage')`. Add five new permission keys to `admin_permissions` and register them in `permissions.ts`.
 
-## Wave 1 — Foundations (governance backbone)
+## Backend service — `src/hooks/admin-os/useOrganization.ts`
 
-1. **Approval Engine**
-   - Tables: `platform_approval_requests`, `platform_approval_steps`, `platform_approval_decisions`.
-   - Generic: any module submits `{module, entity_type, entity_id, payload, workflow_id}`; approvers act via reusable Approval Center.
-   - UI: `/admin-os/platform/approvals` inbox + `<ApprovalPanel entityType entityId />` embeddable.
+Reusable hooks for every page:
 
-2. **Workflow Engine**
-   - Tables: `platform_workflows`, `platform_workflow_steps`, `platform_workflow_runs`, `platform_workflow_run_steps`.
-   - JSON-defined steps (approval / notification / assignment / script). Approval Engine consumes workflows.
-   - UI: read-only workflow viewer now; drag-drop editor stub for later.
+- `useOrgChart()` — pulls active employees, department heads, and departments; returns tree grouped Founder Office → Departments → Heads → Deputies → Team Leads → Employees.
+- `useDepartmentCapacity()` — joins departments with `department_capacity`, computed columns: current headcount, vacancies, capacity %, health score (green/amber/red bands).
+- `useOpenPositions()` + `useUpsertPosition()` / `useTransitionPositionStatus()` — CRUD with audit.
+- `useSuccessionMatrix()` + `useUpsertSuccession()`.
+- `useWorkforceForecast()` + `useUpsertForecast()`.
+- `useOrganizationalHealth()` — aggregates department stability, leadership coverage, open positions, and capacity utilisation into one dashboard payload.
 
-3. **Notification Engine**
-   - Reuse existing `notifications` table; add `platform_notification_channels`, `platform_notification_preferences`, `platform_notification_templates`.
-   - Service: `notify({recipient, template, data, channels})`. Every other engine calls this — no direct inserts.
-   - UI: Notification Center dropdown + `/admin-os/platform/notifications` settings.
+Every mutation writes to `admin_audit_logs` (module `people_ops`, actions `org.capacity.updated`, `org.position.*`, `org.succession.updated`, `org.forecast.updated`).
 
-4. **Activity Feed Engine**
-   - Table: `platform_activity_events` (actor, verb, object_type, object_id, department_id, visibility, metadata).
-   - Reusable `<ActivityTimeline filters />` and `/admin-os/platform/activity` global feed. Realtime via Supabase channel.
+## Frontend pages — `src/pages/admin-os/people-ops/org/`
 
-## Wave 2 — Work distribution & data access
+All built on the Phase 1.13 Design System (`PageHeader`, `SectionCard`, `StatCard`, `DataTable`, `StatusBadge`, `ConfirmDialog`).
 
-5. **Assignment Engine**
-   - Tables: `platform_assignments`, `platform_assignment_rules`.
-   - Manual + rule-based (round-robin, load-based, department). AI-assisted stub.
-   - UI: `/admin-os/platform/assignments` queue + `<AssignmentBadge />`.
+- `OrganizationIndex.tsx` (`/admin-os/people-ops/org`) — Organizational Health dashboard: leadership coverage, open positions, capacity utilisation, hiring-need alerts, quick links to sub-pages.
+- `OrgChart.tsx` (`/admin-os/people-ops/org/chart`) — expandable company tree; search, department filter, expand/collapse-all, print-friendly layout.
+- `CapacityDashboard.tsx` (`/admin-os/people-ops/org/capacity`) — table per department: current/max/target headcount, vacancy count, capacity %, health colour, inline edit for `max_capacity` and `target_capacity`.
+- `OpenPositions.tsx` (`/admin-os/people-ops/org/positions`) — center for hiring requests: filter by status/department/priority; create/edit dialog; status transitions with reason (audit-logged).
+- `Succession.tsx` (`/admin-os/people-ops/org/succession`) — matrix per critical role: incumbent → primary/secondary successor pickers, readiness dropdown, training-progress slider.
+- `WorkforcePlanning.tsx` (`/admin-os/people-ops/org/planning`) — forecast timeline per department: current vs planned headcount, editable period rows.
 
-6. **Global Search Engine**
-   - Table: `platform_search_index` (object_type, object_id, title, body, tags, department_id, permission_key) + `tsvector` + GIN index.
-   - Triggers on employees, departments, `admin_audit_logs`, approvals, workflows, documents keep it in sync.
-   - RPC `platform_search(query, filters)` respects RBAC. UI: global ⌘K palette + `/admin-os/platform/search`.
+## Wiring
 
-7. **File & Document Engine**
-   - Storage bucket `platform-documents` (private) + tables `platform_documents`, `platform_document_versions`, `platform_document_permissions`.
-   - Version history, ownership, per-doc ACL. UI: `/admin-os/platform/documents` manager + `<DocumentPicker />`.
+- `src/App.tsx` — lazy-import six new pages under the People Ops routes.
+- `src/pages/admin-os/people-ops/PeopleOpsIndex.tsx` — add "Organization" quick-link.
+- `src/features/admin-os/modules.config.ts` — no new top-level module; org lives inside People Ops.
+- `src/features/admin-os/permissions.ts` — add `PEOPLE_OPS_ORG_VIEW`, `PEOPLE_OPS_ORG_MANAGE`, `PEOPLE_OPS_CAPACITY_MANAGE`, `PEOPLE_OPS_POSITIONS_MANAGE`, `PEOPLE_OPS_SUCCESSION_MANAGE`.
 
-## Wave 3 — Insight & automation
+## Not in scope
 
-8. **Reporting Engine**
-   - Tables: `platform_report_definitions`, `platform_report_runs`.
-   - Definitions declare data source (view/RPC), columns, filters, schedule. CSV export via edge function.
-   - UI: `/admin-os/platform/reports` browse/run/export.
+Recruitment, payroll, attendance, performance reviews, and any external job-board publishing. Open positions are internal hiring requests only.
 
-9. **Dashboard Engine**
-   - Tables: `platform_dashboards`, `platform_dashboard_widgets`, `platform_widget_catalog`.
-   - Widgets are typed components registered in a client-side catalog; dashboards assemble them per department. Existing dashboards migrated to use widgets.
-   - UI: `<DashboardCanvas dashboardId />` + `/admin-os/platform/dashboards` editor.
+## Definition of done
 
-10. **Scheduler Engine**
-    - Tables: `platform_scheduled_jobs`, `platform_scheduled_job_runs`.
-    - Backed by `pg_cron` + `pg_net` calling a single `platform-scheduler-tick` edge function that dispatches due jobs (reports, reminders, cleanup, notification digests).
-    - UI: `/admin-os/platform/scheduler` console.
-
-## Cross-cutting rules applied to every engine
-
-- **RLS + GRANTs** on every new public table (authenticated + service_role; admin-scoped via `has_role` / admin permissions).
-- **Audit**: engine services write to `admin_audit_logs` automatically via helper `logAdminAction`.
-- **Realtime**: `ALTER PUBLICATION supabase_realtime ADD TABLE ...` for approvals, notifications, assignments, activity events, dashboard-driving tables.
-- **APIs**: each service exposes `create / get / list(filter,sort,page) / update / remove` where allowed; permission checks via existing `ADMIN_PERMISSIONS`.
-- **Errors**: standardized `PlatformError` with code + user-safe message; hooks surface via toast.
-- **No department logic**: engines only know generic `module` + `entity_type` + `entity_id`.
-
-## File layout (new)
-
-```text
-src/
-  services/platform/{approval,workflow,notification,search,assignment,reporting,dashboard,activity,document,scheduler}.ts
-  hooks/platform/use{Approvals,Workflows,Notifications,...}.ts
-  components/platform/{approval,workflow,notification,search,assignment,reports,dashboard,activity,documents,scheduler}/*
-  pages/admin-os/platform/{approvals,workflows,notifications,search,assignments,reports,dashboards,activity,documents,scheduler}/*
-supabase/functions/
-  platform-scheduler-tick/index.ts
-  platform-report-run/index.ts
-```
-
-Routes registered under existing `/admin-os` layout, gated by admin permissions. Sidebar gets a new "Platform" section.
-
-## Delivery order (one migration + code batch per wave)
-
-1. Wave 1 migration → services/hooks/UI → wire into existing HR/Founder/Audit modules.
-2. Wave 2 migration → services/hooks/UI → migrate existing search/file usage.
-3. Wave 3 migration + edge functions + pg_cron → migrate existing dashboards to widget engine.
-
-## Technical notes
-
-- Search uses Postgres `tsvector`; no external service.
-- Workflow steps stored as JSONB with a discriminated union type in TS.
-- Dashboard widgets are React components keyed by `widget_type` string; catalog lives client-side, DB stores only config.
-- Scheduler tick edge function runs every minute via `pg_cron` + `pg_net`, invoked with anon key + internal shared secret.
-- All new tables get `created_at`/`updated_at` + `update_updated_at_column` trigger, soft-delete via `deleted_at` where the spec calls for it (documents, workflows, dashboards, reports, jobs).
-
-## Out of scope (explicit)
-
-- Push notifications, email delivery integration (Notification Engine leaves channel adapters as stubs).
-- Drag-and-drop workflow/dashboard editors (viewer + JSON editor only; UX stub for later phase).
-- AI-assisted assignment (interface only).
-
-Approve to start with Wave 1 (Approval + Workflow + Notification + Activity Feed).
+Migration + audit triggers applied, five pages navigable, RBAC gates enforced, every mutation audited, org chart reflects live `employees` data, capacity/health computed live, existing People Ops flows untouched.

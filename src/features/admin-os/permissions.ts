@@ -60,6 +60,13 @@ export const ADMIN_PERMISSIONS = {
   PEOPLE_OPS_MOVEMENTS_VIEW: "people_ops.movements.view",
   PEOPLE_OPS_MOVEMENTS_MANAGE: "people_ops.movements.manage",
   PEOPLE_OPS_MOVEMENTS_APPLY: "people_ops.movements.apply",
+
+  // Organization & workforce planning (Phase 2.5)
+  PEOPLE_OPS_ORG_VIEW: "people_ops.org.view",
+  PEOPLE_OPS_ORG_MANAGE: "people_ops.org.manage",
+  PEOPLE_OPS_CAPACITY_MANAGE: "people_ops.capacity.manage",
+  PEOPLE_OPS_POSITIONS_MANAGE: "people_ops.positions.manage",
+  PEOPLE_OPS_SUCCESSION_MANAGE: "people_ops.succession.manage",
 } as const;
 
 export type AdminPermissionKey =

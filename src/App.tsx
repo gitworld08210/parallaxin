@@ -105,6 +105,12 @@ const MovementWizard = lazy(() => import("./pages/admin-os/people-ops/MovementWi
 const MovementDetail = lazy(() => import("./pages/admin-os/people-ops/MovementDetail"));
 const ReportingStructure = lazy(() => import("./pages/admin-os/people-ops/ReportingStructure"));
 const DocumentsCenter = lazy(() => import("./pages/admin-os/people-ops/DocumentsCenter"));
+const OrganizationIndex = lazy(() => import("./pages/admin-os/people-ops/org/OrganizationIndex"));
+const OrgChart = lazy(() => import("./pages/admin-os/people-ops/org/OrgChart"));
+const CapacityDashboard = lazy(() => import("./pages/admin-os/people-ops/org/CapacityDashboard"));
+const OpenPositions = lazy(() => import("./pages/admin-os/people-ops/org/OpenPositions"));
+const SuccessionPage = lazy(() => import("./pages/admin-os/people-ops/org/Succession"));
+const WorkforcePlanning = lazy(() => import("./pages/admin-os/people-ops/org/WorkforcePlanning"));
 const FounderOfficeDashboard = lazy(
   () => import("./pages/admin-os/founder-office/FounderOfficeDashboard"),
 );
@@ -322,6 +328,12 @@ const App = () => (
                   <Route path="people-ops/movements/:id" element={<MovementDetail />} />
                   <Route path="people-ops/reporting" element={<ReportingStructure />} />
                   <Route path="people-ops/documents" element={<DocumentsCenter />} />
+                  <Route path="people-ops/org" element={<OrganizationIndex />} />
+                  <Route path="people-ops/org/chart" element={<OrgChart />} />
+                  <Route path="people-ops/org/capacity" element={<CapacityDashboard />} />
+                  <Route path="people-ops/org/positions" element={<OpenPositions />} />
+                  <Route path="people-ops/org/succession" element={<SuccessionPage />} />
+                  <Route path="people-ops/org/planning" element={<WorkforcePlanning />} />
                   <Route
                     path="founder-office"
                     element={<FounderOfficeDashboard />}
