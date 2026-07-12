@@ -298,33 +298,36 @@ Department notifications include:
 - Pending Report
 - Policy Update
 - Emergency Alert
-- Project Updates
+- Project Assignment
+- Knowledge Update
 
 ---
 
 # Future Expansion
 
 Architecture must support:
-- Sub-departments
 - Regional Departments
-- Cross-Branch Departments
-- Matrix Teams
-- External Advisory Departments
+- International Offices
+- Business Units
+- Subsidiaries
+- Partner Organizations
+- Independent Teams
 
-without redesigning the department engine.
+without redesign.
 
 ---
 
 # Acceptance Criteria
 
 Phase 1.6 is complete when:
-- Department architecture is fully documented.
-- Department list is finalized.
-- Department ownership rules are defined.
-- Department statuses are documented.
-- Department relationships are defined.
-- Dashboards, documents, KPIs, and reports are specified.
-- Cross-department collaboration workflow is documented.
-- Audit requirements are finalized.
+- All launch departments are defined.
+- Department ownership is documented.
+- Department dashboards are defined.
+- Department relationships are documented.
+- Reporting structure is completed.
+- Department KPIs are configurable.
+- Collaboration workflows are documented.
+- Department lifecycle is finalized.
+- Audit requirements are complete.
 
-No implementation was performed in this phase.
+No department-specific business logic was implemented during this phase.
