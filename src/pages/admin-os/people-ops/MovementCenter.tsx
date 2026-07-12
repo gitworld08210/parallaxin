@@ -87,25 +87,27 @@ const MovementCenter = () => {
       </div>
 
       <SectionCard>
-        <Toolbar>
-          <div className="flex items-center gap-2">
-            <Filter className="h-3.5 w-3.5 text-muted-foreground" />
-            <Select value={kind} onValueChange={(v) => setKind(v as any)}>
-              <SelectTrigger className="w-56"><SelectValue placeholder="Kind" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All kinds</SelectItem>
-                {KINDS.map((k) => <SelectItem key={k} value={k}>{k.replace(/_/g, " ")}</SelectItem>)}
-              </SelectContent>
-            </Select>
-            <Select value={status} onValueChange={(v) => setStatus(v as any)}>
-              <SelectTrigger className="w-48"><SelectValue placeholder="Status" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All statuses</SelectItem>
-                {Object.keys(STATUS_TONE).map((s) => <SelectItem key={s} value={s}>{s.replace(/_/g, " ")}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          </div>
-        </Toolbar>
+        <Toolbar
+          filters={
+            <>
+              <Filter className="h-3.5 w-3.5 text-muted-foreground" />
+              <Select value={kind} onValueChange={(v) => setKind(v as any)}>
+                <SelectTrigger className="w-56"><SelectValue placeholder="Kind" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All kinds</SelectItem>
+                  {KINDS.map((k) => <SelectItem key={k} value={k}>{k.replace(/_/g, " ")}</SelectItem>)}
+                </SelectContent>
+              </Select>
+              <Select value={status} onValueChange={(v) => setStatus(v as any)}>
+                <SelectTrigger className="w-48"><SelectValue placeholder="Status" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All statuses</SelectItem>
+                  {Object.keys(STATUS_TONE).map((s) => <SelectItem key={s} value={s}>{s.replace(/_/g, " ")}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </>
+          }
+        />
 
         {isLoading ? <LoadingSkeleton rows={6} /> : error ? (
           <p className="text-danger text-sm p-4">{(error as Error).message}</p>
@@ -113,25 +115,28 @@ const MovementCenter = () => {
           <EmptyState icon={Route} title="No movements yet" description="Create the first workforce movement to get started." />
         ) : (
           <DataTable
-            data={data as any[]}
+            rows={data as any[]}
+            rowKey={(r: any) => r.id}
+            empty={{ title: "No movements" }}
             columns={[
               {
                 key: "employee",
                 header: "Employee",
-                render: (r) => (
+                cell: (r: any) => (
                   <div>
                     <p className="font-medium text-sm">{r.employee?.full_name ?? "—"}</p>
                     <p className="text-[10px] text-muted-foreground">{r.employee?.employee_number}</p>
                   </div>
                 ),
               },
-              { key: "kind", header: "Kind", render: (r) => <span className="text-xs uppercase tracking-wide">{r.kind.replace(/_/g, " ")}</span> },
-              { key: "status", header: "Status", render: (r) => <StatusBadge tone={STATUS_TONE[r.status as MovementStatus] ?? "neutral"} label={r.status.replace(/_/g, " ")} /> },
-              { key: "effective_date", header: "Effective", render: (r) => r.effective_date ?? "—" },
+              { key: "kind", header: "Kind", cell: (r: any) => <span className="text-xs uppercase tracking-wide">{r.kind.replace(/_/g, " ")}</span> },
+              { key: "status", header: "Status", cell: (r: any) => <StatusBadge tone={STATUS_TONE[r.status as MovementStatus] ?? "neutral"} label={r.status.replace(/_/g, " ")} /> },
+              { key: "effective_date", header: "Effective", cell: (r: any) => r.effective_date ?? "—" },
               {
                 key: "actions",
                 header: "",
-                render: (r) => (
+                align: "right",
+                cell: (r: any) => (
                   <Button asChild size="sm" variant="ghost">
                     <Link to={`/admin-os/people-ops/movements/${r.id}`}>Open <ArrowRight className="h-3.5 w-3.5" /></Link>
                   </Button>
