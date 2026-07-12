@@ -98,6 +98,8 @@ const EmployeeForm = lazy(() => import("./pages/admin-os/people-ops/EmployeeForm
 const OnboardingQueue = lazy(() => import("./pages/admin-os/people-ops/OnboardingQueue"));
 const OnboardingWizard = lazy(() => import("./pages/admin-os/people-ops/OnboardingWizard"));
 const OnboardingDetail = lazy(() => import("./pages/admin-os/people-ops/OnboardingDetail"));
+const EmployeePassport = lazy(() => import("./pages/admin-os/people-ops/EmployeePassport"));
+const PassportPrint = lazy(() => import("./pages/admin-os/people-ops/PassportPrint"));
 const FounderOfficeDashboard = lazy(
   () => import("./pages/admin-os/founder-office/FounderOfficeDashboard"),
 );
