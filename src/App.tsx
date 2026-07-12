@@ -291,6 +291,13 @@ const VerBadgeManager = lazy(() => import("./pages/admin-os/verification/BadgeMa
 const VerAffiliationManager = lazy(() => import("./pages/admin-os/verification/AffiliationManager"));
 const VerAppealsCenter = lazy(() => import("./pages/admin-os/verification/AppealsCenter"));
 const VerHistoryPage = lazy(() => import("./pages/admin-os/verification/VerificationHistory"));
+// Phase 4.3 — Support
+const SupportShell = lazy(() => import("./pages/admin-os/support/SupportShell"));
+const SupportDashboardPage = lazy(() => import("./pages/admin-os/support/SupportDashboard"));
+const SupportTicketQueue = lazy(() => import("./pages/admin-os/support/TicketQueue"));
+const SupportTicketWorkspace = lazy(() => import("./pages/admin-os/support/TicketWorkspace"));
+const SupportSlaDashboard = lazy(() => import("./pages/admin-os/support/SlaDashboard"));
+const SupportAnalyticsPage = lazy(() => import("./pages/admin-os/support/SupportAnalytics"));
 const PlatformIndex = lazy(() => import("./pages/admin-os/platform/PlatformIndex"));
 const ApprovalCenter = lazy(() => import("./pages/admin-os/platform/ApprovalCenter"));
 const WorkflowViewer = lazy(() => import("./pages/admin-os/platform/WorkflowViewer"));
