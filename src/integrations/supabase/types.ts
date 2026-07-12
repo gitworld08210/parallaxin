@@ -2628,6 +2628,277 @@ export type Database = {
           },
         ]
       }
+      executive_ai_conversations: {
+        Row: {
+          created_at: string
+          id: string
+          is_pinned: boolean
+          last_message_at: string | null
+          model: string
+          owner_id: string
+          tags: string[]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_pinned?: boolean
+          last_message_at?: string | null
+          model?: string
+          owner_id: string
+          tags?: string[]
+          title?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_pinned?: boolean
+          last_message_at?: string | null
+          model?: string
+          owner_id?: string
+          tags?: string[]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      executive_ai_feedback: {
+        Row: {
+          comment: string | null
+          created_at: string
+          id: string
+          message_id: string
+          rating: string
+          user_id: string
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          message_id: string
+          rating: string
+          user_id: string
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          message_id?: string
+          rating?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "executive_ai_feedback_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "executive_ai_messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      executive_ai_knowledge_cache: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          expires_at: string | null
+          id: string
+          query: string
+          result: Json
+          source: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string | null
+          id?: string
+          query: string
+          result: Json
+          source?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string | null
+          id?: string
+          query?: string
+          result?: Json
+          source?: string | null
+        }
+        Relationships: []
+      }
+      executive_ai_messages: {
+        Row: {
+          confidence: number | null
+          content: string
+          conversation_id: string
+          created_at: string
+          error: string | null
+          id: string
+          model: string | null
+          role: string
+          sources: Json
+          tokens: number | null
+        }
+        Insert: {
+          confidence?: number | null
+          content: string
+          conversation_id: string
+          created_at?: string
+          error?: string | null
+          id?: string
+          model?: string | null
+          role: string
+          sources?: Json
+          tokens?: number | null
+        }
+        Update: {
+          confidence?: number | null
+          content?: string
+          conversation_id?: string
+          created_at?: string
+          error?: string | null
+          id?: string
+          model?: string | null
+          role?: string
+          sources?: Json
+          tokens?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "executive_ai_messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "executive_ai_conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      executive_ai_predictions: {
+        Row: {
+          category: string
+          confidence: number | null
+          created_at: string
+          created_by: string | null
+          forecast: Json
+          horizon: string | null
+          id: string
+          metric: string
+          notes: string | null
+          updated_at: string
+        }
+        Insert: {
+          category?: string
+          confidence?: number | null
+          created_at?: string
+          created_by?: string | null
+          forecast?: Json
+          horizon?: string | null
+          id?: string
+          metric: string
+          notes?: string | null
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          confidence?: number | null
+          created_at?: string
+          created_by?: string | null
+          forecast?: Json
+          horizon?: string | null
+          id?: string
+          metric?: string
+          notes?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      executive_ai_recommendations: {
+        Row: {
+          business_impact: string | null
+          category: string
+          confidence: number | null
+          created_at: string
+          created_by: string | null
+          id: string
+          reasoning: string | null
+          recommendation: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          supporting_data: Json
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          business_impact?: string | null
+          category?: string
+          confidence?: number | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          reasoning?: string | null
+          recommendation: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          supporting_data?: Json
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          business_impact?: string | null
+          category?: string
+          confidence?: number | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          reasoning?: string | null
+          recommendation?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          supporting_data?: Json
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      executive_ai_saved_prompts: {
+        Row: {
+          category: string
+          created_at: string
+          id: string
+          is_shared: boolean
+          owner_id: string
+          prompt: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          id?: string
+          is_shared?: boolean
+          owner_id: string
+          prompt: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          id?: string
+          is_shared?: boolean
+          owner_id?: string
+          prompt?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       executive_analytics_snapshots: {
         Row: {
           captured_at: string
