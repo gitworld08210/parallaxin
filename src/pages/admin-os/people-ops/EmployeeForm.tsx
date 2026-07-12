@@ -292,7 +292,7 @@ const EmployeeForm = ({ mode }: Props) => {
         <div className="pt-2 flex gap-2">
           <button
             type="submit"
-            disabled={create.isPending || update.isPending}
+            disabled={create.isPending || update.isPending || hrLocked}
             className="inline-flex items-center gap-1.5 rounded-lg bg-primary text-primary-foreground px-4 py-2 text-xs font-semibold hover:bg-primary/90 disabled:opacity-50"
           >
             <Save className="h-3.5 w-3.5" />
