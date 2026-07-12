@@ -36,6 +36,7 @@ const Profile = lazy(() => import("./pages/Profile"));
 const EditProfile = lazy(() => import("./pages/EditProfile"));
 const Premium = lazy(() => import("./pages/Premium"));
 const Verification = lazy(() => import("./pages/Verification"));
+const Support = lazy(() => import("./pages/Support"));
 const FollowList = lazy(() => import("./pages/FollowList"));
 const Assistant = lazy(() => import("./pages/Assistant"));
 const Drafts = lazy(() => import("./pages/Drafts"));
