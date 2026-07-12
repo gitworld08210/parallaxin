@@ -727,7 +727,7 @@ async function buildJoiningLetter(input: {
     color: rgb(0.95, 0.3, 0.2), opacity: 0.12,
     borderColor: rgb(0.85, 0.2, 0.1), borderWidth: 0.6,
   });
-  page2.drawText("⚠  Change password immediately after first login. Do NOT share these credentials.", {
+  page2.drawText("!  Change password immediately after first login. Do NOT share these credentials.", {
     x: cardX + 30, y: cardY - 240, size: 8.5, font: helvBold, color: rgb(0.7, 0.15, 0.1),
   });
 
