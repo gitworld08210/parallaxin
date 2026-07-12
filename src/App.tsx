@@ -206,6 +206,16 @@ const AiRisksPage = lazy(() => import("./pages/admin-os/executive/ai/RisksPage")
 const AiSummariesPage = lazy(() => import("./pages/admin-os/executive/ai/SummariesPage"));
 const AiKnowledgePage = lazy(() => import("./pages/admin-os/executive/ai/KnowledgeSearchPage"));
 const AiPromptsPage = lazy(() => import("./pages/admin-os/executive/ai/PromptsPage"));
+// Phase 3.11 — KIP (Knowledge Intelligence Platform)
+const KipShell = lazy(() => import("./pages/admin-os/executive/knowledge/KipShell"));
+const KnowledgeHome = lazy(() => import("./pages/admin-os/executive/knowledge/KnowledgeHome"));
+const KipChatWorkspace = lazy(() => import("./pages/admin-os/executive/knowledge/ChatWorkspace"));
+const KipDocumentLibrary = lazy(() => import("./pages/admin-os/executive/knowledge/DocumentLibrary"));
+const KipCollectionsList = lazy(() => import("./pages/admin-os/executive/knowledge/CollectionsList"));
+const KipCollectionDetail = lazy(() => import("./pages/admin-os/executive/knowledge/CollectionDetail"));
+const KipKnowledgeSearch = lazy(() => import("./pages/admin-os/executive/knowledge/KnowledgeSearch"));
+const KipBookmarksPage = lazy(() => import("./pages/admin-os/executive/knowledge/BookmarksPage"));
+const KipConversationHistory = lazy(() => import("./pages/admin-os/executive/knowledge/ConversationHistory"));
 const ExecutiveNotificationsPage = lazy(() => ExecutivePlaceholders().then((m) => ({ default: m.ExecutiveNotifications })));
 // Phase 3.4 — Governance
 const GovernanceIndex = lazy(() => import("./pages/admin-os/executive/governance/GovernanceIndex"));
