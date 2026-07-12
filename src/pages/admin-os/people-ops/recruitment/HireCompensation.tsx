@@ -12,7 +12,7 @@ import {
   useUpdateHireComp,
   type HireCompStatus,
 } from "@/hooks/admin-os/useHireCompensation";
-import { useEmployees } from "@/hooks/admin-os/useEmployees";
+import { useEmployeesList } from "@/hooks/admin-os/useEmployees";
 
 const statusColor: Record<HireCompStatus, string> = {
   draft: "bg-muted text-muted-foreground",
