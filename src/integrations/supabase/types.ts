@@ -2048,6 +2048,429 @@ export type Database = {
           },
         ]
       }
+      platform_activity_events: {
+        Row: {
+          actor_employee_id: string | null
+          actor_user_id: string | null
+          created_at: string
+          department: string | null
+          id: string
+          metadata: Json
+          object_id: string | null
+          object_type: string
+          summary: string
+          verb: string
+          visibility: string
+        }
+        Insert: {
+          actor_employee_id?: string | null
+          actor_user_id?: string | null
+          created_at?: string
+          department?: string | null
+          id?: string
+          metadata?: Json
+          object_id?: string | null
+          object_type: string
+          summary: string
+          verb: string
+          visibility?: string
+        }
+        Update: {
+          actor_employee_id?: string | null
+          actor_user_id?: string | null
+          created_at?: string
+          department?: string | null
+          id?: string
+          metadata?: Json
+          object_id?: string | null
+          object_type?: string
+          summary?: string
+          verb?: string
+          visibility?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "platform_activity_events_actor_employee_id_fkey"
+            columns: ["actor_employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      platform_approval_decisions: {
+        Row: {
+          created_at: string
+          decided_by: string
+          decision: string
+          id: string
+          metadata: Json
+          reason: string | null
+          request_id: string
+          step_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          decided_by: string
+          decision: string
+          id?: string
+          metadata?: Json
+          reason?: string | null
+          request_id: string
+          step_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          decided_by?: string
+          decision?: string
+          id?: string
+          metadata?: Json
+          reason?: string | null
+          request_id?: string
+          step_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "platform_approval_decisions_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "platform_approval_requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "platform_approval_decisions_step_id_fkey"
+            columns: ["step_id"]
+            isOneToOne: false
+            referencedRelation: "platform_approval_steps"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      platform_approval_requests: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          current_step: number
+          description: string | null
+          due_at: string | null
+          entity_id: string
+          entity_type: string
+          id: string
+          module: string
+          payload: Json
+          priority: string
+          requested_by: string | null
+          status: string
+          title: string
+          updated_at: string
+          workflow_id: string | null
+          workflow_run_id: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          current_step?: number
+          description?: string | null
+          due_at?: string | null
+          entity_id: string
+          entity_type: string
+          id?: string
+          module: string
+          payload?: Json
+          priority?: string
+          requested_by?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+          workflow_id?: string | null
+          workflow_run_id?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          current_step?: number
+          description?: string | null
+          due_at?: string | null
+          entity_id?: string
+          entity_type?: string
+          id?: string
+          module?: string
+          payload?: Json
+          priority?: string
+          requested_by?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+          workflow_id?: string | null
+          workflow_run_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "platform_approval_requests_workflow_id_fkey"
+            columns: ["workflow_id"]
+            isOneToOne: false
+            referencedRelation: "platform_workflows"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "platform_approval_requests_workflow_run_id_fkey"
+            columns: ["workflow_run_id"]
+            isOneToOne: false
+            referencedRelation: "platform_workflow_runs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      platform_approval_steps: {
+        Row: {
+          approver_department: string | null
+          approver_role: string | null
+          approver_user_id: string | null
+          created_at: string
+          id: string
+          request_id: string
+          required: boolean
+          status: string
+          step_index: number
+          updated_at: string
+        }
+        Insert: {
+          approver_department?: string | null
+          approver_role?: string | null
+          approver_user_id?: string | null
+          created_at?: string
+          id?: string
+          request_id: string
+          required?: boolean
+          status?: string
+          step_index: number
+          updated_at?: string
+        }
+        Update: {
+          approver_department?: string | null
+          approver_role?: string | null
+          approver_user_id?: string | null
+          created_at?: string
+          id?: string
+          request_id?: string
+          required?: boolean
+          status?: string
+          step_index?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "platform_approval_steps_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "platform_approval_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      platform_notification_deliveries: {
+        Row: {
+          channel: string
+          created_at: string
+          error: string | null
+          id: string
+          notification_id: string | null
+          payload: Json
+          recipient_user_id: string
+          sent_at: string | null
+          status: string
+          template_key: string | null
+        }
+        Insert: {
+          channel: string
+          created_at?: string
+          error?: string | null
+          id?: string
+          notification_id?: string | null
+          payload?: Json
+          recipient_user_id: string
+          sent_at?: string | null
+          status?: string
+          template_key?: string | null
+        }
+        Update: {
+          channel?: string
+          created_at?: string
+          error?: string | null
+          id?: string
+          notification_id?: string | null
+          payload?: Json
+          recipient_user_id?: string
+          sent_at?: string | null
+          status?: string
+          template_key?: string | null
+        }
+        Relationships: []
+      }
+      platform_notification_preferences: {
+        Row: {
+          email: boolean
+          in_app: boolean
+          quiet_hours_end: number | null
+          quiet_hours_start: number | null
+          security_alerts: boolean
+          system_announcements: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          email?: boolean
+          in_app?: boolean
+          quiet_hours_end?: number | null
+          quiet_hours_start?: number | null
+          security_alerts?: boolean
+          system_announcements?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          email?: boolean
+          in_app?: boolean
+          quiet_hours_end?: number | null
+          quiet_hours_start?: number | null
+          security_alerts?: boolean
+          system_announcements?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      platform_notification_templates: {
+        Row: {
+          body_template: string
+          category: string
+          created_at: string
+          default_channels: string[]
+          id: string
+          key: string
+          title_template: string
+          updated_at: string
+        }
+        Insert: {
+          body_template: string
+          category?: string
+          created_at?: string
+          default_channels?: string[]
+          id?: string
+          key: string
+          title_template: string
+          updated_at?: string
+        }
+        Update: {
+          body_template?: string
+          category?: string
+          created_at?: string
+          default_channels?: string[]
+          id?: string
+          key?: string
+          title_template?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      platform_workflow_runs: {
+        Row: {
+          completed_at: string | null
+          context: Json
+          created_at: string
+          current_step: number
+          entity_id: string | null
+          entity_type: string | null
+          id: string
+          started_by: string | null
+          status: string
+          updated_at: string
+          workflow_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          context?: Json
+          created_at?: string
+          current_step?: number
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          started_by?: string | null
+          status?: string
+          updated_at?: string
+          workflow_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          context?: Json
+          created_at?: string
+          current_step?: number
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          started_by?: string | null
+          status?: string
+          updated_at?: string
+          workflow_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "platform_workflow_runs_workflow_id_fkey"
+            columns: ["workflow_id"]
+            isOneToOne: false
+            referencedRelation: "platform_workflows"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      platform_workflows: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          description: string | null
+          id: string
+          is_active: boolean
+          key: string
+          name: string
+          owner_department: string | null
+          steps: Json
+          trigger: string
+          updated_at: string
+          version: number
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          key: string
+          name: string
+          owner_department?: string | null
+          steps?: Json
+          trigger?: string
+          updated_at?: string
+          version?: number
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          key?: string
+          name?: string
+          owner_department?: string | null
+          steps?: Json
+          trigger?: string
+          updated_at?: string
+          version?: number
+        }
+        Relationships: []
+      }
       post_collaborators: {
         Row: {
           invited_at: string
