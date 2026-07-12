@@ -62,6 +62,7 @@ const Onboarding = lazy(() => import("./pages/Onboarding"));
 const OrganizationOnboarding = lazy(() => import("./pages/OrganizationOnboarding"));
 
 const CreatorHub = lazy(() => import("./pages/CreatorHub"));
+const CreatorNews = lazy(() => import("./pages/CreatorNews"));
 const Analytics = lazy(() => import("./pages/Analytics"));
 const LiveList = lazy(() => import("./pages/LiveList"));
 const LiveHost = lazy(() => import("./pages/LiveHost"));
@@ -390,6 +391,7 @@ const App = () => (
                   <Route path="/settings/email" element={<ChangeEmailScreen />} />
                   <Route path="/settings/phone" element={<ChangePhoneScreen />} />
                   <Route path="/creator-hub" element={<CreatorGate><CreatorHub /></CreatorGate>} />
+                  <Route path="/news" element={<CreatorNews />} />
                   <Route path="/analytics" element={<CreatorGate><Analytics /></CreatorGate>} />
                   <Route path="/achievements" element={<Achievements />} />
                   <Route path="/aura-level" element={<AuraLevel />} />

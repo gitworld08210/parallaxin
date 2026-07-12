@@ -1,7 +1,7 @@
 import { PageHeader } from "@/components/layout/PageHeader";
 import { GlassCard } from "@/components/vibe/GlassCard";
 import { useAuth } from "@/contexts/AuthProvider";
-import { BarChart3, DollarSign, Trophy, BadgeCheck, Gem, Wrench } from "lucide-react";
+import { BarChart3, DollarSign, Trophy, BadgeCheck, Gem, Wrench, Newspaper } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const KPI = ({ label, value }: { label: string; value: string }) => (
@@ -54,6 +54,7 @@ export default function CreatorHub() {
             <Quick to="/verification-center" icon={BadgeCheck} label="Verification" />
             <Quick to="/aura-level" icon={Gem} label="Aura Level" />
             <Quick to="/creator-hub" icon={Wrench} label="Creator Tools" />
+            <Quick to="/news" icon={Newspaper} label="News" />
           </div>
         </div>
       </div>
