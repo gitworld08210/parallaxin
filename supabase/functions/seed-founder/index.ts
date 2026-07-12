@@ -26,12 +26,43 @@ function generateTempPassword(length = 20): string {
   return out;
 }
 
+function timingSafeEqual(a: string, b: string): boolean {
+  const enc = new TextEncoder();
+  const ab = enc.encode(a);
+  const bb = enc.encode(b);
+  if (ab.length !== bb.length) return false;
+  let diff = 0;
+  for (let i = 0; i < ab.length; i++) diff |= ab[i] ^ bb[i];
+  return diff === 0;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
 
   try {
+    // Require a one-time setup token so this bootstrap endpoint is not
+    // publicly triggerable even if the "no active founder" business check
+    // ever regresses. Configure SEED_FOUNDER_TOKEN in project secrets.
+    const expectedToken = Deno.env.get("SEED_FOUNDER_TOKEN");
+    if (!expectedToken || expectedToken.length < 16) {
+      return new Response(
+        JSON.stringify({ error: "Bootstrap disabled: SEED_FOUNDER_TOKEN is not configured." }),
+        { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+    const providedToken =
+      req.headers.get("x-setup-token") ??
+      req.headers.get("X-Setup-Token") ??
+      "";
+    if (!timingSafeEqual(providedToken, expectedToken)) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
     const url = Deno.env.get("SUPABASE_URL")!;
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const admin = createClient(url, serviceKey, {
