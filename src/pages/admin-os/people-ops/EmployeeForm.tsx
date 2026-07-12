@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, Navigate, useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Save } from "lucide-react";
+import { ArrowLeft, Save, AlertTriangle } from "lucide-react";
 import { useEmployee } from "@/hooks/admin-os/useEmployee";
 import {
   useCreateEmployee,
@@ -9,13 +9,14 @@ import {
   useRoles,
   useUpdateEmployee,
 } from "@/hooks/admin-os/useEmployees";
+import { useAppointments } from "@/hooks/admin-os/useAppointments";
 import {
   ADMIN_PERMISSIONS,
   EMPLOYMENT_STATUS_LABELS,
 } from "@/features/admin-os/permissions";
 import { toast } from "sonner";
 
-const USER_TYPES = ["founder", "co_founder", "employee", "contractor", "temporary"];
+const USER_TYPES = ["founder", "co_founder", "executive", "employee", "contractor", "temporary"];
 
 interface Props {
   mode: "create" | "edit";
