@@ -176,6 +176,11 @@ const ApprovalMatrixPage = lazy(() => import("./pages/admin-os/executive/governa
 const DelegationCenter = lazy(() => import("./pages/admin-os/executive/governance/DelegationCenter"));
 const DepartmentCharters = lazy(() => import("./pages/admin-os/executive/governance/DepartmentCharters"));
 const GovernanceSearchPage = lazy(() => import("./pages/admin-os/executive/governance/GovernanceSearch"));
+// Phase 3.5 — Strategic Decisions
+const DecisionCenter = lazy(() => import("./pages/admin-os/executive/decisions/DecisionCenter"));
+const DecisionEditor = lazy(() => import("./pages/admin-os/executive/decisions/DecisionEditor"));
+const DecisionDetail = lazy(() => import("./pages/admin-os/executive/decisions/DecisionDetail"));
+const DecisionSearchPage = lazy(() => import("./pages/admin-os/executive/decisions/DecisionSearch"));
 const FounderOfficeDashboard = lazy(
   () => import("./pages/admin-os/founder-office/FounderOfficeDashboard"),
 );
@@ -381,7 +386,11 @@ const App = () => (
                   <Route path="departments" element={<ExecutiveDepartments />} />
                   <Route path="employees" element={<ExecutiveEmployees />} />
                   <Route path="reports" element={<ExecutiveReports />} />
-                  <Route path="decisions" element={<DecisionLogPage />} />
+                  <Route path="decisions" element={<DecisionCenter />} />
+                  <Route path="decisions/new" element={<DecisionEditor />} />
+                  <Route path="decisions/search" element={<DecisionSearchPage />} />
+                  <Route path="decisions/approvals-log" element={<DecisionLogPage />} />
+                  <Route path="decisions/:id" element={<DecisionDetail />} />
                   <Route path="governance" element={<GovernanceIndex />} />
                   <Route path="governance/policies" element={<PolicyCenter />} />
                   <Route path="governance/policies/:id" element={<PolicyDetail />} />
