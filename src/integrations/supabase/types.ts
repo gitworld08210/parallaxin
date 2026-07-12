@@ -14,6 +14,193 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_audit_logs: {
+        Row: {
+          action: string
+          actor_employee_id: string | null
+          actor_user_id: string | null
+          after: Json | null
+          before: Json | null
+          created_at: string
+          id: string
+          ip: unknown
+          module: string
+          target_id: string | null
+          target_type: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          action: string
+          actor_employee_id?: string | null
+          actor_user_id?: string | null
+          after?: Json | null
+          before?: Json | null
+          created_at?: string
+          id?: string
+          ip?: unknown
+          module: string
+          target_id?: string | null
+          target_type?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          action?: string
+          actor_employee_id?: string | null
+          actor_user_id?: string | null
+          after?: Json | null
+          before?: Json | null
+          created_at?: string
+          id?: string
+          ip?: unknown
+          module?: string
+          target_id?: string | null
+          target_type?: string | null
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admin_audit_logs_actor_employee_id_fkey"
+            columns: ["actor_employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      admin_departments: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_system: boolean
+          key: string
+          name: string
+          parent_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_system?: boolean
+          key: string
+          name: string
+          parent_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_system?: boolean
+          key?: string
+          name?: string
+          parent_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admin_departments_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "admin_departments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      admin_permissions: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          module: string
+          name: string
+          permission_key: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          module: string
+          name: string
+          permission_key: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          module?: string
+          name?: string
+          permission_key?: string
+        }
+        Relationships: []
+      }
+      admin_role_permissions: {
+        Row: {
+          created_at: string
+          permission_id: string
+          role_id: string
+        }
+        Insert: {
+          created_at?: string
+          permission_id: string
+          role_id: string
+        }
+        Update: {
+          created_at?: string
+          permission_id?: string
+          role_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admin_role_permissions_permission_id_fkey"
+            columns: ["permission_id"]
+            isOneToOne: false
+            referencedRelation: "admin_permissions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "admin_role_permissions_role_id_fkey"
+            columns: ["role_id"]
+            isOneToOne: false
+            referencedRelation: "admin_roles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      admin_roles: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_system: boolean
+          key: string
+          name: string
+          priority: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_system?: boolean
+          key: string
+          name: string
+          priority?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_system?: boolean
+          key?: string
+          name?: string
+          priority?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       app_config: {
         Row: {
           key: string
@@ -493,6 +680,197 @@ export type Database = {
           stripe_session_id?: string | null
         }
         Relationships: []
+      }
+      employee_devices: {
+        Row: {
+          browser: string | null
+          device_name: string | null
+          employee_id: string
+          first_seen_at: string
+          id: string
+          ip: unknown
+          last_seen_at: string
+          os: string | null
+          region: string | null
+          trusted: boolean
+        }
+        Insert: {
+          browser?: string | null
+          device_name?: string | null
+          employee_id: string
+          first_seen_at?: string
+          id?: string
+          ip?: unknown
+          last_seen_at?: string
+          os?: string | null
+          region?: string | null
+          trusted?: boolean
+        }
+        Update: {
+          browser?: string | null
+          device_name?: string | null
+          employee_id?: string
+          first_seen_at?: string
+          id?: string
+          ip?: unknown
+          last_seen_at?: string
+          os?: string | null
+          region?: string | null
+          trusted?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employee_devices_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      employee_sessions: {
+        Row: {
+          device_id: string | null
+          employee_id: string
+          id: string
+          ip: unknown
+          last_seen_at: string
+          region: string | null
+          revoke_reason: string | null
+          revoked_at: string | null
+          revoked_by: string | null
+          started_at: string
+          user_agent: string | null
+        }
+        Insert: {
+          device_id?: string | null
+          employee_id: string
+          id?: string
+          ip?: unknown
+          last_seen_at?: string
+          region?: string | null
+          revoke_reason?: string | null
+          revoked_at?: string | null
+          revoked_by?: string | null
+          started_at?: string
+          user_agent?: string | null
+        }
+        Update: {
+          device_id?: string | null
+          employee_id?: string
+          id?: string
+          ip?: unknown
+          last_seen_at?: string
+          region?: string | null
+          revoke_reason?: string | null
+          revoked_at?: string | null
+          revoked_by?: string | null
+          started_at?: string
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employee_sessions_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      employees: {
+        Row: {
+          company_email: string
+          created_at: string
+          created_by: string | null
+          department_id: string | null
+          employee_number: string
+          employment_status: Database["public"]["Enums"]["employment_status"]
+          exit_date: string | null
+          full_name: string
+          id: string
+          joining_date: string | null
+          level: string | null
+          passport_id: string | null
+          photo_url: string | null
+          policies_accepted_at: string | null
+          reporting_manager_id: string | null
+          requires_2fa_setup: boolean
+          requires_password_change: boolean
+          role_id: string | null
+          updated_at: string
+          user_id: string | null
+          user_type: Database["public"]["Enums"]["admin_user_type"]
+        }
+        Insert: {
+          company_email: string
+          created_at?: string
+          created_by?: string | null
+          department_id?: string | null
+          employee_number: string
+          employment_status?: Database["public"]["Enums"]["employment_status"]
+          exit_date?: string | null
+          full_name: string
+          id?: string
+          joining_date?: string | null
+          level?: string | null
+          passport_id?: string | null
+          photo_url?: string | null
+          policies_accepted_at?: string | null
+          reporting_manager_id?: string | null
+          requires_2fa_setup?: boolean
+          requires_password_change?: boolean
+          role_id?: string | null
+          updated_at?: string
+          user_id?: string | null
+          user_type?: Database["public"]["Enums"]["admin_user_type"]
+        }
+        Update: {
+          company_email?: string
+          created_at?: string
+          created_by?: string | null
+          department_id?: string | null
+          employee_number?: string
+          employment_status?: Database["public"]["Enums"]["employment_status"]
+          exit_date?: string | null
+          full_name?: string
+          id?: string
+          joining_date?: string | null
+          level?: string | null
+          passport_id?: string | null
+          photo_url?: string | null
+          policies_accepted_at?: string | null
+          reporting_manager_id?: string | null
+          requires_2fa_setup?: boolean
+          requires_password_change?: boolean
+          role_id?: string | null
+          updated_at?: string
+          user_id?: string | null
+          user_type?: Database["public"]["Enums"]["admin_user_type"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employees_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "admin_departments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "employees_reporting_manager_id_fkey"
+            columns: ["reporting_manager_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "employees_role_id_fkey"
+            columns: ["role_id"]
+            isOneToOne: false
+            referencedRelation: "admin_roles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       follows: {
         Row: {
@@ -2627,6 +3005,11 @@ export type Database = {
           post_id: string
         }[]
       }
+      get_current_employee_id: { Args: never; Returns: string }
+      get_current_employment_status: {
+        Args: never
+        Returns: Database["public"]["Enums"]["employment_status"]
+      }
       get_organization_invite_by_token: {
         Args: { _token: string }
         Returns: {
@@ -2665,6 +3048,10 @@ export type Database = {
         Args: { check_env?: string; user_uuid: string }
         Returns: boolean
       }
+      has_admin_permission: {
+        Args: { _permission_key: string; _uid: string }
+        Returns: boolean
+      }
       has_approved_kyc: { Args: { _user_id: string }; Returns: boolean }
       has_org_permission: {
         Args: {
@@ -2696,6 +3083,11 @@ export type Database = {
       initialize_owner_member: {
         Args: { p_organization_id: string; p_owner_user_id: string }
         Returns: string
+      }
+      is_active_employee: { Args: { _uid?: string }; Returns: boolean }
+      is_admin_department_member: {
+        Args: { _department_key: string; _uid: string }
+        Returns: boolean
       }
       is_conversation_member: {
         Args: { _conv: string; _user: string }
@@ -2895,8 +3287,26 @@ export type Database = {
     }
     Enums: {
       account_type: "personal" | "organization"
+      admin_user_type:
+        | "founder"
+        | "co_founder"
+        | "employee"
+        | "contractor"
+        | "temporary"
       app_role: "admin" | "moderator" | "user"
       council_role: "architect" | "curator" | "sentinel" | "innovator"
+      employment_status:
+        | "candidate"
+        | "offer_sent"
+        | "offer_accepted"
+        | "pre_onboarding"
+        | "joining_today"
+        | "active"
+        | "on_leave"
+        | "suspended"
+        | "resigned"
+        | "exited"
+        | "archived"
       org_member_role: "owner" | "admin" | "manager" | "viewer"
       org_type:
         | "startup"
@@ -3037,8 +3447,28 @@ export const Constants = {
   public: {
     Enums: {
       account_type: ["personal", "organization"],
+      admin_user_type: [
+        "founder",
+        "co_founder",
+        "employee",
+        "contractor",
+        "temporary",
+      ],
       app_role: ["admin", "moderator", "user"],
       council_role: ["architect", "curator", "sentinel", "innovator"],
+      employment_status: [
+        "candidate",
+        "offer_sent",
+        "offer_accepted",
+        "pre_onboarding",
+        "joining_today",
+        "active",
+        "on_leave",
+        "suspended",
+        "resigned",
+        "exited",
+        "archived",
+      ],
       org_member_role: ["owner", "admin", "manager", "viewer"],
       org_type: [
         "startup",
