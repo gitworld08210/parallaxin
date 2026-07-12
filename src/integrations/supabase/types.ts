@@ -681,6 +681,44 @@ export type Database = {
         }
         Relationships: []
       }
+      employee_credential_issuances: {
+        Row: {
+          consumed_at: string | null
+          employee_id: string
+          expires_at: string
+          id: string
+          issued_at: string
+          issued_by: string | null
+          password_hash: string
+        }
+        Insert: {
+          consumed_at?: string | null
+          employee_id: string
+          expires_at: string
+          id?: string
+          issued_at?: string
+          issued_by?: string | null
+          password_hash: string
+        }
+        Update: {
+          consumed_at?: string | null
+          employee_id?: string
+          expires_at?: string
+          id?: string
+          issued_at?: string
+          issued_by?: string | null
+          password_hash?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employee_credential_issuances_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       employee_devices: {
         Row: {
           browser: string | null
@@ -724,6 +762,121 @@ export type Database = {
             columns: ["employee_id"]
             isOneToOne: false
             referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      employee_manager_history: {
+        Row: {
+          changed_at: string
+          changed_by: string | null
+          employee_id: string
+          id: string
+          new_manager_id: string | null
+          previous_manager_id: string | null
+          reason: string | null
+        }
+        Insert: {
+          changed_at?: string
+          changed_by?: string | null
+          employee_id: string
+          id?: string
+          new_manager_id?: string | null
+          previous_manager_id?: string | null
+          reason?: string | null
+        }
+        Update: {
+          changed_at?: string
+          changed_by?: string | null
+          employee_id?: string
+          id?: string
+          new_manager_id?: string | null
+          previous_manager_id?: string | null
+          reason?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employee_manager_history_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "employee_manager_history_new_manager_id_fkey"
+            columns: ["new_manager_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "employee_manager_history_previous_manager_id_fkey"
+            columns: ["previous_manager_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      employee_onboarding_checklist: {
+        Row: {
+          completed: boolean
+          completed_at: string | null
+          completed_by: string | null
+          created_at: string
+          employee_id: string
+          id: string
+          item_key: string
+          label: string
+          note: string | null
+          owner: Database["public"]["Enums"]["checklist_owner"]
+          session_id: string | null
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          completed?: boolean
+          completed_at?: string | null
+          completed_by?: string | null
+          created_at?: string
+          employee_id: string
+          id?: string
+          item_key: string
+          label: string
+          note?: string | null
+          owner: Database["public"]["Enums"]["checklist_owner"]
+          session_id?: string | null
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          completed?: boolean
+          completed_at?: string | null
+          completed_by?: string | null
+          created_at?: string
+          employee_id?: string
+          id?: string
+          item_key?: string
+          label?: string
+          note?: string | null
+          owner?: Database["public"]["Enums"]["checklist_owner"]
+          session_id?: string | null
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employee_onboarding_checklist_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "employee_onboarding_checklist_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "onboarding_sessions"
             referencedColumns: ["id"]
           },
         ]
@@ -1328,6 +1481,65 @@ export type Database = {
             columns: ["post_id"]
             isOneToOne: false
             referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      onboarding_sessions: {
+        Row: {
+          activated_at: string | null
+          background_check_cleared_at: string | null
+          background_check_required: boolean
+          cancellation_reason: string | null
+          cancelled_at: string | null
+          created_at: string
+          created_by: string | null
+          employee_id: string
+          hr_notes: string | null
+          hr_owner_user_id: string | null
+          id: string
+          joining_date: string | null
+          stage: Database["public"]["Enums"]["onboarding_stage"]
+          updated_at: string
+        }
+        Insert: {
+          activated_at?: string | null
+          background_check_cleared_at?: string | null
+          background_check_required?: boolean
+          cancellation_reason?: string | null
+          cancelled_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          employee_id: string
+          hr_notes?: string | null
+          hr_owner_user_id?: string | null
+          id?: string
+          joining_date?: string | null
+          stage?: Database["public"]["Enums"]["onboarding_stage"]
+          updated_at?: string
+        }
+        Update: {
+          activated_at?: string | null
+          background_check_cleared_at?: string | null
+          background_check_required?: boolean
+          cancellation_reason?: string | null
+          cancelled_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          employee_id?: string
+          hr_notes?: string | null
+          hr_owner_user_id?: string | null
+          id?: string
+          joining_date?: string | null
+          stage?: Database["public"]["Enums"]["onboarding_stage"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "onboarding_sessions_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: true
+            referencedRelation: "employees"
             referencedColumns: ["id"]
           },
         ]
@@ -3838,6 +4050,54 @@ export type Database = {
         }
         Relationships: []
       }
+      welcome_email_history: {
+        Row: {
+          body: string
+          employee_id: string
+          id: string
+          sent_at: string
+          sent_by: string | null
+          sent_to: string
+          session_id: string | null
+          subject: string
+        }
+        Insert: {
+          body: string
+          employee_id: string
+          id?: string
+          sent_at?: string
+          sent_by?: string | null
+          sent_to: string
+          session_id?: string | null
+          subject: string
+        }
+        Update: {
+          body?: string
+          employee_id?: string
+          id?: string
+          sent_at?: string
+          sent_by?: string | null
+          sent_to?: string
+          session_id?: string | null
+          subject?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "welcome_email_history_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "welcome_email_history_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "onboarding_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -3931,6 +4191,7 @@ export type Database = {
         }
         Returns: undefined
       }
+      generate_employee_number: { Args: never; Returns: string }
       generate_unique_org_slug: {
         Args: { _name: string; _self?: string }
         Returns: string
@@ -4014,6 +4275,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      hash_credential: { Args: { _plain: string }; Returns: string }
       initialize_default_departments: {
         Args: { p_organization_id: string; p_owner_user_id: string }
         Returns: undefined
@@ -4251,6 +4513,7 @@ export type Database = {
         | "contractor"
         | "temporary"
       app_role: "admin" | "moderator" | "user"
+      checklist_owner: "hr" | "employee"
       council_role: "architect" | "curator" | "sentinel" | "innovator"
       employment_status:
         | "candidate"
@@ -4264,6 +4527,16 @@ export type Database = {
         | "resigned"
         | "exited"
         | "archived"
+      onboarding_stage:
+        | "draft"
+        | "hr_review"
+        | "background_check"
+        | "account_provisioning"
+        | "credentials_generated"
+        | "welcome_sent"
+        | "awaiting_first_login"
+        | "completed"
+        | "cancelled"
       org_member_role: "owner" | "admin" | "manager" | "viewer"
       org_type:
         | "startup"
@@ -4412,6 +4685,7 @@ export const Constants = {
         "temporary",
       ],
       app_role: ["admin", "moderator", "user"],
+      checklist_owner: ["hr", "employee"],
       council_role: ["architect", "curator", "sentinel", "innovator"],
       employment_status: [
         "candidate",
@@ -4425,6 +4699,17 @@ export const Constants = {
         "resigned",
         "exited",
         "archived",
+      ],
+      onboarding_stage: [
+        "draft",
+        "hr_review",
+        "background_check",
+        "account_provisioning",
+        "credentials_generated",
+        "welcome_sent",
+        "awaiting_first_login",
+        "completed",
+        "cancelled",
       ],
       org_member_role: ["owner", "admin", "manager", "viewer"],
       org_type: [
