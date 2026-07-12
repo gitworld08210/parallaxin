@@ -13,6 +13,7 @@ const items = [
   { to: "/admin-os/executive/departments", label: "Departments", icon: Building2 },
   { to: "/admin-os/executive/employees", label: "Employees", icon: Users },
   { to: "/admin-os/executive/reports", label: "Reports", icon: BarChart3 },
+  { to: "/admin-os/executive/command", label: "Command Center", icon: Command },
   { to: "/admin-os/executive/decisions", label: "Decision Log", icon: ScrollText },
   { to: "/admin-os/executive/security", label: "Security", icon: ShieldCheck },
   { to: "/admin-os/executive/company", label: "Company Settings", icon: Settings },
