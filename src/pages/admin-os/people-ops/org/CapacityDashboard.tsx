@@ -161,7 +161,7 @@ const CapacityDashboard = () => {
     {
       key: "health",
       header: "Health",
-      cell: (r) => <StatusBadge tone={HEALTH_TONE[r.health]}>{HEALTH_LABEL[r.health]}</StatusBadge>,
+      cell: (r) => <StatusBadge tone={HEALTH_TONE[r.health]} label={HEALTH_LABEL[r.health]} />,
     },
     {
       key: "edit",

@@ -89,13 +89,13 @@ const OpenPositions = () => {
       key: "priority",
       header: "Priority",
       cell: (r) => (
-        <StatusBadge tone={PRIORITY_TONE[r.priority]}>{r.priority.toUpperCase()}</StatusBadge>
+        <StatusBadge tone={PRIORITY_TONE[r.priority]} label={r.priority.toUpperCase()} />
       ),
     },
     {
       key: "status",
       header: "Status",
-      cell: (r) => <StatusBadge tone={STATUS_TONE[r.status]}>{STATUS_LABEL[r.status]}</StatusBadge>,
+      cell: (r) => <StatusBadge tone={STATUS_TONE[r.status]} label={STATUS_LABEL[r.status]} />,
     },
     {
       key: "expected",

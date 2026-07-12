@@ -110,9 +110,7 @@ const Succession = () => {
       header: "Readiness",
       cell: (r) => (
         <div>
-          <StatusBadge tone={READINESS_TONE[r.readiness_level]}>
-            {READINESS_LABEL[r.readiness_level]}
-          </StatusBadge>
+          <StatusBadge tone={READINESS_TONE[r.readiness_level]} label={READINESS_LABEL[r.readiness_level]} />
           <div className="mt-1 h-1 w-24 bg-muted rounded-full overflow-hidden">
             <div
               className="h-full bg-primary"
