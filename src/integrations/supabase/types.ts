@@ -404,6 +404,42 @@ export type Database = {
           },
         ]
       }
+      benefits_catalog: {
+        Row: {
+          category: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          is_active: boolean
+          monthly_cost: number
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          monthly_cost?: number
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          monthly_cost?: number
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       blocks: {
         Row: {
           blocked_id: string
@@ -1018,6 +1054,111 @@ export type Database = {
           },
         ]
       }
+      compensation_bonuses: {
+        Row: {
+          amount: number
+          approved_at: string | null
+          approver: string | null
+          bonus_type: Database["public"]["Enums"]["bonus_type"]
+          created_at: string
+          currency: string
+          employee_id: string
+          id: string
+          paid_at: string | null
+          paid_cycle_id: string | null
+          reason: string
+          rejection_reason: string | null
+          requested_by: string | null
+          status: Database["public"]["Enums"]["bonus_status"]
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          approved_at?: string | null
+          approver?: string | null
+          bonus_type: Database["public"]["Enums"]["bonus_type"]
+          created_at?: string
+          currency?: string
+          employee_id: string
+          id?: string
+          paid_at?: string | null
+          paid_cycle_id?: string | null
+          reason: string
+          rejection_reason?: string | null
+          requested_by?: string | null
+          status?: Database["public"]["Enums"]["bonus_status"]
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          approved_at?: string | null
+          approver?: string | null
+          bonus_type?: Database["public"]["Enums"]["bonus_type"]
+          created_at?: string
+          currency?: string
+          employee_id?: string
+          id?: string
+          paid_at?: string | null
+          paid_cycle_id?: string | null
+          reason?: string
+          rejection_reason?: string | null
+          requested_by?: string | null
+          status?: Database["public"]["Enums"]["bonus_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "compensation_bonuses_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "compensation_bonuses_paid_cycle_id_fkey"
+            columns: ["paid_cycle_id"]
+            isOneToOne: false
+            referencedRelation: "payroll_cycles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      compensation_plans: {
+        Row: {
+          comp_type: Database["public"]["Enums"]["compensation_type"]
+          created_at: string
+          created_by: string | null
+          currency: string
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          comp_type: Database["public"]["Enums"]["compensation_type"]
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          comp_type?: Database["public"]["Enums"]["compensation_type"]
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       conversation_participants: {
         Row: {
           conversation_id: string
@@ -1283,6 +1424,57 @@ export type Database = {
           stripe_session_id?: string | null
         }
         Relationships: []
+      }
+      employee_benefits: {
+        Row: {
+          benefit_id: string
+          created_at: string
+          employee_id: string
+          enrolled_by: string | null
+          enrolled_from: string
+          enrolled_to: string | null
+          id: string
+          notes: string | null
+          updated_at: string
+        }
+        Insert: {
+          benefit_id: string
+          created_at?: string
+          employee_id: string
+          enrolled_by?: string | null
+          enrolled_from: string
+          enrolled_to?: string | null
+          id?: string
+          notes?: string | null
+          updated_at?: string
+        }
+        Update: {
+          benefit_id?: string
+          created_at?: string
+          employee_id?: string
+          enrolled_by?: string | null
+          enrolled_from?: string
+          enrolled_to?: string | null
+          id?: string
+          notes?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employee_benefits_benefit_id_fkey"
+            columns: ["benefit_id"]
+            isOneToOne: false
+            referencedRelation: "benefits_catalog"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "employee_benefits_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       employee_certifications: {
         Row: {
@@ -4652,6 +4844,144 @@ export type Database = {
           },
         ]
       }
+      payroll_cycles: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          created_at: string
+          currency: string
+          finance_reviewed_at: string | null
+          finance_reviewer: string | null
+          founder_reviewed_at: string | null
+          founder_reviewer: string | null
+          generated_at: string | null
+          generated_by: string | null
+          hr_reviewed_at: string | null
+          hr_reviewer: string | null
+          id: string
+          notes: string | null
+          period_month: string
+          released_at: string | null
+          released_by: string | null
+          status: Database["public"]["Enums"]["payroll_cycle_status"]
+          totals: Json
+          updated_at: string
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          currency?: string
+          finance_reviewed_at?: string | null
+          finance_reviewer?: string | null
+          founder_reviewed_at?: string | null
+          founder_reviewer?: string | null
+          generated_at?: string | null
+          generated_by?: string | null
+          hr_reviewed_at?: string | null
+          hr_reviewer?: string | null
+          id?: string
+          notes?: string | null
+          period_month: string
+          released_at?: string | null
+          released_by?: string | null
+          status?: Database["public"]["Enums"]["payroll_cycle_status"]
+          totals?: Json
+          updated_at?: string
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          currency?: string
+          finance_reviewed_at?: string | null
+          finance_reviewer?: string | null
+          founder_reviewed_at?: string | null
+          founder_reviewer?: string | null
+          generated_at?: string | null
+          generated_by?: string | null
+          hr_reviewed_at?: string | null
+          hr_reviewer?: string | null
+          id?: string
+          notes?: string | null
+          period_month?: string
+          released_at?: string | null
+          released_by?: string | null
+          status?: Database["public"]["Enums"]["payroll_cycle_status"]
+          totals?: Json
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      payroll_items: {
+        Row: {
+          bonuses_total: number
+          created_at: string
+          cycle_id: string
+          deductions_total: number
+          employee_id: string
+          gross: number
+          id: string
+          leave_days: number
+          loss_of_pay_days: number
+          net_pay: number
+          notes: string | null
+          reimbursements_total: number
+          structure_snapshot: Json
+          updated_at: string
+          worked_days: number
+        }
+        Insert: {
+          bonuses_total?: number
+          created_at?: string
+          cycle_id: string
+          deductions_total?: number
+          employee_id: string
+          gross?: number
+          id?: string
+          leave_days?: number
+          loss_of_pay_days?: number
+          net_pay?: number
+          notes?: string | null
+          reimbursements_total?: number
+          structure_snapshot?: Json
+          updated_at?: string
+          worked_days?: number
+        }
+        Update: {
+          bonuses_total?: number
+          created_at?: string
+          cycle_id?: string
+          deductions_total?: number
+          employee_id?: string
+          gross?: number
+          id?: string
+          leave_days?: number
+          loss_of_pay_days?: number
+          net_pay?: number
+          notes?: string | null
+          reimbursements_total?: number
+          structure_snapshot?: Json
+          updated_at?: string
+          worked_days?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payroll_items_cycle_id_fkey"
+            columns: ["cycle_id"]
+            isOneToOne: false
+            referencedRelation: "payroll_cycles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payroll_items_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       performance_cycles: {
         Row: {
           created_at: string
@@ -6397,6 +6727,87 @@ export type Database = {
           },
         ]
       }
+      reimbursements: {
+        Row: {
+          amount: number
+          category: string
+          created_at: string
+          currency: string
+          description: string
+          employee_id: string
+          expense_date: string
+          finance_reviewed_at: string | null
+          finance_reviewer: string | null
+          id: string
+          manager_reviewed_at: string | null
+          manager_reviewer: string | null
+          paid_at: string | null
+          paid_cycle_id: string | null
+          receipt_url: string | null
+          rejection_reason: string | null
+          status: Database["public"]["Enums"]["reimbursement_status"]
+          submitted_by: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          category: string
+          created_at?: string
+          currency?: string
+          description: string
+          employee_id: string
+          expense_date?: string
+          finance_reviewed_at?: string | null
+          finance_reviewer?: string | null
+          id?: string
+          manager_reviewed_at?: string | null
+          manager_reviewer?: string | null
+          paid_at?: string | null
+          paid_cycle_id?: string | null
+          receipt_url?: string | null
+          rejection_reason?: string | null
+          status?: Database["public"]["Enums"]["reimbursement_status"]
+          submitted_by?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          category?: string
+          created_at?: string
+          currency?: string
+          description?: string
+          employee_id?: string
+          expense_date?: string
+          finance_reviewed_at?: string | null
+          finance_reviewer?: string | null
+          id?: string
+          manager_reviewed_at?: string | null
+          manager_reviewer?: string | null
+          paid_at?: string | null
+          paid_cycle_id?: string | null
+          receipt_url?: string | null
+          rejection_reason?: string | null
+          status?: Database["public"]["Enums"]["reimbursement_status"]
+          submitted_by?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reimbursements_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reimbursements_paid_cycle_id_fkey"
+            columns: ["paid_cycle_id"]
+            isOneToOne: false
+            referencedRelation: "payroll_cycles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       reports: {
         Row: {
           created_at: string
@@ -6429,6 +6840,175 @@ export type Database = {
           target_kind?: string
         }
         Relationships: []
+      }
+      salary_revisions: {
+        Row: {
+          created_at: string
+          effective_date: string
+          employee_id: string
+          finance_reviewed_at: string | null
+          finance_reviewer: string | null
+          founder_reviewed_at: string | null
+          founder_reviewer: string | null
+          from_structure_id: string | null
+          hr_reviewed_at: string | null
+          hr_reviewer: string | null
+          id: string
+          proposed_gross: number | null
+          reason: string
+          rejection_reason: string | null
+          requested_by: string | null
+          status: Database["public"]["Enums"]["salary_revision_status"]
+          to_structure_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          effective_date: string
+          employee_id: string
+          finance_reviewed_at?: string | null
+          finance_reviewer?: string | null
+          founder_reviewed_at?: string | null
+          founder_reviewer?: string | null
+          from_structure_id?: string | null
+          hr_reviewed_at?: string | null
+          hr_reviewer?: string | null
+          id?: string
+          proposed_gross?: number | null
+          reason: string
+          rejection_reason?: string | null
+          requested_by?: string | null
+          status?: Database["public"]["Enums"]["salary_revision_status"]
+          to_structure_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          effective_date?: string
+          employee_id?: string
+          finance_reviewed_at?: string | null
+          finance_reviewer?: string | null
+          founder_reviewed_at?: string | null
+          founder_reviewer?: string | null
+          from_structure_id?: string | null
+          hr_reviewed_at?: string | null
+          hr_reviewer?: string | null
+          id?: string
+          proposed_gross?: number | null
+          reason?: string
+          rejection_reason?: string | null
+          requested_by?: string | null
+          status?: Database["public"]["Enums"]["salary_revision_status"]
+          to_structure_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "salary_revisions_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "salary_revisions_from_structure_id_fkey"
+            columns: ["from_structure_id"]
+            isOneToOne: false
+            referencedRelation: "salary_structures"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "salary_revisions_to_structure_id_fkey"
+            columns: ["to_structure_id"]
+            isOneToOne: false
+            referencedRelation: "salary_structures"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      salary_structures: {
+        Row: {
+          basic: number
+          benefits: Json
+          created_at: string
+          created_by: string | null
+          currency: string
+          deductions: Json
+          effective_from: string
+          effective_to: string | null
+          employee_id: string
+          gross_monthly: number
+          house_allowance: number
+          id: string
+          medical_allowance: number
+          notes: string | null
+          other_allowances: Json
+          plan_id: string | null
+          special_allowance: number
+          status: Database["public"]["Enums"]["salary_structure_status"]
+          transport_allowance: number
+          updated_at: string
+        }
+        Insert: {
+          basic?: number
+          benefits?: Json
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          deductions?: Json
+          effective_from: string
+          effective_to?: string | null
+          employee_id: string
+          gross_monthly?: number
+          house_allowance?: number
+          id?: string
+          medical_allowance?: number
+          notes?: string | null
+          other_allowances?: Json
+          plan_id?: string | null
+          special_allowance?: number
+          status?: Database["public"]["Enums"]["salary_structure_status"]
+          transport_allowance?: number
+          updated_at?: string
+        }
+        Update: {
+          basic?: number
+          benefits?: Json
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          deductions?: Json
+          effective_from?: string
+          effective_to?: string | null
+          employee_id?: string
+          gross_monthly?: number
+          house_allowance?: number
+          id?: string
+          medical_allowance?: number
+          notes?: string | null
+          other_allowances?: Json
+          plan_id?: string | null
+          special_allowance?: number
+          status?: Database["public"]["Enums"]["salary_structure_status"]
+          transport_allowance?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "salary_structures_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "salary_structures_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "compensation_plans"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       saves: {
         Row: {
@@ -7696,6 +8276,15 @@ export type Database = {
         | "holiday"
         | "weekend"
         | "leave"
+      bonus_status: "draft" | "approved" | "paid" | "rejected"
+      bonus_type:
+        | "performance"
+        | "festival"
+        | "joining"
+        | "retention"
+        | "referral"
+        | "spot_award"
+        | "custom"
       candidate_event_type:
         | "application"
         | "stage_change"
@@ -7738,6 +8327,12 @@ export type Database = {
         | "process"
       cert_status: "active" | "expired" | "revoked"
       checklist_owner: "hr" | "employee"
+      compensation_type:
+        | "monthly_salary"
+        | "hourly"
+        | "intern_stipend"
+        | "contract"
+        | "project_based"
       correction_status: "pending" | "approved" | "rejected"
       council_role: "architect" | "curator" | "sentinel" | "innovator"
       course_category:
@@ -7909,6 +8504,14 @@ export type Database = {
         | "project_added"
         | "note"
       passport_skill_status: "proposed" | "verified" | "revoked"
+      payroll_cycle_status:
+        | "draft"
+        | "finance_review"
+        | "hr_review"
+        | "founder_review"
+        | "approved"
+        | "released"
+        | "cancelled"
       perf_cycle_period: "monthly" | "quarterly" | "half_yearly" | "annual"
       perf_cycle_status: "draft" | "active" | "in_review" | "closed"
       perf_goal_priority: "low" | "medium" | "high" | "critical"
@@ -7948,7 +8551,20 @@ export type Database = {
         | "innovation"
         | "leadership"
         | "special"
+      reimbursement_status:
+        | "pending_manager"
+        | "pending_finance"
+        | "approved"
+        | "rejected"
+        | "paid"
       roadmap_requirement_type: "course" | "skill" | "certification"
+      salary_revision_status:
+        | "pending_hr"
+        | "pending_finance"
+        | "pending_founder"
+        | "approved"
+        | "rejected"
+      salary_structure_status: "draft" | "active" | "superseded" | "archived"
       shift_kind:
         | "general"
         | "morning"
@@ -8127,6 +8743,16 @@ export const Constants = {
         "weekend",
         "leave",
       ],
+      bonus_status: ["draft", "approved", "paid", "rejected"],
+      bonus_type: [
+        "performance",
+        "festival",
+        "joining",
+        "retention",
+        "referral",
+        "spot_award",
+        "custom",
+      ],
       candidate_event_type: [
         "application",
         "stage_change",
@@ -8167,6 +8793,13 @@ export const Constants = {
       ],
       cert_status: ["active", "expired", "revoked"],
       checklist_owner: ["hr", "employee"],
+      compensation_type: [
+        "monthly_salary",
+        "hourly",
+        "intern_stipend",
+        "contract",
+        "project_based",
+      ],
       correction_status: ["pending", "approved", "rejected"],
       council_role: ["architect", "curator", "sentinel", "innovator"],
       course_category: [
@@ -8355,6 +8988,15 @@ export const Constants = {
         "note",
       ],
       passport_skill_status: ["proposed", "verified", "revoked"],
+      payroll_cycle_status: [
+        "draft",
+        "finance_review",
+        "hr_review",
+        "founder_review",
+        "approved",
+        "released",
+        "cancelled",
+      ],
       perf_cycle_period: ["monthly", "quarterly", "half_yearly", "annual"],
       perf_cycle_status: ["draft", "active", "in_review", "closed"],
       perf_goal_priority: ["low", "medium", "high", "critical"],
@@ -8399,7 +9041,22 @@ export const Constants = {
         "leadership",
         "special",
       ],
+      reimbursement_status: [
+        "pending_manager",
+        "pending_finance",
+        "approved",
+        "rejected",
+        "paid",
+      ],
       roadmap_requirement_type: ["course", "skill", "certification"],
+      salary_revision_status: [
+        "pending_hr",
+        "pending_finance",
+        "pending_founder",
+        "approved",
+        "rejected",
+      ],
+      salary_structure_status: ["draft", "active", "superseded", "archived"],
       shift_kind: [
         "general",
         "morning",
