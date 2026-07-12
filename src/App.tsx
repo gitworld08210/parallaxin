@@ -181,6 +181,17 @@ const DecisionCenter = lazy(() => import("./pages/admin-os/executive/decisions/D
 const DecisionEditor = lazy(() => import("./pages/admin-os/executive/decisions/DecisionEditor"));
 const DecisionDetail = lazy(() => import("./pages/admin-os/executive/decisions/DecisionDetail"));
 const DecisionSearchPage = lazy(() => import("./pages/admin-os/executive/decisions/DecisionSearch"));
+
+// Phase 3.6 — Executive Reports & Analytics
+const ReportsShell = lazy(() => import("./pages/admin-os/executive/reports/ReportsHome"));
+const ReportsOverview = lazy(() => import("./pages/admin-os/executive/reports/ReportsOverview"));
+const AnalyticsCenter = lazy(() => import("./pages/admin-os/executive/reports/AnalyticsCenter"));
+const ScorecardsPage = lazy(() => import("./pages/admin-os/executive/reports/ScorecardsPage"));
+const TrendAnalysis = lazy(() => import("./pages/admin-os/executive/reports/TrendAnalysis"));
+const ReportLibrary = lazy(() => import("./pages/admin-os/executive/reports/ReportLibrary"));
+const ScheduledReportsPage = lazy(() => import("./pages/admin-os/executive/reports/ScheduledReports"));
+const ExportCenterPage = lazy(() => import("./pages/admin-os/executive/reports/ExportCenter"));
+const DepartmentReportCompliance = lazy(() => import("./pages/admin-os/executive/reports/DepartmentReportCompliance"));
 const FounderOfficeDashboard = lazy(
   () => import("./pages/admin-os/founder-office/FounderOfficeDashboard"),
 );
