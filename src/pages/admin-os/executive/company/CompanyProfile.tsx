@@ -19,15 +19,22 @@ const PROFILE_FIELDS: { key: string; label: string; type?: "text" | "textarea" |
 ];
 
 const CompanyProfile = () => {
-  const { data: cfgs = [] } = useCompanyConfigurations("company_profile");
+  const { data: cfgs } = useCompanyConfigurations("company_profile");
   const upsert = useUpsertConfiguration();
   const [values, setValues] = useState<Record<string, string>>({});
 
   useEffect(() => {
+    if (!cfgs) return;
     const v: Record<string, string> = {};
     cfgs.forEach((c: any) => { v[c.key] = c.value?.value ?? ""; });
-    setValues(v);
+    setValues((prev) => {
+      // Only update if actually different, avoid re-render loops
+      const same = Object.keys(v).length === Object.keys(prev).length &&
+        Object.keys(v).every((k) => prev[k] === v[k]);
+      return same ? prev : v;
+    });
   }, [cfgs]);
+
 
   const save = async (key: string, label: string) => {
     const existing = cfgs.find((c: any) => c.key === key);
