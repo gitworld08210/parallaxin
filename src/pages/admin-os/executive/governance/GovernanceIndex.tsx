@@ -37,21 +37,20 @@ const GovernanceIndex = () => {
         eyebrow="FOUNDER OFFICE · GOVERNANCE"
         title="Company Governance Center"
         description="Single source of truth for policies, authority, approvals and delegations."
-        icon={ScrollText}
       />
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <StatCard label="Published policies" value={String(published)} sublabel={`${policies.length} total`} />
-        <StatCard label="Pending review" value={String(pendingReview)} sublabel="Awaiting founder review" />
-        <StatCard label="Active delegations" value={String(activeDeleg)} />
-        <StatCard label="Approved charters" value={String(approvedCharters)} sublabel={`${charters.length} total`} />
+        <StatCard label="Published policies" value={published} delta={`${policies.length} total`} />
+        <StatCard label="Pending review" value={pendingReview} delta="Awaiting founder review" />
+        <StatCard label="Active delegations" value={activeDeleg} />
+        <StatCard label="Approved charters" value={approvedCharters} delta={`${charters.length} total`} />
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <StatCard label="Governance rules" value={String(rules.length)} />
-        <StatCard label="Authority rows" value={String(authority.length)} />
-        <StatCard label="Approval matrix rows" value={String(approvals.length)} />
-        <StatCard label="Departments with charter" value={String(new Set(charters.map((c: any) => c.department_id)).size)} />
+        <StatCard label="Governance rules" value={rules.length} />
+        <StatCard label="Authority rows" value={authority.length} />
+        <StatCard label="Approval matrix rows" value={approvals.length} />
+        <StatCard label="Departments with charter" value={new Set(charters.map((c: any) => c.department_id)).size} />
       </div>
 
       <SectionCard title="Governance modules" description="Every governance change here is versioned and audited.">
