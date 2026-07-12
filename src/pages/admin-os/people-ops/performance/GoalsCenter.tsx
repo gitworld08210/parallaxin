@@ -288,7 +288,7 @@ const GoalsCenter = () => {
         ) : (goals.data ?? []).length === 0 ? (
           <EmptyState title="No goals yet" description="Assign the first goal for this cycle." />
         ) : (
-          <DataTable columns={cols} data={goals.data ?? []} rowKey={(g) => g.id} />
+          <DataTable columns={cols} rows={goals.data ?? []} rowKey={(g: PerformanceGoal) => g.id} />
         )}
       </SectionCard>
     </div>
