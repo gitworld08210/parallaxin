@@ -146,7 +146,7 @@ export const useApprovalTimeline = (id: string | undefined) =>
         .eq("request_id", id!)
         .order("event_at", { ascending: true });
       if (error) throw error;
-      return (data ?? []) as Array<{
+      return ((data ?? []) as unknown) as Array<{
         request_id: string;
         event_kind: string;
         event_at: string;
