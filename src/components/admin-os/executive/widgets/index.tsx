@@ -1,10 +1,5 @@
 /**
  * Phase 3.2 — Executive Dashboard widgets.
- *
- * Every widget:
- *  - Reads a single summary hook.
- *  - Uses the Aurelix DS primitives.
- *  - Is a self-contained card the dashboard grid composes.
  */
 import { Link } from "react-router-dom";
 import {
@@ -16,10 +11,7 @@ import {
   Building2,
   Calendar,
   CheckCircle2,
-  CircuitBoard,
   Crown,
-  Gauge,
-  Heart,
   Inbox,
   Rocket,
   ScrollText,
@@ -66,7 +58,7 @@ export function CompanyOverviewWidget() {
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
       <StatCard
-        
+        icon={Users}
         label="Total employees"
         value={data?.totalEmployees ?? 0}
         delta={data ? `${data.activeEmployees} active` : undefined}
@@ -79,14 +71,14 @@ export function CompanyOverviewWidget() {
         loading={isLoading}
       />
       <StatCard
-        
+        icon={Rocket}
         label="Open positions"
         value={data?.openPositions ?? 0}
         delta={data ? `${data.onboarding} onboarding` : undefined}
         loading={isLoading}
       />
       <StatCard
-        
+        icon={Activity}
         label="30d growth"
         value={data ? `${growth >= 0 ? "+" : ""}${growth.toFixed(1)}%` : "—"}
         delta={data ? `${data.newLast30} joined` : undefined}
@@ -100,11 +92,7 @@ export function CompanyOverviewWidget() {
 /* -------------------------------------------------------------------------- */
 function HealthBar({ label, value }: { label: string; value: number }) {
   const tone =
-    value >= 80
-      ? "bg-emerald-500"
-      : value >= 60
-        ? "bg-amber-500"
-        : "bg-red-500";
+    value >= 80 ? "bg-emerald-500" : value >= 60 ? "bg-amber-500" : "bg-red-500";
   return (
     <div>
       <div className="flex items-center justify-between text-xs mb-1">
@@ -124,7 +112,6 @@ export function CompanyHealthWidget() {
     <SectionCard
       title="Company Health"
       description="Composite score across all critical functions"
-      
     >
       {isLoading || !data ? (
         <div className="h-40 animate-pulse bg-muted/40 rounded-lg" />
@@ -132,9 +119,7 @@ export function CompanyHealthWidget() {
         <div className="space-y-4">
           <div className="flex items-baseline gap-3">
             <span className="text-4xl font-bold tabular-nums">{data.overall}</span>
-            <span className="text-xs text-muted-foreground">
-              overall health index
-            </span>
+            <span className="text-xs text-muted-foreground">overall health index</span>
           </div>
           <div className="space-y-2.5">
             <HealthBar label="Operational" value={data.operational} />
@@ -156,7 +141,6 @@ export function DepartmentOverviewWidget() {
     <SectionCard
       title="Department Overview"
       description="Capacity, risk and pending items per department"
-      icon={Building2}
       actions={
         <Link
           to="/admin-os/executive/departments"
@@ -185,22 +169,17 @@ export function DepartmentOverviewWidget() {
                 </p>
               </div>
               <div className="text-right shrink-0">
-                <p className="text-xs font-mono tabular-nums font-semibold">
-                  {d.capacityPct}%
-                </p>
+                <p className="text-xs font-mono tabular-nums font-semibold">{d.capacityPct}%</p>
                 <p className="text-[10px] text-muted-foreground">capacity</p>
               </div>
               <div className="text-right shrink-0 w-14">
-                <p className="text-xs font-mono tabular-nums font-semibold">
-                  {d.pendingApprovals}
-                </p>
+                <p className="text-xs font-mono tabular-nums font-semibold">{d.pendingApprovals}</p>
                 <p className="text-[10px] text-muted-foreground">pending</p>
               </div>
               <StatusBadge
                 tone={d.risk === "high" ? "danger" : d.risk === "medium" ? "warning" : "success"}
-              >
-                {d.risk}
-              </StatusBadge>
+                label={d.risk}
+              />
             </Link>
           ))}
         </div>
@@ -216,7 +195,6 @@ export function ExecutiveApprovalsWidget() {
     <SectionCard
       title="Executive Approvals"
       description="Requests awaiting Founder Office decision"
-      icon={CheckCircle2}
       actions={
         <Link
           to="/admin-os/platform/approvals"
@@ -229,11 +207,7 @@ export function ExecutiveApprovalsWidget() {
       {isLoading ? (
         <div className="h-32 animate-pulse bg-muted/40 rounded-lg" />
       ) : !data || data.length === 0 ? (
-        <EmptyState
-          title="Inbox zero"
-          description="No executive approvals waiting."
-          icon={CheckCircle2}
-        />
+        <EmptyState title="Inbox zero" description="No executive approvals waiting." />
       ) : (
         <div className="divide-y divide-border/40 -mx-1">
           {data.slice(0, 6).map((r: any) => (
@@ -251,9 +225,8 @@ export function ExecutiveApprovalsWidget() {
                         ? "warning"
                         : "info"
                   }
-                >
-                  {r.priority}
-                </StatusBadge>
+                  label={r.priority}
+                />
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-semibold truncate">{r.title}</p>
@@ -281,16 +254,11 @@ export function CriticalAlertsWidget() {
     <SectionCard
       title="Critical Alerts"
       description="Security, policy and system events (last 7 days)"
-      
     >
       {isLoading ? (
         <div className="h-32 animate-pulse bg-muted/40 rounded-lg" />
       ) : !data || data.length === 0 ? (
-        <EmptyState
-          title="All clear"
-          description="No critical alerts in the last week."
-          
-        />
+        <EmptyState title="All clear" description="No critical alerts in the last week." />
       ) : (
         <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
           {data.slice(0, 8).map((a: any) => (
@@ -320,7 +288,6 @@ export function ExecutiveCalendarWidget() {
     <SectionCard
       title="Executive Calendar"
       description="Upcoming reviews and company events"
-      
     >
       {isLoading ? (
         <div className="h-32 animate-pulse bg-muted/40 rounded-lg" />
@@ -357,7 +324,6 @@ export function RecentActivityWidget() {
     <SectionCard
       title="Recent Executive Activity"
       description="Governance, security, HR and policy changes"
-      
       actions={
         <Link
           to="/admin-os/audit"
@@ -408,11 +374,7 @@ const QUICK_ACTIONS = [
 
 export function QuickActionsWidget() {
   return (
-    <SectionCard
-      title="Quick Actions"
-      description="Jump to any executive workspace surface"
-      
-    >
+    <SectionCard title="Quick Actions" description="Jump to any executive workspace surface">
       <div className="grid grid-cols-2 gap-2">
         {QUICK_ACTIONS.map((a) => (
           <Link
@@ -438,18 +400,16 @@ export function SystemStatusWidget() {
   const anyFailed =
     (data?.failedWorkflows24h ?? 0) > 0 || (data?.failedNotifications24h ?? 0) > 0;
   return (
-    <SectionCard
-      title="System Status"
-      description="Live operational signals"
-      
-    >
+    <SectionCard title="System Status" description="Live operational signals">
       {isLoading || !data ? (
         <div className="h-20 animate-pulse bg-muted/40 rounded-lg" />
       ) : (
         <div className="space-y-2.5">
           <div className="flex items-center gap-2">
             <div
-              className={`h-2 w-2 rounded-full ${anyFailed ? "bg-amber-500" : "bg-emerald-500"} animate-pulse`}
+              className={`h-2 w-2 rounded-full ${
+                anyFailed ? "bg-amber-500" : "bg-emerald-500"
+              } animate-pulse`}
             />
             <span className="text-xs font-medium">
               {anyFailed ? "Degraded background jobs" : "All systems operational"}
@@ -458,22 +418,16 @@ export function SystemStatusWidget() {
           <div className="grid grid-cols-3 gap-2 text-center pt-2 border-t border-border/40">
             <div>
               <p className="text-lg font-bold tabular-nums">{data.activeSessions}</p>
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wide">
-                Sessions
-              </p>
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Sessions</p>
             </div>
             <div>
-              <p className="text-lg font-bold tabular-nums">
-                {data.failedWorkflows24h}
-              </p>
+              <p className="text-lg font-bold tabular-nums">{data.failedWorkflows24h}</p>
               <p className="text-[10px] text-muted-foreground uppercase tracking-wide">
                 Wf fails 24h
               </p>
             </div>
             <div>
-              <p className="text-lg font-bold tabular-nums">
-                {data.failedNotifications24h}
-              </p>
+              <p className="text-lg font-bold tabular-nums">{data.failedNotifications24h}</p>
               <p className="text-[10px] text-muted-foreground uppercase tracking-wide">
                 Notif fails
               </p>
@@ -488,11 +442,7 @@ export function SystemStatusWidget() {
 /* -------------------------------------------------------------------------- */
 export function AnnouncementsWidget() {
   return (
-    <SectionCard
-      title="Announcements"
-      description="Company-wide broadcasts"
-      
-    >
+    <SectionCard title="Announcements" description="Company-wide broadcasts">
       <EmptyState
         title="No announcements"
         description="Executive broadcasts you publish will appear here."
@@ -500,3 +450,6 @@ export function AnnouncementsWidget() {
     </SectionCard>
   );
 }
+
+/* Referenced icons — keeps tree-shaker aware */
+export const _dashIcons = { Crown, ShieldAlert, ShieldCheck };
