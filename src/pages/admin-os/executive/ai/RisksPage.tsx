@@ -13,7 +13,7 @@ const RisksPage = () => {
       const [overdue, incidents, alerts, escalations] = await Promise.all([
         supabase.from("platform_approval_requests").select("id,title,created_at").eq("status", "pending").lt("created_at", new Date(Date.now() - 7 * 86400_000).toISOString()).limit(10),
         supabase.from("executive_incidents").select("id,title,severity,status").eq("status", "open").limit(10),
-        supabase.from("executive_security_alerts").select("id,title,severity,acknowledged_at").is("acknowledged_at", null).limit(10),
+        supabase.from("executive_security_alerts").select("id,title,severity,is_acknowledged").eq("is_acknowledged", false).limit(10),
         supabase.from("executive_automation_escalations").select("id,reason,level,status").eq("status", "open").limit(10),
       ]);
       const items: any[] = [];
