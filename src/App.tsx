@@ -310,6 +310,16 @@ const EngReleaseCenter = lazy(() => import("./pages/admin-os/engineering/Release
 const EngDesignCenter = lazy(() => import("./pages/admin-os/engineering/DesignCenter"));
 const EngDocumentationCenter = lazy(() => import("./pages/admin-os/engineering/DocumentationCenter"));
 const EngReports = lazy(() => import("./pages/admin-os/engineering/EngReports"));
+
+const FinanceLegalShell = lazy(() => import("./pages/admin-os/finance-legal/FinanceLegalShell"));
+const FinanceDashboard = lazy(() => import("./pages/admin-os/finance-legal/FinanceDashboard"));
+const FinBudgetCenter = lazy(() => import("./pages/admin-os/finance-legal/BudgetCenter"));
+const FinExpenseCenter = lazy(() => import("./pages/admin-os/finance-legal/ExpenseCenter"));
+const FinInvoiceCenter = lazy(() => import("./pages/admin-os/finance-legal/InvoiceCenter"));
+const FinProcurementCenter = lazy(() => import("./pages/admin-os/finance-legal/ProcurementCenter"));
+const FinVendorCenter = lazy(() => import("./pages/admin-os/finance-legal/VendorCenter"));
+const FinContractCenter = lazy(() => import("./pages/admin-os/finance-legal/ContractCenter"));
+const FinComplianceDashboard = lazy(() => import("./pages/admin-os/finance-legal/ComplianceDashboard"));
 const PlatformIndex = lazy(() => import("./pages/admin-os/platform/PlatformIndex"));
 const ApprovalCenter = lazy(() => import("./pages/admin-os/platform/ApprovalCenter"));
 const WorkflowViewer = lazy(() => import("./pages/admin-os/platform/WorkflowViewer"));
