@@ -1020,6 +1020,63 @@ Deno.serve(async (req) => {
     // Grant admin app_role
     await admin.from("user_roles").insert({ user_id: newUserId, role: "admin" });
 
+    // Seed onboarding session + checklist so HR/People Ops sees the new
+    // appointee in the onboarding queue and can open the detail view.
+    const { data: onbSession } = await admin
+      .from("onboarding_sessions")
+      .insert({
+        employee_id: emp.id,
+        stage: "credentials_generated",
+        hr_owner_user_id: user.id,
+        joining_date: joiningDateStr,
+        background_check_required: false,
+        hr_notes: `Auto-created via Founder Office appointment (${slot.label}).`,
+        created_by: user.id,
+      })
+      .select("id")
+      .single();
+
+    if (onbSession?.id) {
+      const HR_CHECK = [
+        { key: "documents_verified", label: "Documents verified", order: 10 },
+        { key: "department_assigned", label: "Department assigned", order: 20, done: true },
+        { key: "role_assigned", label: "Role assigned", order: 30, done: true },
+        { key: "manager_assigned", label: "Reporting manager assigned", order: 40, done: true },
+        { key: "passport_created", label: "Employee passport created", order: 50 },
+        { key: "welcome_email_sent", label: "Joining letter sent to appointee", order: 60 },
+        { key: "employee_activated", label: "Employee activated", order: 70, done: true },
+      ];
+      const EMP_CHECK = [
+        { key: "password_changed", label: "Change temporary password", order: 10 },
+        { key: "twofa_enabled", label: "Enable two-factor authentication", order: 20 },
+        { key: "profile_completed", label: "Complete profile", order: 30 },
+        { key: "policies_accepted", label: "Accept company policies", order: 40 },
+      ];
+      const nowIso = new Date().toISOString();
+      const items = [
+        ...HR_CHECK.map((c) => ({
+          employee_id: emp.id,
+          session_id: onbSession.id,
+          owner: "hr" as const,
+          item_key: c.key,
+          label: c.label,
+          sort_order: c.order,
+          completed: !!c.done,
+          completed_at: c.done ? nowIso : null,
+          completed_by: c.done ? user.id : null,
+        })),
+        ...EMP_CHECK.map((c) => ({
+          employee_id: emp.id,
+          session_id: onbSession.id,
+          owner: "employee" as const,
+          item_key: c.key,
+          label: c.label,
+          sort_order: c.order,
+        })),
+      ];
+      await admin.from("employee_onboarding_checklist").insert(items);
+    }
+
     // Generate PDF
     const origin = req.headers.get("origin") ?? "https://aurelix.lovable.app";
     const pdfBytes = await buildJoiningLetter({
