@@ -321,7 +321,6 @@ const App = () => (
                   <Route path="platform/scheduler" element={<SchedulerConsole />} />
                   <Route path=":slug" element={<AdminOSModulePlaceholder />} />
                 </Route>
-                </Route>
               </Route>
 
               <Route path="*" element={<NotFound />} />
