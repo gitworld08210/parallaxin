@@ -92,6 +92,15 @@ export const ADMIN_PERMISSIONS = {
   PEOPLE_OPS_LEAVE_APPROVE: "people_ops.leave.approve",
   PEOPLE_OPS_SHIFT_MANAGE: "people_ops.shift.manage",
   PEOPLE_OPS_HOLIDAY_MANAGE: "people_ops.holiday.manage",
+
+  // Payroll, Compensation & Benefits (Phase 2.10)
+  PEOPLE_OPS_PAYROLL_VIEW: "people_ops.payroll.view",
+  PEOPLE_OPS_PAYROLL_MANAGE: "people_ops.payroll.manage",
+  PEOPLE_OPS_COMPENSATION_MANAGE: "people_ops.compensation.manage",
+  PEOPLE_OPS_BONUS_MANAGE: "people_ops.bonus.manage",
+  PEOPLE_OPS_BENEFITS_MANAGE: "people_ops.benefits.manage",
+  PEOPLE_OPS_REIMBURSEMENT_MANAGE: "people_ops.reimbursement.manage",
+
 } as const;
 
 export type AdminPermissionKey =
