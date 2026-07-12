@@ -306,7 +306,7 @@ export const searchKnowledge = async (query: string) => {
   const [policies, decisions, reports, config] = await Promise.all([
     supabase.from("governance_policies").select("id,title,summary,category").ilike("title", q).limit(10),
     supabase.from("strategic_decisions").select("id,title,summary,status").ilike("title", q).limit(10),
-    supabase.from("department_periodic_reports").select("id,title,department_id,period_type").ilike("title", q).limit(10),
+    supabase.from("department_periodic_reports").select("id,title,department_id,cadence").ilike("title", q).limit(10),
     supabase.from("company_configurations").select("id,category,key,description").or(`key.ilike.${q},description.ilike.${q}`).limit(10),
   ]);
   return {
