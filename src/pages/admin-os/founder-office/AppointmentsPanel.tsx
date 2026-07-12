@@ -25,7 +25,7 @@ import { toast } from "sonner";
 
 const AppointmentsPanel = () => {
   const { employee } = useEmployee();
-  const { data: appointments } = useAppointments();
+  const { data: appointments, isLoading: appointmentsLoading } = useAppointments();
   const revoke = useRevokeAppointment();
   const [openSlot, setOpenSlot] = useState<ExecutiveSlot | null>(null);
   const [result, setResult] = useState<{ result: AppointResult; label: string; email: string } | null>(null);
@@ -33,11 +33,22 @@ const AppointmentsPanel = () => {
   const [revokeReason, setRevokeReason] = useState("");
   const [alsoSuspend, setAlsoSuspend] = useState(true);
 
-  if (!employee) return <div className="p-6 text-sm text-muted-foreground">Loading…</div>;
+  if (!employee || appointmentsLoading)
+    return <div className="p-6 text-sm text-muted-foreground">Loading…</div>;
 
   const roleKey = (employee as any)?.role?.key;
   const isFounder = roleKey === "founder" || roleKey === "co_founder";
-  if (!isFounder) return <Navigate to="/admin-os/no-access" replace />;
+
+  // Also allow whoever currently holds the Operations Head or HR Head
+  // appointment — they can appoint downstream members.
+  const holdsOpsOrHr = (appointments ?? []).some(
+    (a) =>
+      !a.revoked_at &&
+      a.employee_id === (employee as any).id &&
+      (a.slot_key === "coo" || a.slot_key === "hr_head"),
+  );
+
+  if (!isFounder && !holdsOpsOrHr) return <Navigate to="/admin-os/no-access" replace />;
 
   const activeBySlot = new Map<string, any>();
   (appointments ?? []).filter((a) => !a.revoked_at).forEach((a) => activeBySlot.set(a.slot_key, a));
@@ -86,9 +97,9 @@ const AppointmentsPanel = () => {
       <div className="rounded-2xl border border-dashed border-primary/40 bg-primary/5 p-4">
         <p className="text-xs">
           <span className="font-semibold text-primary">One-click appointment.</span> System
-          auto-generates a unique <span className="font-mono">AURE###</span> employee ID, creates
-          the account, and emails a branded PDF joining letter to the executive's personal email
-          from your Gmail. Non-founder hiring in People Ops unlocks after Head of People Operations is appointed.
+          auto-generates a unique <span className="font-mono">AURE###</span> employee ID and
+          creates the account. A branded PDF joining letter — with the temporary password inside —
+          is generated for you to download and email to the appointee yourself.
         </p>
       </div>
 
