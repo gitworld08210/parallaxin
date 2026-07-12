@@ -79,35 +79,31 @@ const OrganizationIndex = () => {
             <StatCard
               label="Active headcount"
               value={health.metrics.totalHeadcount}
-              hint={`${health.metrics.departmentsTracked} departments`}
+              delta={`${health.metrics.departmentsTracked} departments`}
             />
             <StatCard
               label="Capacity utilisation"
               value={`${health.metrics.capacityUtilisation}%`}
-              hint={`Target ${health.metrics.totalTarget}`}
-              tone={
+              delta={`Target ${health.metrics.totalTarget}`}
+              deltaTone={
                 health.metrics.capacityUtilisation > 100
-                  ? "danger"
+                  ? "down"
                   : health.metrics.capacityUtilisation < 60
-                    ? "warning"
-                    : "positive"
+                    ? "down"
+                    : "up"
               }
             />
             <StatCard
               label="Open hiring requests"
               value={health.metrics.openHiring}
-              hint={`${health.metrics.criticalOpen} critical`}
-              tone={health.metrics.criticalOpen > 0 ? "danger" : "neutral"}
+              delta={`${health.metrics.criticalOpen} critical`}
+              deltaTone={health.metrics.criticalOpen > 0 ? "down" : "flat"}
             />
             <StatCard
               label="Leadership coverage"
               value={`${health.metrics.successionCoverage}%`}
-              hint={`${health.metrics.readyLeaders} ready now`}
-              tone={
-                health.metrics.successionCoverage < 50
-                  ? "warning"
-                  : "positive"
-              }
+              delta={`${health.metrics.readyLeaders} ready now`}
+              deltaTone={health.metrics.successionCoverage < 50 ? "down" : "up"}
             />
           </div>
 
