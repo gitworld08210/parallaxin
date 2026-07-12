@@ -36,32 +36,20 @@ export const AppointmentResultDialog = ({ result, slotLabel, personalEmail, onCl
         </div>
 
         <div className="p-5 space-y-4">
-          {result.email_sent ? (
-            <div className="flex items-start gap-2 rounded-lg bg-emerald-500/10 border border-emerald-500/30 p-3">
-              <Mail className="h-4 w-4 mt-0.5 text-emerald-600" />
-              <div className="text-xs">
-                <p className="font-semibold text-emerald-700 dark:text-emerald-400">
-                  Joining letter emailed
-                </p>
-                <p className="text-muted-foreground mt-0.5">
-                  PDF sent to <span className="font-mono">{personalEmail}</span> from your Gmail.
-                </p>
-              </div>
+          <div className="flex items-start gap-2 rounded-lg bg-amber-500/10 border border-amber-500/30 p-3">
+            <Mail className="h-4 w-4 mt-0.5 text-amber-600" />
+            <div className="text-xs">
+              <p className="font-semibold text-amber-700 dark:text-amber-400">
+                Download &amp; send the joining letter
+              </p>
+              <p className="text-muted-foreground mt-0.5">
+                Download the PDF below and email it to{" "}
+                <span className="font-mono">{personalEmail}</span> from your own inbox.
+                The PDF already contains the Employee ID, company email, and temporary
+                password.
+              </p>
             </div>
-          ) : (
-            <div className="flex items-start gap-2 rounded-lg bg-amber-500/10 border border-amber-500/30 p-3">
-              <AlertTriangle className="h-4 w-4 mt-0.5 text-amber-600" />
-              <div className="text-xs">
-                <p className="font-semibold text-amber-700 dark:text-amber-400">
-                  Email not sent
-                </p>
-                <p className="text-muted-foreground mt-0.5">
-                  {result.email_error ?? "Gmail connector unavailable."} Download and share the
-                  PDF manually.
-                </p>
-              </div>
-            </div>
-          )}
+          </div>
 
           <div className="grid grid-cols-2 gap-3">
             <FieldRow label="Employee ID" value={result.employee_number} onCopy={copy} />
