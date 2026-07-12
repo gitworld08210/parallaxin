@@ -207,8 +207,9 @@ export const useTransitionEmployeeStatus = () => {
   const qc = useQueryClient();
   const { user } = useAuth();
   return useMutation({
-    mutationFn: async ({ id, from_status, to_status, reason }: TransitionStatusInput) => {
-      const patch: Record<string, any> = { employment_status: to_status };
+      const patch: { employment_status: any; exit_date?: string } = {
+        employment_status: to_status as any,
+      };
       if (to_status === "exited" || to_status === "archived") {
         patch.exit_date = new Date().toISOString().slice(0, 10);
       }
