@@ -379,6 +379,4 @@ const Succession = () => {
   );
 };
 
-// keep unused import from tree-shaking removal
-void empName;
 export default Succession;
