@@ -73,6 +73,12 @@ export const ADMIN_PERMISSIONS = {
   PEOPLE_OPS_PERFORMANCE_MANAGE: "people_ops.performance.manage",
   PEOPLE_OPS_PERFORMANCE_REVIEW: "people_ops.performance.review",
   PEOPLE_OPS_RECOGNITION_GRANT: "people_ops.recognition.grant",
+
+  // Learning, Skills, Certifications (Phase 2.7)
+  PEOPLE_OPS_LEARNING_VIEW: "people_ops.learning.view",
+  PEOPLE_OPS_LEARNING_MANAGE: "people_ops.learning.manage",
+  PEOPLE_OPS_LEARNING_ENROLL: "people_ops.learning.enroll",
+  PEOPLE_OPS_LEARNING_VERIFY_SKILL: "people_ops.learning.verify_skill",
 } as const;
 
 export type AdminPermissionKey =
