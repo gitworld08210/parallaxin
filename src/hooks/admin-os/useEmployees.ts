@@ -82,13 +82,29 @@ export const useEmployeeDetail = (id: string | undefined) =>
            reporting_manager_id, requires_password_change, requires_2fa_setup,
            policies_accepted_at, created_at, updated_at,
            department:admin_departments!employees_department_id_fkey(id,key,name),
-           role:admin_roles!employees_role_id_fkey(id,key,name,priority),
-           reporting_manager:employees!employees_reporting_manager_id_fkey(id,full_name,employee_number)`,
+           role:admin_roles!employees_role_id_fkey(id,key,name,priority)`,
         )
         .eq("id", id)
         .maybeSingle();
       if (error) throw error;
-      return data as unknown as EmployeeDetail | null;
+
+      if (!data) return null;
+
+      let reportingManager: EmployeeDetail["reporting_manager"] = null;
+      if (data.reporting_manager_id) {
+        const { data: manager, error: managerError } = await supabase
+          .from("employees")
+          .select("id,full_name,employee_number")
+          .eq("id", data.reporting_manager_id)
+          .maybeSingle();
+        if (managerError) throw managerError;
+        reportingManager = manager as EmployeeDetail["reporting_manager"];
+      }
+
+      return {
+        ...(data as unknown as EmployeeDetail),
+        reporting_manager: reportingManager,
+      };
     },
   });
 
