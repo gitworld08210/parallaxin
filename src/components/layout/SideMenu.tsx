@@ -76,6 +76,12 @@ export const SideMenu = ({ trigger }: { trigger: React.ReactNode }) => {
     { to: "/premium", icon: Crown, label: "Aurelix Premium", badge: "PRO" },
   ];
 
+  const { employee, hasPermission } = useEmployee();
+  const canAdminOS =
+    !!employee &&
+    ACTIVE_EMPLOYMENT_STATUSES.has(employee.employment_status) &&
+    hasPermission(ADMIN_PERMISSIONS.ADMIN_OS_ACCESS);
+
   const community: Row[] = [
     { to: "/verification-center", icon: BadgeCheck, label: "Verification center", badge: "NEW" },
     { to: "/discover", icon: Users, label: "Communities" },
@@ -88,7 +94,16 @@ export const SideMenu = ({ trigger }: { trigger: React.ReactNode }) => {
           badge: "ADMIN",
         } as Row]
       : []),
+    ...(canAdminOS
+      ? [{
+          to: "/admin-os",
+          icon: Shield,
+          label: "Aurelix Admin OS",
+          badge: "STAFF",
+        } as Row]
+      : []),
   ];
+
 
   const utility: Row[] = [
     { onClick: () => setAppearanceOpen(true), icon: dark ? Moon : Sun, label: "Appearance", trailing: (
