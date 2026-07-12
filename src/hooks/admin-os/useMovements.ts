@@ -149,7 +149,7 @@ export const useCreateMovement = () => {
           target_level: input.target_level ?? null,
           target_manager_id: input.target_manager_id ?? null,
           target_team_name: input.target_team_name ?? null,
-          payload: input.payload ?? {},
+          payload: (input.payload ?? {}) as any,
           source_snapshot: src ?? {},
         })
         .select("*")
