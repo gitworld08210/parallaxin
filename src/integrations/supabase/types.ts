@@ -636,6 +636,50 @@ export type Database = {
         }
         Relationships: []
       }
+      department_capacity: {
+        Row: {
+          created_at: string
+          department_id: string
+          id: string
+          max_capacity: number
+          notes: string | null
+          target_capacity: number
+          updated_at: string
+          updated_by: string | null
+          workload_score: number
+        }
+        Insert: {
+          created_at?: string
+          department_id: string
+          id?: string
+          max_capacity?: number
+          notes?: string | null
+          target_capacity?: number
+          updated_at?: string
+          updated_by?: string | null
+          workload_score?: number
+        }
+        Update: {
+          created_at?: string
+          department_id?: string
+          id?: string
+          max_capacity?: number
+          notes?: string | null
+          target_capacity?: number
+          updated_at?: string
+          updated_by?: string | null
+          workload_score?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "department_capacity_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: true
+            referencedRelation: "admin_departments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       dm_unlocks: {
         Row: {
           amount_cents: number
@@ -1918,6 +1962,82 @@ export type Database = {
             columns: ["employee_id"]
             isOneToOne: true
             referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      open_positions: {
+        Row: {
+          approved_by: string | null
+          created_at: string
+          department_id: string
+          expected_joining: string | null
+          filled_by_employee_id: string | null
+          id: string
+          level: string | null
+          notes: string | null
+          priority: Database["public"]["Enums"]["open_position_priority"]
+          reason: string | null
+          requested_by: string | null
+          role_id: string | null
+          status: Database["public"]["Enums"]["open_position_status"]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          approved_by?: string | null
+          created_at?: string
+          department_id: string
+          expected_joining?: string | null
+          filled_by_employee_id?: string | null
+          id?: string
+          level?: string | null
+          notes?: string | null
+          priority?: Database["public"]["Enums"]["open_position_priority"]
+          reason?: string | null
+          requested_by?: string | null
+          role_id?: string | null
+          status?: Database["public"]["Enums"]["open_position_status"]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          approved_by?: string | null
+          created_at?: string
+          department_id?: string
+          expected_joining?: string | null
+          filled_by_employee_id?: string | null
+          id?: string
+          level?: string | null
+          notes?: string | null
+          priority?: Database["public"]["Enums"]["open_position_priority"]
+          reason?: string | null
+          requested_by?: string | null
+          role_id?: string | null
+          status?: Database["public"]["Enums"]["open_position_status"]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "open_positions_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "admin_departments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "open_positions_filled_by_employee_id_fkey"
+            columns: ["filled_by_employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "open_positions_role_id_fkey"
+            columns: ["role_id"]
+            isOneToOne: false
+            referencedRelation: "admin_roles"
             referencedColumns: ["id"]
           },
         ]
@@ -4780,6 +4900,80 @@ export type Database = {
         }
         Relationships: []
       }
+      succession_plans: {
+        Row: {
+          created_at: string
+          department_id: string | null
+          id: string
+          incumbent_employee_id: string
+          notes: string | null
+          primary_successor_id: string | null
+          readiness_level: Database["public"]["Enums"]["succession_readiness"]
+          scope: Database["public"]["Enums"]["succession_scope"]
+          secondary_successor_id: string | null
+          training_progress: number
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          department_id?: string | null
+          id?: string
+          incumbent_employee_id: string
+          notes?: string | null
+          primary_successor_id?: string | null
+          readiness_level?: Database["public"]["Enums"]["succession_readiness"]
+          scope: Database["public"]["Enums"]["succession_scope"]
+          secondary_successor_id?: string | null
+          training_progress?: number
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          department_id?: string | null
+          id?: string
+          incumbent_employee_id?: string
+          notes?: string | null
+          primary_successor_id?: string | null
+          readiness_level?: Database["public"]["Enums"]["succession_readiness"]
+          scope?: Database["public"]["Enums"]["succession_scope"]
+          secondary_successor_id?: string | null
+          training_progress?: number
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "succession_plans_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "admin_departments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "succession_plans_incumbent_employee_id_fkey"
+            columns: ["incumbent_employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "succession_plans_primary_successor_id_fkey"
+            columns: ["primary_successor_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "succession_plans_secondary_successor_id_fkey"
+            columns: ["secondary_successor_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       temporary_assignments: {
         Row: {
           acting_role: string | null
@@ -5084,6 +5278,50 @@ export type Database = {
             columns: ["session_id"]
             isOneToOne: false
             referencedRelation: "onboarding_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workforce_forecasts: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          department_id: string
+          id: string
+          notes: string | null
+          period_end: string
+          period_start: string
+          planned_headcount: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          department_id: string
+          id?: string
+          notes?: string | null
+          period_end: string
+          period_start: string
+          planned_headcount?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          department_id?: string
+          id?: string
+          notes?: string | null
+          period_end?: string
+          period_start?: string
+          planned_headcount?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workforce_forecasts_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "admin_departments"
             referencedColumns: ["id"]
           },
         ]
@@ -5574,6 +5812,13 @@ export type Database = {
         | "awaiting_first_login"
         | "completed"
         | "cancelled"
+      open_position_priority: "low" | "medium" | "high" | "critical"
+      open_position_status:
+        | "draft"
+        | "pending_approval"
+        | "approved"
+        | "filled"
+        | "cancelled"
       org_member_role: "owner" | "admin" | "manager" | "viewer"
       org_type:
         | "startup"
@@ -5619,6 +5864,12 @@ export type Database = {
       passport_skill_status: "proposed" | "verified" | "revoked"
       post_status: "draft" | "scheduled" | "published"
       story_audience: "public" | "close_friends"
+      succession_readiness: "not_ready" | "dev_1y" | "dev_6m" | "ready_now"
+      succession_scope:
+        | "department_head"
+        | "deputy_head"
+        | "team_lead"
+        | "specialist"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -5817,6 +6068,14 @@ export const Constants = {
         "completed",
         "cancelled",
       ],
+      open_position_priority: ["low", "medium", "high", "critical"],
+      open_position_status: [
+        "draft",
+        "pending_approval",
+        "approved",
+        "filled",
+        "cancelled",
+      ],
       org_member_role: ["owner", "admin", "manager", "viewer"],
       org_type: [
         "startup",
@@ -5865,6 +6124,13 @@ export const Constants = {
       passport_skill_status: ["proposed", "verified", "revoked"],
       post_status: ["draft", "scheduled", "published"],
       story_audience: ["public", "close_friends"],
+      succession_readiness: ["not_ready", "dev_1y", "dev_6m", "ready_now"],
+      succession_scope: [
+        "department_head",
+        "deputy_head",
+        "team_lead",
+        "specialist",
+      ],
     },
   },
 } as const
