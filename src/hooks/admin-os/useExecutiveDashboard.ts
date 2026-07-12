@@ -30,7 +30,7 @@ export const useCompanyOverview = () =>
         supabase
           .from("open_positions")
           .select("id", { count: "exact", head: true })
-          .eq("status", "open"),
+          .eq("status", "approved"),
         supabase
           .from("employees")
           .select("id", { count: "exact", head: true })
