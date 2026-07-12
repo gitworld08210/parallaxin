@@ -62,6 +62,7 @@ const Onboarding = lazy(() => import("./pages/Onboarding"));
 const OrganizationOnboarding = lazy(() => import("./pages/OrganizationOnboarding"));
 
 const CreatorHub = lazy(() => import("./pages/CreatorHub"));
+const CreatorNews = lazy(() => import("./pages/CreatorNews"));
 const Analytics = lazy(() => import("./pages/Analytics"));
 const LiveList = lazy(() => import("./pages/LiveList"));
 const LiveHost = lazy(() => import("./pages/LiveHost"));
