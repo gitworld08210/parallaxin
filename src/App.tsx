@@ -99,6 +99,12 @@ const FounderOfficeDashboard = lazy(
   () => import("./pages/admin-os/founder-office/FounderOfficeDashboard"),
 );
 const AuditCenter = lazy(() => import("./pages/admin-os/audit/AuditCenter"));
+const DepartmentsIndex = lazy(
+  () => import("./pages/admin-os/departments/DepartmentsIndex"),
+);
+const DepartmentDetail = lazy(
+  () => import("./pages/admin-os/departments/DepartmentDetail"),
+);
 
 
 
@@ -289,6 +295,8 @@ const App = () => (
                     element={<FounderOfficeDashboard />}
                   />
                   <Route path="audit" element={<AuditCenter />} />
+                  <Route path="departments" element={<DepartmentsIndex />} />
+                  <Route path="departments/:id" element={<DepartmentDetail />} />
                   <Route path=":slug" element={<AdminOSModulePlaceholder />} />
                 </Route>
               </Route>
