@@ -284,6 +284,11 @@ const App = () => (
                     path="people-ops/:id/edit"
                     element={<EmployeeForm mode="edit" />}
                   />
+                  <Route
+                    path="founder-office"
+                    element={<FounderOfficeDashboard />}
+                  />
+                  <Route path="audit" element={<AuditCenter />} />
                   <Route path=":slug" element={<AdminOSModulePlaceholder />} />
                 </Route>
               </Route>
