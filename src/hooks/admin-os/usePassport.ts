@@ -138,17 +138,8 @@ export const useUpdatePassportContact = (employeeId: string) => {
   });
 };
 
-export const useAddPassportRecord = <T extends
-  | "passport_promotion_history"
-  | "passport_department_history"
-  | "passport_team_history"
-  | "passport_awards"
-  | "passport_training"
-  | "passport_projects"
-  | "passport_certifications"
-  | "passport_skills",
->(
-  table: T,
+export const useAddPassportRecord = (
+  table: PassportSectionTable,
   employeeId: string,
   auditAction: string,
 ) => {
@@ -156,9 +147,8 @@ export const useAddPassportRecord = <T extends
   const { user } = useAuth();
   return useMutation({
     mutationFn: async (payload: Record<string, unknown>) => {
-      const { data, error } = await supabase
-        .from(table)
-        .insert({ ...payload, employee_id: employeeId } as never)
+      const { data, error } = await (supabase.from(table as any) as any)
+        .insert({ ...payload, employee_id: employeeId })
         .select("*")
         .single();
       if (error) throw error;
