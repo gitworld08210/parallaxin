@@ -79,7 +79,7 @@ export const usePassportTimeline = (employeeId?: string) =>
     },
   });
 
-export const usePassportSection = <T extends
+export type PassportSectionTable =
   | "passport_department_history"
   | "passport_team_history"
   | "passport_promotion_history"
@@ -88,22 +88,22 @@ export const usePassportSection = <T extends
   | "passport_awards"
   | "passport_projects"
   | "passport_training"
-  | "passport_documents",
->(
-  table: T,
+  | "passport_documents";
+
+export const usePassportSection = <R = any>(
+  table: PassportSectionTable,
   employeeId?: string,
 ) =>
   useQuery({
     enabled: !!employeeId,
     queryKey: [...pk(employeeId ?? ""), table],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from(table)
+    queryFn: async (): Promise<R[]> => {
+      const { data, error } = await (supabase.from(table as any) as any)
         .select("*")
         .eq("employee_id", employeeId!)
         .order("created_at", { ascending: false });
       if (error) throw error;
-      return data ?? [];
+      return (data ?? []) as R[];
     },
   });
 
