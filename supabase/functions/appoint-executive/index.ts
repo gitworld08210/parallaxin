@@ -825,17 +825,33 @@ Deno.serve(async (req) => {
 
     // Generate creds
     const tempPassword = generateTempPassword(18);
-    const companyEmail = `${slot.key.replace(/_/g, ".")}@aurelix.com`;
+    const baseLocal = slot.key.replace(/_/g, ".");
 
-    // Create auth user
-    const { data: created, error: createErr } = await admin.auth.admin.createUser({
-      email: companyEmail,
-      password: tempPassword,
-      email_confirm: true,
-      user_metadata: { full_name: fullName, appointment_slot: slotKey },
-    });
-    if (createErr || !created.user) {
-      return json({ error: `Auth user creation failed: ${createErr?.message}` }, 500);
+    // Pick a company email that isn't already used (previous holders may still exist as revoked/suspended)
+    let companyEmail = `${baseLocal}@aurelix.com`;
+    let created: any = null;
+    let createErr: any = null;
+    for (let attempt = 0; attempt < 20; attempt++) {
+      const candidate = attempt === 0 ? `${baseLocal}@aurelix.com` : `${baseLocal}.${attempt + 1}@aurelix.com`;
+      const res = await admin.auth.admin.createUser({
+        email: candidate,
+        password: tempPassword,
+        email_confirm: true,
+        user_metadata: { full_name: fullName, appointment_slot: slotKey },
+      });
+      if (res.data?.user) {
+        created = res.data;
+        companyEmail = candidate;
+        createErr = null;
+        break;
+      }
+      createErr = res.error;
+      const msg = (res.error?.message || "").toLowerCase();
+      const isDup = msg.includes("already") || msg.includes("registered") || msg.includes("exists") || msg.includes("duplicate");
+      if (!isDup) break;
+    }
+    if (!created?.user) {
+      return json({ error: `Auth user creation failed: ${createErr?.message ?? "unknown"}` }, 500);
     }
     const newUserId = created.user.id;
 
@@ -985,16 +1001,16 @@ Deno.serve(async (req) => {
       action: "executive.appointed",
       module: "founder_office",
       actor_user_id: user.id,
-      actor_employee_id: callerEmp.id,
       target_type: "employee",
       target_id: emp.id,
-      diff: {
+      after: {
         slot: slotKey,
         label: slot.label,
         employee_number: employeeNumber,
+        company_email: companyEmail,
         personal_email: personalEmail,
         email_sent: !!gmailMessageId,
-      },
+      } as any,
     });
 
     return json({
