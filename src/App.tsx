@@ -116,6 +116,7 @@ const DocumentManager = lazy(() => import("./pages/admin-os/platform/DocumentMan
 const ReportsCenter = lazy(() => import("./pages/admin-os/platform/ReportsCenter"));
 const DashboardConsole = lazy(() => import("./pages/admin-os/platform/DashboardConsole"));
 const SchedulerConsole = lazy(() => import("./pages/admin-os/platform/SchedulerConsole"));
+const DesignSystem = lazy(() => import("./pages/admin-os/platform/DesignSystem"));
 
 
 
@@ -319,6 +320,7 @@ const App = () => (
                   <Route path="platform/reports" element={<ReportsCenter />} />
                   <Route path="platform/dashboards" element={<DashboardConsole />} />
                   <Route path="platform/scheduler" element={<SchedulerConsole />} />
+                  <Route path="platform/design-system" element={<DesignSystem />} />
                   <Route path=":slug" element={<AdminOSModulePlaceholder />} />
                 </Route>
               </Route>
