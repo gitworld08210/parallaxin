@@ -3,8 +3,9 @@ import {
   Bookmark, BarChart3, Settings, HelpCircle, BadgeCheck, LogOut, Users,
   Film, Bell, DollarSign, Crown, Moon, Sun, Sparkles, ChevronDown, ChevronRight,
   Building2, Clock, Archive, QrCode, Heart, ShieldCheck, Wallet, Activity,
-  Palette, PlusSquare, LayoutGrid, MessageCircle,
+  Palette, PlusSquare, LayoutGrid, MessageCircle, Shield,
 } from "lucide-react";
+
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useAuth } from "@/contexts/AuthProvider";
 import { AuraAvatar } from "@/components/vibe/AuraAvatar";
@@ -17,6 +18,10 @@ import { AppearanceSheet } from "@/components/layout/AppearanceSheet";
 import { useMyWorkspaces } from "@/hooks/organization/useMyWorkspaces";
 import { VerificationBadge } from "@/components/vibe/VerificationBadge";
 import { AccountSwitcherSheet } from "@/components/layout/AccountSwitcherSheet";
+import { useEmployee } from "@/hooks/admin-os/useEmployee";
+import { ADMIN_PERMISSIONS, ACTIVE_EMPLOYMENT_STATUSES } from "@/features/admin-os/permissions";
+
+
 
 import { cn } from "@/lib/utils";
 
@@ -71,6 +76,12 @@ export const SideMenu = ({ trigger }: { trigger: React.ReactNode }) => {
     { to: "/premium", icon: Crown, label: "Aurelix Premium", badge: "PRO" },
   ];
 
+  const { employee, hasPermission } = useEmployee();
+  const canAdminOS =
+    !!employee &&
+    ACTIVE_EMPLOYMENT_STATUSES.has(employee.employment_status) &&
+    hasPermission(ADMIN_PERMISSIONS.ADMIN_OS_ACCESS);
+
   const community: Row[] = [
     { to: "/verification-center", icon: BadgeCheck, label: "Verification center", badge: "NEW" },
     { to: "/discover", icon: Users, label: "Communities" },
@@ -83,7 +94,16 @@ export const SideMenu = ({ trigger }: { trigger: React.ReactNode }) => {
           badge: "ADMIN",
         } as Row]
       : []),
+    ...(canAdminOS
+      ? [{
+          to: "/admin-os",
+          icon: Shield,
+          label: "Aurelix Admin OS",
+          badge: "STAFF",
+        } as Row]
+      : []),
   ];
+
 
   const utility: Row[] = [
     { onClick: () => setAppearanceOpen(true), icon: dark ? Moon : Sun, label: "Appearance", trailing: (

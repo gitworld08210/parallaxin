@@ -83,6 +83,18 @@ const FounderSeatsAdmin = lazy(() => import("./pages/admin/FounderSeatsAdmin"));
 const UsersRolesAdmin = lazy(() => import("./pages/admin/UsersRolesAdmin"));
 const PaymentsAdmin = lazy(() => import("./pages/admin/PaymentsAdmin"));
 
+// Admin OS workspace (Phase 1 foundation)
+const AdminOSGate = lazy(() =>
+  import("./components/admin-os/AdminOSGate").then((m) => ({ default: m.AdminOSGate })),
+);
+const AdminOSLayout = lazy(() => import("./components/admin-os/layout/AdminOSLayout"));
+const AdminOSDashboard = lazy(() => import("./pages/admin-os/AdminOSDashboard"));
+const AdminOSModulePlaceholder = lazy(() => import("./pages/admin-os/ModulePlaceholder"));
+const AdminOSNoAccess = lazy(() => import("./pages/admin-os/AdminOSNoAccess"));
+const AdminOSFirstLogin = lazy(() => import("./pages/admin-os/AdminOSFirstLogin"));
+
+
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -248,6 +260,17 @@ const App = () => (
                   <Route path="payments" element={<PaymentsAdmin />} />
                 </Route>
               </Route>
+
+              {/* Aurelix Admin OS — internal enterprise workspace */}
+              <Route path="/admin-os/no-access" element={<AdminOSNoAccess />} />
+              <Route element={<AdminOSGate />}>
+                <Route path="/admin-os/first-login" element={<AdminOSFirstLogin />} />
+                <Route path="/admin-os" element={<AdminOSLayout />}>
+                  <Route index element={<AdminOSDashboard />} />
+                  <Route path=":slug" element={<AdminOSModulePlaceholder />} />
+                </Route>
+              </Route>
+
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>
@@ -258,5 +281,6 @@ const App = () => (
     </ThemeProvider>
   </QueryClientProvider>
 );
+
 
 export default App;
