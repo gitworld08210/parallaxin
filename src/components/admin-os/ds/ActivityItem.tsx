@@ -1,5 +1,4 @@
-import type { LucideIcon } from "lucide-react";
-import { Activity } from "lucide-react";
+import { Activity, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface ActivityItemProps {
