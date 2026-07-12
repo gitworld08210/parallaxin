@@ -432,6 +432,18 @@ const App = () => (
                   <Route path="governance/delegations" element={<DelegationCenter />} />
                   <Route path="governance/charters" element={<DepartmentCharters />} />
                   <Route path="governance/search" element={<GovernanceSearchPage />} />
+                  <Route path="command" element={<CommandShell />}>
+                    <Route index element={<CommandOverview />} />
+                    <Route path="emergency" element={<EmergencyPanel />} />
+                    <Route path="maintenance" element={<MaintenanceCenterPage />} />
+                    <Route path="announcements" element={<AnnouncementCenterPage />} />
+                    <Route path="broadcasts" element={<BroadcastCenterPage />} />
+                    <Route path="status" element={<SystemStatusDashboard />} />
+                    <Route path="incidents" element={<IncidentCenterPage />} />
+                    <Route path="continuity" element={<ContinuityCenterPage />} />
+                    <Route path="lockdowns" element={<LockdownPanelPage />} />
+                    <Route path="watchlists" element={<WatchlistPanelPage />} />
+                  </Route>
                   <Route path="security" element={<ExecutiveSecurity />} />
                   <Route path="company" element={<CompanySettingsPage />} />
                   <Route path="profile" element={<ExecutiveProfile />} />
