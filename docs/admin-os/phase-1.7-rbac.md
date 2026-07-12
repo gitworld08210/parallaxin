@@ -197,95 +197,163 @@ Some permissions require others.
 
 Example:
 - Cannot **Approve** without **View**
-- Cannot **Edit** without **View**
-- Cannot **Delete** without **View** and **Manage**
-- Cannot **Override** without **Approve**
-- Cannot **Export** without **View**
+- Cannot **Delete** without **View**, **Edit**, and **Approval Rights**
 
-The system must enforce dependency checks when assigning permissions.
+Dependencies must be validated automatically.
+
+---
+
+# Permission Validation
+
+Every action follows:
+```
+Authentication → Role Validation → Permission Validation →
+Department Validation → Status Validation → Execute → Audit Log
+```
+
+If validation fails: Access Denied.
+
+---
+
+# Founder Office Permissions
+
+Founder Office has unrestricted visibility.
+
+Critical operations still require:
+- Confirmation
+- Reason
+- Audit Log
+
+Founder Office actions are never hidden from audit history.
+
+---
+
+# Department Head Permissions
+
+Department Heads manage only their own department.
+
+Cannot modify:
+- Founder Office
+- Security Policies
+- Company Governance
+- Global Settings
+
+unless explicitly authorized.
+
+---
+
+# HR Permissions
+
+HR may:
+- Create Employees
+- Transfer Employees
+- Update Records
+- Generate Employee IDs
+- Manage Lifecycle
+
+Cannot:
+- Verify Technical Skills
+- Change Founder Roles
+- Modify Security Policies
+- Delete Audit Logs
+
+---
+
+# Employee Self Permissions
+
+Employees may:
+- Update Profile
+- Change Password
+- Manage 2FA
+- View Passport
+- View Personal Documents
+
+Cannot:
+- Change Role
+- Change Department
+- Promote Themselves
+- Modify Permissions
+
+---
+
+# Permission Request Workflow
+
+```
+Employee → Permission Request → Department Head Review →
+Security Review (if required) → HR Update (if required) →
+Founder Office (critical only) → Permission Granted → Audit Log
+```
 
 ---
 
 # Permission Revocation
 
-Permissions may be revoked when:
-- Employee changes department
-- Employee changes role
-- Employee goes on leave (per policy)
-- Employee is suspended
-- Employee resigns or exits
-- Temporary permission expires
-- Founder Office revokes manually
+Permissions may be removed because of:
+- Transfer
+- Promotion
+- Demotion
+- Suspension
+- Resignation
+- Security Incident
+- Expiry
 
-Every revocation is logged.
+Every removal creates an audit log.
 
 ---
 
 # Permission Audit
 
-Every permission event is logged:
-- Permission Created
-- Permission Modified
-- Permission Assigned
-- Permission Revoked
-- Override Granted
-- Override Expired
-- Group Created / Modified
-- Sensitive Permission Used
+Every permission event records:
+- Granted By
+- Approved By
+- Employee
+- Department
+- Time
+- Reason
+- Expiry
+- Device
+- IP Address
 
-Audit logs are immutable.
-
----
-
-# Enforcement Rules
-
-- All API calls validate permissions server-side.
-- Client-side checks are for UX only, never for security.
-- Every sensitive action re-validates permission at execution time.
-- Expired permissions are rejected automatically.
-- Suspended employees cannot exercise any permission.
+Audit records cannot be deleted.
 
 ---
 
-# Notifications
+# Security Rules
 
-Notify on:
-- New permission group assigned
-- Sensitive permission granted
-- Override approved
-- Override expiring soon
-- Permission revoked
-- Unusual permission usage
+No employee can:
+- Grant permissions to themselves.
+- Approve their own permission requests.
+- Delete permission history.
+- Modify audit logs.
+- Disable security logging.
 
 ---
 
 # Future Expansion
 
-Architecture must support:
-- Attribute-Based Access Control (ABAC)
-- Time-Based Permissions
-- Location-Based Permissions
-- Device-Based Permissions
-- Risk-Based Permissions
-- External Integrations
+RBAC must support:
+- Attribute Based Access Control (ABAC)
+- Project Based Permissions
+- Regional Permissions
+- Organization Based Permissions
+- API Permissions
+- AI Permissions
+- External Partner Permissions
 
-without redesigning the RBAC engine.
+without redesign.
 
 ---
 
 # Acceptance Criteria
 
 Phase 1.7 is complete when:
-- Permission philosophy is documented.
-- Permission types are defined.
-- Permission categories are defined.
-- Permission structure is finalized.
-- Permission levels are documented.
-- Role assignment rules are defined.
-- Override and temporary permission rules are documented.
-- Cross-department permission workflow is defined.
-- Sensitive permission rules are finalized.
-- Permission groups and dependencies are documented.
-- Enforcement and audit rules are finalized.
+- RBAC architecture is fully documented.
+- Permission types are finalized.
+- Permission groups are defined.
+- Temporary permission system is documented.
+- Cross department access rules are defined.
+- Permission validation flow is finalized.
+- Audit requirements are documented.
+- Future scalability is ensured.
 
-No implementation was performed in this phase.
+No backend or frontend implementation was developed during this phase.
