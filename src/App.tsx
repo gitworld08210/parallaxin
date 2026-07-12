@@ -295,6 +295,8 @@ const App = () => (
                     element={<FounderOfficeDashboard />}
                   />
                   <Route path="audit" element={<AuditCenter />} />
+                  <Route path="departments" element={<DepartmentsIndex />} />
+                  <Route path="departments/:id" element={<DepartmentDetail />} />
                   <Route path=":slug" element={<AdminOSModulePlaceholder />} />
                 </Route>
               </Route>

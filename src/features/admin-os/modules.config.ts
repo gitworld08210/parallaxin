@@ -58,6 +58,15 @@ export const ADMIN_MODULES: AdminModule[] = [
 
   // Operations
   {
+    slug: "departments",
+    label: "Departments",
+    tagline: "All company departments",
+    icon: Building2,
+    permission: ADMIN_PERMISSIONS.ADMIN_OS_ACCESS,
+    section: "core",
+    phase: "1.6",
+  },
+  {
     slug: "people-ops",
     label: "People Ops",
     tagline: "Employees, onboarding, HR",
