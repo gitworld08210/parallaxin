@@ -320,6 +320,16 @@ const FinProcurementCenter = lazy(() => import("./pages/admin-os/finance-legal/P
 const FinVendorCenter = lazy(() => import("./pages/admin-os/finance-legal/VendorCenter"));
 const FinContractCenter = lazy(() => import("./pages/admin-os/finance-legal/ContractCenter"));
 const FinComplianceDashboard = lazy(() => import("./pages/admin-os/finance-legal/ComplianceDashboard"));
+const SecurityDeptShell = lazy(() => import("./pages/admin-os/security/SecurityShell"));
+const SecurityDashboardPage = lazy(() => import("./pages/admin-os/security/SecurityDashboard"));
+const SecIncidentCenter = lazy(() => import("./pages/admin-os/security/IncidentCenter"));
+const SecIncidentWorkspace = lazy(() => import("./pages/admin-os/security/IncidentWorkspace"));
+const SecThreatCenter = lazy(() => import("./pages/admin-os/security/ThreatCenter"));
+const SecIamCenter = lazy(() => import("./pages/admin-os/security/IamCenter"));
+const SecAccessReviews = lazy(() => import("./pages/admin-os/security/AccessReviews"));
+const SecInvestigationWorkspace = lazy(() => import("./pages/admin-os/security/InvestigationWorkspace"));
+const SecComplianceDashboard = lazy(() => import("./pages/admin-os/security/ComplianceDashboard"));
+const SecAnalytics = lazy(() => import("./pages/admin-os/security/SecurityAnalytics"));
 const PlatformIndex = lazy(() => import("./pages/admin-os/platform/PlatformIndex"));
 const ApprovalCenter = lazy(() => import("./pages/admin-os/platform/ApprovalCenter"));
 const WorkflowViewer = lazy(() => import("./pages/admin-os/platform/WorkflowViewer"));
@@ -737,6 +747,17 @@ const App = () => (
                     <Route path="vendors" element={<FinVendorCenter />} />
                     <Route path="contracts" element={<FinContractCenter />} />
                     <Route path="compliance" element={<FinComplianceDashboard />} />
+                  </Route>
+                  <Route path="security" element={<SecurityDeptShell />}>
+                    <Route index element={<SecurityDashboardPage />} />
+                    <Route path="incidents" element={<SecIncidentCenter />} />
+                    <Route path="incidents/:id" element={<SecIncidentWorkspace />} />
+                    <Route path="threats" element={<SecThreatCenter />} />
+                    <Route path="iam" element={<SecIamCenter />} />
+                    <Route path="access-reviews" element={<SecAccessReviews />} />
+                    <Route path="investigations" element={<SecInvestigationWorkspace />} />
+                    <Route path="compliance" element={<SecComplianceDashboard />} />
+                    <Route path="analytics" element={<SecAnalytics />} />
                   </Route>
                   <Route path="platform" element={<PlatformIndex />} />
                   <Route path="platform/approvals" element={<ApprovalCenter />} />
