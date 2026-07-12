@@ -167,6 +167,15 @@ const ExecutiveReports = lazy(() => ExecutivePlaceholders().then((m) => ({ defau
 const DecisionLogPage = lazy(() => import("./pages/admin-os/executive/DecisionLog"));
 const CompanySettingsPage = lazy(() => ExecutivePlaceholders().then((m) => ({ default: m.CompanySettings })));
 const ExecutiveNotificationsPage = lazy(() => ExecutivePlaceholders().then((m) => ({ default: m.ExecutiveNotifications })));
+// Phase 3.4 — Governance
+const GovernanceIndex = lazy(() => import("./pages/admin-os/executive/governance/GovernanceIndex"));
+const PolicyCenter = lazy(() => import("./pages/admin-os/executive/governance/PolicyCenter"));
+const PolicyDetail = lazy(() => import("./pages/admin-os/executive/governance/PolicyDetail"));
+const AuthorityMatrixPage = lazy(() => import("./pages/admin-os/executive/governance/AuthorityMatrix"));
+const ApprovalMatrixPage = lazy(() => import("./pages/admin-os/executive/governance/ApprovalMatrix"));
+const DelegationCenter = lazy(() => import("./pages/admin-os/executive/governance/DelegationCenter"));
+const DepartmentCharters = lazy(() => import("./pages/admin-os/executive/governance/DepartmentCharters"));
+const GovernanceSearchPage = lazy(() => import("./pages/admin-os/executive/governance/GovernanceSearch"));
 const FounderOfficeDashboard = lazy(
   () => import("./pages/admin-os/founder-office/FounderOfficeDashboard"),
 );
@@ -373,6 +382,14 @@ const App = () => (
                   <Route path="employees" element={<ExecutiveEmployees />} />
                   <Route path="reports" element={<ExecutiveReports />} />
                   <Route path="decisions" element={<DecisionLogPage />} />
+                  <Route path="governance" element={<GovernanceIndex />} />
+                  <Route path="governance/policies" element={<PolicyCenter />} />
+                  <Route path="governance/policies/:id" element={<PolicyDetail />} />
+                  <Route path="governance/authority" element={<AuthorityMatrixPage />} />
+                  <Route path="governance/approval-matrix" element={<ApprovalMatrixPage />} />
+                  <Route path="governance/delegations" element={<DelegationCenter />} />
+                  <Route path="governance/charters" element={<DepartmentCharters />} />
+                  <Route path="governance/search" element={<GovernanceSearchPage />} />
                   <Route path="security" element={<ExecutiveSecurity />} />
                   <Route path="company" element={<CompanySettingsPage />} />
                   <Route path="profile" element={<ExecutiveProfile />} />

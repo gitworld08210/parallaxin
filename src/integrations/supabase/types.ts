@@ -2387,6 +2387,426 @@ export type Database = {
         }
         Relationships: []
       }
+      governance_approval_matrix: {
+        Row: {
+          approver_role: string | null
+          created_at: string
+          created_by: string | null
+          delegate_role: string | null
+          description: string | null
+          id: string
+          is_active: boolean
+          notify_roles: string[]
+          recommender_role: string | null
+          request_type: string
+          reviewer_role: string | null
+          scope: string
+          threshold_amount: number | null
+          threshold_currency: string | null
+          updated_at: string
+        }
+        Insert: {
+          approver_role?: string | null
+          created_at?: string
+          created_by?: string | null
+          delegate_role?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          notify_roles?: string[]
+          recommender_role?: string | null
+          request_type: string
+          reviewer_role?: string | null
+          scope: string
+          threshold_amount?: number | null
+          threshold_currency?: string | null
+          updated_at?: string
+        }
+        Update: {
+          approver_role?: string | null
+          created_at?: string
+          created_by?: string | null
+          delegate_role?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          notify_roles?: string[]
+          recommender_role?: string | null
+          request_type?: string
+          reviewer_role?: string | null
+          scope?: string
+          threshold_amount?: number | null
+          threshold_currency?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      governance_authority_delegations: {
+        Row: {
+          approved_at: string | null
+          approver_id: string | null
+          created_at: string
+          delegate_id: string
+          delegator_id: string
+          end_date: string | null
+          id: string
+          reason: string | null
+          scope: string
+          start_date: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          approved_at?: string | null
+          approver_id?: string | null
+          created_at?: string
+          delegate_id: string
+          delegator_id: string
+          end_date?: string | null
+          id?: string
+          reason?: string | null
+          scope: string
+          start_date?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          approved_at?: string | null
+          approver_id?: string | null
+          created_at?: string
+          delegate_id?: string
+          delegator_id?: string
+          end_date?: string | null
+          id?: string
+          reason?: string | null
+          scope?: string
+          start_date?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      governance_authority_matrix: {
+        Row: {
+          authority_level: string
+          created_at: string
+          created_by: string | null
+          department_id: string | null
+          description: string | null
+          id: string
+          is_active: boolean
+          role_key: string
+          scope: string
+          updated_at: string
+        }
+        Insert: {
+          authority_level: string
+          created_at?: string
+          created_by?: string | null
+          department_id?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          role_key: string
+          scope: string
+          updated_at?: string
+        }
+        Update: {
+          authority_level?: string
+          created_at?: string
+          created_by?: string | null
+          department_id?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          role_key?: string
+          scope?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "governance_authority_matrix_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "admin_departments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      governance_department_charters: {
+        Row: {
+          approval_rights: string | null
+          approved_at: string | null
+          approved_by: string | null
+          created_at: string
+          created_by: string | null
+          department_id: string
+          documentation_standards: string | null
+          escalation_path: string | null
+          id: string
+          kpis: string | null
+          mission: string | null
+          reporting_structure: string | null
+          responsibilities: string | null
+          status: string
+          training_standards: string | null
+          updated_at: string
+          version: number
+        }
+        Insert: {
+          approval_rights?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          created_by?: string | null
+          department_id: string
+          documentation_standards?: string | null
+          escalation_path?: string | null
+          id?: string
+          kpis?: string | null
+          mission?: string | null
+          reporting_structure?: string | null
+          responsibilities?: string | null
+          status?: string
+          training_standards?: string | null
+          updated_at?: string
+          version?: number
+        }
+        Update: {
+          approval_rights?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          created_by?: string | null
+          department_id?: string
+          documentation_standards?: string | null
+          escalation_path?: string | null
+          id?: string
+          kpis?: string | null
+          mission?: string | null
+          reporting_structure?: string | null
+          responsibilities?: string | null
+          status?: string
+          training_standards?: string | null
+          updated_at?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "governance_department_charters_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "admin_departments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      governance_policies: {
+        Row: {
+          approver_id: string | null
+          category: string
+          code: string
+          created_at: string
+          created_by: string | null
+          current_version: number
+          department_id: string | null
+          effective_date: string | null
+          id: string
+          owner_id: string | null
+          published_at: string | null
+          published_by: string | null
+          review_date: string | null
+          status: string
+          summary: string | null
+          tags: string[]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          approver_id?: string | null
+          category: string
+          code: string
+          created_at?: string
+          created_by?: string | null
+          current_version?: number
+          department_id?: string | null
+          effective_date?: string | null
+          id?: string
+          owner_id?: string | null
+          published_at?: string | null
+          published_by?: string | null
+          review_date?: string | null
+          status?: string
+          summary?: string | null
+          tags?: string[]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          approver_id?: string | null
+          category?: string
+          code?: string
+          created_at?: string
+          created_by?: string | null
+          current_version?: number
+          department_id?: string | null
+          effective_date?: string | null
+          id?: string
+          owner_id?: string | null
+          published_at?: string | null
+          published_by?: string | null
+          review_date?: string | null
+          status?: string
+          summary?: string | null
+          tags?: string[]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "governance_policies_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "admin_departments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      governance_policy_acknowledgements: {
+        Row: {
+          acknowledged_at: string
+          id: string
+          policy_id: string
+          user_id: string
+          version: number
+        }
+        Insert: {
+          acknowledged_at?: string
+          id?: string
+          policy_id: string
+          user_id: string
+          version: number
+        }
+        Update: {
+          acknowledged_at?: string
+          id?: string
+          policy_id?: string
+          user_id?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "governance_policy_acknowledgements_policy_id_fkey"
+            columns: ["policy_id"]
+            isOneToOne: false
+            referencedRelation: "governance_policies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      governance_policy_versions: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          changelog: string | null
+          content: string
+          created_at: string
+          created_by: string | null
+          id: string
+          policy_id: string
+          published_at: string | null
+          status: string
+          version: number
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          changelog?: string | null
+          content?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          policy_id: string
+          published_at?: string | null
+          status?: string
+          version: number
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          changelog?: string | null
+          content?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          policy_id?: string
+          published_at?: string | null
+          status?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "governance_policy_versions_policy_id_fkey"
+            columns: ["policy_id"]
+            isOneToOne: false
+            referencedRelation: "governance_policies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      governance_rules: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          department_id: string | null
+          description: string | null
+          effective_date: string | null
+          id: string
+          name: string
+          owner_id: string | null
+          priority: string
+          related_policy_ids: string[]
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          department_id?: string | null
+          description?: string | null
+          effective_date?: string | null
+          id?: string
+          name: string
+          owner_id?: string | null
+          priority?: string
+          related_policy_ids?: string[]
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          department_id?: string | null
+          description?: string | null
+          effective_date?: string | null
+          id?: string
+          name?: string
+          owner_id?: string | null
+          priority?: string
+          related_policy_ids?: string[]
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "governance_rules_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "admin_departments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       highlight_items: {
         Row: {
           created_at: string
