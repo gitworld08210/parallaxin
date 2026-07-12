@@ -125,7 +125,7 @@ export function useRevokeAppointment() {
     mutationFn: async ({ appointment_id, employee_id, slot_label, reason, suspend_employee }) => {
       const { error: revErr } = await supabase
         .from("executive_appointments" as any)
-        .update({ revoked_at: new Date().toISOString(), revoke_reason: reason })
+        .update({ revoked_at: new Date().toISOString(), revoked_reason: reason })
         .eq("id", appointment_id);
       if (revErr) throw revErr;
 
