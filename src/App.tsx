@@ -282,6 +282,15 @@ const TsCaseQueue = lazy(() => import("./pages/admin-os/trust-safety/CaseQueue")
 const TsCaseDetail = lazy(() => import("./pages/admin-os/trust-safety/CaseDetail"));
 const TsAppealsCenter = lazy(() => import("./pages/admin-os/trust-safety/AppealsCenter"));
 const TsPolicyReference = lazy(() => import("./pages/admin-os/trust-safety/PolicyReference"));
+// Phase 4.2 — Verification
+const VerificationShell = lazy(() => import("./pages/admin-os/verification/VerificationShell"));
+const VerificationDashboard = lazy(() => import("./pages/admin-os/verification/VerificationDashboard"));
+const VerApplicationQueue = lazy(() => import("./pages/admin-os/verification/ApplicationQueue"));
+const VerCaseWorkspace = lazy(() => import("./pages/admin-os/verification/CaseWorkspace"));
+const VerBadgeManager = lazy(() => import("./pages/admin-os/verification/BadgeManager"));
+const VerAffiliationManager = lazy(() => import("./pages/admin-os/verification/AffiliationManager"));
+const VerAppealsCenter = lazy(() => import("./pages/admin-os/verification/AppealsCenter"));
+const VerHistoryPage = lazy(() => import("./pages/admin-os/verification/VerificationHistory"));
 const PlatformIndex = lazy(() => import("./pages/admin-os/platform/PlatformIndex"));
 const ApprovalCenter = lazy(() => import("./pages/admin-os/platform/ApprovalCenter"));
 const WorkflowViewer = lazy(() => import("./pages/admin-os/platform/WorkflowViewer"));
