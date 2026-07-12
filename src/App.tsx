@@ -165,7 +165,17 @@ const ExecutiveDepartments = lazy(() => ExecutivePlaceholders().then((m) => ({ d
 const ExecutiveEmployees = lazy(() => ExecutivePlaceholders().then((m) => ({ default: m.ExecutiveEmployees })));
 const ExecutiveReports = lazy(() => ExecutivePlaceholders().then((m) => ({ default: m.ExecutiveReports })));
 const DecisionLogPage = lazy(() => import("./pages/admin-os/executive/DecisionLog"));
-const CompanySettingsPage = lazy(() => ExecutivePlaceholders().then((m) => ({ default: m.CompanySettings })));
+// Phase 3.8 — Company Configuration & Global Settings
+const CompanyShell = lazy(() => import("./pages/admin-os/executive/company/CompanyShell"));
+const CompanyOverview = lazy(() => import("./pages/admin-os/executive/company/CompanyOverview"));
+const CompanyProfilePage = lazy(() => import("./pages/admin-os/executive/company/CompanyProfile"));
+const BrandManagementPage = lazy(() => import("./pages/admin-os/executive/company/BrandManagement"));
+const PlatformPreferencesPage = lazy(() => import("./pages/admin-os/executive/company/PlatformPreferences"));
+const LocalizationCenterPage = lazy(() => import("./pages/admin-os/executive/company/LocalizationCenter"));
+const FeatureFlagsManagerPage = lazy(() => import("./pages/admin-os/executive/company/FeatureFlagsManager"));
+const ModuleManagerPage = lazy(() => import("./pages/admin-os/executive/company/ModuleManager"));
+const CompanyCalendarPage = lazy(() => import("./pages/admin-os/executive/company/CompanyCalendar"));
+const MetadataManagerPage = lazy(() => import("./pages/admin-os/executive/company/MetadataManager"));
 const ExecutiveNotificationsPage = lazy(() => ExecutivePlaceholders().then((m) => ({ default: m.ExecutiveNotifications })));
 // Phase 3.4 — Governance
 const GovernanceIndex = lazy(() => import("./pages/admin-os/executive/governance/GovernanceIndex"));
@@ -445,7 +455,17 @@ const App = () => (
                     <Route path="watchlists" element={<WatchlistPanelPage />} />
                   </Route>
                   <Route path="security" element={<ExecutiveSecurity />} />
-                  <Route path="company" element={<CompanySettingsPage />} />
+                  <Route path="company" element={<CompanyShell />}>
+                    <Route index element={<CompanyOverview />} />
+                    <Route path="profile" element={<CompanyProfilePage />} />
+                    <Route path="brand" element={<BrandManagementPage />} />
+                    <Route path="preferences" element={<PlatformPreferencesPage />} />
+                    <Route path="localization" element={<LocalizationCenterPage />} />
+                    <Route path="features" element={<FeatureFlagsManagerPage />} />
+                    <Route path="modules" element={<ModuleManagerPage />} />
+                    <Route path="calendar" element={<CompanyCalendarPage />} />
+                    <Route path="metadata" element={<MetadataManagerPage />} />
+                  </Route>
                   <Route path="profile" element={<ExecutiveProfile />} />
                   <Route path="notifications" element={<ExecutiveNotificationsPage />} />
                 </Route>
