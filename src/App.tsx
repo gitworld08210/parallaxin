@@ -126,6 +126,13 @@ const SkillsCenter = lazy(() => import("./pages/admin-os/people-ops/learning/Ski
 const CertificationCenter = lazy(() => import("./pages/admin-os/people-ops/learning/CertificationCenter"));
 const DepartmentSkillMatrix = lazy(() => import("./pages/admin-os/people-ops/learning/DepartmentSkillMatrix"));
 const CareerRoadmapsPage = lazy(() => import("./pages/admin-os/people-ops/learning/CareerRoadmaps"));
+const RecruitmentIndex = lazy(() => import("./pages/admin-os/people-ops/recruitment/RecruitmentIndex"));
+const HiringRequestCenter = lazy(() => import("./pages/admin-os/people-ops/recruitment/HiringRequestCenter"));
+const CandidateDirectory = lazy(() => import("./pages/admin-os/people-ops/recruitment/CandidateDirectory"));
+const CandidateDetail = lazy(() => import("./pages/admin-os/people-ops/recruitment/CandidateDetail"));
+const InterviewPipeline = lazy(() => import("./pages/admin-os/people-ops/recruitment/InterviewPipeline"));
+const OfferCenter = lazy(() => import("./pages/admin-os/people-ops/recruitment/OfferCenter"));
+const RecruitmentAnalytics = lazy(() => import("./pages/admin-os/people-ops/recruitment/RecruitmentAnalytics"));
 const FounderOfficeDashboard = lazy(
   () => import("./pages/admin-os/founder-office/FounderOfficeDashboard"),
 );
@@ -364,6 +371,14 @@ const App = () => (
                   <Route path="people-ops/learning/certifications" element={<CertificationCenter />} />
                   <Route path="people-ops/learning/matrix" element={<DepartmentSkillMatrix />} />
                   <Route path="people-ops/learning/roadmaps" element={<CareerRoadmapsPage />} />
+                  <Route path="people-ops/recruitment" element={<RecruitmentIndex />} />
+                  <Route path="people-ops/recruitment/requests" element={<HiringRequestCenter />} />
+                  <Route path="people-ops/recruitment/candidates" element={<CandidateDirectory />} />
+                  <Route path="people-ops/recruitment/candidates/:id" element={<CandidateDetail />} />
+                  <Route path="people-ops/recruitment/pipeline" element={<InterviewPipeline />} />
+                  <Route path="people-ops/recruitment/applications/:applicationId" element={<InterviewPipeline />} />
+                  <Route path="people-ops/recruitment/offers" element={<OfferCenter />} />
+                  <Route path="people-ops/recruitment/analytics" element={<RecruitmentAnalytics />} />
                   <Route
                     path="founder-office"
                     element={<FounderOfficeDashboard />}
