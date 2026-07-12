@@ -74,6 +74,12 @@ const PeopleOpsIndex = () => {
               Organization
             </Link>
             <Link
+              to="/admin-os/people-ops/performance"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-3.5 py-2 text-xs font-semibold hover:bg-muted"
+            >
+              Performance
+            </Link>
+            <Link
               to="/admin-os/people-ops/reporting"
               className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-3.5 py-2 text-xs font-semibold hover:bg-muted"
             >

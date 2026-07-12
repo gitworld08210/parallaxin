@@ -67,6 +67,12 @@ export const ADMIN_PERMISSIONS = {
   PEOPLE_OPS_CAPACITY_MANAGE: "people_ops.capacity.manage",
   PEOPLE_OPS_POSITIONS_MANAGE: "people_ops.positions.manage",
   PEOPLE_OPS_SUCCESSION_MANAGE: "people_ops.succession.manage",
+
+  // Performance management (Phase 2.6)
+  PEOPLE_OPS_PERFORMANCE_VIEW: "people_ops.performance.view",
+  PEOPLE_OPS_PERFORMANCE_MANAGE: "people_ops.performance.manage",
+  PEOPLE_OPS_PERFORMANCE_REVIEW: "people_ops.performance.review",
+  PEOPLE_OPS_RECOGNITION_GRANT: "people_ops.recognition.grant",
 } as const;
 
 export type AdminPermissionKey =

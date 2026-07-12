@@ -111,6 +111,13 @@ const CapacityDashboard = lazy(() => import("./pages/admin-os/people-ops/org/Cap
 const OpenPositions = lazy(() => import("./pages/admin-os/people-ops/org/OpenPositions"));
 const SuccessionPage = lazy(() => import("./pages/admin-os/people-ops/org/Succession"));
 const WorkforcePlanning = lazy(() => import("./pages/admin-os/people-ops/org/WorkforcePlanning"));
+const PerformanceIndex = lazy(() => import("./pages/admin-os/people-ops/performance/PerformanceIndex"));
+const GoalsCenter = lazy(() => import("./pages/admin-os/people-ops/performance/GoalsCenter"));
+const ReviewCenter = lazy(() => import("./pages/admin-os/people-ops/performance/ReviewCenter"));
+const RecognitionCenter = lazy(() => import("./pages/admin-os/people-ops/performance/RecognitionCenter"));
+const PipCenter = lazy(() => import("./pages/admin-os/people-ops/performance/PipCenter"));
+const CareerGrowth = lazy(() => import("./pages/admin-os/people-ops/performance/CareerGrowth"));
+const PromotionReadinessPage = lazy(() => import("./pages/admin-os/people-ops/performance/PromotionReadinessPage"));
 const FounderOfficeDashboard = lazy(
   () => import("./pages/admin-os/founder-office/FounderOfficeDashboard"),
 );
@@ -334,6 +341,13 @@ const App = () => (
                   <Route path="people-ops/org/positions" element={<OpenPositions />} />
                   <Route path="people-ops/org/succession" element={<SuccessionPage />} />
                   <Route path="people-ops/org/planning" element={<WorkforcePlanning />} />
+                  <Route path="people-ops/performance" element={<PerformanceIndex />} />
+                  <Route path="people-ops/performance/goals" element={<GoalsCenter />} />
+                  <Route path="people-ops/performance/reviews" element={<ReviewCenter />} />
+                  <Route path="people-ops/performance/recognition" element={<RecognitionCenter />} />
+                  <Route path="people-ops/performance/pip" element={<PipCenter />} />
+                  <Route path="people-ops/performance/career" element={<CareerGrowth />} />
+                  <Route path="people-ops/performance/promotion" element={<PromotionReadinessPage />} />
                   <Route
                     path="founder-office"
                     element={<FounderOfficeDashboard />}

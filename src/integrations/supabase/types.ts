@@ -369,6 +369,59 @@ export type Database = {
           },
         ]
       }
+      career_progress: {
+        Row: {
+          created_at: string
+          current_level: string | null
+          employee_id: string
+          experience_required_months: number
+          id: string
+          notes: string | null
+          progress: number
+          required_skills: string[]
+          target_level: string | null
+          training_needed: string[]
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          current_level?: string | null
+          employee_id: string
+          experience_required_months?: number
+          id?: string
+          notes?: string | null
+          progress?: number
+          required_skills?: string[]
+          target_level?: string | null
+          training_needed?: string[]
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          current_level?: string | null
+          employee_id?: string
+          experience_required_months?: number
+          id?: string
+          notes?: string | null
+          progress?: number
+          required_skills?: string[]
+          target_level?: string | null
+          training_needed?: string[]
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "career_progress_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: true
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       close_friends: {
         Row: {
           created_at: string
@@ -1439,6 +1492,69 @@ export type Database = {
             columns: ["highlight_id"]
             isOneToOne: false
             referencedRelation: "story_highlights"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      improvement_plans: {
+        Row: {
+          coach_id: string | null
+          created_at: string
+          created_by: string | null
+          employee_id: string
+          final_outcome: string | null
+          id: string
+          objectives: string
+          progress: number
+          review_dates: Json
+          status: Database["public"]["Enums"]["pip_status"]
+          timeline_end: string
+          timeline_start: string
+          updated_at: string
+        }
+        Insert: {
+          coach_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          employee_id: string
+          final_outcome?: string | null
+          id?: string
+          objectives: string
+          progress?: number
+          review_dates?: Json
+          status?: Database["public"]["Enums"]["pip_status"]
+          timeline_end: string
+          timeline_start: string
+          updated_at?: string
+        }
+        Update: {
+          coach_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          employee_id?: string
+          final_outcome?: string | null
+          id?: string
+          objectives?: string
+          progress?: number
+          review_dates?: Json
+          status?: Database["public"]["Enums"]["pip_status"]
+          timeline_end?: string
+          timeline_start?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "improvement_plans_coach_id_fkey"
+            columns: ["coach_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "improvement_plans_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
             referencedColumns: ["id"]
           },
         ]
@@ -3300,6 +3416,308 @@ export type Database = {
           },
         ]
       }
+      performance_cycles: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          department_id: string | null
+          end_date: string
+          id: string
+          name: string
+          notes: string | null
+          period_type: Database["public"]["Enums"]["perf_cycle_period"]
+          start_date: string
+          status: Database["public"]["Enums"]["perf_cycle_status"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          department_id?: string | null
+          end_date: string
+          id?: string
+          name: string
+          notes?: string | null
+          period_type: Database["public"]["Enums"]["perf_cycle_period"]
+          start_date: string
+          status?: Database["public"]["Enums"]["perf_cycle_status"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          department_id?: string | null
+          end_date?: string
+          id?: string
+          name?: string
+          notes?: string | null
+          period_type?: Database["public"]["Enums"]["perf_cycle_period"]
+          start_date?: string
+          status?: Database["public"]["Enums"]["perf_cycle_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "performance_cycles_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "admin_departments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      performance_goals: {
+        Row: {
+          assigned_by: string | null
+          completed_at: string | null
+          created_at: string
+          cycle_id: string | null
+          department_id: string | null
+          description: string | null
+          due_date: string | null
+          employee_id: string
+          id: string
+          is_team_goal: boolean
+          kpi_id: string | null
+          priority: Database["public"]["Enums"]["perf_goal_priority"]
+          progress: number
+          status: Database["public"]["Enums"]["perf_goal_status"]
+          title: string
+          updated_at: string
+          weightage: number
+        }
+        Insert: {
+          assigned_by?: string | null
+          completed_at?: string | null
+          created_at?: string
+          cycle_id?: string | null
+          department_id?: string | null
+          description?: string | null
+          due_date?: string | null
+          employee_id: string
+          id?: string
+          is_team_goal?: boolean
+          kpi_id?: string | null
+          priority?: Database["public"]["Enums"]["perf_goal_priority"]
+          progress?: number
+          status?: Database["public"]["Enums"]["perf_goal_status"]
+          title: string
+          updated_at?: string
+          weightage?: number
+        }
+        Update: {
+          assigned_by?: string | null
+          completed_at?: string | null
+          created_at?: string
+          cycle_id?: string | null
+          department_id?: string | null
+          description?: string | null
+          due_date?: string | null
+          employee_id?: string
+          id?: string
+          is_team_goal?: boolean
+          kpi_id?: string | null
+          priority?: Database["public"]["Enums"]["perf_goal_priority"]
+          progress?: number
+          status?: Database["public"]["Enums"]["perf_goal_status"]
+          title?: string
+          updated_at?: string
+          weightage?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "performance_goals_cycle_id_fkey"
+            columns: ["cycle_id"]
+            isOneToOne: false
+            referencedRelation: "performance_cycles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "performance_goals_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "admin_departments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "performance_goals_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "performance_goals_kpi_id_fkey"
+            columns: ["kpi_id"]
+            isOneToOne: false
+            referencedRelation: "performance_kpis"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      performance_kpis: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          department_id: string
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          target_value: number | null
+          unit: string | null
+          updated_at: string
+          weightage: number
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          department_id: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          target_value?: number | null
+          unit?: string | null
+          updated_at?: string
+          weightage?: number
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          department_id?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          target_value?: number | null
+          unit?: string | null
+          updated_at?: string
+          weightage?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "performance_kpis_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "admin_departments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      performance_ratings: {
+        Row: {
+          category_ratings: Json
+          comments: string | null
+          created_at: string
+          id: string
+          improvement_suggestions: string | null
+          overall_rating: number
+          review_id: string
+          reviewer_id: string | null
+          reviewer_role: Database["public"]["Enums"]["perf_reviewer_role"]
+          strengths: string | null
+          submitted_at: string
+          updated_at: string
+          weaknesses: string | null
+        }
+        Insert: {
+          category_ratings?: Json
+          comments?: string | null
+          created_at?: string
+          id?: string
+          improvement_suggestions?: string | null
+          overall_rating: number
+          review_id: string
+          reviewer_id?: string | null
+          reviewer_role: Database["public"]["Enums"]["perf_reviewer_role"]
+          strengths?: string | null
+          submitted_at?: string
+          updated_at?: string
+          weaknesses?: string | null
+        }
+        Update: {
+          category_ratings?: Json
+          comments?: string | null
+          created_at?: string
+          id?: string
+          improvement_suggestions?: string | null
+          overall_rating?: number
+          review_id?: string
+          reviewer_id?: string | null
+          reviewer_role?: Database["public"]["Enums"]["perf_reviewer_role"]
+          strengths?: string | null
+          submitted_at?: string
+          updated_at?: string
+          weaknesses?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "performance_ratings_review_id_fkey"
+            columns: ["review_id"]
+            isOneToOne: false
+            referencedRelation: "performance_reviews"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      performance_reviews: {
+        Row: {
+          created_at: string
+          current_stage: Database["public"]["Enums"]["perf_review_stage"]
+          cycle_id: string
+          employee_id: string
+          finalized: boolean
+          finalized_at: string | null
+          finalized_by: string | null
+          id: string
+          overall_rating: number | null
+          summary: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          current_stage?: Database["public"]["Enums"]["perf_review_stage"]
+          cycle_id: string
+          employee_id: string
+          finalized?: boolean
+          finalized_at?: string | null
+          finalized_by?: string | null
+          id?: string
+          overall_rating?: number | null
+          summary?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          current_stage?: Database["public"]["Enums"]["perf_review_stage"]
+          cycle_id?: string
+          employee_id?: string
+          finalized?: boolean
+          finalized_at?: string | null
+          finalized_by?: string | null
+          id?: string
+          overall_rating?: number | null
+          summary?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "performance_reviews_cycle_id_fkey"
+            columns: ["cycle_id"]
+            isOneToOne: false
+            referencedRelation: "performance_cycles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "performance_reviews_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       platform_activity_events: {
         Row: {
           actor_employee_id: string | null
@@ -4630,6 +5048,119 @@ export type Database = {
         }
         Relationships: []
       }
+      promotion_readiness_snapshots: {
+        Row: {
+          audit_score: number
+          computed_at: string
+          computed_by: string | null
+          created_at: string
+          department_recommendation: boolean
+          employee_id: string
+          id: string
+          notes: string | null
+          overall_score: number
+          performance_score: number
+          readiness_level: Database["public"]["Enums"]["promotion_readiness_level"]
+          skills_score: number
+          training_score: number
+          updated_at: string
+        }
+        Insert: {
+          audit_score?: number
+          computed_at?: string
+          computed_by?: string | null
+          created_at?: string
+          department_recommendation?: boolean
+          employee_id: string
+          id?: string
+          notes?: string | null
+          overall_score?: number
+          performance_score?: number
+          readiness_level?: Database["public"]["Enums"]["promotion_readiness_level"]
+          skills_score?: number
+          training_score?: number
+          updated_at?: string
+        }
+        Update: {
+          audit_score?: number
+          computed_at?: string
+          computed_by?: string | null
+          created_at?: string
+          department_recommendation?: boolean
+          employee_id?: string
+          id?: string
+          notes?: string | null
+          overall_score?: number
+          performance_score?: number
+          readiness_level?: Database["public"]["Enums"]["promotion_readiness_level"]
+          skills_score?: number
+          training_score?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "promotion_readiness_snapshots_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      recognitions: {
+        Row: {
+          awarded_at: string
+          awarded_by: string | null
+          created_at: string
+          cycle_id: string | null
+          description: string | null
+          employee_id: string
+          id: string
+          title: string
+          type: Database["public"]["Enums"]["recognition_type"]
+          updated_at: string
+        }
+        Insert: {
+          awarded_at?: string
+          awarded_by?: string | null
+          created_at?: string
+          cycle_id?: string | null
+          description?: string | null
+          employee_id: string
+          id?: string
+          title: string
+          type?: Database["public"]["Enums"]["recognition_type"]
+          updated_at?: string
+        }
+        Update: {
+          awarded_at?: string
+          awarded_by?: string | null
+          created_at?: string
+          cycle_id?: string | null
+          description?: string | null
+          employee_id?: string
+          id?: string
+          title?: string
+          type?: Database["public"]["Enums"]["recognition_type"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recognitions_cycle_id_fkey"
+            columns: ["cycle_id"]
+            isOneToOne: false
+            referencedRelation: "performance_cycles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recognitions_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       reports: {
         Row: {
           created_at: string
@@ -5862,7 +6393,45 @@ export type Database = {
         | "project_added"
         | "note"
       passport_skill_status: "proposed" | "verified" | "revoked"
+      perf_cycle_period: "monthly" | "quarterly" | "half_yearly" | "annual"
+      perf_cycle_status: "draft" | "active" | "in_review" | "closed"
+      perf_goal_priority: "low" | "medium" | "high" | "critical"
+      perf_goal_status:
+        | "not_started"
+        | "in_progress"
+        | "at_risk"
+        | "completed"
+        | "missed"
+        | "cancelled"
+      perf_review_stage:
+        | "self"
+        | "team_lead"
+        | "department_head"
+        | "hr"
+        | "finalized"
+      perf_reviewer_role: "self" | "team_lead" | "department_head" | "hr"
+      pip_status:
+        | "draft"
+        | "active"
+        | "on_track"
+        | "off_track"
+        | "completed"
+        | "failed"
+        | "cancelled"
       post_status: "draft" | "scheduled" | "published"
+      promotion_readiness_level:
+        | "not_ready"
+        | "emerging"
+        | "developing"
+        | "ready_soon"
+        | "ready_now"
+      recognition_type:
+        | "award"
+        | "achievement"
+        | "outstanding"
+        | "innovation"
+        | "leadership"
+        | "special"
       story_audience: "public" | "close_friends"
       succession_readiness: "not_ready" | "dev_1y" | "dev_6m" | "ready_now"
       succession_scope:
@@ -6122,7 +6691,50 @@ export const Constants = {
         "note",
       ],
       passport_skill_status: ["proposed", "verified", "revoked"],
+      perf_cycle_period: ["monthly", "quarterly", "half_yearly", "annual"],
+      perf_cycle_status: ["draft", "active", "in_review", "closed"],
+      perf_goal_priority: ["low", "medium", "high", "critical"],
+      perf_goal_status: [
+        "not_started",
+        "in_progress",
+        "at_risk",
+        "completed",
+        "missed",
+        "cancelled",
+      ],
+      perf_review_stage: [
+        "self",
+        "team_lead",
+        "department_head",
+        "hr",
+        "finalized",
+      ],
+      perf_reviewer_role: ["self", "team_lead", "department_head", "hr"],
+      pip_status: [
+        "draft",
+        "active",
+        "on_track",
+        "off_track",
+        "completed",
+        "failed",
+        "cancelled",
+      ],
       post_status: ["draft", "scheduled", "published"],
+      promotion_readiness_level: [
+        "not_ready",
+        "emerging",
+        "developing",
+        "ready_soon",
+        "ready_now",
+      ],
+      recognition_type: [
+        "award",
+        "achievement",
+        "outstanding",
+        "innovation",
+        "leadership",
+        "special",
+      ],
       story_audience: ["public", "close_friends"],
       succession_readiness: ["not_ready", "dev_1y", "dev_6m", "ready_now"],
       succession_scope: [
