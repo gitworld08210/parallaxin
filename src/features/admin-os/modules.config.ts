@@ -22,6 +22,7 @@ import {
   Ticket,
   ScrollText,
   Settings,
+  Layers,
   type LucideIcon,
 } from "lucide-react";
 import {
