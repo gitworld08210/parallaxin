@@ -1,53 +1,97 @@
-# Phase 2.5 — Organization Structure & Workforce Planning
+# Phase 4.7 — Executive Appointment Flow (Founder → C-Suite) with Gmail Joining Letter PDF
 
-Builds the shared org-planning layer on top of the existing People Ops foundation. Every view is generated from live `employees` + `admin_departments` data, plus four new planning tables. No new recruitment/payroll surface.
+Founder Office se Co-Founder + all C-level heads (HR, CTO, CFO, COO, CSO, CPO, GC, Head of T&S, Head of Verification, Head of Support) ko one-click appoint. System auto employee ID + random temp password generate karega, ek beautifully designed **PDF joining letter** banayega, aur founder ke connected Gmail account se executive ki personal email par PDF attachment ke saath bhejega. Founder ko screen pe bhi ek-baar copy of credentials milega as fallback.
 
-## New database tables (single migration)
+## Employee ID scheme
 
-All in `public` with RLS, GRANTs, `updated_at` triggers, and audit-log writes.
+- Founder: `AURE-F01` (existing `AUR-FND-177051` → migrate to `AURE-F01`)
+- Co-Founder: `AURE-F02`
+- All hired: `AURE001`, `AURE002`, `AURE003`, … (Postgres sequence, race-safe)
+- Manual employee_number input hata denge; server auto-generate.
 
-- `department_capacity` — one row per `admin_departments`, holds `max_capacity`, `target_capacity`, `workload_score`, `notes`, `updated_by`.
-- `open_positions` — hiring requests: `department_id`, `role_id`, `level`, `title`, `reason`, `priority` (low/med/high/critical), `status` (draft/pending_approval/approved/filled/cancelled), `requested_by`, `approved_by`, `expected_joining`, `filled_by_employee_id`, `notes`.
-- `succession_plans` — one row per critical position: `scope` (department_head/deputy_head/team_lead/specialist), `department_id`, `incumbent_employee_id`, `primary_successor_id`, `secondary_successor_id`, `readiness_level` (not_ready/dev_1y/dev_6m/ready_now), `training_progress` (0–100), `notes`.
-- `workforce_forecasts` — per-department planning windows: `department_id`, `period_start`, `period_end`, `planned_headcount`, `notes`.
+## Founder Office — Executive Appointments panel
 
-Access: read = `is_active_employee(auth.uid())` + `people_ops.org.view`. Write = `has_admin_permission(auth.uid(), 'people_ops.org.manage')`. Add five new permission keys to `admin_permissions` and register them in `permissions.ts`.
+Route: `/admin-os/founder-office/appointments`. Founder-only (role check + RLS).
 
-## Backend service — `src/hooks/admin-os/useOrganization.ts`
+- Pre-defined C-level slot cards: Co-Founder, HR Head, CTO, CFO, COO, CSO, CPO, General Counsel, Head of T&S, Head of Verification, Head of Support.
+- Status per slot: Vacant / Appointed / Suspended. Appointed dikhaye person + employee ID + joining date.
+- "Appoint" button → modal (full name, personal email address, phone, joining date, notes).
+- CTA card on Founder Office Dashboard.
 
-Reusable hooks for every page:
+## Gmail Connector setup
 
-- `useOrgChart()` — pulls active employees, department heads, and departments; returns tree grouped Founder Office → Departments → Heads → Deputies → Team Leads → Employees.
-- `useDepartmentCapacity()` — joins departments with `department_capacity`, computed columns: current headcount, vacancies, capacity %, health score (green/amber/red bands).
-- `useOpenPositions()` + `useUpsertPosition()` / `useTransitionPositionStatus()` — CRUD with audit.
-- `useSuccessionMatrix()` + `useUpsertSuccession()`.
-- `useWorkforceForecast()` + `useUpsertForecast()`.
-- `useOrganizationalHealth()` — aggregates department stability, leadership coverage, open positions, and capacity utilisation into one dashboard payload.
+- Connect Gmail via `standard_connectors--connect` (connector_id `google_mail`). Scopes needed: `gmail.send` for sending, `gmail.compose` for drafts fallback.
+- Founder connects his Google account once. Sender identity = founder's Gmail address.
+- Env vars available in edge functions: `LOVABLE_API_KEY`, `GOOGLE_MAIL_API_KEY`.
 
-Every mutation writes to `admin_audit_logs` (module `people_ops`, actions `org.capacity.updated`, `org.position.*`, `org.succession.updated`, `org.forecast.updated`).
+## `appoint-executive` edge function
 
-## Frontend pages — `src/pages/admin-os/people-ops/org/`
+Steps (service role):
+1. Verify caller is active founder.
+2. Ensure department + role exist for slot; reject if slot already has active head.
+3. Generate 20-char temp password.
+4. Create `auth.users` (email_confirm true, metadata full_name).
+5. Insert into `employees`: auto `employee_number`, `user_type = 'executive'`, `level = 'L6'`, `employment_status = 'active'`, `requires_password_change = true`, `requires_2fa_setup = true`, reporting to founder.
+6. Insert into `user_roles`.
+7. Generate joining-letter PDF server-side (using `pdf-lib` via npm specifier in Deno) with Aurelix branding: logo mark, header "Aurelix — Letter of Appointment", executive name, employee ID, role, department, joining date, effective from, welcome paragraph, terms footer, signatures block. First-login URL, temp password inside a boxed "Confidential Access Details" section.
+8. Upload PDF to Storage bucket `joining-letters` (private) at `appointments/<employee_number>.pdf`. Return signed URL (30-day) for founder's fallback download.
+9. Build RFC 2822 MIME message with multipart/mixed: text/html body (short welcome + note that attached PDF has details) + PDF attachment (base64). Post to Gmail API `users/me/messages/send` via gateway.
+10. Insert into `executive_appointments` audit + `admin_audit_logs`.
+11. Return `{ employee_number, email_sent: true, gmail_message_id, pdf_signed_url, temp_password }` (temp_password shown once as fallback if user prefers to hand over securely).
 
-All built on the Phase 1.13 Design System (`PageHeader`, `SectionCard`, `StatCard`, `DataTable`, `StatusBadge`, `ConfirmDialog`).
+## Frontend appointment result modal
 
-- `OrganizationIndex.tsx` (`/admin-os/people-ops/org`) — Organizational Health dashboard: leadership coverage, open positions, capacity utilisation, hiring-need alerts, quick links to sub-pages.
-- `OrgChart.tsx` (`/admin-os/people-ops/org/chart`) — expandable company tree; search, department filter, expand/collapse-all, print-friendly layout.
-- `CapacityDashboard.tsx` (`/admin-os/people-ops/org/capacity`) — table per department: current/max/target headcount, vacancy count, capacity %, health colour, inline edit for `max_capacity` and `target_capacity`.
-- `OpenPositions.tsx` (`/admin-os/people-ops/org/positions`) — center for hiring requests: filter by status/department/priority; create/edit dialog; status transitions with reason (audit-logged).
-- `Succession.tsx` (`/admin-os/people-ops/org/succession`) — matrix per critical role: incumbent → primary/secondary successor pickers, readiness dropdown, training-progress slider.
-- `WorkforcePlanning.tsx` (`/admin-os/people-ops/org/planning`) — forecast timeline per department: current vs planned headcount, editable period rows.
+- Success: "Joining letter emailed to <personal_email> from <founder's gmail>" + "Download PDF copy" button + "Reveal credentials" toggle (masked temp password, copy button). Warning: "Credentials not shown again."
+- On email failure: PDF download + credentials block prominent, retry-email button.
 
-## Wiring
+## People Ops gating
 
-- `src/App.tsx` — lazy-import six new pages under the People Ops routes.
-- `src/pages/admin-os/people-ops/PeopleOpsIndex.tsx` — add "Organization" quick-link.
-- `src/features/admin-os/modules.config.ts` — no new top-level module; org lives inside People Ops.
-- `src/features/admin-os/permissions.ts` — add `PEOPLE_OPS_ORG_VIEW`, `PEOPLE_OPS_ORG_MANAGE`, `PEOPLE_OPS_CAPACITY_MANAGE`, `PEOPLE_OPS_POSITIONS_MANAGE`, `PEOPLE_OPS_SUCCESSION_MANAGE`.
+- `EmployeeForm`: employee_number auto/readonly.
+- Non-founder create disabled with tooltip when HR Head slot is Vacant. Founder unrestricted.
 
-## Not in scope
+## Storage
 
-Recruitment, payroll, attendance, performance reviews, and any external job-board publishing. Open positions are internal hiring requests only.
+- Private bucket `joining-letters`; RLS: founder + owning executive can read; admin write via service role only.
 
-## Definition of done
+## Database migration (single)
 
-Migration + audit triggers applied, five pages navigable, RBAC gates enforced, every mutation audited, org chart reflects live `employees` data, capacity/health computed live, existing People Ops flows untouched.
+1. `CREATE SEQUENCE employees_hire_seq;`
+2. `CREATE FUNCTION gen_employee_number()` returning `'AURE' || lpad(nextval::text, 3, '0')`.
+3. Backfill existing rows to `AURE-F01`, `AURE001`, `AURE002`, `AURE003`. Reset sequence to 4.
+4. `admin_user_type` enum: add `executive` if missing.
+5. New table `executive_appointments` (slot_key, employee_id, appointed_by, personal_email, appointed_at, revoked_at, gmail_message_id, pdf_path, notes) with GRANTs + RLS + policies.
+6. Seed missing C-level `admin_departments` + `admin_roles`.
+
+## Files
+
+Add:
+- `supabase/functions/appoint-executive/index.ts`
+- `supabase/functions/_shared/joining-letter-pdf.ts` (PDF builder using pdf-lib)
+- `supabase/migrations/<ts>_executive_appointments.sql`
+- `src/pages/admin-os/founder-office/AppointmentsPanel.tsx`
+- `src/pages/admin-os/founder-office/AppointmentModal.tsx`
+- `src/pages/admin-os/founder-office/AppointmentResultDialog.tsx`
+- `src/hooks/admin-os/useAppointments.ts`
+
+Edit:
+- `src/App.tsx` (new route + sidebar link).
+- `src/pages/admin-os/founder-office/FounderOfficeDashboard.tsx` (CTA card).
+- `src/pages/admin-os/people-ops/EmployeeForm.tsx` (auto employee_number + HR-Head guard).
+- `supabase/functions/seed-founder/index.ts` (new founders → `AURE-F01`).
+
+## Pre-build steps (need user action once)
+
+1. Connect Gmail via `standard_connectors--connect` (I'll trigger the dialog).
+2. Create Storage bucket `joining-letters` (I'll do it via tool).
+
+## Verification
+
+- Playwright login as founder → appoint HR Head with real personal email → check Gmail Sent folder for email with PDF attached → open PDF confirms branding + AURE001 + temp password.
+- Logout, login with HR Head creds → forced password change screen.
+- `psql`: employee_number order = `AURE-F01`, `AURE001`, `AURE002`, `AURE003`, `AURE004` (new HR Head).
+
+## Out of scope
+
+- Auth email templates (unchanged, using Lovable defaults).
+- Accept/decline flow — direct joining letter as agreed.
+- Bulk / re-appointment flows — future phase.
