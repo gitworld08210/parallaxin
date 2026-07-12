@@ -206,6 +206,15 @@ const AiRisksPage = lazy(() => import("./pages/admin-os/executive/ai/RisksPage")
 const AiSummariesPage = lazy(() => import("./pages/admin-os/executive/ai/SummariesPage"));
 const AiKnowledgePage = lazy(() => import("./pages/admin-os/executive/ai/KnowledgeSearchPage"));
 const AiPromptsPage = lazy(() => import("./pages/admin-os/executive/ai/PromptsPage"));
+// Phase 3.12 — Production Readiness
+const ProductionShell = lazy(() => import("./pages/admin-os/executive/production/ProductionShell"));
+const ProductionOverview = lazy(() => import("./pages/admin-os/executive/production/ProductionOverview"));
+const ProductionModules = lazy(() => import("./pages/admin-os/executive/production/ModuleHealthPage"));
+const ProductionIntegrations = lazy(() => import("./pages/admin-os/executive/production/IntegrationsPage"));
+const ProductionChecklist = lazy(() => import("./pages/admin-os/executive/production/ReleaseChecklist"));
+const ProductionReleases = lazy(() => import("./pages/admin-os/executive/production/ReleasesPage"));
+const ProductionHistory = lazy(() => import("./pages/admin-os/executive/production/ValidationHistoryPage"));
+const ProductionIssues = lazy(() => import("./pages/admin-os/executive/production/IssueTrackerPage"));
 // Phase 3.11 — KIP (Knowledge Intelligence Platform)
 const KipShell = lazy(() => import("./pages/admin-os/executive/knowledge/KipShell"));
 const KnowledgeHome = lazy(() => import("./pages/admin-os/executive/knowledge/KnowledgeHome"));
@@ -546,6 +555,15 @@ const App = () => (
                     <Route path="summaries" element={<AiSummariesPage />} />
                     <Route path="knowledge" element={<AiKnowledgePage />} />
                     <Route path="prompts" element={<AiPromptsPage />} />
+                  </Route>
+                  <Route path="production" element={<ProductionShell />}>
+                    <Route index element={<ProductionOverview />} />
+                    <Route path="modules" element={<ProductionModules />} />
+                    <Route path="integrations" element={<ProductionIntegrations />} />
+                    <Route path="checklist" element={<ProductionChecklist />} />
+                    <Route path="releases" element={<ProductionReleases />} />
+                    <Route path="history" element={<ProductionHistory />} />
+                    <Route path="issues" element={<ProductionIssues />} />
                   </Route>
                   <Route path="profile" element={<ExecutiveProfile />} />
                   <Route path="notifications" element={<ExecutiveNotificationsPage />} />

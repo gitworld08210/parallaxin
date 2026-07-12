@@ -1,7 +1,7 @@
 import { NavLink } from "react-router-dom";
 import {
   Crown, LayoutDashboard, Inbox, CheckCircle2, Building2, Users, Command,
-  BarChart3, ScrollText, ShieldCheck, Settings, Bell, User as UserIcon, Scale, Zap, Sparkles, BookOpen,
+  BarChart3, ScrollText, ShieldCheck, Settings, Bell, User as UserIcon, Scale, Zap, Sparkles, BookOpen, Rocket,
 } from "lucide-react";
 import { useEmployee } from "@/hooks/admin-os/useEmployee";
 
@@ -19,6 +19,7 @@ const items = [
   { to: "/admin-os/executive/automation", label: "Automation", icon: Zap },
   { to: "/admin-os/executive/decisions", label: "Decision Log", icon: ScrollText },
   { to: "/admin-os/executive/security", label: "Security", icon: ShieldCheck },
+  { to: "/admin-os/executive/production", label: "Production Readiness", icon: Rocket },
   { to: "/admin-os/executive/company", label: "Company Settings", icon: Settings },
   { to: "/admin-os/executive/profile", label: "Profile", icon: UserIcon },
   { to: "/admin-os/executive/notifications", label: "Notifications", icon: Bell },
