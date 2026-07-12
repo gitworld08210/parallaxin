@@ -75,10 +75,17 @@ const EmployeeForm = ({ mode }: Props) => {
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (hrLocked) {
+      toast.error("HR Head must be appointed by the Founder Office before hiring employees.");
+      return;
+    }
     try {
       if (mode === "create") {
+        // employee_number is auto-generated server-side; omit if empty
+        const payload: any = { ...form };
+        if (!payload.employee_number) delete payload.employee_number;
         const created = await create.mutateAsync({
-          ...form,
+          ...payload,
           level: form.level || null,
           joining_date: form.joining_date || null,
           reporting_manager_id: form.reporting_manager_id || null,
@@ -136,6 +143,30 @@ const EmployeeForm = ({ mode }: Props) => {
           {mode === "create" ? "New Employee" : "Edit Employee"}
         </h1>
       </div>
+
+      {hrLocked && (
+        <div className="rounded-2xl border-2 border-amber-500/50 bg-amber-500/10 p-4">
+          <div className="flex items-start gap-3">
+            <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm font-bold text-amber-700 dark:text-amber-400">
+                HR Head not yet appointed
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Only the Founder Office can hire employees before the Head of Human Resources is
+                appointed. Ask a founder to appoint an HR Head from{" "}
+                <Link
+                  to="/admin-os/founder-office/appointments"
+                  className="text-primary font-semibold underline"
+                >
+                  Founder Office → Executive Appointments
+                </Link>
+                .
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       <form onSubmit={submit} className="rounded-2xl border border-border/60 bg-card p-6 space-y-4">
         <div className="grid sm:grid-cols-2 gap-4">
