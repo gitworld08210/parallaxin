@@ -134,10 +134,10 @@ export const AppointmentModal = ({ slot, onClose, onSuccess }: Props) => {
               What happens next
             </p>
             <ul className="space-y-0.5 list-disc list-inside">
-              <li>System generates the next AURE### employee ID.</li>
-              <li>A branded PDF joining letter is created and emailed as an attachment from your Gmail.</li>
-              <li>Temporary password shown once on the next screen.</li>
-              <li>Executive must change password &amp; enable 2FA on first login.</li>
+              <li>System generates the next AURE### employee ID and company email.</li>
+              <li>A branded PDF joining letter is generated with a one-time temporary password inside.</li>
+              <li>You download the PDF and email it to the appointee yourself.</li>
+              <li>The appointee must change the password &amp; enable 2FA on first login.</li>
             </ul>
           </div>
 

@@ -869,7 +869,8 @@ Deno.serve(async (req) => {
     const user = userData?.user;
     if (!user) return json({ error: "Not authenticated" }, 401);
 
-    // Verify caller is active founder or co-founder
+    // Verify caller is active founder, co-founder, or holds an active
+    // Operations Head (COO) / HR Head appointment.
     const { data: callerEmp } = await admin
       .from("employees")
       .select("id, full_name, role:admin_roles!inner(key)")
@@ -878,8 +879,18 @@ Deno.serve(async (req) => {
       .maybeSingle();
 
     const callerRole = (callerEmp as any)?.role?.key;
-    if (!callerEmp || (callerRole !== "founder" && callerRole !== "co_founder")) {
-      return json({ error: "Only the Founder Office can appoint executives." }, 403);
+    let allowed = callerRole === "founder" || callerRole === "co_founder";
+    if (!allowed && callerEmp) {
+      const { data: activeAppt } = await admin
+        .from("executive_appointments")
+        .select("slot_key")
+        .eq("employee_id", (callerEmp as any).id)
+        .is("revoked_at", null)
+        .in("slot_key", ["coo", "hr_head"]);
+      if (activeAppt && activeAppt.length > 0) allowed = true;
+    }
+    if (!callerEmp || !allowed) {
+      return json({ error: "Only the Founder Office, Operations Head, or HR Head can appoint members." }, 403);
     }
 
     const body = await req.json();
@@ -1033,71 +1044,10 @@ Deno.serve(async (req) => {
       .from("joining-letters")
       .createSignedUrl(pdfPath, 60 * 60 * 24 * 30);
 
-    // Email via Gmail connector
-    let gmailMessageId: string | null = null;
-    let emailError: string | null = null;
-    if (!skipEmail && lovableKey && gmailKey) {
-      try {
-        // Look up sender identity
-        const profRes = await fetch(
-          "https://connector-gateway.lovable.dev/google_mail/gmail/v1/users/me/profile",
-          {
-            headers: {
-              Authorization: `Bearer ${lovableKey}`,
-              "X-Connection-Api-Key": gmailKey,
-            },
-          },
-        );
-        if (!profRes.ok) throw new Error(`Gmail profile: ${profRes.status} ${await profRes.text()}`);
-        const prof = await profRes.json();
-        const fromEmail = prof.emailAddress || "noreply@aurelix.com";
-
-        const html = `
-          <div style="font-family: -apple-system, Helvetica, Arial, sans-serif; color:#111; max-width:560px;">
-            <p>Dear ${escapeHtml(fullName)},</p>
-            <p>Congratulations! The Founder Office of <b>Aurelix</b> is pleased to formally appoint you as
-            <b style="color:#c9a227;">${escapeHtml(slot.label)}</b>, effective ${formatDate(joiningDate)}.</p>
-            <p>Your official appointment letter is attached as a PDF. It contains your Employee ID,
-            department authority, responsibilities, and confidential first-login credentials.</p>
-            <p>Please review the attached letter and log in to the Aurelix Admin OS to complete
-            identity verification and 2FA setup.</p>
-            <p style="margin-top:24px;">Warm regards,<br/>
-            <b>${escapeHtml((callerEmp as any).full_name || "Aurelix Founder Office")}</b><br/>
-            Founder Office, Aurelix</p>
-          </div>
-        `;
-        const mime = buildRfc2822({
-          fromName: "Aurelix Founder Office",
-          fromEmail,
-          to: personalEmail,
-          subject: `Aurelix — Official Letter of Appointment (${slot.label})`,
-          html,
-          pdfBytes,
-          pdfFilename: `Aurelix-Appointment-${employeeNumber}.pdf`,
-        });
-        const raw = base64UrlEncode(new TextEncoder().encode(mime));
-        const sendRes = await fetch(
-          "https://connector-gateway.lovable.dev/google_mail/gmail/v1/users/me/messages/send",
-          {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer ${lovableKey}`,
-              "X-Connection-Api-Key": gmailKey,
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ raw }),
-          },
-        );
-        if (!sendRes.ok) throw new Error(`Gmail send: ${sendRes.status} ${await sendRes.text()}`);
-        const sent = await sendRes.json();
-        gmailMessageId = sent.id ?? null;
-      } catch (e) {
-        emailError = (e as Error).message;
-        console.error("Gmail send failed:", emailError);
-      }
-    } else if (!skipEmail) {
-      emailError = "Gmail connector not configured";
-    }
+    // Auto-email disabled: appointer downloads the PDF and sends it manually
+    // (the PDF already contains the temp password and login instructions).
+    const gmailMessageId: string | null = null;
+    const emailError: string | null = null;
 
     // Record appointment
     await admin.from("executive_appointments").insert({
