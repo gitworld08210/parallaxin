@@ -869,7 +869,8 @@ Deno.serve(async (req) => {
     const user = userData?.user;
     if (!user) return json({ error: "Not authenticated" }, 401);
 
-    // Verify caller is active founder or co-founder
+    // Verify caller is active founder, co-founder, or holds an active
+    // Operations Head (COO) / HR Head appointment.
     const { data: callerEmp } = await admin
       .from("employees")
       .select("id, full_name, role:admin_roles!inner(key)")
@@ -878,8 +879,18 @@ Deno.serve(async (req) => {
       .maybeSingle();
 
     const callerRole = (callerEmp as any)?.role?.key;
-    if (!callerEmp || (callerRole !== "founder" && callerRole !== "co_founder")) {
-      return json({ error: "Only the Founder Office can appoint executives." }, 403);
+    let allowed = callerRole === "founder" || callerRole === "co_founder";
+    if (!allowed && callerEmp) {
+      const { data: activeAppt } = await admin
+        .from("executive_appointments")
+        .select("slot_key")
+        .eq("employee_id", (callerEmp as any).id)
+        .is("revoked_at", null)
+        .in("slot_key", ["coo", "hr_head"]);
+      if (activeAppt && activeAppt.length > 0) allowed = true;
+    }
+    if (!callerEmp || !allowed) {
+      return json({ error: "Only the Founder Office, Operations Head, or HR Head can appoint members." }, 403);
     }
 
     const body = await req.json();
