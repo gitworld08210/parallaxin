@@ -192,7 +192,6 @@ const ReportingStructure = () => {
       <SectionCard
         title="Org Tree"
         description="Expandable tree grouped by reporting relationship"
-        icon={<Network className="h-4 w-4" />}
       >
         <div className="mb-3">
           <input
