@@ -41,7 +41,7 @@ const HireCompensation = () => {
   const { hasPermission } = useEmployee();
   const canSubmit = hasPermission(ADMIN_PERMISSIONS.FINANCE_HIRE_COMP_SUBMIT);
   const { data: proposals, isLoading } = useHireCompProposals();
-  const { data: employees } = useEmployees();
+  const { data: employees } = useEmployeesList();
   const create = useCreateHireComp();
   const submit = useSubmitToFinance();
   const update = useUpdateHireComp();
