@@ -455,7 +455,17 @@ const App = () => (
                     <Route path="watchlists" element={<WatchlistPanelPage />} />
                   </Route>
                   <Route path="security" element={<ExecutiveSecurity />} />
-                  <Route path="company" element={<CompanySettingsPage />} />
+                  <Route path="company" element={<CompanyShell />}>
+                    <Route index element={<CompanyOverview />} />
+                    <Route path="profile" element={<CompanyProfilePage />} />
+                    <Route path="brand" element={<BrandManagementPage />} />
+                    <Route path="preferences" element={<PlatformPreferencesPage />} />
+                    <Route path="localization" element={<LocalizationCenterPage />} />
+                    <Route path="features" element={<FeatureFlagsManagerPage />} />
+                    <Route path="modules" element={<ModuleManagerPage />} />
+                    <Route path="calendar" element={<CompanyCalendarPage />} />
+                    <Route path="metadata" element={<MetadataManagerPage />} />
+                  </Route>
                   <Route path="profile" element={<ExecutiveProfile />} />
                   <Route path="notifications" element={<ExecutiveNotificationsPage />} />
                 </Route>
