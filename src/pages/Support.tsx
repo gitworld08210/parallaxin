@@ -81,17 +81,17 @@ const Support = () => {
       if (!user) throw new Error("Please sign in first.");
       if (!category) throw new Error("Pick a topic first.");
       if (!subject.trim()) throw new Error("Please add a short subject.");
-      const { data, error } = await supabase.from("sup_tickets").insert({
+      const { data, error } = await (supabase.from("sup_tickets") as any).insert({
         subject: subject.trim(),
         description: description.trim() || null,
-        category: category.key as any,
-        priority: priority as any,
-        source: "user" as any,
+        category: category.key,
+        priority,
+        source: "user",
         requester_id: user.id,
         requester_display: user.email ?? null,
       }).select("ticket_number").single();
       if (error) throw error;
-      return data;
+      return data as { ticket_number: string };
     },
     onSuccess: (d) => {
       toast.success(`Sent to ${category?.team}. Ticket #${d?.ticket_number}`);
