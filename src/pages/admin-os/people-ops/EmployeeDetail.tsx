@@ -120,14 +120,22 @@ const EmployeeDetailPage = () => {
               {emp.role?.name ?? "—"} · {emp.department?.name ?? "—"}
             </p>
           </div>
-          {canManage && (
+          <div className="flex items-center gap-2">
             <Link
-              to={`/admin-os/people-ops/${emp.id}/edit`}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-secondary text-secondary-foreground px-3 py-1.5 text-xs font-semibold hover:bg-secondary/80"
+              to={`/admin-os/people-ops/${emp.id}/passport`}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-semibold hover:bg-muted"
             >
-              <Pencil className="h-3.5 w-3.5" /> Edit
+              <Shield className="h-3.5 w-3.5" /> Passport
             </Link>
-          )}
+            {canManage && (
+              <Link
+                to={`/admin-os/people-ops/${emp.id}/edit`}
+                className="inline-flex items-center gap-1.5 rounded-lg bg-secondary text-secondary-foreground px-3 py-1.5 text-xs font-semibold hover:bg-secondary/80"
+              >
+                <Pencil className="h-3.5 w-3.5" /> Edit
+              </Link>
+            )}
+          </div>
         </div>
 
         <div className="mt-6 grid sm:grid-cols-2 gap-x-6 gap-y-0">
