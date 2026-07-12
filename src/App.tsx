@@ -687,6 +687,13 @@ const App = () => (
                     <Route path="appeals" element={<VerAppealsCenter />} />
                     <Route path="history" element={<VerHistoryPage />} />
                   </Route>
+                  <Route path="support" element={<SupportShell />}>
+                    <Route index element={<SupportDashboardPage />} />
+                    <Route path="queue" element={<SupportTicketQueue />} />
+                    <Route path="tickets/:id" element={<SupportTicketWorkspace />} />
+                    <Route path="sla" element={<SupportSlaDashboard />} />
+                    <Route path="analytics" element={<SupportAnalyticsPage />} />
+                  </Route>
                   <Route path="platform" element={<PlatformIndex />} />
                   <Route path="platform/approvals" element={<ApprovalCenter />} />
                   <Route path="platform/workflows" element={<WorkflowViewer />} />
