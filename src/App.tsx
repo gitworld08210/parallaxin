@@ -118,6 +118,14 @@ const RecognitionCenter = lazy(() => import("./pages/admin-os/people-ops/perform
 const PipCenter = lazy(() => import("./pages/admin-os/people-ops/performance/PipCenter"));
 const CareerGrowth = lazy(() => import("./pages/admin-os/people-ops/performance/CareerGrowth"));
 const PromotionReadinessPage = lazy(() => import("./pages/admin-os/people-ops/performance/PromotionReadinessPage"));
+const LearningIndex = lazy(() => import("./pages/admin-os/people-ops/learning/LearningIndex"));
+const CourseCatalog = lazy(() => import("./pages/admin-os/people-ops/learning/CourseCatalog"));
+const LearningPathsPage = lazy(() => import("./pages/admin-os/people-ops/learning/LearningPaths"));
+const EnrollmentCenter = lazy(() => import("./pages/admin-os/people-ops/learning/EnrollmentCenter"));
+const SkillsCenter = lazy(() => import("./pages/admin-os/people-ops/learning/SkillsCenter"));
+const CertificationCenter = lazy(() => import("./pages/admin-os/people-ops/learning/CertificationCenter"));
+const DepartmentSkillMatrix = lazy(() => import("./pages/admin-os/people-ops/learning/DepartmentSkillMatrix"));
+const CareerRoadmapsPage = lazy(() => import("./pages/admin-os/people-ops/learning/CareerRoadmaps"));
 const FounderOfficeDashboard = lazy(
   () => import("./pages/admin-os/founder-office/FounderOfficeDashboard"),
 );
@@ -348,6 +356,14 @@ const App = () => (
                   <Route path="people-ops/performance/pip" element={<PipCenter />} />
                   <Route path="people-ops/performance/career" element={<CareerGrowth />} />
                   <Route path="people-ops/performance/promotion" element={<PromotionReadinessPage />} />
+                  <Route path="people-ops/learning" element={<LearningIndex />} />
+                  <Route path="people-ops/learning/catalog" element={<CourseCatalog />} />
+                  <Route path="people-ops/learning/paths" element={<LearningPathsPage />} />
+                  <Route path="people-ops/learning/enrollments" element={<EnrollmentCenter />} />
+                  <Route path="people-ops/learning/skills" element={<SkillsCenter />} />
+                  <Route path="people-ops/learning/certifications" element={<CertificationCenter />} />
+                  <Route path="people-ops/learning/matrix" element={<DepartmentSkillMatrix />} />
+                  <Route path="people-ops/learning/roadmaps" element={<CareerRoadmapsPage />} />
                   <Route
                     path="founder-office"
                     element={<FounderOfficeDashboard />}
