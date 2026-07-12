@@ -8,11 +8,13 @@ import {
   CheckCircle2,
   Circle,
   Mail,
+  UserMinus,
 } from "lucide-react";
 import { useEmployee } from "@/hooks/admin-os/useEmployee";
 import {
   EXECUTIVE_SLOTS,
   useAppointments,
+  useRevokeAppointment,
   getSignedLetterUrl,
   type ExecutiveSlot,
   type AppointResult,
@@ -24,8 +26,12 @@ import { toast } from "sonner";
 const AppointmentsPanel = () => {
   const { employee } = useEmployee();
   const { data: appointments } = useAppointments();
+  const revoke = useRevokeAppointment();
   const [openSlot, setOpenSlot] = useState<ExecutiveSlot | null>(null);
   const [result, setResult] = useState<{ result: AppointResult; label: string; email: string } | null>(null);
+  const [revokeTarget, setRevokeTarget] = useState<any | null>(null);
+  const [revokeReason, setRevokeReason] = useState("");
+  const [alsoSuspend, setAlsoSuspend] = useState(true);
 
   if (!employee) return <div className="p-6 text-sm text-muted-foreground">Loading…</div>;
 
@@ -136,14 +142,26 @@ const AppointmentsPanel = () => {
                       </p>
                     )}
                   </div>
-                  {active.pdf_path && (
+                  <div className="flex flex-wrap items-center gap-3 pt-1">
+                    {active.pdf_path && (
+                      <button
+                        onClick={() => downloadLetter(active.pdf_path)}
+                        className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary hover:underline"
+                      >
+                        <Download className="h-3 w-3" /> Download letter
+                      </button>
+                    )}
                     <button
-                      onClick={() => downloadLetter(active.pdf_path)}
-                      className="mt-2 inline-flex items-center gap-1 text-[11px] font-semibold text-primary hover:underline"
+                      onClick={() => {
+                        setRevokeTarget({ appointment: active, slot });
+                        setRevokeReason("");
+                        setAlsoSuspend(true);
+                      }}
+                      className="inline-flex items-center gap-1 text-[11px] font-semibold text-destructive hover:underline"
                     >
-                      <Download className="h-3 w-3" /> Download letter
+                      <UserMinus className="h-3 w-3" /> Revoke
                     </button>
-                  )}
+                  </div>
                 </div>
               ) : (
                 <>
@@ -181,6 +199,73 @@ const AppointmentsPanel = () => {
           personalEmail={result.email}
           onClose={() => setResult(null)}
         />
+      )}
+
+      {revokeTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-md rounded-2xl bg-card border border-border p-5 space-y-4">
+            <div>
+              <p className="text-[10px] font-bold tracking-[0.2em] text-muted-foreground">
+                REVOKE APPOINTMENT
+              </p>
+              <h2 className="text-lg font-bold mt-1">{revokeTarget.slot.label}</h2>
+              <p className="text-xs text-muted-foreground mt-1">
+                {revokeTarget.appointment.employee?.full_name} ·{" "}
+                {revokeTarget.appointment.employee?.employee_number}
+              </p>
+            </div>
+            <textarea
+              value={revokeReason}
+              onChange={(e) => setRevokeReason(e.target.value)}
+              rows={3}
+              placeholder="Reason for revoking this appointment (mandatory)"
+              className="w-full rounded-lg bg-background border border-border/60 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+            />
+            <label className="flex items-start gap-2 text-xs">
+              <input
+                type="checkbox"
+                checked={alsoSuspend}
+                onChange={(e) => setAlsoSuspend(e.target.checked)}
+                className="mt-0.5"
+              />
+              <span>
+                Also suspend the employee account. They will lose access to all Admin OS
+                permissions immediately. Use the employee page later to resign / exit.
+              </span>
+            </label>
+            <div className="flex justify-end gap-2 pt-1">
+              <button
+                onClick={() => setRevokeTarget(null)}
+                className="rounded-lg bg-secondary text-secondary-foreground px-3 py-2 text-xs font-semibold"
+              >
+                Cancel
+              </button>
+              <button
+                disabled={revoke.isPending || !revokeReason.trim()}
+                onClick={async () => {
+                  try {
+                    await revoke.mutateAsync({
+                      appointment_id: revokeTarget.appointment.id,
+                      employee_id: revokeTarget.appointment.employee_id,
+                      slot_label: revokeTarget.slot.label,
+                      reason: revokeReason.trim(),
+                      suspend_employee: alsoSuspend,
+                    });
+                    toast.success(
+                      `${revokeTarget.slot.label} appointment revoked${alsoSuspend ? " · employee suspended" : ""}`,
+                    );
+                    setRevokeTarget(null);
+                  } catch (e) {
+                    toast.error((e as Error).message);
+                  }
+                }}
+                className="rounded-lg bg-destructive text-destructive-foreground px-3 py-2 text-xs font-semibold disabled:opacity-50"
+              >
+                {revoke.isPending ? "Revoking…" : "Confirm revoke"}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
