@@ -140,6 +140,15 @@ const ShiftManagement = lazy(() => import("./pages/admin-os/people-ops/attendanc
 const HolidayCalendar = lazy(() => import("./pages/admin-os/people-ops/attendance/HolidayCalendar"));
 const AttendanceCorrections = lazy(() => import("./pages/admin-os/people-ops/attendance/AttendanceCorrections"));
 const WorkforceAvailability = lazy(() => import("./pages/admin-os/people-ops/attendance/WorkforceAvailability"));
+const PayrollIndex = lazy(() => import("./pages/admin-os/people-ops/payroll/PayrollIndex"));
+const PayrollCycles = lazy(() => import("./pages/admin-os/people-ops/payroll/PayrollCycles"));
+const PayrollCycleDetail = lazy(() => import("./pages/admin-os/people-ops/payroll/PayrollCycleDetail"));
+const CompensationPlansPage = lazy(() => import("./pages/admin-os/people-ops/payroll/CompensationPlansPage"));
+const SalaryStructuresPage = lazy(() => import("./pages/admin-os/people-ops/payroll/SalaryStructuresPage"));
+const SalaryRevisionsPage = lazy(() => import("./pages/admin-os/people-ops/payroll/SalaryRevisionsPage"));
+const BonusCenter = lazy(() => import("./pages/admin-os/people-ops/payroll/BonusCenter"));
+const BenefitsCenter = lazy(() => import("./pages/admin-os/people-ops/payroll/BenefitsCenter"));
+const ReimbursementCenter = lazy(() => import("./pages/admin-os/people-ops/payroll/ReimbursementCenter"));
 const FounderOfficeDashboard = lazy(
   () => import("./pages/admin-os/founder-office/FounderOfficeDashboard"),
 );
