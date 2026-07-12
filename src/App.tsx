@@ -518,6 +518,15 @@ const App = () => (
                     <Route path="history" element={<AutomationHistoryPage />} />
                     <Route path="monitor" element={<AutomationMonitorPage />} />
                   </Route>
+                  <Route path="ai" element={<AiShell />}>
+                    <Route index element={<AiChat />} />
+                    <Route path="recommendations" element={<AiRecommendationsPage />} />
+                    <Route path="predictions" element={<AiPredictionsPage />} />
+                    <Route path="risks" element={<AiRisksPage />} />
+                    <Route path="summaries" element={<AiSummariesPage />} />
+                    <Route path="knowledge" element={<AiKnowledgePage />} />
+                    <Route path="prompts" element={<AiPromptsPage />} />
+                  </Route>
                   <Route path="profile" element={<ExecutiveProfile />} />
                   <Route path="notifications" element={<ExecutiveNotificationsPage />} />
                 </Route>
