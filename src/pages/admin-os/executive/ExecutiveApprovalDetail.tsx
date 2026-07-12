@@ -40,7 +40,7 @@ import {
   StatusBadge,
   EmptyState,
 } from "@/components/admin-os/ds";
-import { useEmployees } from "@/hooks/admin-os/useEmployees";
+import { useEmployeesList } from "@/hooks/admin-os/useEmployees";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect } from "react";
 
