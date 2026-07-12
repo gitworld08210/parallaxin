@@ -8,18 +8,18 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthProvider";
 
-const audit = async (action: string, entity_type: string, entity_id: string | null, meta: any = {}) => {
+const audit = async (action: string, target_type: string, target_id: string | null, meta: any = {}) => {
   try {
     const { data: userRes } = await supabase.auth.getUser();
     await supabase.from("admin_audit_logs").insert({
-      actor_id: userRes.user?.id ?? null,
+      actor_user_id: userRes.user?.id ?? null,
+      module: "governance",
       action,
-      entity_type,
-      entity_id,
-      metadata: meta,
+      target_type,
+      target_id: target_id ?? undefined,
+      after: meta,
     });
   } catch (e) {
-    // audit is best-effort
     console.warn("[governance] audit failed", e);
   }
 };
