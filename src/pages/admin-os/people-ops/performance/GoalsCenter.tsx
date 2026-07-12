@@ -103,7 +103,7 @@ const GoalsCenter = () => {
     {
       key: "status",
       header: "Status",
-      cell: (g) => <StatusBadge tone={STATUS_TONE[g.status]}>{g.status.replace("_", " ")}</StatusBadge>,
+      cell: (g) => <StatusBadge tone={STATUS_TONE[g.status]} label={g.status.replace("_", " ")} />,
     },
     { key: "due", header: "Due", cell: (g) => (g.due_date ? new Date(g.due_date).toLocaleDateString() : "—") },
     {
