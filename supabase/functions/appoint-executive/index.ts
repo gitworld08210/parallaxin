@@ -6,7 +6,13 @@
 // - Returns temp password + signed URL for the founder as fallback
 import { createClient } from "npm:@supabase/supabase-js@2.45.0";
 import { PDFDocument, StandardFonts, rgb } from "npm:pdf-lib@1.17.1";
-import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+};
 
 const NAVY = rgb(0.043, 0.09, 0.184);
 const GOLD = rgb(0.85, 0.65, 0.13);
