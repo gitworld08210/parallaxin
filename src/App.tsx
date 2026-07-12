@@ -308,7 +308,19 @@ const App = () => (
                   <Route path="audit" element={<AuditCenter />} />
                   <Route path="departments" element={<DepartmentsIndex />} />
                   <Route path="departments/:id" element={<DepartmentDetail />} />
+                  <Route path="platform" element={<PlatformIndex />} />
+                  <Route path="platform/approvals" element={<ApprovalCenter />} />
+                  <Route path="platform/workflows" element={<WorkflowViewer />} />
+                  <Route path="platform/notifications" element={<NotificationCenter />} />
+                  <Route path="platform/activity" element={<ActivityFeed />} />
+                  <Route path="platform/assignments" element={<AssignmentQueue />} />
+                  <Route path="platform/search" element={<GlobalSearch />} />
+                  <Route path="platform/documents" element={<DocumentManager />} />
+                  <Route path="platform/reports" element={<ReportsCenter />} />
+                  <Route path="platform/dashboards" element={<DashboardConsole />} />
+                  <Route path="platform/scheduler" element={<SchedulerConsole />} />
                   <Route path=":slug" element={<AdminOSModulePlaceholder />} />
+                </Route>
                 </Route>
               </Route>
 
