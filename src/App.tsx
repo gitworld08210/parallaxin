@@ -320,6 +320,16 @@ const FinProcurementCenter = lazy(() => import("./pages/admin-os/finance-legal/P
 const FinVendorCenter = lazy(() => import("./pages/admin-os/finance-legal/VendorCenter"));
 const FinContractCenter = lazy(() => import("./pages/admin-os/finance-legal/ContractCenter"));
 const FinComplianceDashboard = lazy(() => import("./pages/admin-os/finance-legal/ComplianceDashboard"));
+const SecurityShell = lazy(() => import("./pages/admin-os/security/SecurityShell"));
+const SecurityDashboardPage = lazy(() => import("./pages/admin-os/security/SecurityDashboard"));
+const SecIncidentCenter = lazy(() => import("./pages/admin-os/security/IncidentCenter"));
+const SecIncidentWorkspace = lazy(() => import("./pages/admin-os/security/IncidentWorkspace"));
+const SecThreatCenter = lazy(() => import("./pages/admin-os/security/ThreatCenter"));
+const SecIamCenter = lazy(() => import("./pages/admin-os/security/IamCenter"));
+const SecAccessReviews = lazy(() => import("./pages/admin-os/security/AccessReviews"));
+const SecInvestigationWorkspace = lazy(() => import("./pages/admin-os/security/InvestigationWorkspace"));
+const SecComplianceDashboard = lazy(() => import("./pages/admin-os/security/ComplianceDashboard"));
+const SecAnalytics = lazy(() => import("./pages/admin-os/security/SecurityAnalytics"));
 const PlatformIndex = lazy(() => import("./pages/admin-os/platform/PlatformIndex"));
 const ApprovalCenter = lazy(() => import("./pages/admin-os/platform/ApprovalCenter"));
 const WorkflowViewer = lazy(() => import("./pages/admin-os/platform/WorkflowViewer"));
