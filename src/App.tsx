@@ -497,6 +497,18 @@ const App = () => (
                     <Route path="calendar" element={<CompanyCalendarPage />} />
                     <Route path="metadata" element={<MetadataManagerPage />} />
                   </Route>
+                  <Route path="automation" element={<AutomationShell />}>
+                    <Route index element={<AutomationOverview />} />
+                    <Route path="automations" element={<AutomationsList />} />
+                    <Route path="builder" element={<AutomationBuilder />} />
+                    <Route path="builder/:id" element={<AutomationBuilder />} />
+                    <Route path="schedules" element={<AutomationSchedulesPage />} />
+                    <Route path="reminders" element={<AutomationRemindersPage />} />
+                    <Route path="escalations" element={<AutomationEscalationsPage />} />
+                    <Route path="templates" element={<AutomationTemplatesPage />} />
+                    <Route path="history" element={<AutomationHistoryPage />} />
+                    <Route path="monitor" element={<AutomationMonitorPage />} />
+                  </Route>
                   <Route path="profile" element={<ExecutiveProfile />} />
                   <Route path="notifications" element={<ExecutiveNotificationsPage />} />
                 </Route>
