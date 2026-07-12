@@ -1,85 +1,111 @@
-# Organization module — audit summary and change plan
+# Phase 1.12 — Core Platform Engines
 
-## What I found (short version)
+Ten reusable engines that every Admin OS module consumes. No department-specific logic inside engines. Built incrementally in three shippable waves so the app never breaks.
 
-The organization backend (tables, RLS, RPCs) is mostly solid. The invite flow is the one thing that's actually broken end-to-end for the user, and it's a **database permissions bug**, not a UI bug. On top of that, there's a chunk of dead/half-built code that's confusing to reason about.
+## Scope
 
-## Root cause of your "This invitation is no longer available" error
+Engines: Approval, Workflow, Notification, Global Search, Assignment, Reporting, Dashboard, Activity Feed, File/Document, Scheduler.
 
-Confirmed by reading the live policies:
+Every engine ships with: DB tables (RLS + GRANTs + audit), a typed service layer (`src/services/platform/<engine>.ts`), a React hook (`src/hooks/platform/use<Engine>.ts`), and a reusable UI surface under `src/components/platform/<engine>/` + a console page under `src/pages/admin-os/platform/<engine>/`.
 
-- Table `public.organization_invites` has a SELECT policy of `is_organization_member(organization_id)`.
-- Meaning: only people who are **already** in the organization can read invite rows.
-- The invitee — the person the invite is for — is **not yet** a member, so every direct `select()` against `organization_invites` from the invitee returns nothing.
+All engines integrate with existing RBAC (`has_role`, admin permissions), `admin_audit_logs`, and existing `notifications` table where possible (extended, not duplicated).
 
-Every code path that opens the invite page or lists incoming invites tries to do a direct select:
+## Wave 1 — Foundations (governance backbone)
 
-- `src/pages/InviteAccept.tsx` line 69-75 (fetch by `invite_token`)
-- `src/services/organization/invite.service.ts` `listIncomingForUser` (used by `useIncomingInvites`)
-- `src/pages/Notifications.tsx` fallback lookup in `openInvite`
+1. **Approval Engine**
+   - Tables: `platform_approval_requests`, `platform_approval_steps`, `platform_approval_decisions`.
+   - Generic: any module submits `{module, entity_type, entity_id, payload, workflow_id}`; approvers act via reusable Approval Center.
+   - UI: `/admin-os/platform/approvals` inbox + `<ApprovalPanel entityType entityId />` embeddable.
 
-All of them silently return empty for the invitee, so:
-- The pending-invites banner on `/notifications` never shows.
-- Clicking the org-invite notification hits the "no longer available" fallback.
-- Opening `/invite/:token` directly shows "Invitation not found".
+2. **Workflow Engine**
+   - Tables: `platform_workflows`, `platform_workflow_steps`, `platform_workflow_runs`, `platform_workflow_run_steps`.
+   - JSON-defined steps (approval / notification / assignment / script). Approval Engine consumes workflows.
+   - UI: read-only workflow viewer now; drag-drop editor stub for later.
 
-The Accept/Decline RPCs (`org_accept_invite`, `org_decline_invite`) are `SECURITY DEFINER` so they'd work — but the user never gets to a screen that has the buttons.
+3. **Notification Engine**
+   - Reuse existing `notifications` table; add `platform_notification_channels`, `platform_notification_preferences`, `platform_notification_templates`.
+   - Service: `notify({recipient, template, data, channels})`. Every other engine calls this — no direct inserts.
+   - UI: Notification Center dropdown + `/admin-os/platform/notifications` settings.
 
-## What to change
+4. **Activity Feed Engine**
+   - Table: `platform_activity_events` (actor, verb, object_type, object_id, department_id, visibility, metadata).
+   - Reusable `<ActivityTimeline filters />` and `/admin-os/platform/activity` global feed. Realtime via Supabase channel.
 
-### 1. Fix the invite RLS (the actual bug) — required
+## Wave 2 — Work distribution & data access
 
-Add a security-definer RPC + broaden SELECT so an invitee can see their own invite.
+5. **Assignment Engine**
+   - Tables: `platform_assignments`, `platform_assignment_rules`.
+   - Manual + rule-based (round-robin, load-based, department). AI-assisted stub.
+   - UI: `/admin-os/platform/assignments` queue + `<AssignmentBadge />`.
 
-- New RPC `public.get_organization_invite_by_token(_token uuid)` — `SECURITY DEFINER`, returns the invite joined with org + inviter profile + role name as a single row. Callable by any authenticated user. This is what `/invite/:token` should call instead of a raw select.
-- New RPC `public.list_incoming_organization_invites()` — `SECURITY DEFINER`, returns pending, non-expired invites where `email = auth.jwt() ->> 'email'` OR `username = (select username from profiles where user_id = auth.uid())`. This is what `useIncomingInvites` should call.
-- Add a SELECT policy on `organization_invites` so invitees can also read their own rows directly (belt + suspenders, in case something bypasses the RPC): `email = auth.jwt() ->> 'email' OR username = (select username from public.profiles where user_id = auth.uid())`.
+6. **Global Search Engine**
+   - Table: `platform_search_index` (object_type, object_id, title, body, tags, department_id, permission_key) + `tsvector` + GIN index.
+   - Triggers on employees, departments, `admin_audit_logs`, approvals, workflows, documents keep it in sync.
+   - RPC `platform_search(query, filters)` respects RBAC. UI: global ⌘K palette + `/admin-os/platform/search`.
 
-Client changes after the migration:
-- `InviteAccept.tsx` — replace the direct select block (lines 69-96) with a single `supabase.rpc('get_organization_invite_by_token', { _token: token })` call.
-- `invite.service.ts` `listIncomingForUser` — replace select with `rpc('list_incoming_organization_invites')`.
-- `Notifications.tsx` `openInvite` — replace the fallback direct select with the same RPC.
+7. **File & Document Engine**
+   - Storage bucket `platform-documents` (private) + tables `platform_documents`, `platform_document_versions`, `platform_document_permissions`.
+   - Version history, ownership, per-doc ACL. UI: `/admin-os/platform/documents` manager + `<DocumentPicker />`.
 
-### 2. Clean up the invite notification click path — small quality-of-life
+## Wave 3 — Insight & automation
 
-- `Notifications.tsx` currently does a two-step "look up token → navigate". Simpler: on click, `nav(/organization-invite/${notification_id})` and let the invite page resolve the invite from `organization_id + auth.uid()` via the new RPC. Optional, keeps URLs stable if someone bookmarks.
+8. **Reporting Engine**
+   - Tables: `platform_report_definitions`, `platform_report_runs`.
+   - Definitions declare data source (view/RPC), columns, filters, schedule. CSV export via edge function.
+   - UI: `/admin-os/platform/reports` browse/run/export.
 
-### 3. Remove or finish the vaporware "affiliation" branch — pick one
+9. **Dashboard Engine**
+   - Tables: `platform_dashboards`, `platform_dashboard_widgets`, `platform_widget_catalog`.
+   - Widgets are typed components registered in a client-side catalog; dashboards assemble them per department. Existing dashboards migrated to use widgets.
+   - UI: `<DashboardCanvas dashboardId />` + `/admin-os/platform/dashboards` editor.
 
-Currently the notification `type` enum contains 6 `affiliation_*` values, and `Notifications.tsx` has icon/text/click handlers for them, but there is no `affiliations` table, no RPC, no code that ever inserts one. It's pure dead surface area.
+10. **Scheduler Engine**
+    - Tables: `platform_scheduled_jobs`, `platform_scheduled_job_runs`.
+    - Backed by `pg_cron` + `pg_net` calling a single `platform-scheduler-tick` edge function that dispatches due jobs (reports, reminders, cleanup, notification digests).
+    - UI: `/admin-os/platform/scheduler` console.
 
-Two options (I recommend A unless you actually want the feature):
+## Cross-cutting rules applied to every engine
 
-- **A. Remove:** drop the six enum values from `notifications_type_check`, delete the `affiliation_*` branches in `Notifications.tsx` (`iconFor`, `textFor`, the `openInvite` type check).
-- **B. Build:** design a real `profile_affiliations` table + `affiliate_user` / `accept_affiliation` RPCs + notification triggers. Bigger scope — separate plan.
+- **RLS + GRANTs** on every new public table (authenticated + service_role; admin-scoped via `has_role` / admin permissions).
+- **Audit**: engine services write to `admin_audit_logs` automatically via helper `logAdminAction`.
+- **Realtime**: `ALTER PUBLICATION supabase_realtime ADD TABLE ...` for approvals, notifications, assignments, activity events, dashboard-driving tables.
+- **APIs**: each service exposes `create / get / list(filter,sort,page) / update / remove` where allowed; permission checks via existing `ADMIN_PERMISSIONS`.
+- **Errors**: standardized `PlatformError` with code + user-safe message; hooks surface via toast.
+- **No department logic**: engines only know generic `module` + `entity_type` + `entity_id`.
 
-### 4. Delete unused organization scaffolds — hygiene
+## File layout (new)
 
-Only if you're not planning to build these soon; otherwise leave them. All are 8-line `// page scaffold. Build feature UI here.` stubs with no logic and no incoming links:
+```text
+src/
+  services/platform/{approval,workflow,notification,search,assignment,reporting,dashboard,activity,document,scheduler}.ts
+  hooks/platform/use{Approvals,Workflows,Notifications,...}.ts
+  components/platform/{approval,workflow,notification,search,assignment,reports,dashboard,activity,documents,scheduler}/*
+  pages/admin-os/platform/{approvals,workflows,notifications,search,assignments,reports,dashboards,activity,documents,scheduler}/*
+supabase/functions/
+  platform-scheduler-tick/index.ts
+  platform-report-run/index.ts
+```
 
-- `src/pages/organization/CreateOrganization.tsx` and its `/organization/create` route in `App.tsx` (the real creation flow is `/onboarding/organization` → `OrganizationOnboarding.tsx`).
-- `src/components/organization/forms/CreateOrganizationForm.tsx` (dead export).
-- Optionally: `OrganizationAnalytics`, `OrganizationAnnouncements`, `OrganizationCalendar`, `OrganizationDrive`, `OrganizationFeed`, `OrganizationHiring`, `OrganizationNotifications`, `OrganizationProfile`, `OrganizationProjects`, `OrganizationSearch`, `OrganizationTasks` — if you don't have a near-term plan for these. I'd keep `OrganizationProfile` and build it (it's the public-facing org page).
+Routes registered under existing `/admin-os` layout, gated by admin permissions. Sidebar gets a new "Platform" section.
 
-### 5. Consistency fixes — nice to have, low risk
+## Delivery order (one migration + code batch per wave)
 
-- Rename `is_organization_admin` to be permission-based (`has_org_permission(uid, org, 'organization.manage')`) instead of hardcoded role names `'Owner'/'Administrator'`. Otherwise, custom-named admin roles silently fail RLS while succeeding in RPCs.
-- Drop `useMyWorkspaces` in favor of the "canonical" `useUserOrganizations` (only after grepping call sites and updating them).
-- Fix duplicate `{/* Affiliated organizations */}` comment in `src/pages/Profile.tsx:545-546`.
-- Consider removing the direct `INSERT` policy on `organizations` so all creation must go through `create_organization_workspace` (prevents orphan orgs with no default role/settings/membership).
+1. Wave 1 migration → services/hooks/UI → wire into existing HR/Founder/Audit modules.
+2. Wave 2 migration → services/hooks/UI → migrate existing search/file usage.
+3. Wave 3 migration + edge functions + pg_cron → migrate existing dashboards to widget engine.
 
-## Recommended order
+## Technical notes
 
-1. **Migration:** the two new RPCs + broadened SELECT policy on `organization_invites` (fixes the bug you're actually hitting).
-2. **Client:** switch `InviteAccept`, `invite.service.listIncomingForUser`, and `Notifications.openInvite` to the new RPCs.
-3. **Cleanup:** remove `affiliation_*` dead code and the unused scaffolds you don't plan to build.
-4. **Later:** admin-check consistency, `useMyWorkspaces` dedupe, org insert policy tightening — batch these once the invite flow is stable.
+- Search uses Postgres `tsvector`; no external service.
+- Workflow steps stored as JSONB with a discriminated union type in TS.
+- Dashboard widgets are React components keyed by `widget_type` string; catalog lives client-side, DB stores only config.
+- Scheduler tick edge function runs every minute via `pg_cron` + `pg_net`, invoked with anon key + internal shared secret.
+- All new tables get `created_at`/`updated_at` + `update_updated_at_column` trigger, soft-delete via `deleted_at` where the spec calls for it (documents, workflows, dashboards, reports, jobs).
 
-## Technical details
+## Out of scope (explicit)
 
-- New RPC skeletons will use `SECURITY DEFINER` with `SET search_path = public`, return `SETOF` a record type, and be granted `EXECUTE` to `authenticated`.
-- The broadened SELECT policy uses `auth.jwt() ->> 'email'` (available inside RLS) and a subselect against `public.profiles`; both are safe inside RLS expressions.
-- No changes to `org_accept_invite` / `org_decline_invite` — they already work.
-- Type regeneration will happen automatically after the migration approves; client edits come after that.
+- Push notifications, email delivery integration (Notification Engine leaves channel adapters as stubs).
+- Drag-and-drop workflow/dashboard editors (viewer + JSON editor only; UX stub for later phase).
+- AI-assisted assignment (interface only).
 
-Approve this and I'll do it in that order (migration first, then client, then optional cleanup — I'll pause before the cleanup step so you can pick what to delete).
+Approve to start with Wave 1 (Approval + Workflow + Notification + Activity Feed).
