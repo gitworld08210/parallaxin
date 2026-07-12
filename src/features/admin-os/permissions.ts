@@ -55,6 +55,11 @@ export const ADMIN_PERMISSIONS = {
   // Employee Passport (Phase 2.3)
   PEOPLE_OPS_PASSPORT_VIEW: "people_ops.passport.view",
   PEOPLE_OPS_PASSPORT_MANAGE: "people_ops.passport.manage",
+
+  // Workforce movements (Phase 2.4)
+  PEOPLE_OPS_MOVEMENTS_VIEW: "people_ops.movements.view",
+  PEOPLE_OPS_MOVEMENTS_MANAGE: "people_ops.movements.manage",
+  PEOPLE_OPS_MOVEMENTS_APPLY: "people_ops.movements.apply",
 } as const;
 
 export type AdminPermissionKey =
