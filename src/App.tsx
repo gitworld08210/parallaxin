@@ -728,6 +728,16 @@ const App = () => (
                     <Route path="sla" element={<SupportSlaDashboard />} />
                     <Route path="analytics" element={<SupportAnalyticsPage />} />
                   </Route>
+                  <Route path="finance-legal" element={<FinanceLegalShell />}>
+                    <Route index element={<FinanceDashboard />} />
+                    <Route path="budgets" element={<FinBudgetCenter />} />
+                    <Route path="expenses" element={<FinExpenseCenter />} />
+                    <Route path="invoices" element={<FinInvoiceCenter />} />
+                    <Route path="procurement" element={<FinProcurementCenter />} />
+                    <Route path="vendors" element={<FinVendorCenter />} />
+                    <Route path="contracts" element={<FinContractCenter />} />
+                    <Route path="compliance" element={<FinComplianceDashboard />} />
+                  </Route>
                   <Route path="platform" element={<PlatformIndex />} />
                   <Route path="platform/approvals" element={<ApprovalCenter />} />
                   <Route path="platform/workflows" element={<WorkflowViewer />} />
