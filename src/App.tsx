@@ -260,6 +260,17 @@ const App = () => (
                   <Route path="payments" element={<PaymentsAdmin />} />
                 </Route>
               </Route>
+
+              {/* Aurelix Admin OS — internal enterprise workspace */}
+              <Route path="/admin-os/no-access" element={<AdminOSNoAccess />} />
+              <Route element={<AdminOSGate />}>
+                <Route path="/admin-os/first-login" element={<AdminOSFirstLogin />} />
+                <Route path="/admin-os" element={<AdminOSLayout />}>
+                  <Route index element={<AdminOSDashboard />} />
+                  <Route path=":slug" element={<AdminOSModulePlaceholder />} />
+                </Route>
+              </Route>
+
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>
@@ -270,5 +281,6 @@ const App = () => (
     </ThemeProvider>
   </QueryClientProvider>
 );
+
 
 export default App;
