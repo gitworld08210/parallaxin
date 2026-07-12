@@ -156,7 +156,17 @@ const ExecutiveGate = lazy(() =>
 const ExecutiveLayout = lazy(() => import("./components/admin-os/executive/ExecutiveLayout"));
 const ExecutiveDashboard = lazy(() => import("./pages/admin-os/executive/ExecutiveDashboard"));
 const ExecutiveProfile = lazy(() => import("./pages/admin-os/executive/ExecutiveProfile"));
-const ExecutiveSecurity = lazy(() => import("./pages/admin-os/executive/ExecutiveSecurity"));
+// Phase 3.9 — Founder Office Security & Identity
+const SecurityShell = lazy(() => import("./pages/admin-os/executive/security/SecurityShell"));
+const SecurityOverview = lazy(() => import("./pages/admin-os/executive/security/SecurityOverview"));
+const IdentityProfile = lazy(() => import("./pages/admin-os/executive/security/IdentityProfile"));
+const SessionManagerPage = lazy(() => import("./pages/admin-os/executive/security/SessionManager"));
+const TrustedDevicesPage = lazy(() => import("./pages/admin-os/executive/security/TrustedDevices"));
+const RecoveryCenterPage = lazy(() => import("./pages/admin-os/executive/security/RecoveryCenter"));
+const PasswordAndMFAPage = lazy(() => import("./pages/admin-os/executive/security/PasswordAndMFA"));
+const SecurityAlertsPage = lazy(() => import("./pages/admin-os/executive/security/SecurityAlerts"));
+const LoginHistoryPage = lazy(() => import("./pages/admin-os/executive/security/LoginHistory"));
+const SecurityPoliciesPage = lazy(() => import("./pages/admin-os/executive/security/SecurityPolicies"));
 const ExecutivePlaceholders = () => import("./pages/admin-os/executive/ExecutivePlaceholders");
 const ExecutiveInbox = lazy(() => import("./pages/admin-os/executive/ExecutiveInbox"));
 const ExecutiveApprovalDetail = lazy(() => import("./pages/admin-os/executive/ExecutiveApprovalDetail"));
@@ -454,7 +464,17 @@ const App = () => (
                     <Route path="lockdowns" element={<LockdownPanelPage />} />
                     <Route path="watchlists" element={<WatchlistPanelPage />} />
                   </Route>
-                  <Route path="security" element={<ExecutiveSecurity />} />
+                  <Route path="security" element={<SecurityShell />}>
+                    <Route index element={<SecurityOverview />} />
+                    <Route path="identity" element={<IdentityProfile />} />
+                    <Route path="sessions" element={<SessionManagerPage />} />
+                    <Route path="devices" element={<TrustedDevicesPage />} />
+                    <Route path="recovery" element={<RecoveryCenterPage />} />
+                    <Route path="password" element={<PasswordAndMFAPage />} />
+                    <Route path="alerts" element={<SecurityAlertsPage />} />
+                    <Route path="history" element={<LoginHistoryPage />} />
+                    <Route path="policies" element={<SecurityPoliciesPage />} />
+                  </Route>
                   <Route path="company" element={<CompanyShell />}>
                     <Route index element={<CompanyOverview />} />
                     <Route path="profile" element={<CompanyProfilePage />} />
