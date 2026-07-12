@@ -748,6 +748,17 @@ const App = () => (
                     <Route path="contracts" element={<FinContractCenter />} />
                     <Route path="compliance" element={<FinComplianceDashboard />} />
                   </Route>
+                  <Route path="security" element={<SecurityDeptShell />}>
+                    <Route index element={<SecurityDashboardPage />} />
+                    <Route path="incidents" element={<SecIncidentCenter />} />
+                    <Route path="incidents/:id" element={<SecIncidentWorkspace />} />
+                    <Route path="threats" element={<SecThreatCenter />} />
+                    <Route path="iam" element={<SecIamCenter />} />
+                    <Route path="access-reviews" element={<SecAccessReviews />} />
+                    <Route path="investigations" element={<SecInvestigationWorkspace />} />
+                    <Route path="compliance" element={<SecComplianceDashboard />} />
+                    <Route path="analytics" element={<SecAnalytics />} />
+                  </Route>
                   <Route path="platform" element={<PlatformIndex />} />
                   <Route path="platform/approvals" element={<ApprovalCenter />} />
                   <Route path="platform/workflows" element={<WorkflowViewer />} />
