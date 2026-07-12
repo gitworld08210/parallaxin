@@ -626,41 +626,144 @@ async function buildJoiningLetter(input: {
     x: RX + sigColW + 40, y: sigLineY - 22, size: 8, font: helv, color: DARK_TEXT,
   });
 
-  // Confidential access box
-  const boxY = sigLineY - 60;
-  page.drawRectangle({
-    x: RX, y: boxY - 62, width: RW, height: 58,
-    borderColor: GOLD, borderWidth: 0.8,
-    color: rgb(1, 0.98, 0.9), opacity: 0.4,
-  });
-  page.drawText("CONFIDENTIAL ACCESS DETAILS", {
-    x: RX + 10, y: boxY - 14, size: 8, font: helvBold, color: GOLD,
-  });
-  page.drawText(`Company Email: ${input.companyEmail}`, {
-    x: RX + 10, y: boxY - 26, size: 8, font: helv, color: DARK_TEXT,
-  });
-  page.drawText(`Temporary Password: ${input.tempPassword}`, {
-    x: RX + 10, y: boxY - 38, size: 8, font: helvBold, color: DARK_TEXT,
-  });
-  page.drawText(`First-login URL: ${input.loginUrl}`, {
-    x: RX + 10, y: boxY - 50, size: 7.5, font: helv, color: DARK_TEXT,
-  });
-  page.drawText("Please change your password immediately after first login. Do not share these credentials.", {
-    x: RX + 10, y: boxY - 60, size: 6.5, font: helv, color: MUTED,
-  });
-
-  // Footer bar
+  // Footer bar for page 1
   page.drawRectangle({
     x: 12, y: 12, width: W - 24, height: 22, color: NAVY,
   });
-  const footer = "AURELIX TECHNOLOGIES PRIVATE LIMITED   ·   www.aurelix.com";
-  page.drawText(footer, {
-    x: (W - helv.widthOfTextAtSize(footer, 8)) / 2,
+  {
+    const footer1 = "AURELIX TECHNOLOGIES PRIVATE LIMITED   ·   www.aurelix.com";
+    page.drawText(footer1, {
+      x: (W - helv.widthOfTextAtSize(footer1, 8)) / 2,
+      y: 20, size: 8, font: helv, color: GOLD,
+    });
+  }
+
+  // ================= PAGE 2 — CONFIDENTIAL ACCESS =================
+  const page2 = pdf.addPage([595, 842]);
+  const P2W = 595;
+  const P2H = 842;
+
+  // Header band
+  page2.drawRectangle({ x: 0, y: P2H - 90, width: P2W, height: 90, color: NAVY });
+  page2.drawText("AURELIX", { x: 40, y: P2H - 45, size: 22, font: timesBold, color: GOLD });
+  page2.drawText("FOUNDER OFFICE  ·  CONFIDENTIAL", {
+    x: 40, y: P2H - 65, size: 9, font: helvBold, color: rgb(0.85, 0.85, 0.9),
+  });
+  page2.drawText(`Document: AUR-FO-APPT-${new Date().getFullYear()}-${input.employeeNumber.replace(/[^0-9]/g, "").padStart(4, "0")}`, {
+    x: 40, y: P2H - 80, size: 8, font: helv, color: rgb(0.7, 0.7, 0.75),
+  });
+
+  // Title
+  page2.drawText("FIRST-LOGIN CREDENTIALS", {
+    x: 40, y: P2H - 130, size: 20, font: helvBold, color: DARK_TEXT,
+  });
+  page2.drawLine({
+    start: { x: 40, y: P2H - 138 }, end: { x: 200, y: P2H - 138 },
+    thickness: 2, color: GOLD,
+  });
+
+  page2.drawText(`For: ${input.fullName}  ·  ${input.slotLabel}`, {
+    x: 40, y: P2H - 160, size: 10, font: helv, color: MUTED,
+  });
+
+  // Big credentials card
+  const cardX = 40;
+  const cardY = P2H - 190;
+  const cardW = P2W - 80;
+  const cardH = 260;
+  page2.drawRectangle({
+    x: cardX, y: cardY - cardH, width: cardW, height: cardH,
+    borderColor: GOLD, borderWidth: 1.5,
+    color: rgb(1, 0.98, 0.9), opacity: 0.5,
+  });
+
+  // Label bar
+  page2.drawRectangle({
+    x: cardX, y: cardY - 26, width: cardW, height: 26, color: GOLD,
+  });
+  page2.drawText("CONFIDENTIAL — LOGIN CREDENTIALS", {
+    x: cardX + 14, y: cardY - 18, size: 10, font: helvBold, color: NAVY,
+  });
+
+  // Employee ID
+  page2.drawText("EMPLOYEE ID", {
+    x: cardX + 20, y: cardY - 52, size: 8, font: helvBold, color: MUTED,
+  });
+  page2.drawText(input.employeeNumber, {
+    x: cardX + 20, y: cardY - 70, size: 16, font: timesBold, color: DARK_TEXT,
+  });
+
+  // Company Email
+  page2.drawText("COMPANY EMAIL (LOGIN ID)", {
+    x: cardX + 20, y: cardY - 100, size: 8, font: helvBold, color: MUTED,
+  });
+  page2.drawText(input.companyEmail, {
+    x: cardX + 20, y: cardY - 118, size: 14, font: timesBold, color: DARK_TEXT,
+  });
+
+  // Temporary Password (highlighted)
+  page2.drawText("TEMPORARY PASSWORD", {
+    x: cardX + 20, y: cardY - 148, size: 8, font: helvBold, color: MUTED,
+  });
+  page2.drawRectangle({
+    x: cardX + 20, y: cardY - 176, width: cardW - 40, height: 22,
+    color: NAVY,
+  });
+  page2.drawText(input.tempPassword, {
+    x: cardX + 30, y: cardY - 170, size: 14, font: helvBold, color: GOLD,
+  });
+
+  // Login URL
+  page2.drawText("FIRST-LOGIN URL", {
+    x: cardX + 20, y: cardY - 200, size: 8, font: helvBold, color: MUTED,
+  });
+  page2.drawText(input.loginUrl, {
+    x: cardX + 20, y: cardY - 216, size: 10, font: helv, color: DARK_TEXT,
+  });
+
+  // Warning strip
+  page2.drawRectangle({
+    x: cardX + 20, y: cardY - 250, width: cardW - 40, height: 28,
+    color: rgb(0.95, 0.3, 0.2), opacity: 0.12,
+    borderColor: rgb(0.85, 0.2, 0.1), borderWidth: 0.6,
+  });
+  page2.drawText("⚠  Change password immediately after first login. Do NOT share these credentials.", {
+    x: cardX + 30, y: cardY - 240, size: 8.5, font: helvBold, color: rgb(0.7, 0.15, 0.1),
+  });
+
+  // Instructions
+  const instrY = cardY - cardH - 30;
+  page2.drawText("HOW TO LOG IN", {
+    x: 40, y: instrY, size: 11, font: helvBold, color: DARK_TEXT,
+  });
+  const steps = [
+    `1.  Open  ${input.loginUrl}  in your browser.`,
+    `2.  Enter your Company Email above as the login ID.`,
+    `3.  Enter the Temporary Password exactly as shown.`,
+    `4.  You will be prompted to set a new password.`,
+    `5.  Complete 2FA setup using an authenticator app (Google Authenticator / Authy).`,
+    `6.  Accept company policies to activate your Admin OS access.`,
+  ];
+  let iy = instrY - 18;
+  for (const s of steps) {
+    page2.drawText(s, { x: 44, y: iy, size: 9.5, font: helv, color: DARK_TEXT });
+    iy -= 16;
+  }
+
+  // Footer for page 2
+  page2.drawRectangle({
+    x: 12, y: 12, width: P2W - 24, height: 22, color: NAVY,
+  });
+  const footer2 = "AURELIX TECHNOLOGIES PRIVATE LIMITED  ·  CONFIDENTIAL — DO NOT DISTRIBUTE";
+  page2.drawText(footer2, {
+    x: (P2W - helv.widthOfTextAtSize(footer2, 8)) / 2,
     y: 20, size: 8, font: helv, color: GOLD,
   });
 
   return await pdf.save();
 }
+
+
 
 function drawWrapped(
   page: any, text: string, x: number, y: number, maxW: number,
