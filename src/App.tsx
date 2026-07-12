@@ -160,7 +160,7 @@ const ExecutiveSecurity = lazy(() => import("./pages/admin-os/executive/Executiv
 const ExecutivePlaceholders = () => import("./pages/admin-os/executive/ExecutivePlaceholders");
 const ExecutiveInbox = lazy(() => import("./pages/admin-os/executive/ExecutiveInbox"));
 const ExecutiveApprovalDetail = lazy(() => import("./pages/admin-os/executive/ExecutiveApprovalDetail"));
-const ExecutiveApprovals = lazy(() => ExecutivePlaceholders().then((m) => ({ default: m.ExecutiveApprovals })));
+
 const ExecutiveDepartments = lazy(() => ExecutivePlaceholders().then((m) => ({ default: m.ExecutiveDepartments })));
 const ExecutiveEmployees = lazy(() => ExecutivePlaceholders().then((m) => ({ default: m.ExecutiveEmployees })));
 const ExecutiveReports = lazy(() => ExecutivePlaceholders().then((m) => ({ default: m.ExecutiveReports })));
