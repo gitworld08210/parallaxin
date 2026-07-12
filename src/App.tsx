@@ -315,6 +315,9 @@ const App = () => (
                   <Route path="people-ops/onboarding/:employeeId" element={<OnboardingDetail />} />
                   <Route path="people-ops/:employeeId/passport" element={<EmployeePassport />} />
                   <Route path="people-ops/:employeeId/passport/print" element={<PassportPrint />} />
+                  <Route path="people-ops/movements" element={<MovementCenter />} />
+                  <Route path="people-ops/movements/new" element={<MovementWizard />} />
+                  <Route path="people-ops/movements/:id" element={<MovementDetail />} />
                   <Route
                     path="founder-office"
                     element={<FounderOfficeDashboard />}
