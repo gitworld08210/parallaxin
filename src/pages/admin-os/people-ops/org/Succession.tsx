@@ -56,8 +56,6 @@ const Succession = () => {
     return <Navigate to="/admin-os/no-access" replace />;
   const canManage = hasPermission(ADMIN_PERMISSIONS.PEOPLE_OPS_SUCCESSION_MANAGE);
 
-  const empName = (id: string | null | undefined) =>
-    employees?.find((e) => e.id === id)?.full_name ?? "—";
 
   const stats = useMemo(() => {
     const arr = plans ?? [];
