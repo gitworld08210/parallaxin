@@ -359,6 +359,24 @@ const App = () => (
 
               {/* Aurelix Admin OS — internal enterprise workspace */}
               <Route path="/admin-os/no-access" element={<AdminOSNoAccess />} />
+
+              {/* Founder Office Executive Workspace (Phase 3.1) */}
+              <Route element={<ExecutiveGate />}>
+                <Route path="/admin-os/executive" element={<ExecutiveLayout />}>
+                  <Route index element={<ExecutiveDashboard />} />
+                  <Route path="inbox" element={<ExecutiveInbox />} />
+                  <Route path="approvals" element={<ExecutiveApprovals />} />
+                  <Route path="departments" element={<ExecutiveDepartments />} />
+                  <Route path="employees" element={<ExecutiveEmployees />} />
+                  <Route path="reports" element={<ExecutiveReports />} />
+                  <Route path="decisions" element={<DecisionLogPage />} />
+                  <Route path="security" element={<ExecutiveSecurity />} />
+                  <Route path="company" element={<CompanySettingsPage />} />
+                  <Route path="profile" element={<ExecutiveProfile />} />
+                  <Route path="notifications" element={<ExecutiveNotificationsPage />} />
+                </Route>
+              </Route>
+
               <Route element={<AdminOSGate />}>
                 <Route path="/admin-os/first-login" element={<AdminOSFirstLogin />} />
                 <Route path="/admin-os" element={<AdminOSLayout />}>
