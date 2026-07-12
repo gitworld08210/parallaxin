@@ -396,7 +396,16 @@ const App = () => (
                   <Route path="approvals/:id" element={<ExecutiveApprovalDetail />} />
                   <Route path="departments" element={<ExecutiveDepartments />} />
                   <Route path="employees" element={<ExecutiveEmployees />} />
-                  <Route path="reports" element={<ExecutiveReports />} />
+                  <Route path="reports" element={<ReportsShell />}>
+                    <Route index element={<ReportsOverview />} />
+                    <Route path="analytics" element={<AnalyticsCenter />} />
+                    <Route path="scorecards" element={<ScorecardsPage />} />
+                    <Route path="trends" element={<TrendAnalysis />} />
+                    <Route path="library" element={<ReportLibrary />} />
+                    <Route path="scheduled" element={<ScheduledReportsPage />} />
+                    <Route path="exports" element={<ExportCenterPage />} />
+                    <Route path="compliance" element={<DepartmentReportCompliance />} />
+                  </Route>
                   <Route path="decisions" element={<DecisionCenter />} />
                   <Route path="decisions/new" element={<DecisionEditor />} />
                   <Route path="decisions/search" element={<DecisionSearchPage />} />
