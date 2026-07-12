@@ -2628,6 +2628,617 @@ export type Database = {
           },
         ]
       }
+      eng_bugs: {
+        Row: {
+          actual_behavior: string | null
+          assignee_id: string | null
+          bug_id: string
+          created_at: string
+          description: string | null
+          environment: string | null
+          expected_behavior: string | null
+          id: string
+          priority: string
+          project_id: string
+          release_id: string | null
+          reporter_id: string | null
+          reproduction_steps: string | null
+          resolved_at: string | null
+          severity: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          actual_behavior?: string | null
+          assignee_id?: string | null
+          bug_id?: string
+          created_at?: string
+          description?: string | null
+          environment?: string | null
+          expected_behavior?: string | null
+          id?: string
+          priority?: string
+          project_id: string
+          release_id?: string | null
+          reporter_id?: string | null
+          reproduction_steps?: string | null
+          resolved_at?: string | null
+          severity?: string
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          actual_behavior?: string | null
+          assignee_id?: string | null
+          bug_id?: string
+          created_at?: string
+          description?: string | null
+          environment?: string | null
+          expected_behavior?: string | null
+          id?: string
+          priority?: string
+          project_id?: string
+          release_id?: string | null
+          reporter_id?: string | null
+          reproduction_steps?: string | null
+          resolved_at?: string | null
+          severity?: string
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "eng_bugs_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "eng_projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      eng_deployments: {
+        Row: {
+          created_at: string
+          deployed_at: string | null
+          deployed_by: string | null
+          environment: string
+          id: string
+          notes: string | null
+          project_id: string
+          release_id: string | null
+          rollback_reason: string | null
+          rolled_back: boolean
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          deployed_at?: string | null
+          deployed_by?: string | null
+          environment: string
+          id?: string
+          notes?: string | null
+          project_id: string
+          release_id?: string | null
+          rollback_reason?: string | null
+          rolled_back?: boolean
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          deployed_at?: string | null
+          deployed_by?: string | null
+          environment?: string
+          id?: string
+          notes?: string | null
+          project_id?: string
+          release_id?: string | null
+          rollback_reason?: string | null
+          rolled_back?: boolean
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "eng_deployments_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "eng_projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "eng_deployments_release_id_fkey"
+            columns: ["release_id"]
+            isOneToOne: false
+            referencedRelation: "eng_releases"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      eng_documents: {
+        Row: {
+          author_id: string | null
+          content: string | null
+          created_at: string
+          doc_type: string
+          id: string
+          project_id: string | null
+          tags: string[] | null
+          title: string
+          updated_at: string
+          version: number
+        }
+        Insert: {
+          author_id?: string | null
+          content?: string | null
+          created_at?: string
+          doc_type?: string
+          id?: string
+          project_id?: string | null
+          tags?: string[] | null
+          title: string
+          updated_at?: string
+          version?: number
+        }
+        Update: {
+          author_id?: string | null
+          content?: string | null
+          created_at?: string
+          doc_type?: string
+          id?: string
+          project_id?: string | null
+          tags?: string[] | null
+          title?: string
+          updated_at?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "eng_documents_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "eng_projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      eng_epics: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          priority: string
+          project_id: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          priority?: string
+          project_id: string
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          priority?: string
+          project_id?: string
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "eng_epics_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "eng_projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      eng_features: {
+        Row: {
+          created_at: string
+          description: string | null
+          epic_id: string | null
+          feature_id: string
+          id: string
+          owner_id: string | null
+          priority: string
+          project_id: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          epic_id?: string | null
+          feature_id?: string
+          id?: string
+          owner_id?: string | null
+          priority?: string
+          project_id: string
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          epic_id?: string | null
+          feature_id?: string
+          id?: string
+          owner_id?: string | null
+          priority?: string
+          project_id?: string
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "eng_features_epic_id_fkey"
+            columns: ["epic_id"]
+            isOneToOne: false
+            referencedRelation: "eng_epics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "eng_features_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "eng_projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      eng_history: {
+        Row: {
+          action: string
+          actor_id: string | null
+          created_at: string
+          details: Json | null
+          entity_id: string
+          entity_type: string
+          id: string
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          created_at?: string
+          details?: Json | null
+          entity_id: string
+          entity_type: string
+          id?: string
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          created_at?: string
+          details?: Json | null
+          entity_id?: string
+          entity_type?: string
+          id?: string
+        }
+        Relationships: []
+      }
+      eng_products: {
+        Row: {
+          code: string
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          owner_id: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          owner_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          owner_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      eng_projects: {
+        Row: {
+          code: string
+          created_at: string
+          description: string | null
+          health: string
+          id: string
+          lead_id: string | null
+          name: string
+          priority: string
+          product_id: string | null
+          start_date: string | null
+          status: string
+          target_date: string | null
+          team: string[] | null
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          description?: string | null
+          health?: string
+          id?: string
+          lead_id?: string | null
+          name: string
+          priority?: string
+          product_id?: string | null
+          start_date?: string | null
+          status?: string
+          target_date?: string | null
+          team?: string[] | null
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          description?: string | null
+          health?: string
+          id?: string
+          lead_id?: string | null
+          name?: string
+          priority?: string
+          product_id?: string | null
+          start_date?: string | null
+          status?: string
+          target_date?: string | null
+          team?: string[] | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "eng_projects_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "eng_products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      eng_releases: {
+        Row: {
+          created_at: string
+          founder_approved: boolean
+          founder_approved_at: string | null
+          founder_approved_by: string | null
+          id: string
+          is_production: boolean
+          project_id: string
+          qa_approved: boolean
+          qa_approved_at: string | null
+          qa_approved_by: string | null
+          release_id: string
+          release_notes: string
+          released_at: string | null
+          released_by: string | null
+          scheduled_at: string | null
+          status: string
+          title: string
+          updated_at: string
+          version: string
+        }
+        Insert: {
+          created_at?: string
+          founder_approved?: boolean
+          founder_approved_at?: string | null
+          founder_approved_by?: string | null
+          id?: string
+          is_production?: boolean
+          project_id: string
+          qa_approved?: boolean
+          qa_approved_at?: string | null
+          qa_approved_by?: string | null
+          release_id?: string
+          release_notes: string
+          released_at?: string | null
+          released_by?: string | null
+          scheduled_at?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+          version: string
+        }
+        Update: {
+          created_at?: string
+          founder_approved?: boolean
+          founder_approved_at?: string | null
+          founder_approved_by?: string | null
+          id?: string
+          is_production?: boolean
+          project_id?: string
+          qa_approved?: boolean
+          qa_approved_at?: string | null
+          qa_approved_by?: string | null
+          release_id?: string
+          release_notes?: string
+          released_at?: string | null
+          released_by?: string | null
+          scheduled_at?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+          version?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "eng_releases_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "eng_projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      eng_sprints: {
+        Row: {
+          created_at: string
+          end_date: string | null
+          goal: string | null
+          id: string
+          name: string
+          project_id: string
+          start_date: string | null
+          status: string
+          updated_at: string
+          velocity: number | null
+        }
+        Insert: {
+          created_at?: string
+          end_date?: string | null
+          goal?: string | null
+          id?: string
+          name: string
+          project_id: string
+          start_date?: string | null
+          status?: string
+          updated_at?: string
+          velocity?: number | null
+        }
+        Update: {
+          created_at?: string
+          end_date?: string | null
+          goal?: string | null
+          id?: string
+          name?: string
+          project_id?: string
+          start_date?: string | null
+          status?: string
+          updated_at?: string
+          velocity?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "eng_sprints_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "eng_projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      eng_tasks: {
+        Row: {
+          assignee_id: string | null
+          created_at: string
+          description: string | null
+          epic_id: string | null
+          estimate_hours: number | null
+          feature_id: string | null
+          id: string
+          labels: string[] | null
+          priority: string
+          project_id: string
+          reporter_id: string | null
+          sprint_id: string | null
+          status: string
+          story_points: number | null
+          task_id: string
+          task_type: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          assignee_id?: string | null
+          created_at?: string
+          description?: string | null
+          epic_id?: string | null
+          estimate_hours?: number | null
+          feature_id?: string | null
+          id?: string
+          labels?: string[] | null
+          priority?: string
+          project_id: string
+          reporter_id?: string | null
+          sprint_id?: string | null
+          status?: string
+          story_points?: number | null
+          task_id?: string
+          task_type?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          assignee_id?: string | null
+          created_at?: string
+          description?: string | null
+          epic_id?: string | null
+          estimate_hours?: number | null
+          feature_id?: string | null
+          id?: string
+          labels?: string[] | null
+          priority?: string
+          project_id?: string
+          reporter_id?: string | null
+          sprint_id?: string | null
+          status?: string
+          story_points?: number | null
+          task_id?: string
+          task_type?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "eng_tasks_epic_id_fkey"
+            columns: ["epic_id"]
+            isOneToOne: false
+            referencedRelation: "eng_epics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "eng_tasks_feature_id_fkey"
+            columns: ["feature_id"]
+            isOneToOne: false
+            referencedRelation: "eng_features"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "eng_tasks_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "eng_projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "eng_tasks_sprint_id_fkey"
+            columns: ["sprint_id"]
+            isOneToOne: false
+            referencedRelation: "eng_sprints"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       executive_ai_conversations: {
         Row: {
           created_at: string
@@ -12959,6 +13570,7 @@ export type Database = {
       }
       current_employee_id: { Args: never; Returns: string }
       expire_temporary_assignments: { Args: never; Returns: number }
+      gen_eng_id: { Args: { _prefix: string }; Returns: string }
       generate_employee_number: { Args: never; Returns: string }
       generate_unique_org_slug: {
         Args: { _name: string; _self?: string }
@@ -13070,6 +13682,7 @@ export type Database = {
         Returns: boolean
       }
       is_creator: { Args: { _user_id: string }; Returns: boolean }
+      is_engineering_staff: { Args: { _user_id: string }; Returns: boolean }
       is_org_admin: { Args: { _org: string; _user: string }; Returns: boolean }
       is_org_member: { Args: { _org: string; _user: string }; Returns: boolean }
       is_organization_admin: {
