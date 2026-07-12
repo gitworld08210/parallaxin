@@ -159,7 +159,7 @@ const EmployeePassport = () => {
   }), [data, promHist, awards, skills]);
 
   if (!canView) return <PermissionDenied />;
-  if (isLoading) return <LoadingSkeleton lines={6} />;
+  if (isLoading) return <LoadingSkeleton rows={6} />;
   if (error) return <div className="p-6 text-danger">{(error as Error).message}</div>;
   if (!data?.employee) return <Navigate to="/admin-os/people-ops" replace />;
 
