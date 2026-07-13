@@ -12,6 +12,7 @@ import { IncomingCallListener } from "@/components/call/IncomingCallListener";
 import { IncomingCallOverlay } from "@/components/call/IncomingCallOverlay";
 import { CallScreen } from "@/components/call/CallScreen";
 import { EmailVerificationGate, useNeedsEmailVerification } from "@/components/auth/EmailVerificationGate";
+import { CreateSheet } from "@/components/create/CreateSheet";
 
 export const AppShell = () => {
   const { pathname } = useLocation();
@@ -96,7 +97,16 @@ export const AppShell = () => {
       >
         <NavSlot to="/" end label="Home" icon={Home} isReels={isReels} />
         <NavSlot to="/reels" label="Reels" icon={Film} isReels={isReels} />
-        <NavSlot to="/compose" label="Create" icon={Plus} isReels={isReels} />
+        <button
+          type="button"
+          aria-label="Create"
+          onClick={() => setCreateOpen(true)}
+          className="h-full w-full flex items-center justify-center active:scale-95 transition-transform"
+        >
+          <span className="h-9 w-9 rounded-2xl bg-gradient-to-br from-fuchsia-500 via-pink-500 to-red-500 grid place-items-center shadow-md">
+            <Plus className="h-6 w-6 text-white" strokeWidth={2.5} />
+          </span>
+        </button>
         <NavSlot
           to="/messages"
           label="Messages"
@@ -137,6 +147,7 @@ export const AppShell = () => {
         </NavLink>
       </nav>
 
+      <CreateSheet open={createOpen} onOpenChange={setCreateOpen} />
       {needsEmail && <EmailVerificationGate />}
     </div>
   );
