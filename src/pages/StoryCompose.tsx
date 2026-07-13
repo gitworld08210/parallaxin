@@ -88,7 +88,7 @@ const StoryCompose = () => {
           story_id: storyRow.id,
           kind: s.kind,
           position: { x: s.x, y: s.y },
-          payload: s.kind === "poll" ? { question: s.question, options: s.options } : { prompt: s.prompt },
+          payload: s.kind === "poll" ? { question: s.question, options: s.options } : s.kind === "qa" ? { prompt: s.prompt } : { title: s.title },
         }));
         await supabase.from("story_stickers" as any).insert(rows as any);
       }
@@ -140,11 +140,16 @@ const StoryCompose = () => {
                       ))}
                     </div>
                   </div>
-                ) : (
+                ) : s.kind === "qa" ? (
                   <div className="rounded-2xl bg-white/95 backdrop-blur px-3 py-2.5 shadow-xl min-w-[200px]">
                     <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide mb-1">Q&amp;A</p>
                     <p className="text-xs font-semibold text-foreground">{s.prompt}</p>
                     <div className="mt-1.5 text-[10px] text-muted-foreground italic">Type a response…</div>
+                  </div>
+                ) : (
+                  <div className="rounded-full bg-black/70 text-white backdrop-blur px-3 py-1.5 shadow-xl flex items-center gap-2 max-w-[220px]">
+                    <Music className="h-3.5 w-3.5 shrink-0" />
+                    <span className="text-xs font-semibold truncate">{s.title}</span>
                   </div>
                 )}
                 <button onPointerDown={(e) => e.stopPropagation()} onClick={() => removeSticker(s.id)}
