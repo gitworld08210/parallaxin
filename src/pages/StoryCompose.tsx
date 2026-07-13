@@ -1,15 +1,17 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { ImagePlus, X, Globe, Star, BarChart3, MessageSquare, Plus, Trash2 } from "lucide-react";
+import { ImagePlus, X, Globe, Star, BarChart3, MessageSquare, Plus, Trash2, Music, Wand2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthProvider";
 import { TopBar } from "@/components/vibe/TopBar";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { toast } from "sonner";
+import { FilterStrip, FilterKey, filterCss } from "@/components/compose/FilterStrip";
 
 type Sticker =
   | { id: string; kind: "poll"; x: number; y: number; question: string; options: string[] }
-  | { id: string; kind: "qa"; x: number; y: number; prompt: string };
+  | { id: string; kind: "qa"; x: number; y: number; prompt: string }
+  | { id: string; kind: "music"; x: number; y: number; title: string };
 
 const StoryCompose = () => {
   const { user } = useAuth();
