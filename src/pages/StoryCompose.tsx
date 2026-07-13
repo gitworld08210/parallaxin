@@ -1,15 +1,17 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { ImagePlus, X, Globe, Star, BarChart3, MessageSquare, Plus, Trash2 } from "lucide-react";
+import { ImagePlus, X, Globe, Star, BarChart3, MessageSquare, Plus, Trash2, Music, Wand2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthProvider";
 import { TopBar } from "@/components/vibe/TopBar";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { toast } from "sonner";
+import { FilterStrip, FilterKey, filterCss } from "@/components/compose/FilterStrip";
 
 type Sticker =
   | { id: string; kind: "poll"; x: number; y: number; question: string; options: string[] }
-  | { id: string; kind: "qa"; x: number; y: number; prompt: string };
+  | { id: string; kind: "qa"; x: number; y: number; prompt: string }
+  | { id: string; kind: "music"; x: number; y: number; title: string };
 
 const StoryCompose = () => {
   const { user } = useAuth();
@@ -19,7 +21,9 @@ const StoryCompose = () => {
   const [busy, setBusy] = useState(false);
   const [audience, setAudience] = useState<"public" | "close_friends">("public");
   const [stickers, setStickers] = useState<Sticker[]>([]);
-  const [stickerSheet, setStickerSheet] = useState<null | "poll" | "qa">(null);
+  const [stickerSheet, setStickerSheet] = useState<null | "poll" | "qa" | "music">(null);
+  const [filter, setFilter] = useState<FilterKey>("none");
+  const [musicTitle, setMusicTitle] = useState("");
   const [pollQ, setPollQ] = useState("");
   const [pollOpts, setPollOpts] = useState<string[]>(["", ""]);
   const [qaPrompt, setQaPrompt] = useState("");
@@ -86,7 +90,7 @@ const StoryCompose = () => {
           story_id: storyRow.id,
           kind: s.kind,
           position: { x: s.x, y: s.y },
-          payload: s.kind === "poll" ? { question: s.question, options: s.options } : { prompt: s.prompt },
+          payload: s.kind === "poll" ? { question: s.question, options: s.options } : s.kind === "qa" ? { prompt: s.prompt } : { title: s.title },
         }));
         await supabase.from("story_stickers" as any).insert(rows as any);
       }
@@ -114,9 +118,9 @@ const StoryCompose = () => {
         ) : (
           <div ref={canvasRef} className="relative rounded-xl overflow-hidden aspect-[9/16] bg-black select-none">
             {file?.type.startsWith("video") ? (
-              <video src={preview} autoPlay loop muted playsInline className="w-full h-full object-cover" />
+              <video src={preview} autoPlay loop muted playsInline className="w-full h-full object-cover" style={{ filter: filterCss(filter) }} />
             ) : (
-              <img src={preview} className="w-full h-full object-cover" alt="" />
+              <img src={preview} className="w-full h-full object-cover" alt="" style={{ filter: filterCss(filter) }} />
             )}
             <button onClick={() => setFile(null)} className="absolute top-2 right-2 h-9 w-9 grid place-items-center rounded-full bg-black/60 text-white z-20">
               <X className="h-4 w-4" />
@@ -138,11 +142,16 @@ const StoryCompose = () => {
                       ))}
                     </div>
                   </div>
-                ) : (
+                ) : s.kind === "qa" ? (
                   <div className="rounded-2xl bg-white/95 backdrop-blur px-3 py-2.5 shadow-xl min-w-[200px]">
                     <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide mb-1">Q&amp;A</p>
                     <p className="text-xs font-semibold text-foreground">{s.prompt}</p>
                     <div className="mt-1.5 text-[10px] text-muted-foreground italic">Type a response…</div>
+                  </div>
+                ) : (
+                  <div className="rounded-full bg-black/70 text-white backdrop-blur px-3 py-1.5 shadow-xl flex items-center gap-2 max-w-[220px]">
+                    <Music className="h-3.5 w-3.5 shrink-0" />
+                    <span className="text-xs font-semibold truncate">{s.title}</span>
                   </div>
                 )}
                 <button onPointerDown={(e) => e.stopPropagation()} onClick={() => removeSticker(s.id)}
@@ -155,14 +164,22 @@ const StoryCompose = () => {
         )}
 
         {preview && (
-          <div className="mt-3 flex gap-2">
-            <button onClick={() => setStickerSheet("poll")} className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-card border border-border text-sm font-semibold">
-              <BarChart3 className="h-4 w-4" /> Poll
-            </button>
-            <button onClick={() => setStickerSheet("qa")} className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-card border border-border text-sm font-semibold">
-              <MessageSquare className="h-4 w-4" /> Q&amp;A
-            </button>
-          </div>
+          <>
+            <div className="mt-3 flex gap-2">
+              <button onClick={() => setStickerSheet("poll")} className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-card border border-border text-sm font-semibold">
+                <BarChart3 className="h-4 w-4" /> Poll
+              </button>
+              <button onClick={() => setStickerSheet("qa")} className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-card border border-border text-sm font-semibold">
+                <MessageSquare className="h-4 w-4" /> Q&amp;A
+              </button>
+              <button onClick={() => setStickerSheet("music")} className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-card border border-border text-sm font-semibold">
+                <Music className="h-4 w-4" /> Music
+              </button>
+            </div>
+            <div className="mt-3">
+              <FilterStrip value={filter} onChange={setFilter} previewUrl={preview} />
+            </div>
+          </>
         )}
 
         <div className="mt-4 bg-card border border-border rounded-xl divide-y divide-border">
@@ -211,6 +228,23 @@ const StoryCompose = () => {
             <input value={qaPrompt} onChange={(e) => setQaPrompt(e.target.value)} placeholder="Ask me anything…"
               className="w-full bg-muted rounded-xl px-3 py-2.5 text-sm outline-none" maxLength={100} />
             <button onClick={addQA} className="w-full py-3 rounded-xl bg-primary text-primary-foreground text-sm font-semibold">Add Q&amp;A</button>
+          </div>
+        </SheetContent>
+      </Sheet>
+
+      <Sheet open={stickerSheet === "music"} onOpenChange={(v) => !v && setStickerSheet(null)}>
+        <SheetContent side="bottom" className="rounded-t-2xl">
+          <SheetHeader><SheetTitle>Add music</SheetTitle></SheetHeader>
+          <div className="mt-3 space-y-2">
+            {["Chill Vibes — Lofi Boy", "Sunset Drive — Nova", "Neon Nights — Aether", "Golden Hour — Miya", "Rush — Kaide"].map((t) => (
+              <button key={t} onClick={() => {
+                setStickers((s) => [...s, { id: crypto.randomUUID(), kind: "music", x: 0.5, y: 0.15, title: t }]);
+                setMusicTitle(""); setStickerSheet(null);
+              }} className="w-full flex items-center gap-3 p-3 rounded-xl bg-muted text-left">
+                <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-fuchsia-500 to-indigo-600 grid place-items-center"><Music className="h-5 w-5 text-white" /></div>
+                <div className="flex-1"><p className="text-sm font-semibold">{t}</p><p className="text-xs text-muted-foreground">15s clip</p></div>
+              </button>
+            ))}
           </div>
         </SheetContent>
       </Sheet>

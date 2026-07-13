@@ -7986,6 +7986,84 @@ export type Database = {
           },
         ]
       }
+      live_gifts: {
+        Row: {
+          coins_total: number
+          created_at: string
+          gift_id: string
+          host_id: string
+          id: string
+          qty: number
+          sender_id: string
+          stream_id: string
+        }
+        Insert: {
+          coins_total: number
+          created_at?: string
+          gift_id: string
+          host_id: string
+          id?: string
+          qty?: number
+          sender_id: string
+          stream_id: string
+        }
+        Update: {
+          coins_total?: number
+          created_at?: string
+          gift_id?: string
+          host_id?: string
+          id?: string
+          qty?: number
+          sender_id?: string
+          stream_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "live_gifts_gift_id_fkey"
+            columns: ["gift_id"]
+            isOneToOne: false
+            referencedRelation: "live_gifts_catalog"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "live_gifts_stream_id_fkey"
+            columns: ["stream_id"]
+            isOneToOne: false
+            referencedRelation: "live_streams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      live_gifts_catalog: {
+        Row: {
+          animation: string
+          cost_coins: number
+          icon: string
+          id: string
+          is_active: boolean
+          name: string
+          sort_order: number
+        }
+        Insert: {
+          animation?: string
+          cost_coins: number
+          icon: string
+          id: string
+          is_active?: boolean
+          name: string
+          sort_order?: number
+        }
+        Update: {
+          animation?: string
+          cost_coins?: number
+          icon?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          sort_order?: number
+        }
+        Relationships: []
+      }
       live_reactions: {
         Row: {
           created_at: string
@@ -8020,39 +8098,89 @@ export type Database = {
       }
       live_streams: {
         Row: {
+          access_type: string
+          allow_gifts: boolean
           created_at: string
           ended_at: string | null
           host_id: string
           id: string
           livekit_room: string
+          preview_seconds: number
           started_at: string
           status: string
+          thumbnail_url: string | null
+          ticket_price_coins: number
           title: string | null
+          total_tips_coins: number
           viewer_count: number
         }
         Insert: {
+          access_type?: string
+          allow_gifts?: boolean
           created_at?: string
           ended_at?: string | null
           host_id: string
           id?: string
           livekit_room: string
+          preview_seconds?: number
           started_at?: string
           status?: string
+          thumbnail_url?: string | null
+          ticket_price_coins?: number
           title?: string | null
+          total_tips_coins?: number
           viewer_count?: number
         }
         Update: {
+          access_type?: string
+          allow_gifts?: boolean
           created_at?: string
           ended_at?: string | null
           host_id?: string
           id?: string
           livekit_room?: string
+          preview_seconds?: number
           started_at?: string
           status?: string
+          thumbnail_url?: string | null
+          ticket_price_coins?: number
           title?: string | null
+          total_tips_coins?: number
           viewer_count?: number
         }
         Relationships: []
+      }
+      live_tickets: {
+        Row: {
+          id: string
+          price_coins: number
+          purchased_at: string
+          stream_id: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          price_coins: number
+          purchased_at?: string
+          stream_id: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          price_coins?: number
+          purchased_at?: string
+          stream_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "live_tickets_stream_id_fkey"
+            columns: ["stream_id"]
+            isOneToOne: false
+            referencedRelation: "live_streams"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       login_events: {
         Row: {

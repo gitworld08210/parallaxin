@@ -6,6 +6,7 @@ import { useAuth } from "@/contexts/AuthProvider";
 import { TopBar } from "@/components/vibe/TopBar";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { toast } from "sonner";
+import { FilterStrip, FilterKey, filterCss } from "@/components/compose/FilterStrip";
 
 type CollabPick = { user_id: string; username: string; display_name: string; avatar_url: string | null };
 
@@ -22,6 +23,7 @@ const Compose = () => {
   const [scheduleOpen, setScheduleOpen] = useState(false);
   const [scheduledFor, setScheduledFor] = useState<string>("");
   const [certify, setCertify] = useState(false);
+  const [filter, setFilter] = useState<FilterKey>("none");
 
   // AI suggest
   const [suggestOpen, setSuggestOpen] = useState(false);
@@ -243,14 +245,19 @@ const Compose = () => {
           <div className="mt-4 space-y-2">
             <div className="relative rounded-xl overflow-hidden bg-muted">
               {file?.type.startsWith("video") ? (
-                <video src={preview} controls className="w-full max-h-[400px] object-cover" />
+                <video src={preview} controls className="w-full max-h-[400px] object-cover" style={{ filter: filterCss(filter) }} />
               ) : (
-                <img src={preview} className="w-full max-h-[400px] object-cover" alt={altText || ""} />
+                <img src={preview} className="w-full max-h-[400px] object-cover" alt={altText || ""} style={{ filter: filterCss(filter) }} />
               )}
-              <button onClick={() => { setFile(null); setAltText(""); }} className="absolute top-2 right-2 h-8 w-8 grid place-items-center rounded-full bg-black/60 text-white">
+              <button onClick={() => { setFile(null); setAltText(""); setFilter("none"); }} className="absolute top-2 right-2 h-8 w-8 grid place-items-center rounded-full bg-black/60 text-white">
                 <X className="h-4 w-4" />
               </button>
             </div>
+            {file && !file.type.startsWith("video") && (
+              <div className="pt-1">
+                <FilterStrip value={filter} onChange={setFilter} previewUrl={preview} />
+              </div>
+            )}
             {file && !file.type.startsWith("video") && (
               <div className="flex items-start gap-2">
                 <textarea value={altText} onChange={(e) => setAltText(e.target.value)} placeholder="Alt text (for accessibility)" rows={2} maxLength={200} className="flex-1 bg-card border border-border rounded-md px-3 py-2 text-xs outline-none resize-none" />
