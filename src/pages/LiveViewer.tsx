@@ -64,8 +64,8 @@ export default function LiveViewer() {
         const { data: t } = await supabase.from("live_tickets").select("id").eq("stream_id", s.id).eq("user_id", uid).maybeSingle();
         setAccess(t ? "granted" : "needs_ticket");
       } else if (s.access_type === "subscribers_only") {
-        const { data: sub } = await supabase.from("subscriptions").select("id, status")
-          .eq("subscriber_id" as any, uid).eq("creator_id" as any, s.host_id).maybeSingle();
+        const { data: sub } = await (supabase.from("subscriptions") as any).select("id, status")
+          .eq("subscriber_id", uid).eq("creator_id", s.host_id).maybeSingle();
         const active = sub && ["active", "trialing"].includes(String((sub as any).status));
         setAccess(active ? "granted" : "needs_sub");
       }
