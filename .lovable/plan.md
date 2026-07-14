@@ -1,102 +1,63 @@
-# Redesign Upload + Paid Live Features
 
-## Part 1 — Unified Compose (Instagram + TikTok style)
+## Problem
 
-### A. Central "+" Create Sheet
-Replace scattered upload entry points with one modal sheet opened from the bottom-nav "+" button. Options:
-- **Post** (photo/carousel) — Instagram-style
-- **Reel** (short video) — TikTok-style
-- **Story** (24h)
-- **Go Live** (opens live setup — see Part 2)
+User-facing submissions and the admin-os department queues are running on two disconnected tables. Nothing bridges them, so departments never see the work:
 
-Full-screen sheet, large tap targets, animated icons, dark backdrop.
+| User submits from | Writes to | Admin-os department reads from | Currently linked? |
+|---|---|---|---|
+| `/verification` (Verification.tsx) | `verification_requests` | Verification dept → `ver_applications` / `ver_documents` / `ver_reviews` | No |
+| `ReportSheet` (post/profile/etc.) | `reports` | Trust & Safety dept → `ts_cases` / `ts_evidence` | No |
+| KYC flow | `kyc_submissions` | Verification / Finance dept | No |
 
-### B. Reel Compose redesign (TikTok-style)
-File: `src/pages/ReelCompose.tsx` (rebuild)
-- Full-screen vertical camera preview
-- Left rail: **Flip cam, Speed (0.3x–3x), Timer, Filters, Beauty**
-- Right rail: **Add Music, Effects, Align**
-- Bottom: large record button with progress ring, gallery picker, "Next"
-- After record → trim + caption + cover screen
-- **Music picker sheet**: browse tracks, search, trim clip, adjust original/music volume (tracks stored in `music-library` bucket; seed with royalty-free set + creator uploads later)
-- **Filter strip**: horizontal preset thumbnails (Vivid, Mono, Warm, Cool, Film, Noir, etc.) applied via CSS filters on preview; baked in on export using canvas/WebCodecs
+The old admin page `VerificationRequestsAdmin.tsx` still exists but isn't wired into the department workspace, so department members with the right role never see any of it.
 
-### C. Post Compose redesign (Instagram-style)
-File: `src/pages/Compose.tsx` (rebuild)
-- Step 1: Gallery grid + multi-select (up to 10) with camera tab
-- Step 2: Crop (1:1 / 4:5 / 16:9) + swipeable **filter carousel** below preview
-- Step 3: Caption, tag people, location, audience, advanced (comments off, hide likes)
+## Fix
 
-### D. Story Compose polish
-File: `src/pages/StoryCompose.tsx`
-- Add filter strip + **music sticker** (pick track, trim 15s, shows on story)
-- Keep existing polls/Q&A stickers
+Introduce a routing layer that mirrors every new user submission into the corresponding admin-os department table, using the two-client edge-function pattern (user client validates the submission via RLS, service-role client inserts the department record so it bypasses RLS safely).
 
-### E. Design tokens
-No new colors — use existing `bg-background/foreground/primary/muted`. All rails use `GlassCard` + `backdrop-blur`.
+### 1. Edge functions (new)
 
----
+- `route-verification-request` — on submit, reads the `verification_requests` row with the user client, then inserts a matching `ver_applications` row (+ copies uploaded docs into `ver_documents`, initial `ver_history` "submitted" entry) with the service-role client. Stores the new `ver_applications.id` back on the source row.
+- `route-report` — reads the `reports` row, creates a `ts_cases` row (category mapped from the report reason, severity default `low`, status `new`), copies target ref into evidence, seeds `ts_case_timeline`.
+- `route-kyc-submission` — reads `kyc_submissions`, creates the equivalent Verification-department application record and attaches KYC documents.
 
-## Part 2 — Paid Live (with free option preserved)
+Each function:
+- Requires `Authorization` header (user JWT).
+- Uses the user client to `select` the row (RLS proves the caller owns it).
+- Uses the service-role client to insert into the department tables and to write the linkage id back.
+- Returns `{ ok: true, application_id | case_id }`.
 
-### A. Data model (new columns / tables)
-Extend `live_streams`:
-- `access_type`: `free | ticket | subscribers_only`
-- `ticket_price_coins` int
-- `preview_seconds` int (default 0)
-- `total_tips_coins` int (default 0)
+Config: add each function to `supabase/config.toml` with `verify_jwt = true`.
 
-New tables:
-- `live_tickets` (id, stream_id, user_id, price_coins, purchased_at) — one row per paid entry
-- `live_gifts_catalog` (id, name, icon, cost_coins, animation) — seed 6–8 gifts (Rose, Heart, Rocket, Crown, Diamond, Fireworks)
-- `live_gifts` (id, stream_id, sender_id, gift_id, qty, coins_total, created_at) — tip/gift log
+### 2. Client wiring
 
-Grants + RLS per project rules. Uses existing `coin_transactions` + `creator_balance` for monetization (no new payment provider needed — coin economy already exists).
+- `src/pages/Verification.tsx` — after the insert into `verification_requests`, call `supabase.functions.invoke("route-verification-request", { body: { id } })`. On failure, surface a toast but keep the submission (function is retryable).
+- `src/components/social/ReportSheet.tsx` — after inserting into `reports`, call `route-report`.
+- KYC submit path (whichever page writes to `kyc_submissions`) — call `route-kyc-submission`. Locate the exact file during build (grep `kyc_submissions` insert).
 
-### B. Host flow — `src/pages/LiveHost.tsx`
-Add pre-live setup:
-- Title, thumbnail
-- **Access**: Free / Ticket (set coin price) / Subscribers only
-- Toggle: Allow gifts (default on)
+### 3. Schema additions (migration)
 
-### C. Viewer flow — `src/pages/LiveViewer.tsx`
-On entry, check `access_type`:
-- `free` → join directly
-- `ticket` → check `live_tickets`; if none, show paywall with price + "Unlock with X coins" → deduct via edge function → insert ticket → join. Optional `preview_seconds` shows blurred preview then paywall
-- `subscribers_only` → check `subscriptions` active for host; if not → "Subscribe to join" CTA to creator's premium page
+Small, additive only:
+- `verification_requests.ver_application_id uuid` (nullable) — linkage.
+- `reports.ts_case_id uuid` (nullable).
+- `kyc_submissions.ver_application_id uuid` (nullable).
+- Optional index on each new column.
 
-Overlay:
-- Gift button opens **Gift tray** (grid of gifts with coin cost)
-- On send: deduct coins, insert `live_gifts`, broadcast animation to all viewers via realtime channel (`live:{id}`)
-- Top overlay shows total tips + top gifters leaderboard
+No RLS changes to the source tables; the department tables already have their own RLS. The service-role client bypasses RLS for the routed insert, which is safe because we validated ownership on the user client first.
 
-### D. Go Live entry
-Add "Go Live" row inside the new central Create sheet → routes to `/live/host`.
+### 4. Backfill
 
-### E. Edge functions
-- `live-purchase-ticket` — validates coins, atomically deducts, inserts ticket, returns join token
-- `live-send-gift` — validates coins, deducts, logs gift, credits host's `creator_balance` (minus platform cut)
+One-time SQL in the same migration: for existing `verification_requests` / `reports` / `kyc_submissions` rows with no linkage, insert corresponding department rows. Runs as the migration role (service-level), so RLS is not an issue.
 
----
+### 5. Verification after build
 
-## Files touched (summary)
-**New:**
-- `src/components/create/CreateSheet.tsx` (unified + sheet)
-- `src/components/compose/FilterStrip.tsx`, `MusicPickerSheet.tsx`
-- `src/components/live/PaywallOverlay.tsx`, `GiftTraySheet.tsx`, `GiftAnimation.tsx`
-- `supabase/functions/live-purchase-ticket/index.ts`
-- `supabase/functions/live-send-gift/index.ts`
-- Migration: extend `live_streams`, add `live_tickets`, `live_gifts_catalog`, `live_gifts` (+ GRANTs, RLS, seed catalog)
+- Submit a verification request as a normal user → confirm a new `ver_applications` row appears in the Verification department queue.
+- File a report → confirm a `ts_cases` row appears for Trust & Safety.
+- Submit KYC → confirm it appears in the Verification/Finance queue.
+- Check that department members with the appropriate admin-os role can see and act on each item.
 
-**Edited:**
-- `src/pages/ReelCompose.tsx` (full rebuild — TikTok layout)
-- `src/pages/Compose.tsx` (full rebuild — Instagram layout)
-- `src/pages/StoryCompose.tsx` (add filter strip + music sticker)
-- `src/pages/LiveHost.tsx` (pre-live setup with access type)
-- `src/pages/LiveViewer.tsx` (paywall + gift tray)
-- Bottom nav "+" wiring (likely `AppShell.tsx`) → opens `CreateSheet`
+## Out of scope
 
-## Out of scope (ask later if needed)
-- Real-money purchase of coins (existing coin flow reused)
-- Advanced AR effects / face tracking beyond CSS filters
-- Live co-hosting / multi-guest
+- Redesigning the department UIs.
+- Removing the legacy `VerificationRequestsAdmin.tsx` / `ReportsAdmin.tsx` pages (kept as a superadmin fallback for now).
+- Changing how KYC documents are stored.

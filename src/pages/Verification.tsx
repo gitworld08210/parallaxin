@@ -60,7 +60,7 @@ const Verification = () => {
       const idPath = await uploadDoc(file);
       const supportPath = supportFile ? await uploadDoc(supportFile) : null;
       const linkArr = links.split(/[\n,]/).map((s) => s.trim()).filter(Boolean);
-      const { error } = await supabase.from("verification_requests").insert({
+      const { data: inserted, error } = await supabase.from("verification_requests").insert({
         user_id: user.id,
         full_name: fullName.trim(),
         category,
@@ -73,10 +73,13 @@ const Verification = () => {
         dob: dob || null,
         reason: reason.trim() || null,
         supporting_doc_url: supportPath,
-      });
+      }).select("id").single();
       if (error) throw error;
+      if (inserted?.id) {
+        supabase.functions.invoke("route-verification-request", { body: { id: inserted.id } }).catch(() => {});
+      }
       toast.success("Submitted · review within 48h");
-      setExisting({ id: "tmp", status: "pending", category, created_at: new Date().toISOString() });
+      setExisting({ id: inserted?.id ?? "tmp", status: "pending", category, created_at: new Date().toISOString() });
     } catch (e: any) { toast.error(e.message || "Failed"); } finally { setBusy(false); }
   };
 

@@ -7661,6 +7661,7 @@ export type Database = {
           status: string
           updated_at: string
           user_id: string
+          ver_application_id: string | null
         }
         Insert: {
           bank_account_number: string
@@ -7678,6 +7679,7 @@ export type Database = {
           status?: string
           updated_at?: string
           user_id: string
+          ver_application_id?: string | null
         }
         Update: {
           bank_account_number?: string
@@ -7695,6 +7697,7 @@ export type Database = {
           status?: string
           updated_at?: string
           user_id?: string
+          ver_application_id?: string | null
         }
         Relationships: [
           {
@@ -7703,6 +7706,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "kyc_submissions_ver_application_id_fkey"
+            columns: ["ver_application_id"]
+            isOneToOne: false
+            referencedRelation: "ver_applications"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -12210,6 +12220,7 @@ export type Database = {
           status: string
           target_id: string
           target_kind: string
+          ts_case_id: string | null
         }
         Insert: {
           created_at?: string
@@ -12220,6 +12231,7 @@ export type Database = {
           status?: string
           target_id: string
           target_kind: string
+          ts_case_id?: string | null
         }
         Update: {
           created_at?: string
@@ -12230,8 +12242,17 @@ export type Database = {
           status?: string
           target_id?: string
           target_kind?: string
+          ts_case_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "reports_ts_case_id_fkey"
+            columns: ["ts_case_id"]
+            isOneToOne: false
+            referencedRelation: "ts_cases"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       salary_revisions: {
         Row: {
@@ -14991,6 +15012,7 @@ export type Database = {
           status: string
           supporting_doc_url: string | null
           user_id: string
+          ver_application_id: string | null
         }
         Insert: {
           approved?: boolean
@@ -15009,6 +15031,7 @@ export type Database = {
           status?: string
           supporting_doc_url?: string | null
           user_id: string
+          ver_application_id?: string | null
         }
         Update: {
           approved?: boolean
@@ -15027,8 +15050,17 @@ export type Database = {
           status?: string
           supporting_doc_url?: string | null
           user_id?: string
+          ver_application_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "verification_requests_ver_application_id_fkey"
+            columns: ["ver_application_id"]
+            isOneToOne: false
+            referencedRelation: "ver_applications"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       welcome_email_history: {
         Row: {
