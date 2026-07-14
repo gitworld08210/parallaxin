@@ -122,7 +122,7 @@ function KycModal({ onClose }: { onClose: () => void }) {
         return path;
       };
       const [idPath, pbPath] = await Promise.all([upload(idFile, "id"), upload(pbFile, "passbook")]);
-      const { error } = await supabase.from("kyc_submissions").insert({
+      const { data: inserted, error } = await supabase.from("kyc_submissions").insert({
         user_id: user.id,
         full_name: fullName.trim(),
         pan_number: pan.trim().toUpperCase(),
@@ -131,8 +131,11 @@ function KycModal({ onClose }: { onClose: () => void }) {
         bank_name: bankName.trim() || null,
         id_photo_url: idPath,
         passbook_photo_url: pbPath,
-      });
+      }).select("id").single();
       if (error) throw error;
+      if (inserted?.id) {
+        supabase.functions.invoke("route-kyc-submission", { body: { id: inserted.id } }).catch(() => {});
+      }
       toast.success("KYC submitted — we'll review shortly");
       onClose();
     } catch (e: any) { toast.error(e.message); }
