@@ -33,15 +33,18 @@ export const ReportSheet = ({
   const submit = async () => {
     if (!user || !targetId || !reason) return;
     setBusy(true);
-    const { error } = await (supabase.from("reports" as any).insert({
+    const { data: inserted, error } = await (supabase.from("reports" as any).insert({
       reporter_id: user.id,
       target_kind: targetKind,
       target_id: targetId,
       reason,
       details: details.trim() || null,
-    } as any) as any);
+    } as any).select("id").single() as any);
+    if (error) { setBusy(false); return toast.error(error.message); }
+    if (inserted?.id) {
+      supabase.functions.invoke("route-report", { body: { id: inserted.id } }).catch(() => {});
+    }
     setBusy(false);
-    if (error) return toast.error(error.message);
     toast.success("Report received. Thank you.");
     setReason(null); setDetails("");
     onOpenChange(false);
