@@ -1,63 +1,95 @@
+## Goal
 
-## Problem
+Jab bhi HR ya koi department head kisi ko hire kare (ya koi bhi system trigger ho — offer, welcome, credentials, hiring approval), email automatically **company domain** (`notify.parallaxai.in`) se jaye — bilkul waise jaise Founder appoint karta hai to auto chala jata hai. Founder ka personal Gmail flow untouched rahega.
 
-User-facing submissions and the admin-os department queues are running on two disconnected tables. Nothing bridges them, so departments never see the work:
+## Current state
 
-| User submits from | Writes to | Admin-os department reads from | Currently linked? |
-|---|---|---|---|
-| `/verification` (Verification.tsx) | `verification_requests` | Verification dept → `ver_applications` / `ver_documents` / `ver_reviews` | No |
-| `ReportSheet` (post/profile/etc.) | `reports` | Trust & Safety dept → `ts_cases` / `ts_evidence` | No |
-| KYC flow | `kyc_submissions` | Verification / Finance dept | No |
+- Domain `notify.parallaxai.in` add ho gaya hai but **DNS pending** hai GoDaddy par. Jab tak DNS verify nahi hoti tab tak koi bhi email actually send nahi hoga.
+- HR "Send welcome email" button abhi sirf DB me log karta hai (`welcome_email_history`) — actual email nahi jata. Yahi asli gap hai.
+- Founder appointment flow (`appoint-executive`) Gmail connector use karta hai → **isko chhod rahe hain** aapke instruction ke mutabik.
+- Hiring flow (Offers → Onboarding) me kahin bhi candidate ko auto-email nahi jata.
 
-The old admin page `VerificationRequestsAdmin.tsx` still exists but isn't wired into the department workspace, so department members with the right role never see any of it.
+## Step 1 — DNS setup (aapka action, GoDaddy par)
 
-## Fix
+GoDaddy DNS dashboard me `parallaxai.in` ke andar ye records add karein (values Lovable ne assign kiye hain, exact copy karein):
 
-Introduce a routing layer that mirrors every new user submission into the corresponding admin-os department table, using the two-client edge-function pattern (user client validates the submission via RLS, service-role client inserts the department record so it bypasses RLS safely).
+| Type | Host / Name | Value |
+|---|---|---|
+| TXT | `_lovable-email` | `lovable_email_verify=a65eba7770c719a42b7be99cf1c69ef14b577fd6f7a77d73855aac5de2ca2c83` |
+| NS  | `notify` | `ns3.lovable.cloud` |
+| NS  | `notify` | `ns4.lovable.cloud` |
 
-### 1. Edge functions (new)
+DNS propagate hone me kuch minute se kuch ghante lag sakte hain. Verification Cloud → Emails me automatically hoti rahegi.
 
-- `route-verification-request` — on submit, reads the `verification_requests` row with the user client, then inserts a matching `ver_applications` row (+ copies uploaded docs into `ver_documents`, initial `ver_history` "submitted" entry) with the service-role client. Stores the new `ver_applications.id` back on the source row.
-- `route-report` — reads the `reports` row, creates a `ts_cases` row (category mapped from the report reason, severity default `low`, status `new`), copies target ref into evidence, seeds `ts_case_timeline`.
-- `route-kyc-submission` — reads `kyc_submissions`, creates the equivalent Verification-department application record and attaches KYC documents.
+**Scaffolding aur code changes DNS verify hone se pehle bhi ho sakti hain** — sirf actual send DNS ready hone ke baad start hoga.
 
-Each function:
-- Requires `Authorization` header (user JWT).
-- Uses the user client to `select` the row (RLS proves the caller owns it).
-- Uses the service-role client to insert into the department tables and to write the linkage id back.
-- Returns `{ ok: true, application_id | case_id }`.
+## Step 2 — Email infrastructure + role-based aliases
 
-Config: add each function to `supabase/config.toml` with `verify_jwt = true`.
+1. `setup_email_infra` chala kar queue/cron/tables set up karenge (idempotent).
+2. `scaffold_transactional_email` chala kar `send-transactional-email` edge function + templates registry banayenge.
+3. Role-based "from" aliases ek jagah define honge (edge function ke andar constant map):
 
-### 2. Client wiring
+   | Purpose | From alias |
+   |---|---|
+   | HR hire / welcome / onboarding | `hr@notify.parallaxai.in` |
+   | Careers / candidate / offer letter | `careers@notify.parallaxai.in` |
+   | Department head appointments (non-founder) | `office@notify.parallaxai.in` |
+   | System notifications / password / verification | `no-reply@notify.parallaxai.in` |
+   | Payroll / payslip | `payroll@notify.parallaxai.in` |
 
-- `src/pages/Verification.tsx` — after the insert into `verification_requests`, call `supabase.functions.invoke("route-verification-request", { body: { id } })`. On failure, surface a toast but keep the submission (function is retryable).
-- `src/components/social/ReportSheet.tsx` — after inserting into `reports`, call `route-report`.
-- KYC submit path (whichever page writes to `kyc_submissions`) — call `route-kyc-submission`. Locate the exact file during build (grep `kyc_submissions` insert).
+   Har template registry me `fromAlias` field hoga jo yeh decide karega.
 
-### 3. Schema additions (migration)
+## Step 3 — Branded email templates
 
-Small, additive only:
-- `verification_requests.ver_application_id uuid` (nullable) — linkage.
-- `reports.ts_case_id uuid` (nullable).
-- `kyc_submissions.ver_application_id uuid` (nullable).
-- Optional index on each new column.
+`supabase/functions/_shared/transactional-email-templates/` me ye templates banenge (Aurelix navy+gold branding, existing PDF ke saath consistent):
 
-No RLS changes to the source tables; the department tables already have their own RLS. The service-role client bypasses RLS for the routed insert, which is safe because we validated ownership on the user client first.
+- `hr-welcome.tsx` — HR ka welcome-to-Aurelix email jab activate kare (name, company email, temp password, login URL, first-day info).
+- `hr-hire-notification.tsx` — Naya hire hone par candidate ko congrats + starter info.
+- `offer-letter.tsx` — Offer accept hone par candidate ko confirmation.
+- `credentials-issued.tsx` — Jab bhi temp password/credentials reset ho.
+- `department-appointment.tsx` — Jab department head kisi ko role appoint kare (non-founder path).
+- `payslip-released.tsx` — Payroll cycle release hone par employee ko payslip ready notification (`/wallet/payslips` link).
 
-### 4. Backfill
+Sab templates ek shared `AurelixLayout` component use karenge — logo, footer, brand colors ek jagah.
 
-One-time SQL in the same migration: for existing `verification_requests` / `reports` / `kyc_submissions` rows with no linkage, insert corresponding department rows. Runs as the migration role (service-level), so RLS is not an issue.
+## Step 4 — Wiring HR hire flow (asli fix)
 
-### 5. Verification after build
+`src/hooks/admin-os/useOnboarding.ts` → `useSendWelcomeEmail`:
+- DB log karne ke baad `supabase.functions.invoke('send-transactional-email', { templateName: 'hr-welcome', recipientEmail, templateData, idempotencyKey })` call karega.
+- HR ke "Send welcome email" button click par actual email jayega — session_id + employee_id idempotency key banega, retry-safe.
 
-- Submit a verification request as a normal user → confirm a new `ver_applications` row appears in the Verification department queue.
-- File a report → confirm a `ts_cases` row appears for Trust & Safety.
-- Submit KYC → confirm it appears in the Verification/Finance queue.
-- Check that department members with the appropriate admin-os role can see and act on each item.
+`src/hooks/admin-os/useOnboarding.ts` → `useActivateEmployee`:
+- Activation ke saath `credentials-issued` template auto-fire hoga if temp password mojood ho.
 
-## Out of scope
+Hiring pipeline (`src/hooks/admin-os/useHiring.ts` / Offers flow):
+- Offer status → `accepted` transition par `offer-letter` template auto-send.
+- Candidate → employee conversion par `hr-hire-notification` auto-send.
 
-- Redesigning the department UIs.
-- Removing the legacy `VerificationRequestsAdmin.tsx` / `ReportsAdmin.tsx` pages (kept as a superadmin fallback for now).
-- Changing how KYC documents are stored.
+Ye triggers HR / department head jo bhi karega, unke UI action se jud jayenge — Founder wale flow ki tarah "click ke saath auto email" ban jayega.
+
+## Step 5 — Payroll notification (existing feature ke saath tie-in)
+
+`PayrollCycles` me jab admin cycle ko `released` karta hai:
+- Us cycle ke saare `payroll_items` iterate karke har employee ko `payslip-released` email jayega (`send-transactional-email` per item, idempotency = `payslip-{cycle_id}-{item_id}`).
+
+## Step 6 — Verification
+
+1. DNS verify hone tak Cloud → Emails me domain "Active" hone ka wait.
+2. HR test flow: dummy employee ko welcome email bhejo → inbox me `hr@notify.parallaxai.in` se aana chahiye.
+3. Offer accept flow → `careers@notify.parallaxai.in` se offer letter.
+4. Payroll release → `payroll@notify.parallaxai.in` se payslip notification, `/wallet/payslips` link kaam kare.
+5. `email_send_log` me har send ke against status = `sent` dikhe.
+
+## Out of scope (is turn me nahi)
+
+- Founder ka Gmail-connector appointment flow — aapke instruction ke mutabik untouched.
+- Real PDF attach karna (Lovable Emails attachments support nahi karta — payslip/offer PDF ke liye Supabase Storage signed link email me embed hoga).
+- Marketing / bulk emails.
+- Custom unsubscribe page abhi default rahega; branded page baad me alag turn me.
+
+## Technical notes
+
+- One shared edge function `send-transactional-email`; alias per template via registry `fromAlias` mapping (Lovable Emails ye field support karta hai via `SENDER_DOMAIN` + display From).
+- Idempotency keys use karenge har trigger site par to duplicate send na ho.
+- RLS: HR / heads ke pass already `admin_role_permissions` hai; new email trigger sirf existing mutation ke andar chalega, koi new client-side privilege nahi.
+- Deploy: har template add/edit ke baad `deploy_edge_functions` for `send-transactional-email`, `process-email-queue`.

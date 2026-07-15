@@ -294,6 +294,41 @@ export const useAdvanceCycle = () => {
       if (error) throw error;
       await audit({ actor: user?.id ?? null, action: `cycle.${next}`,
         targetType: "payroll_cycle", targetId: id, after: data });
+
+      // On release: notify every employee in this cycle with their payslip email
+      if (next === "released") {
+        try {
+          const { data: items } = await supabase
+            .from("payroll_items")
+            .select(`id, net_pay, employee:employees(full_name, company_email, personal_email)`)
+            .eq("cycle_id", id);
+          const period = (data as any)?.period_month ?? "the latest cycle";
+          const currency = (data as any)?.currency ?? "INR";
+          const origin = typeof window !== "undefined" ? window.location.origin : "";
+          for (const it of items ?? []) {
+            const emp: any = (it as any).employee;
+            const to = emp?.company_email || emp?.personal_email;
+            if (!to) continue;
+            supabase.functions.invoke("send-transactional-email", {
+              body: {
+                templateName: "payslip-released",
+                recipientEmail: to,
+                idempotencyKey: `payslip-${id}-${(it as any).id}`,
+                templateData: {
+                  fullName: emp?.full_name,
+                  period,
+                  netPay: (it as any).net_pay,
+                  currency,
+                  payslipUrl: `${origin}/wallet/payslips/${(it as any).id}`,
+                },
+              },
+            }).catch((e) => console.error("Payslip email failed", e));
+          }
+        } catch (e) {
+          console.error("Payslip notification dispatch failed", e);
+        }
+      }
+
       return data;
     },
     onSuccess: (_d, v) => {

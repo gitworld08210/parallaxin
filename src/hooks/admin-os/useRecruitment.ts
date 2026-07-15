@@ -505,7 +505,10 @@ export const useUpdateOffer = () => {
         .from("offers")
         .update(stamped)
         .eq("id", id)
-        .select()
+        .select(
+          `*, application:applications(id,candidate_id,
+             candidate:candidates(id,full_name,email))`,
+        )
         .single();
       if (error) throw error;
       await audit({
@@ -515,9 +518,39 @@ export const useUpdateOffer = () => {
         targetId: id,
         after: data,
       });
+
+      // Auto-send offer letter email when the offer is marked as "sent"
+      if (patch.status === "sent") {
+        const cand = (data as any)?.application?.candidate;
+        const email = cand?.email;
+        if (email) {
+          try {
+            await supabase.functions.invoke("send-transactional-email", {
+              body: {
+                templateName: "offer-letter",
+                recipientEmail: email,
+                idempotencyKey: `offer-${id}-v${(data as any).version ?? 1}`,
+                templateData: {
+                  candidateName: cand?.full_name,
+                  position: (data as any).position_title,
+                  department: (data as any).department,
+                  ctc: (data as any).total_ctc,
+                  currency: (data as any).currency,
+                  joiningDate: (data as any).proposed_joining_date,
+                  validUntil: (data as any).valid_until,
+                  offerDocUrl: (data as any).offer_document_url,
+                },
+              },
+            });
+          } catch (e) {
+            console.error("Offer letter email dispatch failed", e);
+          }
+        }
+      }
+
       return data;
     },
-    onSuccess: (d) => {
+    onSuccess: (d: any) => {
       qc.invalidateQueries({ queryKey: [...rootKey, "offers", d.application_id] });
       qc.invalidateQueries({ queryKey: [...rootKey, "offers-all"] });
       qc.invalidateQueries({ queryKey: [...rootKey, "timeline"] });
