@@ -303,12 +303,17 @@ Deno.serve(async (req) => {
     status: 'pending',
   })
 
+  // Per-template sender identity: hr@, careers@, payroll@, office@, no-reply@
+  const fromAlias = (template as any).fromAlias || 'noreply'
+  const fromName = (template as any).fromName || SITE_NAME
+  const fromAddress = `${fromName} <${fromAlias}@${FROM_DOMAIN}>`
+
   const { error: enqueueError } = await supabase.rpc('enqueue_email', {
     queue_name: 'transactional_emails',
     payload: {
       message_id: messageId,
       to: effectiveRecipient,
-      from: `${SITE_NAME} <noreply@${FROM_DOMAIN}>`,
+      from: fromAddress,
       sender_domain: SENDER_DOMAIN,
       subject: resolvedSubject,
       html,
