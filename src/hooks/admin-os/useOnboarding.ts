@@ -454,6 +454,12 @@ export const useSendWelcomeEmail = () => {
       sent_to: string;
       subject: string;
       body: string;
+      full_name?: string;
+      company_email?: string;
+      temp_password?: string;
+      position?: string;
+      department?: string;
+      joining_date?: string;
     }) => {
       const { error } = await supabase.from("welcome_email_history").insert({
         employee_id: input.employee_id,
@@ -464,6 +470,28 @@ export const useSendWelcomeEmail = () => {
         sent_by: user?.id ?? null,
       });
       if (error) throw error;
+
+      // Fire the actual branded welcome email via hr@parallaxai.in
+      try {
+        await supabase.functions.invoke("send-transactional-email", {
+          body: {
+            templateName: "hr-welcome",
+            recipientEmail: input.sent_to,
+            idempotencyKey: `hr-welcome-${input.session_id}`,
+            templateData: {
+              fullName: input.full_name,
+              companyEmail: input.company_email ?? input.sent_to,
+              tempPassword: input.temp_password,
+              loginUrl: `${window.location.origin}/auth`,
+              position: input.position,
+              department: input.department,
+              joiningDate: input.joining_date,
+            },
+          },
+        });
+      } catch (e) {
+        console.error("Welcome email dispatch failed", e);
+      }
 
       await supabase
         .from("onboarding_sessions")
