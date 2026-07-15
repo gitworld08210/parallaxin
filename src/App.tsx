@@ -19,6 +19,7 @@ const OAuthConsent = lazy(() => import("./pages/OAuthConsent"));
 
 // Lazy: everything else streams in on demand
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
+const Unsubscribe = lazy(() => import("./pages/Unsubscribe"));
 const Reels = lazy(() => import("./pages/Reels"));
 const Discover = lazy(() => import("./pages/Discover"));
 const Messages = lazy(() => import("./pages/Messages"));
@@ -408,6 +409,7 @@ const App = () => (
               <Route path="/auth" element={<Auth />} />
               <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
               <Route path="/reset-password" element={<ResetPassword />} />
+              <Route path="/unsubscribe" element={<Unsubscribe />} />
               <Route path="/certificate/:postId" element={<Certificate />} />
               <Route element={<ProtectedRoute />}>
                 <Route path="/onboarding" element={<Onboarding />} />
