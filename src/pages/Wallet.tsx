@@ -2,7 +2,7 @@ import { TopBar } from "@/components/vibe/TopBar";
 import { GlassCard } from "@/components/vibe/GlassCard";
 import { fmt } from "@/lib/format";
 import { useAuth } from "@/contexts/AuthProvider";
-import { Coins, Gift, ShieldCheck, Trophy } from "lucide-react";
+import { Coins, Gift, ShieldCheck, Trophy, FileText } from "lucide-react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { CreatorEarnings } from "@/components/wallet/CreatorEarnings";
@@ -31,6 +31,20 @@ const Wallet = () => {
       <TopBar subtitle="Aura economy" title="Wallet" />
 
       <div className="px-5 space-y-5">
+        <Link
+          to="/wallet/payslips"
+          className="w-full flex items-center gap-3 rounded-3xl p-5 border border-border/60 bg-card hover:border-primary/40 hover:bg-muted/30 transition-colors"
+        >
+          <span className="h-11 w-11 rounded-2xl bg-primary/15 grid place-items-center">
+            <FileText className="h-5 w-5 text-primary" />
+          </span>
+          <span className="flex-1">
+            <span className="block text-sm font-bold">My Payslips</span>
+            <span className="block text-xs text-muted-foreground">View & download your monthly salary slips</span>
+          </span>
+          <span className="text-xs font-semibold px-3 py-2 rounded-full bg-primary/10 text-primary">Open</span>
+        </Link>
+
         {isCreator ? (
           <CreatorEarnings />
         ) : (

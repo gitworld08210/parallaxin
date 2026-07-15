@@ -464,3 +464,57 @@ export const useReviewReimbursement = () => {
     onSuccess: () => qc.invalidateQueries({ queryKey: [...root, "reimbursements"] }),
   });
 };
+
+// ------------- Employee self-service payslips -------------
+export const useMyPayslips = () => {
+  const { user } = useAuth();
+  return useQuery({
+    queryKey: [...root, "my-payslips", user?.id],
+    enabled: !!user?.id,
+    queryFn: async () => {
+      const { data: emp, error: eErr } = await supabase
+        .from("employees")
+        .select("id, full_name, employee_number, company_email, department:admin_departments!employees_department_id_fkey(name), role:admin_roles!employees_role_id_fkey(name)")
+        .eq("user_id", user!.id)
+        .maybeSingle();
+      if (eErr) throw eErr;
+      if (!emp) return { employee: null, items: [] as any[] };
+
+      const { data: items, error } = await supabase
+        .from("payroll_items")
+        .select(`*, cycle:payroll_cycles!inner(id, period_month, currency, status, released_at)`)
+        .eq("employee_id", emp.id)
+        .eq("cycle.status", "released")
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return { employee: emp as any, items: (items ?? []) as any[] };
+    },
+  });
+};
+
+export const useMyPayslip = (itemId?: string) => {
+  const { user } = useAuth();
+  return useQuery({
+    queryKey: [...root, "my-payslip", itemId, user?.id],
+    enabled: !!itemId && !!user?.id,
+    queryFn: async () => {
+      const { data: emp, error: eErr } = await supabase
+        .from("employees")
+        .select("id, full_name, employee_number, company_email, level, photo_url, department:admin_departments!employees_department_id_fkey(name), role:admin_roles!employees_role_id_fkey(name)")
+        .eq("user_id", user!.id)
+        .maybeSingle();
+      if (eErr) throw eErr;
+      if (!emp) return null;
+
+      const { data, error } = await supabase
+        .from("payroll_items")
+        .select(`*, cycle:payroll_cycles(id, period_month, currency, status, released_at)`)
+        .eq("id", itemId!)
+        .eq("employee_id", emp.id)
+        .maybeSingle();
+      if (error) throw error;
+      if (!data) return null;
+      return { employee: emp as any, item: data as any };
+    },
+  });
+};

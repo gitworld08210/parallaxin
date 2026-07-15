@@ -32,6 +32,8 @@ const StoryCompose = lazy(() => import("./pages/StoryCompose"));
 const PostDetail = lazy(() => import("./pages/PostDetail"));
 const Tag = lazy(() => import("./pages/Tag"));
 const Wallet = lazy(() => import("./pages/Wallet"));
+const MyPayslips = lazy(() => import("./pages/MyPayslips"));
+const PayslipDetail = lazy(() => import("./pages/PayslipDetail"));
 const Profile = lazy(() => import("./pages/Profile"));
 const EditProfile = lazy(() => import("./pages/EditProfile"));
 const Premium = lazy(() => import("./pages/Premium"));
@@ -427,6 +429,8 @@ const App = () => (
                   <Route path="/p/:postId" element={<PostDetail />} />
                   <Route path="/tag/:tag" element={<Tag />} />
                   <Route path="/wallet" element={<Wallet />} />
+                  <Route path="/wallet/payslips" element={<MyPayslips />} />
+                  <Route path="/wallet/payslips/:itemId" element={<PayslipDetail />} />
                   <Route path="/profile" element={<Profile />} />
                   <Route path="/profile/edit" element={<EditProfile />} />
                   <Route path="/u/:username" element={<Profile />} />
