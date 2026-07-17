@@ -88,9 +88,14 @@ const ApplicationQueue = () => {
             className="flex items-center justify-between gap-3 p-4 hover:bg-muted/40">
             <div>
               <div className="font-medium">{a.subject_display_name}</div>
-              <div className="text-xs text-muted-foreground">{a.application_number} · {a.ver_type}</div>
+              <div className="text-xs text-muted-foreground">
+                {a.application_number} · {a.ver_type} · {(a.metadata as any)?.source === "kyc_submissions" ? "Creator KYC" : (a.metadata as any)?.source === "verification_requests" ? "User verification" : "Manual"}
+              </div>
             </div>
-            <Badge variant="outline">{a.status}</Badge>
+            <div className="flex items-center gap-2">
+              {(a.metadata as any)?.finance_signal && <Badge variant="secondary">Finance signal</Badge>}
+              <Badge variant="outline">{a.status}</Badge>
+            </div>
           </Link>
         ))}
       </CardContent></Card>

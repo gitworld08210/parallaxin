@@ -1,5 +1,7 @@
 import { Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { useEmployee } from "@/hooks/admin-os/useEmployee";
+import { supabase } from "@/integrations/supabase/client";
 import {
   ADMIN_MODULES,
   SECTION_LABELS,
@@ -9,6 +11,23 @@ import { EMPLOYMENT_STATUS_LABELS } from "@/features/admin-os/permissions";
 
 const AdminOSDashboard = () => {
   const { employee, hasPermission, permissions } = useEmployee();
+  const { data: intake } = useQuery({
+    queryKey: ["admin-os", "intake-overview"],
+    queryFn: async () => {
+      const [verification, trust, payouts, assignments] = await Promise.all([
+        supabase.from("ver_applications").select("id", { count: "exact", head: true }).in("status", ["pending", "under_review", "info_required"]),
+        supabase.from("ts_cases" as any).select("id", { count: "exact", head: true }).in("status", ["new", "triage", "investigating", "pending_review"]),
+        supabase.from("payout_requests").select("id", { count: "exact", head: true }).eq("status", "pending"),
+        supabase.from("platform_assignments").select("id", { count: "exact", head: true }).eq("status", "open"),
+      ]);
+      return {
+        verification: verification.count ?? 0,
+        trust: trust.count ?? 0,
+        payouts: payouts.count ?? 0,
+        assignments: assignments.count ?? 0,
+      };
+    },
+  });
 
   const visible = ADMIN_MODULES.filter(
     (m) => m.slug !== "overview" && hasPermission(m.permission),
@@ -55,6 +74,19 @@ const AdminOSDashboard = () => {
             <Stat label="Access" value={`${permissions.size} permissions`} />
           </div>
         )}
+      </section>
+
+      <section>
+        <div className="mb-4 flex items-end justify-between">
+          <h2 className="text-lg font-bold tracking-tight">Admin OS Intake</h2>
+          <p className="text-xs text-muted-foreground">Live department routing</p>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <Stat label="Verification" value={`${intake?.verification ?? 0} open`} />
+          <Stat label="Trust & Safety" value={`${intake?.trust ?? 0} open`} />
+          <Stat label="Creator Payouts" value={`${intake?.payouts ?? 0} pending`} />
+          <Stat label="Assignments" value={`${intake?.assignments ?? 0} open`} />
+        </div>
       </section>
 
       {/* Modules */}
