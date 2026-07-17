@@ -9928,6 +9928,7 @@ export type Database = {
       }
       payout_requests: {
         Row: {
+          admin_assignment_id: string | null
           admin_note: string | null
           amount_cents: number
           created_at: string
@@ -9937,10 +9938,13 @@ export type Database = {
           method: string
           payout_detail: Json
           processed_at: string | null
+          routed_at: string | null
+          routing_status: string
           status: string
           user_id: string
         }
         Insert: {
+          admin_assignment_id?: string | null
           admin_note?: string | null
           amount_cents: number
           created_at?: string
@@ -9950,10 +9954,13 @@ export type Database = {
           method: string
           payout_detail?: Json
           processed_at?: string | null
+          routed_at?: string | null
+          routing_status?: string
           status?: string
           user_id: string
         }
         Update: {
+          admin_assignment_id?: string | null
           admin_note?: string | null
           amount_cents?: number
           created_at?: string
@@ -9963,10 +9970,19 @@ export type Database = {
           method?: string
           payout_detail?: Json
           processed_at?: string | null
+          routed_at?: string | null
+          routing_status?: string
           status?: string
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "payout_requests_admin_assignment_id_fkey"
+            columns: ["admin_assignment_id"]
+            isOneToOne: false
+            referencedRelation: "platform_assignments"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "payout_requests_user_id_fkey"
             columns: ["user_id"]
@@ -15235,6 +15251,11 @@ export type Database = {
         Returns: undefined
       }
       admin_approve_tip: { Args: { _tip_id: string }; Returns: undefined }
+      admin_os_assignment_exists: {
+        Args: { _entity_id: string; _entity_type: string }
+        Returns: boolean
+      }
+      admin_os_existing_user: { Args: { _uid: string }; Returns: string }
       admin_reject_kyc: {
         Args: { _kyc_id: string; _reason: string }
         Returns: undefined
@@ -15673,6 +15694,22 @@ export type Database = {
           slug: string
           username: string
         }[]
+      }
+      route_kyc_submission_to_admin_os: {
+        Args: { _kyc_id: string }
+        Returns: string
+      }
+      route_payout_request_to_admin_os: {
+        Args: { _payout_id: string }
+        Returns: string
+      }
+      route_report_to_admin_os: {
+        Args: { _report_id: string }
+        Returns: string
+      }
+      route_verification_request_to_admin_os: {
+        Args: { _request_id: string }
+        Returns: string
       }
       slugify_org_name: { Args: { _name: string }; Returns: string }
       start_dm: { Args: { other_user_id: string }; Returns: string }
