@@ -205,18 +205,70 @@ export const useFinCompliance = crudList("fin_compliance_records", "fin_complian
 export const useCreateFinCompliance = crudCreate("fin_compliance_records", "fin_compliance_records", "Compliance record saved");
 export const useUpdateFinCompliance = crudUpdate("fin_compliance_records", "fin_compliance_records");
 
+// ===== Creator payouts =====
+export interface CreatorPayoutRequest {
+  id: string;
+  user_id: string;
+  amount_cents: number;
+  currency: string;
+  method: string;
+  payout_detail: Record<string, unknown> | null;
+  status: "pending" | "paid" | "rejected" | string;
+  admin_note: string | null;
+  environment: string;
+  created_at: string;
+  processed_at: string | null;
+  routing_status?: string | null;
+  routed_at?: string | null;
+  admin_assignment_id?: string | null;
+}
+
+export const useCreatorPayoutRequests = (status?: string) =>
+  useQuery({
+    queryKey: ["creator_payout_requests", status ?? "all"],
+    queryFn: async () => {
+      let q = supabase
+        .from("payout_requests")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(200);
+      if (status && status !== "all") q = q.eq("status", status);
+      const { data, error } = await q;
+      if (error) throw error;
+      return (data ?? []) as CreatorPayoutRequest[];
+    },
+  });
+
+export const useReviewCreatorPayout = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, decision, note }: { id: string; decision: "paid" | "rejected"; note?: string }) => {
+      const fn = decision === "paid" ? "admin_approve_payout" : "admin_reject_payout";
+      const args = decision === "paid" ? { _payout_id: id, _note: note ?? null } : { _payout_id: id, _reason: note || "Rejected by Finance" };
+      const { error } = await supabase.rpc(fn as any, args as any);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Payout decision recorded");
+      invalidate(qc, ["creator_payout_requests", "fin_dashboard"]);
+    },
+    onError: (e: any) => toast.error(e.message ?? "Failed"),
+  });
+};
+
 // ===== Dashboard KPIs =====
 export const useFinDashboard = () =>
   useQuery({
     queryKey: ["fin_dashboard"],
     queryFn: async () => {
-      const [budgets, expenses, invoices, contracts, payments, compliance] = await Promise.all([
+      const [budgets, expenses, invoices, contracts, payments, compliance, payouts] = await Promise.all([
         supabase.from("fin_budgets").select("id, allocated_amount, spent_amount, status"),
         supabase.from("fin_expenses").select("id, amount, status, created_at"),
         supabase.from("fin_invoices").select("id, amount, status, due_on"),
         supabase.from("fin_contracts").select("id, status, end_date"),
         supabase.from("fin_payments").select("id, amount, status"),
         supabase.from("fin_compliance_records").select("id, status, severity, due_on"),
+        supabase.from("payout_requests").select("id, amount_cents, status, created_at"),
       ]);
       const now = new Date();
       const thisMonth = (d: string) => new Date(d).getMonth() === now.getMonth() && new Date(d).getFullYear() === now.getFullYear();
@@ -228,6 +280,8 @@ export const useFinDashboard = () =>
         pendingExpenses: (expenses.data ?? []).filter((e: any) => e.status !== "approved" && e.status !== "paid" && e.status !== "rejected").length,
         openInvoices: (invoices.data ?? []).filter((i: any) => i.status !== "paid" && i.status !== "cancelled").length,
         vendorPaymentsPending: (payments.data ?? []).filter((p: any) => p.status !== "completed" && p.status !== "cancelled").length,
+        creatorPayoutsPending: (payouts.data ?? []).filter((p: any) => p.status === "pending").length,
+        creatorPayoutsValue: (payouts.data ?? []).filter((p: any) => p.status === "pending").reduce((s: number, p: any) => s + Number(p.amount_cents ?? 0), 0),
         activeContracts: (contracts.data ?? []).filter((c: any) => c.status === "active" || c.status === "signed").length,
         expiringContracts: (contracts.data ?? []).filter((c: any) => dueSoon(c.end_date) && c.status !== "expired" && c.status !== "archived").length,
         complianceAlerts: (compliance.data ?? []).filter((c: any) => c.status !== "completed" && (c.severity === "high" || c.severity === "critical")).length,

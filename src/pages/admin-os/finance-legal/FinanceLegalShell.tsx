@@ -11,6 +11,7 @@ import {
   ShieldCheck,
   Landmark,
   BadgeDollarSign,
+  HandCoins,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -23,6 +24,7 @@ const tabs = [
   { to: "/admin-os/finance-legal/vendors", label: "Vendors", icon: Building2 },
   { to: "/admin-os/finance-legal/contracts", label: "Contracts", icon: FileCheck },
   { to: "/admin-os/finance-legal/compliance", label: "Compliance", icon: ShieldCheck },
+  { to: "/admin-os/finance-legal/creator-payouts", label: "Creator Payouts", icon: HandCoins },
   { to: "/admin-os/finance-legal/hire-approvals", label: "Hire Approvals", icon: BadgeDollarSign },
   { to: "/admin-os/finance-legal/new-hire-bank", label: "New Hire Bank", icon: Landmark },
 ];

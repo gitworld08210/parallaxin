@@ -327,6 +327,7 @@ const FinProcurementCenter = lazy(() => import("./pages/admin-os/finance-legal/P
 const FinVendorCenter = lazy(() => import("./pages/admin-os/finance-legal/VendorCenter"));
 const FinContractCenter = lazy(() => import("./pages/admin-os/finance-legal/ContractCenter"));
 const FinComplianceDashboard = lazy(() => import("./pages/admin-os/finance-legal/ComplianceDashboard"));
+const FinCreatorPayoutQueue = lazy(() => import("./pages/admin-os/finance-legal/CreatorPayoutQueue"));
 const FinHireApprovals = lazy(() => import("./pages/admin-os/finance-legal/HireApprovals"));
 const FinNewHireBankDetails = lazy(() => import("./pages/admin-os/finance-legal/NewHireBankDetails"));
 const HireCompensationPage = lazy(() => import("./pages/admin-os/people-ops/recruitment/HireCompensation"));
@@ -770,6 +771,7 @@ const App = () => (
                     <Route path="vendors" element={<FinVendorCenter />} />
                     <Route path="contracts" element={<FinContractCenter />} />
                     <Route path="compliance" element={<FinComplianceDashboard />} />
+                    <Route path="creator-payouts" element={<FinCreatorPayoutQueue />} />
                     <Route path="hire-approvals" element={<FinHireApprovals />} />
                     <Route path="new-hire-bank" element={<FinNewHireBankDetails />} />
                   </Route>

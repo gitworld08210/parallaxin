@@ -95,6 +95,7 @@ const CaseQueue = () => {
                   <Badge variant="outline">{c.category}</Badge>
                   <Badge variant={c.severity === "critical" ? "destructive" : "secondary"}>{c.severity}</Badge>
                   <Badge>{c.status}</Badge>
+                  {c.source === "user_report" && <Badge variant="outline">User report</Badge>}
                 </div>
                 <p className="text-sm font-medium mt-1 truncate">{c.title}</p>
               </div>

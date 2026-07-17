@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useFinDashboard, useFinInvoices, useFinContracts } from "@/hooks/admin-os/useFinance";
 import {
-  Wallet, Receipt, FileText, FileCheck, AlertTriangle, Loader2, TrendingDown,
+  Wallet, Receipt, FileText, FileCheck, AlertTriangle, Loader2, TrendingDown, HandCoins,
 } from "lucide-react";
 
 const fmt = (n: number) =>
@@ -56,7 +56,7 @@ const FinanceDashboard = () => {
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Kpi label="Pending Expenses" value={data?.pendingExpenses ?? 0} icon={Receipt} />
-        <Kpi label="Vendor Payments Pending" value={data?.vendorPaymentsPending ?? 0} icon={Wallet} />
+        <Kpi label="Creator Payouts" value={data?.creatorPayoutsPending ?? 0} icon={HandCoins} />
         <Kpi label="Active Contracts" value={data?.activeContracts ?? 0} icon={FileCheck} />
         <Kpi label="Expiring Soon" value={data?.expiringContracts ?? 0} icon={AlertTriangle} tone="bg-amber-500/10 text-amber-600" />
       </div>
