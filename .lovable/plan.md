@@ -1,95 +1,52 @@
-## Goal
+## Plan: Big-tech style Admin OS request routing
 
-Jab bhi HR ya koi department head kisi ko hire kare (ya koi bhi system trigger ho — offer, welcome, credentials, hiring approval), email automatically **company domain** (`notify.parallaxai.in`) se jaye — bilkul waise jaise Founder appoint karta hai to auto chala jata hai. Founder ka personal Gmail flow untouched rahega.
+I’ll make every user-side submission automatically land in the right Admin OS department, with a reliable backend route instead of relying on client-side “fire and forget” calls.
 
-## Current state
+### What will be routed
 
-- Domain `notify.parallaxai.in` add ho gaya hai but **DNS pending** hai GoDaddy par. Jab tak DNS verify nahi hoti tab tak koi bhi email actually send nahi hoga.
-- HR "Send welcome email" button abhi sirf DB me log karta hai (`welcome_email_history`) — actual email nahi jata. Yahi asli gap hai.
-- Founder appointment flow (`appoint-executive`) Gmail connector use karta hai → **isko chhod rahe hain** aapke instruction ke mutabik.
-- Hiring flow (Offers → Onboarding) me kahin bhi candidate ko auto-email nahi jata.
+- **User verification requests** → Verification Department queue
+- **Creator KYC submissions** → Verification Department queue, with finance-safe metadata for payout readiness
+- **User reports** → Trust & Safety case queue
+- **Creator payout / withdrawal requests** → Finance & Legal payout queue
+- Existing un-routed old records will be **backfilled** so they appear in Admin OS too.
 
-## Step 1 — DNS setup (aapka action, GoDaddy par)
+### Backend routing reliability
 
-GoDaddy DNS dashboard me `parallaxai.in` ke andar ye records add karein (values Lovable ne assign kiye hain, exact copy karein):
+- Add an idempotent backend routing layer so inserts automatically create the right internal work item.
+- Keep existing edge routes as compatibility, but make the backend the source of truth.
+- Add routing status fields where needed, especially for payout requests, so each record can be traced.
+- Emit Admin OS activity events for each routed item: submitted, routed, assigned, reviewed.
+- Create/repair platform assignment visibility so the correct department can see department-assigned work, not only founder/admin roles.
 
-| Type | Host / Name | Value |
-|---|---|---|
-| TXT | `_lovable-email` | `lovable_email_verify=a65eba7770c719a42b7be99cf1c69ef14b577fd6f7a77d73855aac5de2ca2c83` |
-| NS  | `notify` | `ns3.lovable.cloud` |
-| NS  | `notify` | `ns4.lovable.cloud` |
+### Department queues
 
-DNS propagate hone me kuch minute se kuch ghante lag sakte hain. Verification Cloud → Emails me automatically hoti rahegi.
+- **Verification**: show user verification and KYC items in the existing application queue with source labels, priority, SLA, and user/metadata summary.
+- **Trust & Safety**: show user reports as official cases with source, target type, severity, and triage state.
+- **Finance & Legal**: add a professional **Creator Payouts** queue for payout requests with amount, method, status, risk/KYC signal, approve/reject actions, and audit trail.
+- Add counts/badges on department tabs where useful so pending work is visible immediately.
 
-**Scaffolding aur code changes DNS verify hone se pehle bhi ho sakti hain** — sirf actual send DNS ready hone ke baad start hoga.
+### Professional operating-system polish
 
-## Step 2 — Email infrastructure + role-based aliases
+- Add an **Admin OS Intake** overview section/card showing cross-department live work:
+  - Pending verification
+  - Pending KYC
+  - New reports
+  - Pending payouts
+  - SLA / priority status
+- Use existing Admin OS styling and permission model; no separate admin panel look.
+- Add empty states, loading states, and clear error states.
+- Keep sensitive fields compact and only visible inside permission-gated department views.
 
-1. `setup_email_infra` chala kar queue/cron/tables set up karenge (idempotent).
-2. `scaffold_transactional_email` chala kar `send-transactional-email` edge function + templates registry banayenge.
-3. Role-based "from" aliases ek jagah define honge (edge function ke andar constant map):
+### Technical details
 
-   | Purpose | From alias |
-   |---|---|
-   | HR hire / welcome / onboarding | `hr@notify.parallaxai.in` |
-   | Careers / candidate / offer letter | `careers@notify.parallaxai.in` |
-   | Department head appointments (non-founder) | `office@notify.parallaxai.in` |
-   | System notifications / password / verification | `no-reply@notify.parallaxai.in` |
-   | Payroll / payslip | `payroll@notify.parallaxai.in` |
-
-   Har template registry me `fromAlias` field hoga jo yeh decide karega.
-
-## Step 3 — Branded email templates
-
-`supabase/functions/_shared/transactional-email-templates/` me ye templates banenge (Aurelix navy+gold branding, existing PDF ke saath consistent):
-
-- `hr-welcome.tsx` — HR ka welcome-to-Aurelix email jab activate kare (name, company email, temp password, login URL, first-day info).
-- `hr-hire-notification.tsx` — Naya hire hone par candidate ko congrats + starter info.
-- `offer-letter.tsx` — Offer accept hone par candidate ko confirmation.
-- `credentials-issued.tsx` — Jab bhi temp password/credentials reset ho.
-- `department-appointment.tsx` — Jab department head kisi ko role appoint kare (non-founder path).
-- `payslip-released.tsx` — Payroll cycle release hone par employee ko payslip ready notification (`/wallet/payslips` link).
-
-Sab templates ek shared `AurelixLayout` component use karenge — logo, footer, brand colors ek jagah.
-
-## Step 4 — Wiring HR hire flow (asli fix)
-
-`src/hooks/admin-os/useOnboarding.ts` → `useSendWelcomeEmail`:
-- DB log karne ke baad `supabase.functions.invoke('send-transactional-email', { templateName: 'hr-welcome', recipientEmail, templateData, idempotencyKey })` call karega.
-- HR ke "Send welcome email" button click par actual email jayega — session_id + employee_id idempotency key banega, retry-safe.
-
-`src/hooks/admin-os/useOnboarding.ts` → `useActivateEmployee`:
-- Activation ke saath `credentials-issued` template auto-fire hoga if temp password mojood ho.
-
-Hiring pipeline (`src/hooks/admin-os/useHiring.ts` / Offers flow):
-- Offer status → `accepted` transition par `offer-letter` template auto-send.
-- Candidate → employee conversion par `hr-hire-notification` auto-send.
-
-Ye triggers HR / department head jo bhi karega, unke UI action se jud jayenge — Founder wale flow ki tarah "click ke saath auto email" ban jayega.
-
-## Step 5 — Payroll notification (existing feature ke saath tie-in)
-
-`PayrollCycles` me jab admin cycle ko `released` karta hai:
-- Us cycle ke saare `payroll_items` iterate karke har employee ko `payslip-released` email jayega (`send-transactional-email` per item, idempotency = `payslip-{cycle_id}-{item_id}`).
-
-## Step 6 — Verification
-
-1. DNS verify hone tak Cloud → Emails me domain "Active" hone ka wait.
-2. HR test flow: dummy employee ko welcome email bhejo → inbox me `hr@notify.parallaxai.in` se aana chahiye.
-3. Offer accept flow → `careers@notify.parallaxai.in` se offer letter.
-4. Payroll release → `payroll@notify.parallaxai.in` se payslip notification, `/wallet/payslips` link kaam kare.
-5. `email_send_log` me har send ke against status = `sent` dikhe.
-
-## Out of scope (is turn me nahi)
-
-- Founder ka Gmail-connector appointment flow — aapke instruction ke mutabik untouched.
-- Real PDF attach karna (Lovable Emails attachments support nahi karta — payslip/offer PDF ke liye Supabase Storage signed link email me embed hoga).
-- Marketing / bulk emails.
-- Custom unsubscribe page abhi default rahega; branded page baad me alag turn me.
-
-## Technical notes
-
-- One shared edge function `send-transactional-email`; alias per template via registry `fromAlias` mapping (Lovable Emails ye field support karta hai via `SENDER_DOMAIN` + display From).
-- Idempotency keys use karenge har trigger site par to duplicate send na ho.
-- RLS: HR / heads ke pass already `admin_role_permissions` hai; new email trigger sirf existing mutation ke andar chalega, koi new client-side privilege nahi.
-- Deploy: har template add/edit ke baad `deploy_edge_functions` for `send-transactional-email`, `process-email-queue`.
+- Database migration:
+  - Add missing payout routing metadata columns if needed.
+  - Add/replace routing functions/triggers for `verification_requests`, `kyc_submissions`, `reports`, and `payout_requests`.
+  - Backfill any rows that already exist but are not linked to internal Admin OS work items.
+  - Update RLS/policies for `platform_assignments` so members of the assigned department can read relevant work.
+- Functions:
+  - Harden existing route functions to emit activity/assignment records and stay idempotent.
+- Frontend:
+  - Update Verification, Trust & Safety, Finance & Legal, and Admin OS overview pages/hooks to surface routed work cleanly.
+- Verification:
+  - Run typecheck/build and verify the main Admin OS queues render without runtime errors.
