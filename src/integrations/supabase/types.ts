@@ -919,6 +919,48 @@ export type Database = {
         }
         Relationships: []
       }
+      coin_topup_requests: {
+        Row: {
+          admin_note: string | null
+          amount_inr_cents: number
+          coins: number
+          created_at: string
+          id: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          submitted_at: string | null
+          user_id: string
+          utr: string | null
+        }
+        Insert: {
+          admin_note?: string | null
+          amount_inr_cents: number
+          coins: number
+          created_at?: string
+          id?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          submitted_at?: string | null
+          user_id: string
+          utr?: string | null
+        }
+        Update: {
+          admin_note?: string | null
+          amount_inr_cents?: number
+          coins?: number
+          created_at?: string
+          id?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          submitted_at?: string | null
+          user_id?: string
+          utr?: string | null
+        }
+        Relationships: []
+      }
       coin_transactions: {
         Row: {
           amount: number
@@ -1665,6 +1707,75 @@ export type Database = {
           pending_cents?: number
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      creator_subscription_settings: {
+        Row: {
+          created_at: string
+          creator_id: string
+          enabled: boolean
+          monthly_price_coins: number
+          monthly_price_inr_cents: number
+          perks: Json
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          creator_id: string
+          enabled?: boolean
+          monthly_price_coins?: number
+          monthly_price_inr_cents?: number
+          perks?: Json
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          creator_id?: string
+          enabled?: boolean
+          monthly_price_coins?: number
+          monthly_price_inr_cents?: number
+          perks?: Json
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      creator_subscriptions: {
+        Row: {
+          cancel_at_period_end: boolean
+          created_at: string
+          creator_id: string
+          current_period_end: string
+          current_period_start: string
+          id: string
+          price_coins: number
+          status: string
+          subscriber_id: string
+          updated_at: string
+        }
+        Insert: {
+          cancel_at_period_end?: boolean
+          created_at?: string
+          creator_id: string
+          current_period_end: string
+          current_period_start?: string
+          id?: string
+          price_coins: number
+          status?: string
+          subscriber_id: string
+          updated_at?: string
+        }
+        Update: {
+          cancel_at_period_end?: boolean
+          created_at?: string
+          creator_id?: string
+          current_period_end?: string
+          current_period_start?: string
+          id?: string
+          price_coins?: number
+          status?: string
+          subscriber_id?: string
+          updated_at?: string
         }
         Relationships: []
       }
@@ -15279,6 +15390,11 @@ export type Database = {
       }
       become_creator: { Args: { _terms_version: string }; Returns: undefined }
       can_manage_passports: { Args: { _uid: string }; Returns: boolean }
+      cancel_creator_subscription: {
+        Args: { _creator_id: string }
+        Returns: Json
+      }
+      create_coin_topup: { Args: { _coins: number }; Returns: string }
       create_group: {
         Args: { _member_ids: string[]; _title: string }
         Returns: string
@@ -15418,6 +15534,10 @@ export type Database = {
         Returns: boolean
       }
       has_approved_kyc: { Args: { _user_id: string }; Returns: boolean }
+      has_creator_subscription: {
+        Args: { _creator: string; _subscriber: string }
+        Returns: boolean
+      }
       has_org_permission: {
         Args: {
           _organization_id: string
@@ -15713,6 +15833,7 @@ export type Database = {
       }
       slugify_org_name: { Args: { _name: string }; Returns: string }
       start_dm: { Args: { other_user_id: string }; Returns: string }
+      subscribe_creator: { Args: { _creator_id: string }; Returns: Json }
       toggle_post_pin: {
         Args: { _pin: boolean; _post_id: string }
         Returns: undefined
@@ -15720,6 +15841,10 @@ export type Database = {
       upsert_profile_private: {
         Args: { _dob: string; _gender: string }
         Returns: undefined
+      }
+      verify_coin_topup_with_utr: {
+        Args: { _topup_id: string; _utr: string }
+        Returns: Json
       }
       verify_tip_with_utr: {
         Args: { _tip_id: string; _utr: string }
