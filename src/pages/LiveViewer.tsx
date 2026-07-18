@@ -207,7 +207,7 @@ export default function LiveViewer() {
                 <Button onClick={buyTicket} disabled={buying || !me} className="w-full mt-4 h-12 text-base gap-2">
                   <Lock className="h-4 w-4" /> {buying ? "Unlocking…" : `Unlock live for ${stream.ticket_price_coins} coins`}
                 </Button>
-                <Link to="/wallet" className="block mt-3 text-xs text-white/60 underline">Top up coins</Link>
+                <Link to="/wallet?buy=1" className="block mt-3 text-xs text-white/60 underline">Top up coins</Link>
               </>
             ) : (
               <>
@@ -309,7 +309,7 @@ export default function LiveViewer() {
               </button>
             ))}
           </div>
-          <Link to="/wallet" className="block text-center text-xs text-white/60 underline mt-2">Top up coins</Link>
+          <Link to="/wallet?buy=1" className="block text-center text-xs text-white/60 underline mt-2">Top up coins</Link>
         </SheetContent>
       </Sheet>
     </div>
