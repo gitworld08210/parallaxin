@@ -25,6 +25,7 @@ import { PostCard, type FeedPost } from "@/components/social/PostCard";
 import { CommentSheet } from "@/components/social/CommentSheet";
 import { ReportSheet } from "@/components/social/ReportSheet";
 import { BecomeCreatorSheet } from "@/components/creator/BecomeCreatorSheet";
+import { SubscribeButton } from "@/components/creator/SubscribeButton";
 import { EmptyState } from "@/components/empty/EmptyState";
 
 import { VerificationBadge } from "@/components/vibe/VerificationBadge";
@@ -469,6 +470,7 @@ const Profile = () => {
                     </>
                   )}
                 </button>
+                <SubscribeButton creatorId={profile.user_id} creatorName={profile.username} />
               </>
             )}
           </div>
