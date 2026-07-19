@@ -1,26 +1,30 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Room, createLocalTracks, Track } from "livekit-client";
+import { Room, createLocalTracks, Track, LocalVideoTrack, LocalAudioTrack } from "livekit-client";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { ArrowLeft, Radio, Heart, Users, Globe, Ticket, Crown, Gift } from "lucide-react";
+import { ArrowLeft, Radio, Heart, Users, Globe, Ticket, Crown, Gift, RotateCcw } from "lucide-react";
 
 type ChatRow = { id: string; user_id: string; body: string; created_at: string };
 type GiftRow = { id: string; gift_id: string; coins_total: number; sender_id: string };
-
 type Access = "free" | "ticket" | "subscribers_only";
 
 export default function LiveHost() {
   const navigate = useNavigate();
   const videoRef = useRef<HTMLVideoElement>(null);
   const roomRef = useRef<Room | null>(null);
+  const videoTrackRef = useRef<LocalVideoTrack | null>(null);
+  const audioTrackRef = useRef<LocalAudioTrack | null>(null);
+
   const [title, setTitle] = useState("");
   const [access, setAccess] = useState<Access>("free");
   const [price, setPrice] = useState<number>(50);
   const [allowGifts, setAllowGifts] = useState(true);
   const [streaming, setStreaming] = useState(false);
+  const [starting, setStarting] = useState(false);
+  const [cameraReady, setCameraReady] = useState(false);
   const [streamId, setStreamId] = useState<string | null>(null);
   const [chat, setChat] = useState<ChatRow[]>([]);
   const [hearts, setHearts] = useState<{ id: number }[]>([]);
@@ -38,11 +42,80 @@ export default function LiveHost() {
     })();
   }, []);
 
+  // Attach the local video track to the <video> element whenever both are ready.
+  // This fixes the black-screen bug where attach() ran before the element mounted.
+  useEffect(() => {
+    if (!streaming) return;
+    const attach = () => {
+      const el = videoRef.current;
+      const track = videoTrackRef.current;
+      if (el && track) {
+        track.attach(el);
+        el.play().catch(() => { /* autoplay policies */ });
+        setCameraReady(true);
+      }
+    };
+    attach();
+    // Retry once after the browser paints, in case the ref was null on first tick.
+    const raf = requestAnimationFrame(attach);
+    return () => cancelAnimationFrame(raf);
+  }, [streaming]);
+
+  const stopLocalTracks = () => {
+    try { videoTrackRef.current?.detach(); videoTrackRef.current?.stop(); } catch { /* noop */ }
+    try { audioTrackRef.current?.stop(); } catch { /* noop */ }
+    videoTrackRef.current = null;
+    audioTrackRef.current = null;
+  };
+
+  const retryCamera = async () => {
+    stopLocalTracks();
+    setCameraReady(false);
+    try {
+      const tracks = await createLocalTracks({ audio: true, video: { facingMode: "user" } });
+      for (const t of tracks) {
+        if (t.kind === Track.Kind.Video) videoTrackRef.current = t as LocalVideoTrack;
+        if (t.kind === Track.Kind.Audio) audioTrackRef.current = t as LocalAudioTrack;
+        if (roomRef.current) await roomRef.current.localParticipant.publishTrack(t);
+      }
+      const el = videoRef.current;
+      if (el && videoTrackRef.current) {
+        videoTrackRef.current.attach(el);
+        el.play().catch(() => {});
+        setCameraReady(true);
+      }
+    } catch (e: any) {
+      toast.error(e?.message || "Camera unavailable");
+    }
+  };
+
   const goLive = async () => {
+    if (starting) return;
+    setStarting(true);
     try {
       const { data: userData } = await supabase.auth.getUser();
       const user = userData.user;
-      if (!user) return;
+      if (!user) { toast.error("Please sign in"); return; }
+
+      // 1) Request camera/mic first — surface permission errors early
+      let tracks;
+      try {
+        tracks = await createLocalTracks({ audio: true, video: { facingMode: "user" } });
+      } catch (permErr: any) {
+        const msg = permErr?.name === "NotAllowedError"
+          ? "Camera & microphone access denied. Enable it in your browser settings."
+          : permErr?.name === "NotFoundError"
+          ? "No camera or microphone found on this device."
+          : permErr?.message || "Could not access camera";
+        toast.error(msg);
+        return;
+      }
+      for (const t of tracks) {
+        if (t.kind === Track.Kind.Video) videoTrackRef.current = t as LocalVideoTrack;
+        if (t.kind === Track.Kind.Audio) audioTrackRef.current = t as LocalAudioTrack;
+      }
+
+      // 2) Create the stream record
       const roomName = `live_${user.id}_${Date.now()}`;
       const { data: stream, error: insErr } = await supabase
         .from("live_streams")
@@ -60,6 +133,7 @@ export default function LiveHost() {
       setStreamId(stream.id);
       setTips((stream as any).total_tips_coins ?? 0);
 
+      // 3) Get LiveKit token & connect
       const { data, error } = await supabase.functions.invoke("livekit-token", {
         body: { room: roomName, role: "host" },
       });
@@ -69,22 +143,26 @@ export default function LiveHost() {
       await room.connect(data.wsUrl, data.token);
       roomRef.current = room;
 
-      const tracks = await createLocalTracks({ audio: true, video: { facingMode: "user" } });
       for (const t of tracks) {
         await room.localParticipant.publishTrack(t);
-        if (t.kind === Track.Kind.Video && videoRef.current) t.attach(videoRef.current);
       }
-      room.on("participantConnected", () => setViewers(room.numParticipants - 1));
-      room.on("participantDisconnected", () => setViewers(room.numParticipants - 1));
+      room.on("participantConnected", () => setViewers(Math.max(0, room.numParticipants - 1)));
+      room.on("participantDisconnected", () => setViewers(Math.max(0, room.numParticipants - 1)));
+
+      // 4) Flip UI on — the useEffect above will attach the video track once the element mounts
       setStreaming(true);
       toast.success("You're live!");
     } catch (e: any) {
-      toast.error(e.message || "Could not go live");
+      stopLocalTracks();
+      toast.error(e?.message || "Could not go live");
+    } finally {
+      setStarting(false);
     }
   };
 
   const endLive = async () => {
     try {
+      stopLocalTracks();
       roomRef.current?.disconnect();
       roomRef.current = null;
       if (streamId) {
@@ -122,7 +200,10 @@ export default function LiveHost() {
     return () => clearTimeout(t);
   }, [hearts]);
 
-  useEffect(() => () => { roomRef.current?.disconnect(); }, []);
+  useEffect(() => () => {
+    stopLocalTracks();
+    roomRef.current?.disconnect();
+  }, []);
 
   if (!streaming) {
     return (
@@ -166,8 +247,8 @@ export default function LiveHost() {
           <input type="checkbox" checked={allowGifts} onChange={(e) => setAllowGifts(e.target.checked)} className="h-5 w-5 accent-primary" />
         </label>
 
-        <Button onClick={goLive} size="lg" className="gap-2 mt-2">
-          <Radio className="w-5 h-5" /> Start broadcast
+        <Button onClick={goLive} size="lg" disabled={starting} className="gap-2 mt-2">
+          <Radio className="w-5 h-5" /> {starting ? "Starting…" : "Start broadcast"}
         </Button>
       </div>
     );
@@ -175,7 +256,29 @@ export default function LiveHost() {
 
   return (
     <div className="fixed inset-0 bg-black text-white flex flex-col">
-      <video ref={videoRef} autoPlay playsInline muted className="absolute inset-0 w-full h-full object-cover" />
+      {/* Mirrored local preview — like a selfie camera */}
+      <video
+        ref={videoRef}
+        autoPlay
+        playsInline
+        muted
+        className="absolute inset-0 w-full h-full object-cover"
+        style={{ transform: "scaleX(-1)" }}
+      />
+      {!cameraReady && (
+        <div className="absolute inset-0 grid place-items-center bg-black/70 z-20 pointer-events-auto">
+          <div className="flex flex-col items-center gap-3 text-center px-6">
+            <div className="h-14 w-14 rounded-full border-2 border-white/40 border-t-white animate-spin" />
+            <p className="text-sm font-medium">Starting camera…</p>
+            <button
+              onClick={retryCamera}
+              className="mt-2 inline-flex items-center gap-1.5 text-xs bg-white/15 hover:bg-white/25 rounded-full px-3 py-1.5"
+            >
+              <RotateCcw className="h-3.5 w-3.5" /> Retry
+            </button>
+          </div>
+        </div>
+      )}
       <div className="relative z-10 flex items-center justify-between p-4">
         <div className="flex items-center gap-2 px-3 py-1 bg-red-600 rounded-full text-xs font-bold">
           <span className="w-2 h-2 bg-white rounded-full animate-pulse" /> LIVE
