@@ -202,6 +202,21 @@
     --shadow-gold: 0 4px 24px -6px hsl(48 100% 55% / 0.25);
     --shadow-elevated: 0 10px 30px -12px hsl(220 40% 30% / 0.18);
     --shadow-soft: 0 1px 0 hsl(220 30% 20% / 0.04);
+
+    /* WhatsApp-style chat tokens (light) */
+    --wa-green: 158 64% 40%;
+    --wa-green-foreground: 0 0% 100%;
+    --wa-teal-dark: 170 60% 20%;
+    --chat-bg: 44 25% 92%;                /* WA cream */
+    --chat-wallpaper: 44 25% 92%;
+    --chat-bubble-out: 92 55% 82%;        /* WA light green out */
+    --chat-bubble-out-foreground: 210 20% 12%;
+    --chat-bubble-in: 0 0% 100%;
+    --chat-bubble-in-foreground: 210 20% 12%;
+    --chat-tick-read: 199 92% 45%;
+    --chat-tick-muted: 210 10% 45%;
+    --chat-header: 158 64% 32%;
+    --chat-composer: 44 20% 96%;
   }
 
   .light body {
