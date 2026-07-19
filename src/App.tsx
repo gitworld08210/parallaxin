@@ -95,6 +95,7 @@ const AdminOSGate = lazy(() =>
 const AdminOSLayout = lazy(() => import("./components/admin-os/layout/AdminOSLayout"));
 const AdminOSDashboard = lazy(() => import("./pages/admin-os/AdminOSDashboard"));
 const RoutingOverview = lazy(() => import("./pages/admin-os/RoutingOverview"));
+const ApprovalsInbox = lazy(() => import("./pages/admin-os/ApprovalsInbox"));
 const AdminOSModulePlaceholder = lazy(() => import("./pages/admin-os/ModulePlaceholder"));
 const AdminOSNoAccess = lazy(() => import("./pages/admin-os/AdminOSNoAccess"));
 const AdminOSFirstLogin = lazy(() => import("./pages/admin-os/AdminOSFirstLogin"));
