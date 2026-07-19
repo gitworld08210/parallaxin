@@ -133,9 +133,7 @@ function KycModal({ onClose }: { onClose: () => void }) {
         passbook_photo_url: pbPath,
       }).select("id").single();
       if (error) throw error;
-      if (inserted?.id) {
-        supabase.functions.invoke("route-kyc-submission", { body: { id: inserted.id } }).catch(() => {});
-      }
+      // Routing to ver_applications is handled by DB trigger (Phase 1).
       toast.success("KYC submitted — we'll review shortly");
       onClose();
     } catch (e: any) { toast.error(e.message); }

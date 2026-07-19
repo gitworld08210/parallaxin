@@ -1,3 +1,4 @@
+import { reliableInvoke } from "@/lib/reliableInvoke";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthProvider";
@@ -184,8 +185,8 @@ export function useUploadDocument() {
       const { data: doc, error } = await supabase.from("kip_documents" as any).insert(insertPayload).select("*").single();
       if (error) throw error;
 
-      // Kick off indexing (fire & forget)
-      supabase.functions.invoke("kip-index", { body: { documentId: (doc as any).id } }).catch(() => {});
+      // Kick off indexing — awaited via reliableInvoke, failures logged (Phase 0).
+      void reliableInvoke("kip-index", { body: { documentId: (doc as any).id }, retries: 2 });
       return doc as unknown as KipDocument;
     },
     onSuccess: (doc) => {

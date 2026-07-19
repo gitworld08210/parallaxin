@@ -41,9 +41,7 @@ export const ReportSheet = ({
       details: details.trim() || null,
     } as any).select("id").single() as any);
     if (error) { setBusy(false); return toast.error(error.message); }
-    if (inserted?.id) {
-      supabase.functions.invoke("route-report", { body: { id: inserted.id } }).catch(() => {});
-    }
+    // Routing to ts_cases is handled by DB trigger (Phase 1).
     setBusy(false);
     toast.success("Report received. Thank you.");
     setReason(null); setDetails("");

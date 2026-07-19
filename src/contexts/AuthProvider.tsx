@@ -1,3 +1,4 @@
+import { reliableInvoke } from "@/lib/reliableInvoke";
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
@@ -48,7 +49,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (sess?.user) {
         setTimeout(() => loadProfile(sess.user.id), 0);
         if (evt === "SIGNED_IN") {
-          setTimeout(() => { supabase.functions.invoke("log-login").catch(() => {}); }, 0);
+          setTimeout(() => { void reliableInvoke("log-login", { label: "log-login" }); }, 0);
         }
       } else {
         setProfile(null);

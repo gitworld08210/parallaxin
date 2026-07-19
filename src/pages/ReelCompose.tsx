@@ -1,3 +1,4 @@
+import { reliableInvoke } from "@/lib/reliableInvoke";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Film, Sparkles, X, ShieldCheck, Music, Wand2, Camera, ImagePlus } from "lucide-react";
@@ -80,10 +81,10 @@ const ReelCompose = () => {
       }).select("id").single();
       if (error) throw error;
       if (certify && inserted?.id) {
-        supabase.functions.invoke("ownership-certify", { body: { post_id: inserted.id } }).catch(() => {});
+        void reliableInvoke("ownership-certify", { body: { post_id: inserted.id }, retries: 1 });
       }
       if (inserted?.id) {
-        supabase.functions.invoke("authenticity-score", { body: { post_id: inserted.id } }).catch(() => {});
+        void reliableInvoke("authenticity-score", { body: { post_id: inserted.id }, retries: 1 });
       }
       toast.success("Reel posted ✦");
       nav("/reels");
