@@ -648,6 +648,7 @@ const App = () => (
                 <Route path="/admin-os/first-login" element={<AdminOSFirstLogin />} />
                 <Route path="/admin-os" element={<AdminOSLayout />}>
                   <Route index element={<AdminOSDashboard />} />
+                  <Route path="routing" element={<RoutingOverview />} />
                   <Route path="people-ops" element={<PeopleOpsIndex />} />
                   <Route
                     path="people-ops/new"
