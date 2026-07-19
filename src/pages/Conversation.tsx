@@ -11,8 +11,8 @@ import { ReportSheet } from "@/components/social/ReportSheet";
 import { useCall } from "@/contexts/CallProvider";
 import { GroupInfoSheet } from "@/components/dm/GroupInfoSheet";
 
-const RED = "#E50914";
-const GREEN = "#46d369";
+const WA_GREEN = "hsl(var(--wa-green))";
+const TICK_READ = "hsl(var(--chat-tick-read))";
 
 type Msg = {
   id: string;
@@ -223,60 +223,59 @@ const Conversation = () => {
   const otherName = other?.display_name || other?.username || "Conversation";
 
   return (
-    <div className="flex flex-col min-h-screen" style={{ background: "hsl(var(--background))", color: "hsl(var(--foreground))" }}>
-      {/* Header */}
+    <div
+      className="flex flex-col min-h-screen"
+      style={{ background: "hsl(var(--chat-bg))", color: "hsl(var(--foreground))" }}
+    >
+      {/* WhatsApp-style green header */}
       <header
-        className="h-16 px-2 flex items-center gap-2 sticky top-0 z-20 backdrop-blur"
-        style={{ background: "hsl(var(--background) / 0.85)", borderBottom: "1px solid hsl(var(--border))" }}
+        className="h-14 px-1.5 flex items-center gap-1 sticky top-0 z-20"
+        style={{ background: "hsl(var(--chat-header))", color: "hsl(var(--wa-green-foreground))" }}
       >
-        <button onClick={() => nav("/messages")} className="h-10 w-10 grid place-items-center rounded-full hover:bg-muted/40" aria-label="Back">
-          <ChevronLeft className="h-6 w-6 text-foreground" />
+        <button onClick={() => nav("/messages")} className="h-10 w-10 grid place-items-center rounded-full hover:bg-white/10" aria-label="Back">
+          <ChevronLeft className="h-6 w-6" />
         </button>
-        <Link to={other ? `/u/${other.username}` : "#"} className="flex items-center gap-3 flex-1 min-w-0">
-          <div className="rounded-full p-[2px] shrink-0" style={{ background: `linear-gradient(135deg, ${RED}, #ff3b47)` }}>
-            {other?.avatar_url ? (
-              <img src={other.avatar_url} className="h-9 w-9 rounded-full object-cover" style={{ border: "2px solid hsl(var(--background))" }} alt="" />
-            ) : (
-              <div className="h-9 w-9 rounded-full overflow-hidden" style={{ border: "2px solid hsl(var(--background))" }}>
-                <AuraAvatar gradient={gradientFor(other?.username)} size="sm" initials={initialsOf(otherName)} />
-              </div>
-            )}
-          </div>
+        <Link to={other ? `/u/${other.username}` : "#"} className="flex items-center gap-2.5 flex-1 min-w-0">
+          {other?.avatar_url ? (
+            <img src={other.avatar_url} className="h-9 w-9 rounded-full object-cover" alt="" />
+          ) : (
+            <div className="h-9 w-9 rounded-full overflow-hidden">
+              <AuraAvatar gradient={gradientFor(other?.username)} size="sm" initials={initialsOf(otherName)} />
+            </div>
+          )}
           <div className="min-w-0">
-            <p className="text-[15px] font-semibold truncate leading-tight text-foreground inline-flex items-center gap-1">
+            <p className="text-[15px] font-semibold truncate leading-tight inline-flex items-center gap-1">
               {otherName}
               {other?.verification_kind && <VerificationBadge kind={other.verification_kind as any} />}
             </p>
-            <p className="text-[11px] leading-tight" style={{ color: otherTyping ? RED : GREEN }}>
+            <p className="text-[12px] leading-tight opacity-85">
               {otherTyping ? "typing…" : "online"}
             </p>
           </div>
         </Link>
-        <button className="h-10 w-10 grid place-items-center rounded-full hover:bg-muted/40" aria-label="Search">
-          <Search className="h-5 w-5" style={{ color: "hsl(var(--foreground) / 0.9)" }} />
+        <button
+          onClick={() => other && startCall(id!, {
+            user_id: other.user_id, username: other.username, display_name: other.display_name, avatar_url: other.avatar_url,
+          }, "video")}
+          className="h-10 w-10 grid place-items-center rounded-full hover:bg-white/10"
+          aria-label="Video call"
+        >
+          <Video className="h-[22px] w-[22px]" />
         </button>
         <button
           onClick={() => other && startCall(id!, {
             user_id: other.user_id, username: other.username, display_name: other.display_name, avatar_url: other.avatar_url,
           }, "voice")}
-          className="h-10 w-10 grid place-items-center rounded-full hover:bg-muted/40"
+          className="h-10 w-10 grid place-items-center rounded-full hover:bg-white/10"
           aria-label="Voice call"
         >
-          <Phone className="h-5 w-5" style={{ color: "hsl(var(--foreground) / 0.9)" }} />
+          <Phone className="h-5 w-5" />
         </button>
-        <button
-          onClick={() => other && startCall(id!, {
-            user_id: other.user_id, username: other.username, display_name: other.display_name, avatar_url: other.avatar_url,
-          }, "video")}
-          className="h-10 w-10 grid place-items-center rounded-full hover:bg-muted/40"
-          aria-label="Video call"
-        >
-          <Video className="h-5 w-5" style={{ color: "hsl(var(--foreground) / 0.9)" }} />
-        </button>
-        <button className="h-10 w-10 grid place-items-center rounded-full hover:bg-muted/40" aria-label="More">
-          <MoreVertical className="h-5 w-5" style={{ color: "hsl(var(--foreground) / 0.9)" }} />
+        <button className="h-10 w-10 grid place-items-center rounded-full hover:bg-white/10" aria-label="More">
+          <MoreVertical className="h-5 w-5" />
         </button>
       </header>
+
 
       {/* Messages */}
       <div className="flex-1 px-3 pt-4 pb-36 space-y-1 overflow-y-auto">
@@ -305,14 +304,15 @@ const Conversation = () => {
 
           const bubbleStyle: React.CSSProperties = mine
             ? {
-                background: `linear-gradient(135deg, #7a1014 0%, ${RED} 100%)`,
-                color: "hsl(var(--foreground))",
-                boxShadow: `0 4px 16px ${RED}33`,
+                background: "hsl(var(--chat-bubble-out))",
+                color: "hsl(var(--chat-bubble-out-foreground))",
+                boxShadow: "0 1px 1px hsl(0 0% 0% / 0.15)",
                 ...radius,
               }
             : {
-                background: "hsl(var(--secondary))",
-                color: "hsl(var(--foreground))",
+                background: "hsl(var(--chat-bubble-in))",
+                color: "hsl(var(--chat-bubble-in-foreground))",
+                boxShadow: "0 1px 1px hsl(0 0% 0% / 0.15)",
                 ...radius,
               };
 
@@ -322,11 +322,11 @@ const Conversation = () => {
                 onPointerDown={() => startLongPress(m.id, mine)}
                 onPointerUp={cancelLongPress}
                 onPointerLeave={cancelLongPress}
-                className="max-w-[78%] px-3.5 py-2 text-[14px] leading-snug animate-fade-in"
+                className="max-w-[78%] px-2.5 py-1.5 text-[14.5px] leading-snug animate-fade-in"
                 style={bubbleStyle}
               >
                 {sp && (
-                  <Link to={`/p/${sp.id}`} className="block mb-2 rounded-xl overflow-hidden" style={{ background: "rgba(0,0,0,0.25)" }}>
+                  <Link to={`/p/${sp.id}`} className="block mb-2 rounded-xl overflow-hidden" style={{ background: "hsl(0 0% 0% / 0.15)" }}>
                     {sp.media_url && (sp.media_type === "video"
                       ? <video src={sp.media_url} muted className="w-full max-h-48 object-cover" />
                       : <img src={sp.media_url} className="w-full max-h-48 object-cover" alt="" />)}
@@ -338,18 +338,19 @@ const Conversation = () => {
                 {m.media_type === "audio" && m.media_url && <VoiceBubble url={m.media_url} mine={mine} />}
                 {m.content && <p className="whitespace-pre-wrap break-words">{m.content}</p>}
                 <div className="flex items-center justify-end gap-1 mt-0.5 -mb-0.5">
-                  <span className="text-[10px]" style={{ color: mine ? "hsl(var(--foreground) / 0.75)" : "hsl(var(--muted-foreground))" }}>
+                  <span className="text-[10.5px] opacity-70">
                     {fmtTime(m.created_at)}
                   </span>
                   {mine && (
                     m.read_at
-                      ? <CheckCheck className="h-3.5 w-3.5" style={{ color: "#ffd1d3" }} />
-                      : <Check className="h-3.5 w-3.5" style={{ color: "hsl(var(--foreground) / 0.75)" }} />
+                      ? <CheckCheck className="h-3.5 w-3.5" style={{ color: TICK_READ }} />
+                      : <Check className="h-3.5 w-3.5 opacity-70" />
                   )}
                 </div>
               </div>
             </div>
           );
+
         })}
         {otherTyping && (
           <div className="flex justify-start">
@@ -366,8 +367,8 @@ const Conversation = () => {
       {/* Composer */}
       <form
         onSubmit={send}
-        className="fixed bottom-14 inset-x-0 mx-auto max-w-md p-3 flex flex-col gap-2"
-        style={{ background: "hsl(var(--background))", borderTop: "1px solid hsl(var(--border))" }}
+        className="fixed bottom-14 inset-x-0 mx-auto max-w-md p-2 flex flex-col gap-2"
+        style={{ background: "hsl(var(--chat-bg))" }}
       >
         {aiSuggestions.length > 0 && (
           <div className="flex gap-1.5 overflow-x-auto -mx-1 px-1 pb-1">
@@ -376,8 +377,8 @@ const Conversation = () => {
                 key={i}
                 type="button"
                 onClick={() => { setText(s); setAiSuggestions([]); }}
-                className="shrink-0 text-xs px-3 py-1.5 rounded-full font-medium transition-colors"
-                style={{ background: "rgba(229,9,20,0.12)", color: RED, border: `1px solid ${RED}55` }}
+                className="shrink-0 text-xs px-3 py-1.5 rounded-full font-medium"
+                style={{ background: "hsl(var(--wa-green) / 0.15)", color: WA_GREEN, border: "1px solid hsl(var(--wa-green) / 0.4)" }}
               >
                 ✨ {s}
               </button>
@@ -386,39 +387,40 @@ const Conversation = () => {
         )}
         <div className="flex gap-2 items-center">
           <div
-            className="flex items-center gap-2 flex-1 rounded-full px-3"
-            style={{ background: "hsl(var(--secondary))", border: "1px solid hsl(var(--border))" }}
+            className="flex items-center gap-2 flex-1 rounded-full px-2"
+            style={{ background: "hsl(var(--chat-composer))" }}
           >
-            <button type="button" className="h-9 w-9 grid place-items-center -ml-1" aria-label="Attach">
-              <Paperclip className="h-5 w-5" style={{ color: "hsl(var(--muted-foreground))" }} />
+            <button type="button" className="h-9 w-9 grid place-items-center" aria-label="Emoji">
+              <Smile className="h-[22px] w-[22px] opacity-70" />
             </button>
             <input
               value={text}
               onChange={(e) => onType(e.target.value)}
-              placeholder={`Message ${other?.display_name || other?.username || ""}…`}
-              className="flex-1 bg-transparent outline-none text-sm py-2.5 text-foreground placeholder:text-muted-foreground"
+              placeholder="Message"
+              className="flex-1 bg-transparent outline-none text-[15px] py-2.5 placeholder:opacity-60"
             />
-            <button type="button" className="h-9 w-9 grid place-items-center" aria-label="Emoji">
-              <Smile className="h-5 w-5" style={{ color: "hsl(var(--muted-foreground))" }} />
+            <button type="button" className="h-9 w-9 grid place-items-center" aria-label="Attach">
+              <Paperclip className="h-[20px] w-[20px] opacity-70" />
             </button>
           </div>
           {text.trim() ? (
             <button
               type="submit"
               className="h-11 w-11 grid place-items-center rounded-full transition-transform active:scale-90"
-              style={{ background: RED, boxShadow: `0 6px 20px ${RED}66` }}
+              style={{ background: WA_GREEN, color: "hsl(var(--wa-green-foreground))" }}
               aria-label="Send"
             >
-              <Send className="h-5 w-5 text-foreground" />
+              <Send className="h-5 w-5" />
             </button>
           ) : user ? (
             <div
               className="h-11 w-11 grid place-items-center rounded-full"
-              style={{ background: RED, boxShadow: `0 6px 20px ${RED}66` }}
+              style={{ background: WA_GREEN, color: "hsl(var(--wa-green-foreground))" }}
             >
               <VoiceRecorder userId={user.id} onSend={sendVoice} />
             </div>
           ) : null}
+
         </div>
       </form>
 

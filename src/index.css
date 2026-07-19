@@ -112,6 +112,21 @@
     --sidebar-accent-foreground: 0 0% 96%;
     --sidebar-border: 240 8% 18%;
     --sidebar-ring: 265 85% 65%;
+
+    /* ===== WhatsApp-style chat tokens (dark) ===== */
+    --wa-green: 158 64% 40%;              /* #128C7E-ish */
+    --wa-green-foreground: 0 0% 100%;
+    --wa-teal-dark: 170 60% 18%;
+    --chat-bg: 210 12% 8%;                /* deep chat canvas */
+    --chat-wallpaper: 210 12% 8%;
+    --chat-bubble-out: 158 58% 22%;       /* dark green outgoing */
+    --chat-bubble-out-foreground: 0 0% 98%;
+    --chat-bubble-in: 220 10% 14%;        /* neutral incoming */
+    --chat-bubble-in-foreground: 0 0% 98%;
+    --chat-tick-read: 199 92% 60%;        /* blue read tick */
+    --chat-tick-muted: 0 0% 70%;
+    --chat-header: 195 32% 12%;
+    --chat-composer: 220 10% 12%;
   }
 
   .dark {
@@ -187,6 +202,21 @@
     --shadow-gold: 0 4px 24px -6px hsl(48 100% 55% / 0.25);
     --shadow-elevated: 0 10px 30px -12px hsl(220 40% 30% / 0.18);
     --shadow-soft: 0 1px 0 hsl(220 30% 20% / 0.04);
+
+    /* WhatsApp-style chat tokens (light) */
+    --wa-green: 158 64% 40%;
+    --wa-green-foreground: 0 0% 100%;
+    --wa-teal-dark: 170 60% 20%;
+    --chat-bg: 44 25% 92%;                /* WA cream */
+    --chat-wallpaper: 44 25% 92%;
+    --chat-bubble-out: 92 55% 82%;        /* WA light green out */
+    --chat-bubble-out-foreground: 210 20% 12%;
+    --chat-bubble-in: 0 0% 100%;
+    --chat-bubble-in-foreground: 210 20% 12%;
+    --chat-tick-read: 199 92% 45%;
+    --chat-tick-muted: 210 10% 45%;
+    --chat-header: 158 64% 32%;
+    --chat-composer: 44 20% 96%;
   }
 
   .light body {
