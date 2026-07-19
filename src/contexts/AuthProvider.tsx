@@ -48,7 +48,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (sess?.user) {
         setTimeout(() => loadProfile(sess.user.id), 0);
         if (evt === "SIGNED_IN") {
-          setTimeout(() => { supabase.functions.invoke("log-login").catch(() => {}); }, 0);
+          setTimeout(() => { void reliableInvoke("log-login", { label: "log-login" }); }, 0);
         }
       } else {
         setProfile(null);

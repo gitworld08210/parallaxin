@@ -80,10 +80,10 @@ const ReelCompose = () => {
       }).select("id").single();
       if (error) throw error;
       if (certify && inserted?.id) {
-        supabase.functions.invoke("ownership-certify", { body: { post_id: inserted.id } }).catch(() => {});
+        void reliableInvoke("ownership-certify", { body: { post_id: inserted.id }, retries: 1 });
       }
       if (inserted?.id) {
-        supabase.functions.invoke("authenticity-score", { body: { post_id: inserted.id } }).catch(() => {});
+        void reliableInvoke("authenticity-score", { body: { post_id: inserted.id }, retries: 1 });
       }
       toast.success("Reel posted ✦");
       nav("/reels");

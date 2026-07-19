@@ -75,9 +75,7 @@ const Verification = () => {
         supporting_doc_url: supportPath,
       }).select("id").single();
       if (error) throw error;
-      if (inserted?.id) {
-        supabase.functions.invoke("route-verification-request", { body: { id: inserted.id } }).catch(() => {});
-      }
+      // Routing to ver_applications is handled by DB trigger (Phase 1).
       toast.success("Submitted · review within 48h");
       setExisting({ id: inserted?.id ?? "tmp", status: "pending", category, created_at: new Date().toISOString() });
     } catch (e: any) { toast.error(e.message || "Failed"); } finally { setBusy(false); }

@@ -158,21 +158,16 @@ const Compose = () => {
         );
       }
 
-      // Fire-and-forget embedding (only when published)
+      // Enrichment — awaited via reliableInvoke, failures logged (Phase 0).
       if (newId && status === "published") {
-        supabase.functions.invoke("embed-post", { body: { post_id: newId } }).catch(() => {});
+        void reliableInvoke("embed-post", { body: { post_id: newId }, retries: 2 });
       }
-
-      // Ownership certificate (only when published with media)
       if (newId && status === "published" && certify && file) {
-        supabase.functions.invoke("ownership-certify", { body: { post_id: newId } })
-          .then(({ error }) => { if (error) toast.error("Certificate failed: " + error.message); })
-          .catch(() => {});
+        const { error: certErr } = await reliableInvoke("ownership-certify", { body: { post_id: newId }, retries: 1 });
+        if (certErr) toast.error("Certificate failed: " + certErr.message);
       }
-
-      // Authenticity score (fire-and-forget for every published post)
       if (newId && status === "published") {
-        supabase.functions.invoke("authenticity-score", { body: { post_id: newId } }).catch(() => {});
+        void reliableInvoke("authenticity-score", { body: { post_id: newId }, retries: 1 });
       }
 
       if (status === "published") { toast.success("Posted ✦"); nav("/"); }
