@@ -191,7 +191,7 @@ const Messages = () => {
             <button
               onClick={() => setComposerOpen(true)}
               className="h-9 w-9 grid place-items-center rounded-full transition-transform active:scale-95"
-              style={{ background: RED, boxShadow: `0 8px 24px ${RED}55` }}
+              style={{ background: RED, boxShadow: "0 8px 24px hsl(var(--wa-green) / 0.4)" }}
               aria-label="New chat"
             >
               <SquarePen className="h-[17px] w-[17px] text-foreground" strokeWidth={2.25} />
@@ -276,7 +276,7 @@ const Messages = () => {
                   <div className="relative">
                     <div
                       className="rounded-full p-[2px]"
-                      style={c.unread > 0 ? { background: `conic-gradient(from 210deg, ${RED}, #ff7a4a, ${RED})` } : { background: "transparent" }}
+                      style={c.unread > 0 ? { background: "conic-gradient(from 210deg, hsl(var(--wa-green)), hsl(158 55% 55%), hsl(var(--wa-green)))" } : { background: "transparent" }}
                     >
                       {avatarUrl ? (
                         <img src={avatarUrl} className="h-14 w-14 rounded-full object-cover" style={{ border: c.unread > 0 ? "2px solid hsl(var(--background))" : "none" }} />
@@ -384,7 +384,7 @@ const Messages = () => {
                         {unread && (
                           <span
                             className="shrink-0 inline-flex items-center justify-center min-w-[20px] h-[20px] px-1.5 rounded-full text-[11px] font-bold text-foreground"
-                            style={{ background: RED, boxShadow: `0 4px 12px ${RED}55` }}
+                            style={{ background: RED, boxShadow: "0 4px 12px hsl(var(--wa-green) / 0.4)" }}
                           >
                             {c.unread > 99 ? "99+" : c.unread}
                           </span>
