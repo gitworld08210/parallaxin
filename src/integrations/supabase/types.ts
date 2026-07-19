@@ -273,6 +273,42 @@ export type Database = {
           },
         ]
       }
+      approval_chains: {
+        Row: {
+          active: boolean
+          created_at: string
+          entity_type: string
+          id: string
+          module: string
+          notes: string | null
+          steps: Json
+          title_template: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          entity_type: string
+          id?: string
+          module: string
+          notes?: string | null
+          steps: Json
+          title_template: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          entity_type?: string
+          id?: string
+          module?: string
+          notes?: string | null
+          steps?: Json
+          title_template?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       attendance_corrections: {
         Row: {
           created_at: string
@@ -15476,10 +15512,25 @@ export type Database = {
         Returns: undefined
       }
       become_creator: { Args: { _terms_version: string }; Returns: undefined }
+      can_decide_current_step: {
+        Args: { p_request_id: string; p_user_id: string }
+        Returns: boolean
+      }
       can_manage_passports: { Args: { _uid: string }; Returns: boolean }
       cancel_creator_subscription: {
         Args: { _creator_id: string }
         Returns: Json
+      }
+      create_approval_request: {
+        Args: {
+          p_entity_id: string
+          p_entity_type: string
+          p_payload: Json
+          p_priority?: string
+          p_requested_by: string
+          p_title: string
+        }
+        Returns: string
       }
       create_coin_topup: { Args: { _coins: number }; Returns: string }
       create_group: {
@@ -15538,6 +15589,10 @@ export type Database = {
         Returns: undefined
       }
       current_employee_id: { Args: never; Returns: string }
+      decide_approval_step: {
+        Args: { p_decision: string; p_reason?: string; p_request_id: string }
+        Returns: string
+      }
       delete_email: {
         Args: { message_id: number; queue_name: string }
         Returns: boolean
