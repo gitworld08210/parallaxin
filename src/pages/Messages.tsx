@@ -13,7 +13,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { NewGroupSheet } from "@/components/dm/NewGroupSheet";
 
-const RED = "#E50914";
+const RED = "hsl(var(--wa-green))"; // WhatsApp green accent
 
 const chatTime = (iso: string) => {
   const d = new Date(iso);
