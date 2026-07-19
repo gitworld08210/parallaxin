@@ -94,6 +94,7 @@ const AdminOSGate = lazy(() =>
 );
 const AdminOSLayout = lazy(() => import("./components/admin-os/layout/AdminOSLayout"));
 const AdminOSDashboard = lazy(() => import("./pages/admin-os/AdminOSDashboard"));
+const RoutingOverview = lazy(() => import("./pages/admin-os/RoutingOverview"));
 const AdminOSModulePlaceholder = lazy(() => import("./pages/admin-os/ModulePlaceholder"));
 const AdminOSNoAccess = lazy(() => import("./pages/admin-os/AdminOSNoAccess"));
 const AdminOSFirstLogin = lazy(() => import("./pages/admin-os/AdminOSFirstLogin"));
@@ -648,6 +649,7 @@ const App = () => (
                 <Route path="/admin-os/first-login" element={<AdminOSFirstLogin />} />
                 <Route path="/admin-os" element={<AdminOSLayout />}>
                   <Route index element={<AdminOSDashboard />} />
+                  <Route path="routing" element={<RoutingOverview />} />
                   <Route path="people-ops" element={<PeopleOpsIndex />} />
                   <Route
                     path="people-ops/new"

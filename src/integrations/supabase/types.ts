@@ -12381,6 +12381,93 @@ export type Database = {
           },
         ]
       }
+      routing_events: {
+        Row: {
+          actor_id: string | null
+          created_at: string
+          department: string
+          error: string | null
+          id: string
+          metadata: Json
+          sla_due_at: string | null
+          source_id: string
+          source_table: string
+          status: string
+          target_id: string | null
+          target_table: string
+        }
+        Insert: {
+          actor_id?: string | null
+          created_at?: string
+          department: string
+          error?: string | null
+          id?: string
+          metadata?: Json
+          sla_due_at?: string | null
+          source_id: string
+          source_table: string
+          status?: string
+          target_id?: string | null
+          target_table: string
+        }
+        Update: {
+          actor_id?: string | null
+          created_at?: string
+          department?: string
+          error?: string | null
+          id?: string
+          metadata?: Json
+          sla_due_at?: string | null
+          source_id?: string
+          source_table?: string
+          status?: string
+          target_id?: string | null
+          target_table?: string
+        }
+        Relationships: []
+      }
+      routing_rules: {
+        Row: {
+          active: boolean
+          created_at: string
+          default_priority: string
+          department: string
+          id: string
+          notes: string | null
+          sla_hours: number
+          source_event: string
+          source_table: string
+          target_table: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          default_priority?: string
+          department: string
+          id?: string
+          notes?: string | null
+          sla_hours?: number
+          source_event?: string
+          source_table: string
+          target_table: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          default_priority?: string
+          department?: string
+          id?: string
+          notes?: string | null
+          sla_hours?: number
+          source_event?: string
+          source_table?: string
+          target_table?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       salary_revisions: {
         Row: {
           created_at: string
@@ -15576,6 +15663,8 @@ export type Database = {
         Returns: boolean
       }
       is_admin_os_account: { Args: { _user_id: string }; Returns: boolean }
+      is_admin_os_founder: { Args: never; Returns: boolean }
+      is_admin_os_staff: { Args: never; Returns: boolean }
       is_conversation_member: {
         Args: { _conv: string; _user: string }
         Returns: boolean
@@ -15648,6 +15737,19 @@ export type Database = {
           status: string
           username: string
         }[]
+      }
+      log_routing_event: {
+        Args: {
+          p_actor_id: string
+          p_error?: string
+          p_metadata?: Json
+          p_source_id: string
+          p_source_table: string
+          p_status?: string
+          p_target_id: string
+          p_target_table: string
+        }
+        Returns: string
       }
       mark_conversation_read: {
         Args: { _conversation_id: string }
