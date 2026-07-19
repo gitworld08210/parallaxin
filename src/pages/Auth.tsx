@@ -70,7 +70,7 @@ const Auth = () => {
 
     const { data: role } = await supabase
       .from("user_roles").select("role").eq("user_id", uid).eq("role", "admin").maybeSingle();
-    if (role) { nav("/admin", { replace: true }); return; }
+    if (role) { nav("/admin-os", { replace: true }); return; }
 
     let prof: { onboarded_at: string | null; account_type: string | null; organization_id: string | null } | null = null;
     for (let i = 0; i < 4; i++) {
