@@ -1,109 +1,72 @@
-# Aurelix — User + Creator Audit + Flow 1 Plan
+# Live black screen fix + WhatsApp-style Messages
 
-## Part A — Audit summary (what's broken across 4 areas)
+## Part 1 — Fix the "black screen when I go live" bug
 
-### 1. Aurelix Coins economy
+**Root cause (confirmed in `src/pages/LiveHost.tsx`):** The host's `<video>` element is rendered only when `streaming === true` (line 178). But `goLive()` calls `t.attach(videoRef.current)` (line 75) **before** `setStreaming(true)` runs (line 79). At that moment `videoRef.current` is `null`, so nothing gets attached and the viewport stays black even though the camera track is publishing to LiveKit.
 
-**Works:** `creator_balance`, `tips`, `payout_requests`, `dm_unlocks`, `post_unlocks`, `live_gifts`, KYC-gated payouts (`CreatorEarnings.tsx`), live gift/ticket edge functions.  
+**Fix:**
+1. Flip `setStreaming(true)` on as soon as the LiveKit room connects, so the `<video>` element mounts.
+2. Attach the local video track in a `useEffect` that runs when both `streaming` and the local track ref are ready — or store the created video track in a ref/state and attach inside a `requestAnimationFrame` after `setStreaming(true)`.
+3. Keep `muted` + `playsInline` + `autoPlay` on the video (needed for local preview and iOS).
+4. On `endLive`, detach and stop all local tracks (currently only `disconnect()` is called — camera light stays on).
+5. Add a visible fallback: if no video frames arrive within 3s, show "Camera starting…" placeholder + a "Retry camera" button, and surface `getUserMedia` permission errors via toast (currently swallowed into a generic message).
+6. Mirror the local preview (`scale-x-[-1]`) so the host sees themselves like a selfie camera — matches Instagram/TikTok.
 
-Note:- Make currency is rupees not dollers  
-**Broken:**
+No changes to viewer side unless the same attach-order bug exists — will verify `LiveViewer.tsx` during implementation and apply the same pattern if needed.
 
-- `Wallet.tsx` headline "coins/XP/trust" are **fake formulas** from `posts_count * 100 + followers_count * 10` — completely ignores real `profiles.coin_balance` and `coin_transactions`.
-- "Earn" / "Redeem" buttons have no `onClick`.
-- `Monetization.tsx` is 100% hardcoded `$. 0.00` placeholder — Withdraw permanently disabled, duplicates (and contradicts) `CreatorEarnings`.
-- Two parallel ledgers (`coin_balance` vs `creator_balance`) never reconciled; LiveViewer tells users "top up in Wallet" but Wallet has no top-up.
-- No transaction history UI anywhere (nothing lists rows from `coin_transactions` / `tips` / `unlocks` / `payout_requests` for the user).
-- No payout status list for creators.
+## Part 2 — WhatsApp-style Messages redesign
 
-### 2. XP / Levels / Aura / Achievements
+Rebuild the two existing screens with WhatsApp's exact visual language, using our design tokens (no hardcoded colors) and the tables already in the DB (`conversations`, `conversation_participants`, `messages`, `calls`, `stories`).
 
-**Reality: no XP system exists.** No `xp` column, no XP triggers, no achievement-unlock table.
+### Chats list (`src/pages/Messages.tsx`)
+- WhatsApp green header with "Aurelix Chat" title, camera / search / overflow icons.
+- Sticky tabs pill row: **All · Unread · Favourites · Groups** (uses existing `tab` state, renamed).
+- Row layout: 56px round avatar → name + last message (single line, ellipsis, ✓/✓✓/✓✓ blue for read) → right column: time (green if unread) + unread pill + pin icon.
+- Swipe row actions (framer-motion drag): swipe left → Archive / Delete, swipe right → Mark unread / Pin.
+- Long-press row → selection mode with top action bar (pin, mute, archive, delete, mark read).
+- Floating green FAB with `MessageCircle` for new chat.
+- Bottom tab bar: **Chats · Updates · Communities · Calls** (Updates = existing stories, Calls = existing calls table, Communities = groups view).
+- Empty state uses existing `EmptyState` component with WhatsApp-style copy.
 
-- `AuraLevel.tsx` — hardcoded `pct=0`, "0/1000 XP", all benefits permanently locked.
-- `Achievements.tsx` — hardcoded static array, all `Lock` + `opacity-70`, progress fixed `0/24`.
-- Wallet.tsx invents a different "Level" from post/follower counts. Two contradictory surfaces, both cosmetic.
+### Chat thread (`src/pages/Conversation.tsx`)
+- Header: back → avatar → name + "online / last seen / typing…" → video call, voice call, overflow.
+- Wallpaper background (subtle doodle pattern token), messages as bubbles:
+  - Outgoing: right-aligned, `chat-bubble-out` token (WhatsApp light-green), tail on last of group.
+  - Incoming: left-aligned, `chat-bubble-in` token (card surface), tail on last of group.
+  - Grouped by sender + minute; date chips ("Today", "Yesterday", "12 July 2026") pinned between groups.
+  - Time + ✓/✓✓/✓✓ read receipts inside the bubble bottom-right.
+- Reply-swipe: swipe a bubble right → quote-reply composer with colored left border.
+- Long-press bubble → action sheet: Reply, React (emoji row: ❤️ 😂 😮 😢 🙏 👍 +), Forward, Star, Copy, Delete, Info.
+- Reactions render as a pill under the bubble with count.
+- Composer bar: emoji button, text input (auto-grow), attach (📎 opens sheet: Document / Camera / Gallery / Audio / Location / Contact / Poll), camera, mic (hold-to-record voice note with waveform preview and cancel-slide).
+- Voice notes: bubble shows waveform, play/pause, duration, and a small avatar.
+- Media messages: image/video preview with rounded corners, tap → fullscreen viewer.
+- Typing indicator (three dots) and "seen" state driven by realtime channel.
+- Disappearing-messages badge in header (feature flag, no backend work — UI only unless requested).
+- Encrypted-notice system message on first open of a new chat.
 
-### 3. Creator Hub
+### Calls tab (reuse `calls` + `call_participants`)
+- History list grouped by date, incoming/outgoing/missed icons in green/red, tap to call back.
+- Floating FAB → contact picker → start voice/video call using existing `CallScreen`.
 
-**Works:** route + gate, quick-access grid, `CreatorEarnings` (only real surface).
-**Broken/Gaps:**
-
-- CreatorHub KPIs (Earnings/Views/Reach/Engagement) all hardcoded `0` / `$0`.
-- **No Subscribe button anywhere on `Profile.tsx**` — `subscriptions` table + `has_active_subscription()` RPC exist and are already read by LiveViewer, but funnel has no entry point.
-- No subscribers list, no exclusive-content manager (posts.is_paid + price_cents columns exist but no creator UI to set them).
-- No live scheduling, no real analytics, no payout history.
-
-### 4. Support
-
-**Works:** `Support.tsx` intake, `sup_tickets` auto-routing to departments, SLA trigger, admin queue.
-**Broken/Gaps:**
-
-- **User cannot open a past ticket** — chevron on rows is not clickable, no `/support/:id` route, `sup_messages` two-way reply UI missing (backend RLS supports it).
-- No CSAT feedback UI despite `sup_feedback` table.
-- 5 of 9 status enum values are unstyled.
-- **No creator-priority channel** — "creator" is just a category tag; no separate queue, no SLA boost, no verified-creator badge on tickets.
-
-### Recommendation
-
-Ship in this order:
-
-1. **Wallet + Coins reconciliation + Subscribe on Profile** ← this plan
-2. Creator Hub redesign (subscribers list, exclusive-content manager, live schedule)
-3. Support: ticket detail + reply + creator-priority queue
-4. Real XP/achievements backend last (biggest net-new build, zero live dependents)
-
----
-
-## Part B — Flow 1 plan (this round)
-
-Goal: make Wallet the honest single source of truth for coins and money, and give fans a real way to subscribe to creators from the profile page. Keep Aurelix dark violet theme.
-
-### Scope (in)
-
-1. **Wallet redesign** using real data
-  - Replace fake `xp/auraCoins/trustScore` math with real values:
-    - Coin balance → `profiles.coin_balance`
-    - Creator earnings section (only if `useIsCreator()`) → existing `CreatorEarnings` (available/pending/lifetime)
-  - New **Transactions** tab: unified feed from `coin_transactions`, `tips` (as payer AND recipient), `post_unlocks`, `dm_unlocks`, `live_gifts` (sent + received), `payout_requests`. Grouped by day, filter chips (All / Spent / Earned / Payouts).
-  - New **Buy Coins** sheet (top-up): preset packs (100 / 500 / 1,500 / 5,000 coins), invokes a new `create-coin-topup` edge function that returns a UPI intent (matching the manual-UTR pattern already used by `TipSheet`) and calls `verify_coin_topup_with_utr` RPC — mirrors existing tip flow, no new payment provider needed. Removes the dead "top up in Wallet" pointer from LiveViewer.
-  - "Earn coins" section: honest list of ways to earn (currently: receive tips, sell exclusive posts, live gifts, subscriptions). No fake XP formula.
-  - Fix "Redeem" → routes to Store; "Earn" → scrolls to earn section.
-  - Kill duplicate `Monetization.tsx` KPI cards; page becomes a thin redirect to Wallet (creator view) so we have one truth.
-2. **Payout history** (creator side)
-  - New card under `CreatorEarnings`: last 10 `payout_requests` with status badge (pending/approved/paid/rejected) + amount + timestamp + rejection reason if any.
-3. **Subscribe / paywall on Profile**
-  - On `Profile.tsx`, when viewing a creator who has enabled subscriptions:
-    - Add primary **Subscribe** button next to Follow (only for non-owner, non-subscribed viewers).
-    - Show tier + monthly price (₹/coins) + perks preview (exclusive posts count, subscriber-only lives, DM priority).
-    - If already subscribed: show "Subscribed ✓" pill with "Manage" opening a sheet (renew status, cancel, next billing date).
-  - New **SubscribeSheet** — plan summary, price, "Subscribe with coins" primary CTA (deducts from `profiles.coin_balance` via new `subscribe_creator` RPC, inserts into `subscriptions`, credits `creator_balance`). Fallback: "Pay with UPI" using the same manual-UTR flow.
-  - Creator side: minimal **Subscription settings** row inside Creator Hub → toggle "Enable subscriptions", set monthly price, edit 3 perks bullets. Stored in new `creator_subscription_settings` table.
-  - Exclusive posts already have `is_paid`/`price_cents`; PostCard gets a subscriber-only variant: if post is marked `subscribers_only` and viewer is not subscribed, show blurred preview + "Subscribe to unlock" CTA.
-4. **Small consistency fixes surfaced during audit**
-  - Remove the two contradictory "Level" surfaces from Wallet (defer real XP to a later flow — replace with a single "Aurelix Tier" derived from `profiles.tier` only, honest and static until XP ships).
-  - LiveViewer "not enough coins" toast → deep-links to new Buy Coins sheet.
-
-### Scope (out — deferred)
-
-- Real XP engine, achievements unlocks, streaks, seasonal pools.
-- Creator Hub full redesign (subscribers list, analytics, live schedule) — next flow.
-- Support ticket detail + creator priority — later flow.
-- Auto-settled card/UPI payments via Stripe/Razorpay webhooks (staying on the existing manual-UTR reconciliation model this round).
+### Data & realtime
+- No schema changes needed for v1 — reuse `messages`, `conversations`, `conversation_participants`, `stories`, `calls`.
+- Add realtime subscriptions for `messages` (INSERT/UPDATE for reactions & read_at) and `conversation_participants` (presence via LiveKit-less Postgres channel `typing`).
+- If reactions and starred columns don't exist on `messages`, add them in a small migration (`reactions jsonb`, `starred_by uuid[]`) — will call out before running.
 
 ### Technical notes
+- New tokens in `index.css`: `--chat-bg`, `--chat-bubble-out`, `--chat-bubble-out-foreground`, `--chat-bubble-in`, `--chat-tick-read`, `--wa-green`, `--wa-green-foreground`, `--wa-teal-dark`. Both light and dark palettes.
+- New components under `src/components/whatsapp/`: `ChatHeader`, `ChatBubble`, `MessageTicks`, `DateChip`, `ReactionBar`, `ReactionPicker`, `VoiceRecorder`, `AttachSheet`, `SwipeableRow`, `WallpaperBg`, `ChatsTabBar`.
+- Framer-motion for swipe/long-press/reaction animations.
+- No new Edge Functions.
+- Legal: this is a WhatsApp-inspired visual language using our own tokens and icons — no WhatsApp brand assets or exact logos.
 
-- **New tables** (migration): `creator_subscription_settings (creator_id, enabled, monthly_price_coins, monthly_price_inr_cents, perks jsonb, updated_at)`. Grants + RLS: public read for enabled creators, owner-only write. Enforce standard 4-step grant + RLS pattern.
-- **New RPCs**: `subscribe_creator(creator_id, months)` (atomic: debit coin_balance, insert/extend subscription row, credit creator_balance minus platform fee from `app_config`), `cancel_subscription(subscription_id)`, `verify_coin_topup_with_utr(txn_id, utr)`.
-- **New edge function**: `create-coin-topup` — returns UPI intent + creates pending `coin_transactions` row.
-- **Client hooks**: `useWalletLedger` (unified transactions query), `useCreatorSubscription(creatorId)`, `useMySubscriptions`, `useCoinTopup`.
-- **Files changed** (approx): `src/pages/Wallet.tsx`, `src/pages/Monetization.tsx`, `src/pages/Profile.tsx`, `src/components/wallet/CreatorEarnings.tsx`, `src/components/social/PostCard.tsx`, `src/pages/LiveViewer.tsx`. New: `src/components/wallet/BuyCoinsSheet.tsx`, `src/components/wallet/TransactionsList.tsx`, `src/components/wallet/PayoutHistory.tsx`, `src/components/creator/SubscribeSheet.tsx`, `src/components/creator/SubscribeButton.tsx`, `src/pages/admin-os/…` (subscription settings row inside CreatorHub — reuse existing shell).
-- Design stays on existing Aurelix tokens (dark bg, violet primary, GlassCard, AuraAvatar). No new colors.
-
-### Acceptance
-
-- Wallet shows real coin balance and a real transactions feed for a test user with tips/unlocks/gifts.
-- Buy Coins flow completes end-to-end via UTR verification and updates `profiles.coin_balance`.
-- On a creator's profile with subscriptions enabled, a fan can subscribe with coins, appears in `subscriptions`, gains access to subscriber-only lives and paid posts, sees "Subscribed" pill.
-- Monetization page no longer shows fake `$0.00`.
-- LiveViewer "top up" links to the working Buy Coins sheet.
+## Files touched
+- `src/pages/LiveHost.tsx` — attach order fix, mirror preview, track cleanup, permission errors.
+- `src/pages/LiveViewer.tsx` — audit + apply same attach pattern if needed.
+- `src/pages/Messages.tsx` — full rebuild.
+- `src/pages/Conversation.tsx` — full rebuild.
+- `src/components/whatsapp/*` — new primitives listed above.
+- `src/index.css`, `tailwind.config.ts` — chat tokens.
+- `src/App.tsx` — add `/calls` and `/updates` routes on the new tab bar.
+- Optional migration for `messages.reactions` + `starred_by` if not present.
