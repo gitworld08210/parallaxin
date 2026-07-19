@@ -6,7 +6,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthProvider";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
-import { AdminRoute } from "@/components/AdminRoute";
+
 import { AppShell } from "@/components/layout/AppShell";
 import { ThemeProvider } from "@/contexts/ThemeProvider";
 import { CallProvider } from "@/contexts/CallProvider";
@@ -81,12 +81,6 @@ const NotFound = lazy(() => import("./pages/NotFound.tsx"));
 const Certificate = lazy(() => import("./pages/Certificate"));
 const CreatorTerms = lazy(() => import("./pages/CreatorTerms"));
 import { CreatorGate } from "@/components/creator/CreatorGate";
-const AdminLayout = lazy(() => import("./pages/admin/AdminLayout"));
-const VerificationRequestsAdmin = lazy(() => import("./pages/admin/VerificationRequestsAdmin"));
-const ReportsAdmin = lazy(() => import("./pages/admin/ReportsAdmin"));
-const FounderSeatsAdmin = lazy(() => import("./pages/admin/FounderSeatsAdmin"));
-const UsersRolesAdmin = lazy(() => import("./pages/admin/UsersRolesAdmin"));
-const PaymentsAdmin = lazy(() => import("./pages/admin/PaymentsAdmin"));
 
 // Admin OS workspace (Phase 1 foundation)
 const AdminOSGate = lazy(() =>
@@ -521,15 +515,9 @@ const App = () => (
                   </Route>
                 </Route>
               </Route>
-              <Route element={<AdminRoute />}>
-                <Route path="/admin" element={<AdminLayout />}>
-                  <Route index element={<VerificationRequestsAdmin />} />
-                  <Route path="reports" element={<ReportsAdmin />} />
-                  <Route path="founders" element={<FounderSeatsAdmin />} />
-                  <Route path="users" element={<UsersRolesAdmin />} />
-                  <Route path="payments" element={<PaymentsAdmin />} />
-                </Route>
-              </Route>
+              {/* Legacy /admin removed — redirect to new Admin OS */}
+              <Route path="/admin" element={<Navigate to="/admin-os" replace />} />
+              <Route path="/admin/*" element={<Navigate to="/admin-os" replace />} />
 
               {/* Aurelix Admin OS — internal enterprise workspace */}
               <Route path="/admin-os/no-access" element={<AdminOSNoAccess />} />
