@@ -11,8 +11,8 @@ import { ReportSheet } from "@/components/social/ReportSheet";
 import { useCall } from "@/contexts/CallProvider";
 import { GroupInfoSheet } from "@/components/dm/GroupInfoSheet";
 
-const RED = "#E50914";
-const GREEN = "#46d369";
+const WA_GREEN = "hsl(var(--wa-green))";
+const TICK_READ = "hsl(var(--chat-tick-read))";
 
 type Msg = {
   id: string;
@@ -223,60 +223,59 @@ const Conversation = () => {
   const otherName = other?.display_name || other?.username || "Conversation";
 
   return (
-    <div className="flex flex-col min-h-screen" style={{ background: "hsl(var(--background))", color: "hsl(var(--foreground))" }}>
-      {/* Header */}
+    <div
+      className="flex flex-col min-h-screen"
+      style={{ background: "hsl(var(--chat-bg))", color: "hsl(var(--foreground))" }}
+    >
+      {/* WhatsApp-style green header */}
       <header
-        className="h-16 px-2 flex items-center gap-2 sticky top-0 z-20 backdrop-blur"
-        style={{ background: "hsl(var(--background) / 0.85)", borderBottom: "1px solid hsl(var(--border))" }}
+        className="h-14 px-1.5 flex items-center gap-1 sticky top-0 z-20"
+        style={{ background: "hsl(var(--chat-header))", color: "hsl(var(--wa-green-foreground))" }}
       >
-        <button onClick={() => nav("/messages")} className="h-10 w-10 grid place-items-center rounded-full hover:bg-muted/40" aria-label="Back">
-          <ChevronLeft className="h-6 w-6 text-foreground" />
+        <button onClick={() => nav("/messages")} className="h-10 w-10 grid place-items-center rounded-full hover:bg-white/10" aria-label="Back">
+          <ChevronLeft className="h-6 w-6" />
         </button>
-        <Link to={other ? `/u/${other.username}` : "#"} className="flex items-center gap-3 flex-1 min-w-0">
-          <div className="rounded-full p-[2px] shrink-0" style={{ background: `linear-gradient(135deg, ${RED}, #ff3b47)` }}>
-            {other?.avatar_url ? (
-              <img src={other.avatar_url} className="h-9 w-9 rounded-full object-cover" style={{ border: "2px solid hsl(var(--background))" }} alt="" />
-            ) : (
-              <div className="h-9 w-9 rounded-full overflow-hidden" style={{ border: "2px solid hsl(var(--background))" }}>
-                <AuraAvatar gradient={gradientFor(other?.username)} size="sm" initials={initialsOf(otherName)} />
-              </div>
-            )}
-          </div>
+        <Link to={other ? `/u/${other.username}` : "#"} className="flex items-center gap-2.5 flex-1 min-w-0">
+          {other?.avatar_url ? (
+            <img src={other.avatar_url} className="h-9 w-9 rounded-full object-cover" alt="" />
+          ) : (
+            <div className="h-9 w-9 rounded-full overflow-hidden">
+              <AuraAvatar gradient={gradientFor(other?.username)} size="sm" initials={initialsOf(otherName)} />
+            </div>
+          )}
           <div className="min-w-0">
-            <p className="text-[15px] font-semibold truncate leading-tight text-foreground inline-flex items-center gap-1">
+            <p className="text-[15px] font-semibold truncate leading-tight inline-flex items-center gap-1">
               {otherName}
               {other?.verification_kind && <VerificationBadge kind={other.verification_kind as any} />}
             </p>
-            <p className="text-[11px] leading-tight" style={{ color: otherTyping ? RED : GREEN }}>
+            <p className="text-[12px] leading-tight opacity-85">
               {otherTyping ? "typing…" : "online"}
             </p>
           </div>
         </Link>
-        <button className="h-10 w-10 grid place-items-center rounded-full hover:bg-muted/40" aria-label="Search">
-          <Search className="h-5 w-5" style={{ color: "hsl(var(--foreground) / 0.9)" }} />
+        <button
+          onClick={() => other && startCall(id!, {
+            user_id: other.user_id, username: other.username, display_name: other.display_name, avatar_url: other.avatar_url,
+          }, "video")}
+          className="h-10 w-10 grid place-items-center rounded-full hover:bg-white/10"
+          aria-label="Video call"
+        >
+          <Video className="h-[22px] w-[22px]" />
         </button>
         <button
           onClick={() => other && startCall(id!, {
             user_id: other.user_id, username: other.username, display_name: other.display_name, avatar_url: other.avatar_url,
           }, "voice")}
-          className="h-10 w-10 grid place-items-center rounded-full hover:bg-muted/40"
+          className="h-10 w-10 grid place-items-center rounded-full hover:bg-white/10"
           aria-label="Voice call"
         >
-          <Phone className="h-5 w-5" style={{ color: "hsl(var(--foreground) / 0.9)" }} />
+          <Phone className="h-5 w-5" />
         </button>
-        <button
-          onClick={() => other && startCall(id!, {
-            user_id: other.user_id, username: other.username, display_name: other.display_name, avatar_url: other.avatar_url,
-          }, "video")}
-          className="h-10 w-10 grid place-items-center rounded-full hover:bg-muted/40"
-          aria-label="Video call"
-        >
-          <Video className="h-5 w-5" style={{ color: "hsl(var(--foreground) / 0.9)" }} />
-        </button>
-        <button className="h-10 w-10 grid place-items-center rounded-full hover:bg-muted/40" aria-label="More">
-          <MoreVertical className="h-5 w-5" style={{ color: "hsl(var(--foreground) / 0.9)" }} />
+        <button className="h-10 w-10 grid place-items-center rounded-full hover:bg-white/10" aria-label="More">
+          <MoreVertical className="h-5 w-5" />
         </button>
       </header>
+
 
       {/* Messages */}
       <div className="flex-1 px-3 pt-4 pb-36 space-y-1 overflow-y-auto">
