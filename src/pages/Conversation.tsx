@@ -304,14 +304,15 @@ const Conversation = () => {
 
           const bubbleStyle: React.CSSProperties = mine
             ? {
-                background: `linear-gradient(135deg, #7a1014 0%, ${RED} 100%)`,
-                color: "hsl(var(--foreground))",
-                boxShadow: `0 4px 16px ${RED}33`,
+                background: "hsl(var(--chat-bubble-out))",
+                color: "hsl(var(--chat-bubble-out-foreground))",
+                boxShadow: "0 1px 1px hsl(0 0% 0% / 0.15)",
                 ...radius,
               }
             : {
-                background: "hsl(var(--secondary))",
-                color: "hsl(var(--foreground))",
+                background: "hsl(var(--chat-bubble-in))",
+                color: "hsl(var(--chat-bubble-in-foreground))",
+                boxShadow: "0 1px 1px hsl(0 0% 0% / 0.15)",
                 ...radius,
               };
 
@@ -321,11 +322,11 @@ const Conversation = () => {
                 onPointerDown={() => startLongPress(m.id, mine)}
                 onPointerUp={cancelLongPress}
                 onPointerLeave={cancelLongPress}
-                className="max-w-[78%] px-3.5 py-2 text-[14px] leading-snug animate-fade-in"
+                className="max-w-[78%] px-2.5 py-1.5 text-[14.5px] leading-snug animate-fade-in"
                 style={bubbleStyle}
               >
                 {sp && (
-                  <Link to={`/p/${sp.id}`} className="block mb-2 rounded-xl overflow-hidden" style={{ background: "rgba(0,0,0,0.25)" }}>
+                  <Link to={`/p/${sp.id}`} className="block mb-2 rounded-xl overflow-hidden" style={{ background: "hsl(0 0% 0% / 0.15)" }}>
                     {sp.media_url && (sp.media_type === "video"
                       ? <video src={sp.media_url} muted className="w-full max-h-48 object-cover" />
                       : <img src={sp.media_url} className="w-full max-h-48 object-cover" alt="" />)}
@@ -337,18 +338,19 @@ const Conversation = () => {
                 {m.media_type === "audio" && m.media_url && <VoiceBubble url={m.media_url} mine={mine} />}
                 {m.content && <p className="whitespace-pre-wrap break-words">{m.content}</p>}
                 <div className="flex items-center justify-end gap-1 mt-0.5 -mb-0.5">
-                  <span className="text-[10px]" style={{ color: mine ? "hsl(var(--foreground) / 0.75)" : "hsl(var(--muted-foreground))" }}>
+                  <span className="text-[10.5px] opacity-70">
                     {fmtTime(m.created_at)}
                   </span>
                   {mine && (
                     m.read_at
-                      ? <CheckCheck className="h-3.5 w-3.5" style={{ color: "#ffd1d3" }} />
-                      : <Check className="h-3.5 w-3.5" style={{ color: "hsl(var(--foreground) / 0.75)" }} />
+                      ? <CheckCheck className="h-3.5 w-3.5" style={{ color: TICK_READ }} />
+                      : <Check className="h-3.5 w-3.5 opacity-70" />
                   )}
                 </div>
               </div>
             </div>
           );
+
         })}
         {otherTyping && (
           <div className="flex justify-start">
@@ -365,8 +367,8 @@ const Conversation = () => {
       {/* Composer */}
       <form
         onSubmit={send}
-        className="fixed bottom-14 inset-x-0 mx-auto max-w-md p-3 flex flex-col gap-2"
-        style={{ background: "hsl(var(--background))", borderTop: "1px solid hsl(var(--border))" }}
+        className="fixed bottom-14 inset-x-0 mx-auto max-w-md p-2 flex flex-col gap-2"
+        style={{ background: "hsl(var(--chat-bg))" }}
       >
         {aiSuggestions.length > 0 && (
           <div className="flex gap-1.5 overflow-x-auto -mx-1 px-1 pb-1">
@@ -375,8 +377,8 @@ const Conversation = () => {
                 key={i}
                 type="button"
                 onClick={() => { setText(s); setAiSuggestions([]); }}
-                className="shrink-0 text-xs px-3 py-1.5 rounded-full font-medium transition-colors"
-                style={{ background: "rgba(229,9,20,0.12)", color: RED, border: `1px solid ${RED}55` }}
+                className="shrink-0 text-xs px-3 py-1.5 rounded-full font-medium"
+                style={{ background: "hsl(var(--wa-green) / 0.15)", color: WA_GREEN, border: "1px solid hsl(var(--wa-green) / 0.4)" }}
               >
                 ✨ {s}
               </button>
@@ -385,39 +387,40 @@ const Conversation = () => {
         )}
         <div className="flex gap-2 items-center">
           <div
-            className="flex items-center gap-2 flex-1 rounded-full px-3"
-            style={{ background: "hsl(var(--secondary))", border: "1px solid hsl(var(--border))" }}
+            className="flex items-center gap-2 flex-1 rounded-full px-2"
+            style={{ background: "hsl(var(--chat-composer))" }}
           >
-            <button type="button" className="h-9 w-9 grid place-items-center -ml-1" aria-label="Attach">
-              <Paperclip className="h-5 w-5" style={{ color: "hsl(var(--muted-foreground))" }} />
+            <button type="button" className="h-9 w-9 grid place-items-center" aria-label="Emoji">
+              <Smile className="h-[22px] w-[22px] opacity-70" />
             </button>
             <input
               value={text}
               onChange={(e) => onType(e.target.value)}
-              placeholder={`Message ${other?.display_name || other?.username || ""}…`}
-              className="flex-1 bg-transparent outline-none text-sm py-2.5 text-foreground placeholder:text-muted-foreground"
+              placeholder="Message"
+              className="flex-1 bg-transparent outline-none text-[15px] py-2.5 placeholder:opacity-60"
             />
-            <button type="button" className="h-9 w-9 grid place-items-center" aria-label="Emoji">
-              <Smile className="h-5 w-5" style={{ color: "hsl(var(--muted-foreground))" }} />
+            <button type="button" className="h-9 w-9 grid place-items-center" aria-label="Attach">
+              <Paperclip className="h-[20px] w-[20px] opacity-70" />
             </button>
           </div>
           {text.trim() ? (
             <button
               type="submit"
               className="h-11 w-11 grid place-items-center rounded-full transition-transform active:scale-90"
-              style={{ background: RED, boxShadow: `0 6px 20px ${RED}66` }}
+              style={{ background: WA_GREEN, color: "hsl(var(--wa-green-foreground))" }}
               aria-label="Send"
             >
-              <Send className="h-5 w-5 text-foreground" />
+              <Send className="h-5 w-5" />
             </button>
           ) : user ? (
             <div
               className="h-11 w-11 grid place-items-center rounded-full"
-              style={{ background: RED, boxShadow: `0 6px 20px ${RED}66` }}
+              style={{ background: WA_GREEN, color: "hsl(var(--wa-green-foreground))" }}
             >
               <VoiceRecorder userId={user.id} onSend={sendVoice} />
             </div>
           ) : null}
+
         </div>
       </form>
 
