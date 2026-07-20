@@ -1,72 +1,116 @@
-# Live black screen fix + WhatsApp-style Messages
+## Goal
 
-## Part 1 — Fix the "black screen when I go live" bug
+1. Ghost admins ke `admin` role revoke karna (dono gmail accounts).
+2. Apki personal Gemini API key add karke user/creator experience upgrade karna — 5 high-impact AI features.
 
-**Root cause (confirmed in `src/pages/LiveHost.tsx`):** The host's `<video>` element is rendered only when `streaming === true` (line 178). But `goLive()` calls `t.attach(videoRef.current)` (line 75) **before** `setStreaming(true)` runs (line 79). At that moment `videoRef.current` is `null`, so nothing gets attached and the viewport stays black even though the camera track is publishing to LiveKit.
+---
 
-**Fix:**
-1. Flip `setStreaming(true)` on as soon as the LiveKit room connects, so the `<video>` element mounts.
-2. Attach the local video track in a `useEffect` that runs when both `streaming` and the local track ref are ready — or store the created video track in a ref/state and attach inside a `requestAnimationFrame` after `setStreaming(true)`.
-3. Keep `muted` + `playsInline` + `autoPlay` on the video (needed for local preview and iOS).
-4. On `endLive`, detach and stop all local tracks (currently only `disconnect()` is called — camera light stays on).
-5. Add a visible fallback: if no video frames arrive within 3s, show "Camera starting…" placeholder + a "Retry camera" button, and surface `getUserMedia` permission errors via toast (currently swallowed into a generic message).
-6. Mirror the local preview (`scale-x-[-1]`) so the host sees themselves like a selfie camera — matches Instagram/TikTok.
+## Part A — Ghost admin cleanup
 
-No changes to viewer side unless the same attach-order bug exists — will verify `LiveViewer.tsx` during implementation and apply the same pattern if needed.
+- `user_roles` se delete karo jaha `role = 'admin'` aur user ka email `%@gmail.com` (specifically `adit080210@gmail.com`, `ra.adityaraj.2010@gmail.com`).
+- Sanity check: baaki admins (`@aurelix.com`) intact rahen — pre/post SELECT chalayenge.
+- Add a database trigger: agar `auth.users` se koi user delete ho, uski `user_roles` rows auto-remove ho (ghost admin banne se roke).
 
-## Part 2 — WhatsApp-style Messages redesign
+---
 
-Rebuild the two existing screens with WhatsApp's exact visual language, using our design tokens (no hardcoded colors) and the tables already in the DB (`conversations`, `conversation_participants`, `messages`, `calls`, `stories`).
+## Part B — Gemini API key
 
-### Chats list (`src/pages/Messages.tsx`)
-- WhatsApp green header with "Aurelix Chat" title, camera / search / overflow icons.
-- Sticky tabs pill row: **All · Unread · Favourites · Groups** (uses existing `tab` state, renamed).
-- Row layout: 56px round avatar → name + last message (single line, ellipsis, ✓/✓✓/✓✓ blue for read) → right column: time (green if unread) + unread pill + pin icon.
-- Swipe row actions (framer-motion drag): swipe left → Archive / Delete, swipe right → Mark unread / Pin.
-- Long-press row → selection mode with top action bar (pin, mute, archive, delete, mark read).
-- Floating green FAB with `MessageCircle` for new chat.
-- Bottom tab bar: **Chats · Updates · Communities · Calls** (Updates = existing stories, Calls = existing calls table, Communities = groups view).
-- Empty state uses existing `EmptyState` component with WhatsApp-style copy.
+- `add_secret` se `GEMINI_API_KEY` request karunga (secure form). Where to get: [https://aistudio.google.com/apikey](https://aistudio.google.com/apikey) → "Create API key".
+- Server-only, kabhi frontend me expose nahi hoga.
+- Sab Gemini calls edge functions se — model `gemini-2.5-flash` (fast, cheap) default; `gemini-3.1-pro` sirf heavy tasks ke liye.
 
-### Chat thread (`src/pages/Conversation.tsx`)
-- Header: back → avatar → name + "online / last seen / typing…" → video call, voice call, overflow.
-- Wallpaper background (subtle doodle pattern token), messages as bubbles:
-  - Outgoing: right-aligned, `chat-bubble-out` token (WhatsApp light-green), tail on last of group.
-  - Incoming: left-aligned, `chat-bubble-in` token (card surface), tail on last of group.
-  - Grouped by sender + minute; date chips ("Today", "Yesterday", "12 July 2026") pinned between groups.
-  - Time + ✓/✓✓/✓✓ read receipts inside the bubble bottom-right.
-- Reply-swipe: swipe a bubble right → quote-reply composer with colored left border.
-- Long-press bubble → action sheet: Reply, React (emoji row: ❤️ 😂 😮 😢 🙏 👍 +), Forward, Star, Copy, Delete, Info.
-- Reactions render as a pill under the bubble with count.
-- Composer bar: emoji button, text input (auto-grow), attach (📎 opens sheet: Document / Camera / Gallery / Audio / Location / Contact / Poll), camera, mic (hold-to-record voice note with waveform preview and cancel-slide).
-- Voice notes: bubble shows waveform, play/pause, duration, and a small avatar.
-- Media messages: image/video preview with rounded corners, tap → fullscreen viewer.
-- Typing indicator (three dots) and "seen" state driven by realtime channel.
-- Disappearing-messages badge in header (feature flag, no backend work — UI only unless requested).
-- Encrypted-notice system message on first open of a new chat.
+---
 
-### Calls tab (reuse `calls` + `call_participants`)
-- History list grouped by date, incoming/outgoing/missed icons in green/red, tap to call back.
-- Floating FAB → contact picker → start voice/video call using existing `CallScreen`.
+## Part C — AI features (Gemini-powered)
 
-### Data & realtime
-- No schema changes needed for v1 — reuse `messages`, `conversations`, `conversation_participants`, `stories`, `calls`.
-- Add realtime subscriptions for `messages` (INSERT/UPDATE for reactions & read_at) and `conversation_participants` (presence via LiveKit-less Postgres channel `typing`).
-- If reactions and starred columns don't exist on `messages`, add them in a small migration (`reactions jsonb`, `starred_by uuid[]`) — will call out before running.
+### 1. Caption & Hashtag Generator ✍️
 
-### Technical notes
-- New tokens in `index.css`: `--chat-bg`, `--chat-bubble-out`, `--chat-bubble-out-foreground`, `--chat-bubble-in`, `--chat-tick-read`, `--wa-green`, `--wa-green-foreground`, `--wa-teal-dark`. Both light and dark palettes.
-- New components under `src/components/whatsapp/`: `ChatHeader`, `ChatBubble`, `MessageTicks`, `DateChip`, `ReactionBar`, `ReactionPicker`, `VoiceRecorder`, `AttachSheet`, `SwipeableRow`, `WallpaperBg`, `ChatsTabBar`.
-- Framer-motion for swipe/long-press/reaction animations.
-- No new Edge Functions.
-- Legal: this is a WhatsApp-inspired visual language using our own tokens and icons — no WhatsApp brand assets or exact logos.
+**Kaha:** `Compose.tsx`, `ReelCompose.tsx`, `StoryCompose.tsx` — "✨ AI suggest" button.
+**Flow:** user photo/caption draft type kare → button dabaye → 3 caption variants + 15 trending hashtags aa jaayen → tap-to-insert.
+**Backend:** naya edge fn `ai-caption-suggest` (Gemini vision for image + text prompt).
 
-## Files touched
-- `src/pages/LiveHost.tsx` — attach order fix, mirror preview, track cleanup, permission errors.
-- `src/pages/LiveViewer.tsx` — audit + apply same attach pattern if needed.
-- `src/pages/Messages.tsx` — full rebuild.
-- `src/pages/Conversation.tsx` — full rebuild.
-- `src/components/whatsapp/*` — new primitives listed above.
-- `src/index.css`, `tailwind.config.ts` — chat tokens.
-- `src/App.tsx` — add `/calls` and `/updates` routes on the new tab bar.
-- Optional migration for `messages.reactions` + `starred_by` if not present.
+### 2. Aurelix AI Assistant Upgrade 🚀
+
+**Kaha:** `Assistant.tsx` + `ai-assistant` edge fn.
+**Change:** Lovable Gateway → direct Gemini API (`gemini-3.1-pro` for chat). Better reasoning, faster, apki own quota.  
+**Bonus:** image understanding — user photo upload kare, AI analyze kare.
+
+### 3. Smart Reply in DMs 💬
+
+**Kaha:** `Conversation.tsx` — incoming message ke neeche 3 chip suggestions.
+**Flow:** last 5 messages ko Gemini bhejo → 3 short reply suggestions (formal/casual/funny) → tap se send.
+**Backend:** naya edge fn `ai-smart-reply`.
+**Privacy:** sirf on-demand (button dabane par), auto nahi.
+
+### 4. Bio Rewriter + Creator Insights 🎨📊
+
+**Bio (`EditProfile.tsx`):** "Rewrite my bio" button → 3 style variants (professional, playful, aesthetic).
+**Insights (`PostInsights.tsx`, `Analytics.tsx`):** raw metrics Gemini ko de → plain-English summary + 3 actionable tips ("Your reels perform 40% better on Fridays — post more then").
+**Backend:** naya edge fn `ai-creator-insights`.
+
+### 5. Auto Content Moderation 🛡️
+
+**Kaha:** Post/comment create hote hi background me Gemini se safety check.
+**Flow:** naya text/image → Gemini "categorize risk: safe/nsfw/hate/spam" → agar risky, `moderation_flags` table me row insert → Trust & Safety dept queue me auto-route ho jaye (Phase 2 routing engine use karega).
+**Backend:** naya edge fn `ai-moderate-content` + trigger on post/comment insert.
+**No user-facing block** — sirf silent flag for review, false-positives se creators pareshan na hon.
+
+### 6. **Bonus** — Smart Search & Discover 🔍
+
+**Kaha:** `Discover.tsx` — natural language search bar ("show me cozy coffee reels").
+**Backend:** query embed karo (Gemini embeddings), posts ke embeddings se cosine similarity match.
+**Tables:** `post_embeddings (post_id, embedding vector(768))` + trigger to auto-embed new posts.
+
+---
+
+## Technical section
+
+### Database migrations
+
+1. **Ghost admin cleanup** (single migration):
+  - `DELETE FROM user_roles WHERE role='admin' AND user_id IN (select id from auth.users where email in (...))`.
+  - Trigger: `on_auth_user_deleted` → cascade delete `user_roles`.
+2. **Moderation flags** table + RLS (only T&S dept read).
+3. **Post embeddings** table with `pgvector` extension + IVFFlat index.
+
+### Edge functions (all new, streaming where useful)
+
+- `ai-caption-suggest`
+- `ai-smart-reply`
+- `ai-creator-insights`
+- `ai-moderate-content` (background, invoked by trigger via `pg_net`)
+- `ai-search-embed`
+- Update: `ai-assistant` — switch to direct Gemini.
+
+### Shared helper
+
+`supabase/functions/_shared/gemini.ts` — thin fetch wrapper around `https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent` reading `GEMINI_API_KEY`, with 429/402/5xx error mapping and streaming SSE parser.
+
+### Frontend hooks
+
+- `useAiCaption(imageUrl, draft)` — react-query mutation.
+- `useSmartReplies(conversationId)` — on-demand fetch.
+- `useAiBioRewrite(currentBio)`.
+- `useCreatorInsights(postId | 'account')`.
+
+### Rate limiting
+
+Per-user Gemini calls capped in edge fn (existing `ai_rate_limits` table pattern) — 30/hour for creators, 10/hour for regular users. Prevents key abuse.
+
+### UI polish
+
+- Loading skeleton + shimmer on AI buttons.
+- "Powered by Gemini" tiny footer chip (Google ToS requirement).
+- Toast on 429 / 402: "AI is busy, try in a minute".
+
+---
+
+## Rollout order
+
+1. Ghost admin migration + delete-cascade trigger.
+2. `GEMINI_API_KEY` secret request.
+3. Shared `gemini.ts` helper.
+4. Feature 1 (Caption) → 2 (Assistant upgrade) → 3 (Smart reply) → 4 (Bio + Insights) → 5 (Moderation) → 6 (Smart search).
+5. Verify each in preview before moving on.
+
+Approve karo to build mode me shift ho ke sab implement karta hun.
