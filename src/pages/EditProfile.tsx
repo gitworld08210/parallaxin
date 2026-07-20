@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ChevronLeft, Upload } from "lucide-react";
+import { ChevronLeft, Upload, Sparkles } from "lucide-react";
 import { TopBar } from "@/components/vibe/TopBar";
 import { AuraAvatar } from "@/components/vibe/AuraAvatar";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthProvider";
 import { gradientFor, initialsOf } from "@/lib/format";
 import { toast } from "sonner";
+
 
 const EditProfile = () => {
   const { user, profile, refreshProfile } = useAuth();
@@ -17,6 +18,26 @@ const EditProfile = () => {
   const [avatar, setAvatar] = useState<string | null>(null);
   const [cover, setCover] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [bioAiBusy, setBioAiBusy] = useState(false);
+  const [bioVariants, setBioVariants] = useState<Array<{ style: string; text: string }>>([]);
+
+  const rewriteBio = async () => {
+    setBioAiBusy(true);
+    setBioVariants([]);
+    try {
+      const { data, error } = await supabase.functions.invoke("ai-bio-rewrite", {
+        body: { bio, display_name: displayName, niche: "" },
+      });
+      if (error) throw error;
+      const variants = data?.variants ?? [];
+      if (!variants.length) toast.error("No suggestions — try again.");
+      setBioVariants(variants);
+    } catch (e: any) {
+      toast.error(e?.message || "AI failed");
+    } finally {
+      setBioAiBusy(false);
+    }
+  };
 
   useEffect(() => {
     if (profile) {
@@ -101,11 +122,37 @@ const EditProfile = () => {
         <Field label="Display name" value={displayName} onChange={setDisplayName} maxLength={50} />
         <Field label="Username" value={username} onChange={(v) => setUsername(v.toLowerCase().replace(/[^a-z0-9_]/g, ""))} maxLength={24} />
         <div>
-          <label className="text-[10px] uppercase tracking-widest text-muted-foreground">Bio</label>
+          <div className="flex items-center justify-between">
+            <label className="text-[10px] uppercase tracking-widest text-muted-foreground">Bio</label>
+            <button
+              type="button"
+              onClick={rewriteBio}
+              disabled={bioAiBusy}
+              className="text-[10px] uppercase tracking-widest text-primary flex items-center gap-1 disabled:opacity-50"
+            >
+              <Sparkles className="h-3 w-3" />
+              {bioAiBusy ? "Thinking…" : "AI rewrite"}
+            </button>
+          </div>
           <textarea
             value={bio} onChange={(e) => setBio(e.target.value)} maxLength={200} rows={3}
             className="mt-1 w-full glass rounded-2xl p-3 text-sm outline-none resize-none"
           />
+          {bioVariants.length > 0 && (
+            <div className="mt-2 space-y-2">
+              {bioVariants.map((v, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  onClick={() => { setBio(v.text); setBioVariants([]); }}
+                  className="w-full text-left glass rounded-2xl p-3 text-sm hover:bg-muted/40 transition-colors"
+                >
+                  <div className="text-[10px] uppercase tracking-widest text-primary mb-1">{v.style}</div>
+                  <div>{v.text}</div>
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
 
