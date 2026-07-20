@@ -1,5 +1,6 @@
 import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { generateGemini, GeminiError } from "../_shared/gemini.ts";
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
@@ -14,7 +15,6 @@ Deno.serve(async (req) => {
     const { conversation_id } = await req.json();
     if (!conversation_id) return new Response(JSON.stringify({ error: "conversation_id required" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
-    // userClient enforces RLS — must be a participant
     const { data: msgs, error } = await userClient
       .from("messages")
       .select("content, sender_id, created_at")
@@ -28,28 +28,20 @@ Deno.serve(async (req) => {
       .join("\n");
     if (!transcript) return new Response(JSON.stringify({ suggestions: [] }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
-    const apiKey = Deno.env.get("LOVABLE_API_KEY")!;
-    const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "Lovable-API-Key": apiKey },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash-lite",
-        messages: [
-          { role: "system", content: "You suggest 3 short reply options (≤8 words each) for ME to send in this chat. Match ME's tone if visible. Output ONLY JSON: {\"suggestions\":[\"...\",\"...\",\"...\"]}. No emojis unless ME already uses them." },
-          { role: "user", content: `Conversation:\n${transcript}\n\nSuggest 3 replies from ME.` },
-        ],
-        response_format: { type: "json_object" },
-      }),
+    const raw = await generateGemini({
+      model: "gemini-2.5-flash-lite",
+      system: "You suggest 3 short reply options (≤8 words each) for ME to send in this chat. Match ME's tone if visible. Output ONLY JSON: {\"suggestions\":[\"...\",\"...\",\"...\"]}. No emojis unless ME already uses them.",
+      messages: [{ role: "user", parts: [{ text: `Conversation:\n${transcript}\n\nSuggest 3 replies from ME.` }] }],
+      json: true,
+      temperature: 0.7,
+      maxTokens: 200,
     });
-    if (res.status === 429) return new Response(JSON.stringify({ error: "Rate limited" }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-    if (res.status === 402) return new Response(JSON.stringify({ error: "AI credits exhausted" }), { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-    if (!res.ok) return new Response(JSON.stringify({ error: await res.text() }), { status: res.status, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
-    const data = await res.json();
     let suggestions: string[] = [];
-    try { suggestions = JSON.parse(data.choices?.[0]?.message?.content ?? "{}").suggestions ?? []; } catch {}
+    try { suggestions = JSON.parse(raw).suggestions ?? []; } catch {}
     return new Response(JSON.stringify({ suggestions: suggestions.slice(0, 3) }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (e) {
-    return new Response(JSON.stringify({ error: String(e) }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    const status = e instanceof GeminiError ? e.status : 500;
+    return new Response(JSON.stringify({ error: e instanceof Error ? e.message : String(e) }), { status, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   }
 });

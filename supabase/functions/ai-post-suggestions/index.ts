@@ -1,5 +1,6 @@
 import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { generateGemini, GeminiError } from "../_shared/gemini.ts";
 
 async function requireAuth(req: Request) {
   const a = req.headers.get("Authorization");
@@ -19,37 +20,28 @@ Deno.serve(async (req) => {
     const { content, media_type } = await req.json();
     const safeContent = typeof content === "string" ? content.slice(0, 2000) : "";
     const safeMediaType = typeof media_type === "string" ? media_type.slice(0, 50) : "none";
-    const apiKey = Deno.env.get("LOVABLE_API_KEY")!;
 
-
-    // Pick a "best time" — IST-friendly heuristic, prime evening windows
     const now = new Date();
     const day = now.getDay();
     const isWeekend = day === 0 || day === 6;
     const target = new Date(now);
-    target.setHours(isWeekend ? 11 : 19, isWeekend ? 30 : 30, 0, 0);
+    target.setHours(isWeekend ? 11 : 19, 30, 0, 0);
     if (target.getTime() <= now.getTime() + 30 * 60 * 1000) target.setDate(target.getDate() + 1);
 
-    const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "Lovable-API-Key": apiKey },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
-        messages: [
-          { role: "system", content: "You generate 6-10 highly relevant, on-trend hashtags for a social post. Output ONLY a JSON object: {\"hashtags\":[\"#tag1\",...],\"reasoning\":\"one short sentence\"}. Hashtags must start with #, be lowercase, no spaces, no duplicates." },
-          { role: "user", content: `Post content: ${safeContent || "(no caption)"}\nMedia: ${safeMediaType}` },
-        ],
-        response_format: { type: "json_object" },
-      }),
+    const raw = await generateGemini({
+      model: "gemini-2.5-flash",
+      system: "You generate 6-10 highly relevant, on-trend hashtags for a social post. Output ONLY a JSON object: {\"hashtags\":[\"#tag1\",...],\"reasoning\":\"one short sentence\"}. Hashtags must start with #, be lowercase, no spaces, no duplicates.",
+      messages: [{ role: "user", parts: [{ text: `Post content: ${safeContent || "(no caption)"}\nMedia: ${safeMediaType}` }] }],
+      json: true,
+      temperature: 0.7,
+      maxTokens: 400,
     });
-    if (res.status === 429) return new Response(JSON.stringify({ error: "Rate limited" }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-    if (res.status === 402) return new Response(JSON.stringify({ error: "AI credits exhausted" }), { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-    if (!res.ok) return new Response(JSON.stringify({ error: await res.text() }), { status: res.status, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
-    const data = await res.json();
     let parsed: any = {};
-    try { parsed = JSON.parse(data.choices?.[0]?.message?.content ?? "{}"); } catch { parsed = { hashtags: [] }; }
-    const hashtags = Array.isArray(parsed.hashtags) ? parsed.hashtags.slice(0, 10).map((h: any) => String(h).startsWith("#") ? String(h) : "#" + String(h)) : [];
+    try { parsed = JSON.parse(raw); } catch { parsed = { hashtags: [] }; }
+    const hashtags = Array.isArray(parsed.hashtags)
+      ? parsed.hashtags.slice(0, 10).map((h: any) => String(h).startsWith("#") ? String(h) : "#" + String(h))
+      : [];
 
     return new Response(JSON.stringify({
       hashtags,
@@ -57,6 +49,7 @@ Deno.serve(async (req) => {
       reasoning: parsed.reasoning ?? "Prime evening engagement window",
     }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (e) {
-    return new Response(JSON.stringify({ error: String(e) }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    const status = e instanceof GeminiError ? e.status : 500;
+    return new Response(JSON.stringify({ error: e instanceof Error ? e.message : String(e) }), { status, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   }
 });
