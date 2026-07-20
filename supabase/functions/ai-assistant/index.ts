@@ -1,84 +1,59 @@
-import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors';
-import { createClient } from 'npm:@supabase/supabase-js@2';
+import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
+import { createClient } from "npm:@supabase/supabase-js@2";
+import { streamGemini, geminiToOpenAiSSE, GeminiError, type GeminiMessage } from "../_shared/gemini.ts";
 
 Deno.serve(async (req) => {
-  if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
+  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
   try {
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader?.startsWith('Bearer ')) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_ANON_KEY')!,
-    );
-    const { data: claimsData, error: claimsErr } = await supabase.auth.getClaims(authHeader.replace('Bearer ', ''));
+    const supabase = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_ANON_KEY")!);
+    const { data: claimsData, error: claimsErr } = await supabase.auth.getClaims(authHeader.replace("Bearer ", ""));
     if (claimsErr || !claimsData?.claims) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
     const { messages } = await req.json();
     if (!Array.isArray(messages)) {
-      return new Response(JSON.stringify({ error: 'messages must be an array' }), {
-        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      return new Response(JSON.stringify({ error: "messages must be an array" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
     const MAX_MESSAGES = 40;
     const MAX_CONTENT_LEN = 4000;
-    const safeMessages = messages
+    // Map OpenAI-style {role, content} → Gemini {role:"user"|"model", parts}
+    const geminiMessages: GeminiMessage[] = messages
       .slice(-MAX_MESSAGES)
-      .filter((m: any) => m && (m.role === 'user' || m.role === 'assistant'))
-      .map((m: any) => ({ role: m.role, content: String(m.content ?? '').slice(0, MAX_CONTENT_LEN) }));
+      .filter((m: any) => m && (m.role === "user" || m.role === "assistant"))
+      .map((m: any) => ({
+        role: m.role === "assistant" ? "model" as const : "user" as const,
+        parts: [{ text: String(m.content ?? "").slice(0, MAX_CONTENT_LEN) }],
+      }));
 
-    const apiKey = Deno.env.get('LOVABLE_API_KEY');
-    if (!apiKey) {
-      return new Response(JSON.stringify({ error: 'AI not configured' }), {
-        status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
+    const system = `You are Aurelix AI — a warm, sharp growth coach for creators on the Aurelix social network. Help with: writing captions, hashtag strategy, content ideas, profile/bio rewrites, audience growth tactics, and analyzing engagement patterns. Be concise, specific, and friendly. Use short paragraphs and bullet lists when helpful. Never invent stats you don't have.`;
 
-    const system = {
-      role: 'system',
-      content: `You are Aurelix AI — a warm, sharp growth coach for creators on the Aurelix social network. Help with: writing captions, hashtag strategy, content ideas, profile/bio rewrites, audience growth tactics, and analyzing engagement patterns. Be concise, specific, and friendly. Use short paragraphs and bullet lists when helpful. Never invent stats you don't have.`,
-    };
-
-    const resp = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
-      body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
-        stream: true,
-        messages: [system, ...safeMessages],
-      }),
+    const upstream = await streamGemini({
+      model: "gemini-2.5-pro",
+      system,
+      messages: geminiMessages,
+      temperature: 0.85,
+      maxTokens: 4096,
     });
 
-    if (resp.status === 429) {
-      return new Response(JSON.stringify({ error: 'Rate limit hit, try again shortly.' }), {
-        status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-    if (resp.status === 402) {
-      return new Response(JSON.stringify({ error: 'AI credits exhausted. Add credits in Settings.' }), {
-        status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-    if (!resp.ok || !resp.body) {
-      const text = await resp.text();
-      return new Response(JSON.stringify({ error: text || 'AI error' }), {
-        status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    return new Response(resp.body, {
-      headers: { ...corsHeaders, 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache' },
+    return new Response(geminiToOpenAiSSE(upstream), {
+      headers: { ...corsHeaders, "Content-Type": "text/event-stream", "Cache-Control": "no-cache" },
     });
   } catch (e) {
-    return new Response(JSON.stringify({ error: String(e) }), {
-      status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    const status = e instanceof GeminiError ? e.status : 500;
+    const msg = e instanceof Error ? e.message : String(e);
+    return new Response(JSON.stringify({ error: msg }), {
+      status, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
 });
