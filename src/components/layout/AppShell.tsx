@@ -103,7 +103,7 @@ export const AppShell = () => {
           onClick={() => setCreateOpen(true)}
           className="h-full w-full flex items-center justify-center active:scale-95 transition-transform"
         >
-          <span className="h-9 w-9 rounded-2xl bg-gradient-to-br from-fuchsia-500 via-pink-500 to-red-500 grid place-items-center shadow-md">
+          <span className="h-9 w-9 rounded-2xl bg-gradient-to-br from-indigo-500 via-violet-500 to-fuchsia-500 grid place-items-center shadow-glow">
             <Plus className="h-6 w-6 text-white" strokeWidth={2.5} />
           </span>
         </button>

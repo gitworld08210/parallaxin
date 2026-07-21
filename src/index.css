@@ -102,14 +102,14 @@
     --duration-slow: 360ms;
     --transition-smooth: var(--duration-base) var(--ease-out-expo);
 
-    --sidebar-background: 240 5% 7%;
+    --sidebar-background: 240 44% 8%;
     --sidebar-foreground: 0 0% 96%;
-    --sidebar-primary: 265 85% 65%;
+    --sidebar-primary: 244 76% 59%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 6% 12%;
+    --sidebar-accent: 240 40% 14%;
     --sidebar-accent-foreground: 0 0% 96%;
-    --sidebar-border: 240 8% 18%;
-    --sidebar-ring: 265 85% 65%;
+    --sidebar-border: 240 30% 20%;
+    --sidebar-ring: 244 76% 59%;
 
     /* ===== WhatsApp-style chat tokens (dark) ===== */
     --wa-green: 158 64% 40%;              /* #128C7E-ish */
