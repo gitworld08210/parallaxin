@@ -80,7 +80,7 @@ export const StoriesRail = () => {
               onClick={() => setViewingIdx(startIdx)}
               className="flex flex-col items-center gap-1 shrink-0 w-16"
             >
-              <div className="h-16 w-16 rounded-full p-[2px]" style={{ background: "conic-gradient(from 180deg, hsl(320 90% 55%), hsl(28 100% 58%), hsl(48 100% 60%), hsl(320 90% 55%))" }}>
+              <div className="h-16 w-16 rounded-full p-[2px]" style={{ background: "conic-gradient(from 180deg, hsl(244 80% 60%), hsl(262 85% 68%), hsl(300 85% 65%), hsl(244 80% 60%))" }}>
                 <div className="h-full w-full rounded-full bg-background p-[2px]">
                   {g.profile?.avatar_url ? (
                     <img src={g.profile.avatar_url} className="h-full w-full rounded-full object-cover" alt="" />

@@ -1,116 +1,67 @@
-## Goal
+#   Balanced Upgrade — Feed/Reels + Creator Studio
 
-1. Ghost admins ke `admin` role revoke karna (dono gmail accounts).
-2. Apki personal Gemini API key add karke user/creator experience upgrade karna — 5 high-impact AI features.
-
----
-
-## Part A — Ghost admin cleanup
-
-- `user_roles` se delete karo jaha `role = 'admin'` aur user ka email `%@gmail.com` (specifically `adit080210@gmail.com`, `ra.adityaraj.2010@gmail.com`).
-- Sanity check: baaki admins (`@aurelix.com`) intact rahen — pre/post SELECT chalayenge.
-- Add a database trigger: agar `auth.users` se koi user delete ho, uski `user_roles` rows auto-remove ho (ghost admin banne se roke).
+**Vibe:** Midnight Indigo (`#0a0a1a` → `#141432` → `#1e1e5a` → `#4f46e5` accent). Deep dark, premium, Instagram-meets-Linear feel.
 
 ---
 
-## Part B — Gemini API key
+## Part 1 — Design tokens refresh
 
-- `add_secret` se `GEMINI_API_KEY` request karunga (secure form). Where to get: [https://aistudio.google.com/apikey](https://aistudio.google.com/apikey) → "Create API key".
-- Server-only, kabhi frontend me expose nahi hoga.
-- Sab Gemini calls edge functions se — model `gemini-2.5-flash` (fast, cheap) default; `gemini-3.1-pro` sirf heavy tasks ke liye.
+- `src/index.css` + `tailwind.config.ts`: shift dark theme surfaces to Midnight Indigo scale, `--primary` → indigo `#4f46e5`, add `--surface-1/2/3` for layered cards, subtle indigo glow shadow token.
+- Bottom-nav gradient (Create button) → indigo→violet instead of pink.
+- Keep existing semantic token names — only values change, so no component rewrites.
 
----
+## Part 2 — Feed & Reels polish (user side)
 
-## Part C — AI features (Gemini-powered)
+**Feed (`Feed.tsx`, `PostCard.tsx`, `StoriesRail.tsx`)**
 
-### 1. Caption & Hashtag Generator ✍️
+- Real skeleton shimmer (replace spinner) via `FeedSkeleton`.
+- Double-tap heart: bigger burst + haptic (`navigator.vibrate(15)`).
+- Sticky, blur top bar with logo + inbox + notification bell (currently scattered).
+- Post card: rounded-2xl, indigo ring on unseen, tighter meta row, animated like counter (count-up).
+- Story ring: gradient upgraded to indigo→violet→fuchsia; seen state = muted ring.
+- Pull-to-refresh (touch drag on top).
 
-**Kaha:** `Compose.tsx`, `ReelCompose.tsx`, `StoryCompose.tsx` — "✨ AI suggest" button.
-**Flow:** user photo/caption draft type kare → button dabaye → 3 caption variants + 15 trending hashtags aa jaayen → tap-to-insert.
-**Backend:** naya edge fn `ai-caption-suggest` (Gemini vision for image + text prompt).
+**Reels (`Reels.tsx`)**
 
-### 2. Aurelix AI Assistant Upgrade 🚀
+- Preload next 2 videos (hidden `<video preload="auto">`) — smoother swipe.
+- Right-rail actions: icons enlarged to 44pt, count below, tap ripple.
+- Progress bar on top (thin indigo), auto-hide UI after 2s idle, tap to toggle.
+- "For You / Following" pill switcher at top.
+- Caption expand/collapse, mention/hashtag chips clickable.
 
-**Kaha:** `Assistant.tsx` + `ai-assistant` edge fn.
-**Change:** Lovable Gateway → direct Gemini API (`gemini-3.1-pro` for chat). Better reasoning, faster, apki own quota.  
-**Bonus:** image understanding — user photo upload kare, AI analyze kare.
+## Part 3 — Creator Studio hub (creator side)
 
-### 3. Smart Reply in DMs 💬
+New route `/creator/studio` (replaces scattered CreatorHub bits) — one dashboard.
 
-**Kaha:** `Conversation.tsx` — incoming message ke neeche 3 chip suggestions.
-**Flow:** last 5 messages ko Gemini bhejo → 3 short reply suggestions (formal/casual/funny) → tap se send.
-**Backend:** naya edge fn `ai-smart-reply`.
-**Privacy:** sirf on-demand (button dabane par), auto nahi.
+**Layout:** sticky header + tab strip (Overview · Content · Audience · Earnings · AI Coach).
 
-### 4. Bio Rewriter + Creator Insights 🎨📊
+- **Overview:** hero stats cards (followers, views 7d, earnings 30d, engagement %). Sparkline charts (Recharts). "Top post this week" preview.
+- **Content:** grid of user's posts/reels with per-item mini-metrics; tap → existing `PostInsights`.
+- **Audience:** follower growth line chart, top locations, active hours heatmap.
+- **Earnings:** coin balance, subscriber count, live gift total, payout button → existing wallet flow.
+- **AI Coach (Gemini):** "Analyze my last 10 posts" → Gemini returns 3 actionable tips + best posting time. Reuses `ai-creator-insights` pattern (new small edge fn `ai-creator-coach`).
 
-**Bio (`EditProfile.tsx`):** "Rewrite my bio" button → 3 style variants (professional, playful, aesthetic).
-**Insights (`PostInsights.tsx`, `Analytics.tsx`):** raw metrics Gemini ko de → plain-English summary + 3 actionable tips ("Your reels perform 40% better on Fridays — post more then").
-**Backend:** naya edge fn `ai-creator-insights`.
+**Entry points:** `Profile.tsx` (if `isCreator`) shows "Creator Studio" button; side menu link; CreatorHub redirects here.
 
-### 5. Auto Content Moderation 🛡️
+## Part 4 — Small gap fixes
 
-**Kaha:** Post/comment create hote hi background me Gemini se safety check.
-**Flow:** naya text/image → Gemini "categorize risk: safe/nsfw/hate/spam" → agar risky, `moderation_flags` table me row insert → Trust & Safety dept queue me auto-route ho jaye (Phase 2 routing engine use karega).
-**Backend:** naya edge fn `ai-moderate-content` + trigger on post/comment insert.
-**No user-facing block** — sirf silent flag for review, false-positives se creators pareshan na hon.
-
-### 6. **Bonus** — Smart Search & Discover 🔍
-
-**Kaha:** `Discover.tsx` — natural language search bar ("show me cozy coffee reels").
-**Backend:** query embed karo (Gemini embeddings), posts ke embeddings se cosine similarity match.
-**Tables:** `post_embeddings (post_id, embedding vector(768))` + trigger to auto-embed new posts.
+- `Discover.tsx` empty state polish (only if time).
+- Loading toasts standardized (indigo accent).
+- Bottom-nav Create button color = indigo gradient (matches new theme).
 
 ---
 
-## Technical section
+## Technical notes
 
-### Database migrations
-
-1. **Ghost admin cleanup** (single migration):
-  - `DELETE FROM user_roles WHERE role='admin' AND user_id IN (select id from auth.users where email in (...))`.
-  - Trigger: `on_auth_user_deleted` → cascade delete `user_roles`.
-2. **Moderation flags** table + RLS (only T&S dept read).
-3. **Post embeddings** table with `pgvector` extension + IVFFlat index.
-
-### Edge functions (all new, streaming where useful)
-
-- `ai-caption-suggest`
-- `ai-smart-reply`
-- `ai-creator-insights`
-- `ai-moderate-content` (background, invoked by trigger via `pg_net`)
-- `ai-search-embed`
-- Update: `ai-assistant` — switch to direct Gemini.
-
-### Shared helper
-
-`supabase/functions/_shared/gemini.ts` — thin fetch wrapper around `https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent` reading `GEMINI_API_KEY`, with 429/402/5xx error mapping and streaming SSE parser.
-
-### Frontend hooks
-
-- `useAiCaption(imageUrl, draft)` — react-query mutation.
-- `useSmartReplies(conversationId)` — on-demand fetch.
-- `useAiBioRewrite(currentBio)`.
-- `useCreatorInsights(postId | 'account')`.
-
-### Rate limiting
-
-Per-user Gemini calls capped in edge fn (existing `ai_rate_limits` table pattern) — 30/hour for creators, 10/hour for regular users. Prevents key abuse.
-
-### UI polish
-
-- Loading skeleton + shimmer on AI buttons.
-- "Powered by Gemini" tiny footer chip (Google ToS requirement).
-- Toast on 429 / 402: "AI is busy, try in a minute".
-
----
-
-## Rollout order
-
-1. Ghost admin migration + delete-cascade trigger.
-2. `GEMINI_API_KEY` secret request.
-3. Shared `gemini.ts` helper.
-4. Feature 1 (Caption) → 2 (Assistant upgrade) → 3 (Smart reply) → 4 (Bio + Insights) → 5 (Moderation) → 6 (Smart search).
-5. Verify each in preview before moving on.
+- **Files to create:** `src/pages/CreatorStudio.tsx`, `src/hooks/useCreatorStats.ts`, `supabase/functions/ai-creator-coach/index.ts`, `src/components/creator/StudioTabs.tsx`, `src/components/feed/PullToRefresh.tsx`.
+- **Files to edit:** `src/index.css`, `tailwind.config.ts`, `src/components/layout/AppShell.tsx`, `src/pages/Feed.tsx`, `src/pages/Reels.tsx`, `src/components/social/PostCard.tsx`, `src/components/social/StoriesRail.tsx`, `src/pages/Profile.tsx`, `src/App.tsx` (new route).
+- **Backend:** 1 new edge fn (`ai-creator-coach`) using shared `gemini.ts` helper. No new tables — reads existing posts/reels/analytics.
+- **Charts:** Recharts (already installed).
+- **UI/UX skill:** apply pre-delivery checklist (44pt touch targets, safe-area, dark-mode contrast ≥4.5:1, reduced-motion respected).
+- **Rollout:** tokens → Feed polish → Reels polish → Creator Studio → verify on 375px preview.
 
 Approve karo to build mode me shift ho ke sab implement karta hun.
+
+&nbsp;
+
+ Ek aur baat use lovable gemini because my gemini is not working 
