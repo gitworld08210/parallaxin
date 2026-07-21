@@ -70,7 +70,7 @@ export const SideMenu = ({ trigger }: { trigger: React.ReactNode }) => {
     { to: "/wallet", icon: Wallet, label: "Aura Wallet", trailing: <span className="text-xs font-bold text-primary">0</span> },
     ...(isCreator
       ? [
-          { to: "/creator-hub", icon: LayoutGrid, label: "Creator hub" } as Row,
+          { to: "/creator/studio", icon: LayoutGrid, label: "Creator Studio", badge: "NEW" } as Row,
           { to: "/monetization", icon: DollarSign, label: "Monetization" } as Row,
         ]
       : []),
