@@ -13,6 +13,7 @@ import {
   MessageCircle,
   MoreHorizontal,
   Share2,
+  Sparkles,
   UserPlus,
   VolumeX,
   Bookmark,
@@ -408,6 +409,14 @@ const Profile = () => {
                 <IconBtn label="Share profile" onClick={shareProfile}>
                   <Share2 className="h-4 w-4" />
                 </IconBtn>
+                {(profile as any)?.is_creator && (
+                  <Link
+                    to="/creator/studio"
+                    className="inline-flex items-center gap-1.5 h-9 px-4 rounded-full bg-gradient-primary text-primary-foreground text-sm font-semibold shadow-glow hover:brightness-110 active:scale-95 transition-all"
+                  >
+                    <Sparkles className="h-4 w-4" /> Studio
+                  </Link>
+                )}
                 <Link
                   to="/profile/edit"
                   className="inline-flex items-center h-9 px-4 rounded-full border border-border bg-background text-sm font-semibold hover:bg-secondary/60 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring active:scale-95 duration-fast"
