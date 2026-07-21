@@ -1,7 +1,12 @@
-// Shared Gemini API helper — direct Google Generative Language API.
-// Uses the user's own GEMINI_API_KEY so quota + billing sits on their account.
+// Shared AI helper — routed through Lovable AI Gateway (OpenAI-compatible).
+// Uses LOVABLE_API_KEY. Model names use the Gateway's `google/gemini-*` prefixes.
 
 export type GeminiModel =
+  | "google/gemini-2.5-flash"
+  | "google/gemini-2.5-flash-lite"
+  | "google/gemini-2.5-pro"
+  | "google/gemini-2.0-flash"
+  // Back-compat: bare names auto-mapped to google/*
   | "gemini-2.5-flash"
   | "gemini-2.5-flash-lite"
   | "gemini-2.5-pro"
@@ -22,7 +27,7 @@ interface GenerateOpts {
   maxTokens?: number;
 }
 
-const BASE = "https://generativelanguage.googleapis.com/v1beta/models";
+const GATEWAY = "https://ai.gateway.lovable.dev/v1/chat/completions";
 
 export class GeminiError extends Error {
   constructor(public status: number, message: string) {
@@ -30,120 +35,90 @@ export class GeminiError extends Error {
   }
 }
 
-/** One-shot Gemini call. Returns the assistant text. */
-export async function generateGemini(opts: GenerateOpts): Promise<string> {
-  const key = Deno.env.get("GEMINI_API_KEY");
-  if (!key) throw new GeminiError(500, "GEMINI_API_KEY not configured");
+const normalizeModel = (m?: GeminiModel): string => {
+  const v = m ?? "google/gemini-2.5-flash";
+  return v.startsWith("google/") ? v : `google/${v}`;
+};
 
-  const model = opts.model ?? "gemini-2.5-flash";
-  const body: any = {
-    contents: opts.messages,
-    generationConfig: {
-      temperature: opts.temperature ?? 0.8,
-      maxOutputTokens: opts.maxTokens ?? 2048,
-      ...(opts.json ? { responseMimeType: "application/json" } : {}),
-    },
-  };
-  if (opts.system) {
-    body.systemInstruction = { role: "system", parts: [{ text: opts.system }] };
+// Convert Gemini-style messages → OpenAI chat messages
+const toOpenAiMessages = (system: string | undefined, messages: GeminiMessage[]) => {
+  const out: Array<{ role: "system" | "user" | "assistant"; content: any }> = [];
+  if (system) out.push({ role: "system", content: system });
+  for (const m of messages) {
+    const role = m.role === "model" ? "assistant" : "user";
+    // Flatten parts: text joined, inlineData → OpenAI image_url data URI
+    const textParts = m.parts.filter((p): p is { text: string } => "text" in p).map((p) => p.text);
+    const images = m.parts.filter((p): p is { inlineData: { mimeType: string; data: string } } => "inlineData" in p);
+    if (images.length === 0) {
+      out.push({ role, content: textParts.join("\n") });
+    } else {
+      const content: any[] = [];
+      if (textParts.length) content.push({ type: "text", text: textParts.join("\n") });
+      for (const img of images) {
+        content.push({
+          type: "image_url",
+          image_url: { url: `data:${img.inlineData.mimeType};base64,${img.inlineData.data}` },
+        });
+      }
+      out.push({ role, content });
+    }
   }
+  return out;
+};
 
-  const res = await fetch(`${BASE}/${model}:generateContent?key=${key}`, {
+const mapError = async (res: Response): Promise<never> => {
+  const text = await res.text().catch(() => "");
+  if (res.status === 429) throw new GeminiError(429, "Rate limit — try again shortly.");
+  if (res.status === 402) throw new GeminiError(402, "AI credits exhausted. Add credits in workspace settings.");
+  throw new GeminiError(res.status, text.slice(0, 500) || `AI gateway error ${res.status}`);
+};
+
+/** One-shot AI call. Returns the assistant text. */
+export async function generateGemini(opts: GenerateOpts): Promise<string> {
+  const key = Deno.env.get("LOVABLE_API_KEY");
+  if (!key) throw new GeminiError(500, "LOVABLE_API_KEY not configured");
+
+  const body: any = {
+    model: normalizeModel(opts.model),
+    messages: toOpenAiMessages(opts.system, opts.messages),
+    temperature: opts.temperature ?? 0.8,
+    max_tokens: opts.maxTokens ?? 2048,
+  };
+  if (opts.json) body.response_format = { type: "json_object" };
+
+  const res = await fetch(GATEWAY, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
     body: JSON.stringify(body),
   });
-
-  if (!res.ok) {
-    const text = await res.text();
-    // Gemini's 429 → rate limit, 400 with QUOTA → also treat as 429
-    if (res.status === 429 || text.includes("RESOURCE_EXHAUSTED")) {
-      throw new GeminiError(429, "Rate limit — try again shortly.");
-    }
-    if (res.status === 403) throw new GeminiError(402, "Gemini quota/billing issue.");
-    throw new GeminiError(res.status, text.slice(0, 500));
-  }
-
+  if (!res.ok) await mapError(res);
   const data = await res.json();
-  const parts = data?.candidates?.[0]?.content?.parts ?? [];
-  return parts.map((p: any) => p.text ?? "").join("").trim();
+  return (data?.choices?.[0]?.message?.content ?? "").toString().trim();
 }
 
-/** Streaming Gemini call. Returns SSE-formatted Response body (OpenAI-like deltas). */
+/** Streaming AI call. Returns upstream Response (OpenAI SSE). */
 export async function streamGemini(opts: GenerateOpts): Promise<Response> {
-  const key = Deno.env.get("GEMINI_API_KEY");
-  if (!key) throw new GeminiError(500, "GEMINI_API_KEY not configured");
+  const key = Deno.env.get("LOVABLE_API_KEY");
+  if (!key) throw new GeminiError(500, "LOVABLE_API_KEY not configured");
 
-  const model = opts.model ?? "gemini-2.5-flash";
-  const body: any = {
-    contents: opts.messages,
-    generationConfig: {
-      temperature: opts.temperature ?? 0.8,
-      maxOutputTokens: opts.maxTokens ?? 4096,
-    },
+  const body = {
+    model: normalizeModel(opts.model),
+    messages: toOpenAiMessages(opts.system, opts.messages),
+    temperature: opts.temperature ?? 0.8,
+    max_tokens: opts.maxTokens ?? 4096,
+    stream: true,
   };
-  if (opts.system) {
-    body.systemInstruction = { role: "system", parts: [{ text: opts.system }] };
-  }
 
-  const res = await fetch(
-    `${BASE}/${model}:streamGenerateContent?alt=sse&key=${key}`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    },
-  );
-
-  if (!res.ok) {
-    const text = await res.text();
-    if (res.status === 429 || text.includes("RESOURCE_EXHAUSTED")) {
-      throw new GeminiError(429, "Rate limit — try again shortly.");
-    }
-    if (res.status === 403) throw new GeminiError(402, "Gemini quota/billing issue.");
-    throw new GeminiError(res.status, text.slice(0, 500));
-  }
+  const res = await fetch(GATEWAY, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) await mapError(res);
   return res;
 }
 
-/** Convert Gemini SSE → OpenAI-compatible SSE (so existing clients keep working). */
+/** Lovable Gateway already streams OpenAI-compatible SSE — passthrough. */
 export function geminiToOpenAiSSE(upstream: Response): ReadableStream<Uint8Array> {
-  const decoder = new TextDecoder();
-  const encoder = new TextEncoder();
-  const reader = upstream.body!.getReader();
-
-  return new ReadableStream({
-    async start(controller) {
-      let buf = "";
-      try {
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          buf += decoder.decode(value, { stream: true });
-          const lines = buf.split("\n");
-          buf = lines.pop() ?? "";
-          for (const line of lines) {
-            if (!line.startsWith("data:")) continue;
-            const raw = line.slice(5).trim();
-            if (!raw) continue;
-            try {
-              const json = JSON.parse(raw);
-              const text = json?.candidates?.[0]?.content?.parts
-                ?.map((p: any) => p.text ?? "").join("") ?? "";
-              if (text) {
-                const chunk = {
-                  choices: [{ delta: { content: text }, index: 0 }],
-                };
-                controller.enqueue(encoder.encode(`data: ${JSON.stringify(chunk)}\n\n`));
-              }
-            } catch { /* skip */ }
-          }
-        }
-        controller.enqueue(encoder.encode("data: [DONE]\n\n"));
-        controller.close();
-      } catch (e) {
-        controller.error(e);
-      }
-    },
-  });
+  return upstream.body!;
 }
