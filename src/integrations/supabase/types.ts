@@ -14,6 +14,2810 @@ export type Database = {
   }
   public: {
     Tables: {
+      aap_ad_groups: {
+        Row: {
+          advertiser_id: string
+          audience_id: string | null
+          bid_amount: number | null
+          bid_strategy: string | null
+          budget: number | null
+          campaign_id: string
+          created_at: string
+          created_by: string | null
+          daily_budget: number | null
+          id: string
+          name: string
+          optimization_goal: string | null
+          placements: Database["public"]["Enums"]["aap_placement_surface"][]
+          schedule: Json
+          status: Database["public"]["Enums"]["aap_ad_status"]
+          updated_at: string
+        }
+        Insert: {
+          advertiser_id: string
+          audience_id?: string | null
+          bid_amount?: number | null
+          bid_strategy?: string | null
+          budget?: number | null
+          campaign_id: string
+          created_at?: string
+          created_by?: string | null
+          daily_budget?: number | null
+          id?: string
+          name: string
+          optimization_goal?: string | null
+          placements?: Database["public"]["Enums"]["aap_placement_surface"][]
+          schedule?: Json
+          status?: Database["public"]["Enums"]["aap_ad_status"]
+          updated_at?: string
+        }
+        Update: {
+          advertiser_id?: string
+          audience_id?: string | null
+          bid_amount?: number | null
+          bid_strategy?: string | null
+          budget?: number | null
+          campaign_id?: string
+          created_at?: string
+          created_by?: string | null
+          daily_budget?: number | null
+          id?: string
+          name?: string
+          optimization_goal?: string | null
+          placements?: Database["public"]["Enums"]["aap_placement_surface"][]
+          schedule?: Json
+          status?: Database["public"]["Enums"]["aap_ad_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aap_ad_groups_advertiser_id_fkey"
+            columns: ["advertiser_id"]
+            isOneToOne: false
+            referencedRelation: "aap_advertisers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "aap_ad_groups_audience_id_fkey"
+            columns: ["audience_id"]
+            isOneToOne: false
+            referencedRelation: "aap_audiences"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "aap_ad_groups_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "aap_campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      aap_ads: {
+        Row: {
+          ad_group_id: string
+          advertiser_id: string
+          approved_at: string | null
+          campaign_id: string
+          created_at: string
+          created_by: string | null
+          creative_id: string | null
+          cta: string | null
+          description: string | null
+          destination_url: string | null
+          format: Database["public"]["Enums"]["aap_ad_format"]
+          headline: string | null
+          id: string
+          name: string
+          payload: Json
+          rejected_at: string | null
+          review_state: Database["public"]["Enums"]["aap_review_state"]
+          status: Database["public"]["Enums"]["aap_ad_status"]
+          submitted_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          ad_group_id: string
+          advertiser_id: string
+          approved_at?: string | null
+          campaign_id: string
+          created_at?: string
+          created_by?: string | null
+          creative_id?: string | null
+          cta?: string | null
+          description?: string | null
+          destination_url?: string | null
+          format: Database["public"]["Enums"]["aap_ad_format"]
+          headline?: string | null
+          id?: string
+          name: string
+          payload?: Json
+          rejected_at?: string | null
+          review_state?: Database["public"]["Enums"]["aap_review_state"]
+          status?: Database["public"]["Enums"]["aap_ad_status"]
+          submitted_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          ad_group_id?: string
+          advertiser_id?: string
+          approved_at?: string | null
+          campaign_id?: string
+          created_at?: string
+          created_by?: string | null
+          creative_id?: string | null
+          cta?: string | null
+          description?: string | null
+          destination_url?: string | null
+          format?: Database["public"]["Enums"]["aap_ad_format"]
+          headline?: string | null
+          id?: string
+          name?: string
+          payload?: Json
+          rejected_at?: string | null
+          review_state?: Database["public"]["Enums"]["aap_review_state"]
+          status?: Database["public"]["Enums"]["aap_ad_status"]
+          submitted_at?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aap_ads_ad_group_id_fkey"
+            columns: ["ad_group_id"]
+            isOneToOne: false
+            referencedRelation: "aap_ad_groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "aap_ads_advertiser_id_fkey"
+            columns: ["advertiser_id"]
+            isOneToOne: false
+            referencedRelation: "aap_advertisers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "aap_ads_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "aap_campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "aap_ads_creative_id_fkey"
+            columns: ["creative_id"]
+            isOneToOne: false
+            referencedRelation: "aap_creatives"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      aap_advertiser_members: {
+        Row: {
+          advertiser_id: string
+          created_at: string
+          id: string
+          invited_by: string | null
+          role: Database["public"]["Enums"]["aap_role_key"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          advertiser_id: string
+          created_at?: string
+          id?: string
+          invited_by?: string | null
+          role?: Database["public"]["Enums"]["aap_role_key"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          advertiser_id?: string
+          created_at?: string
+          id?: string
+          invited_by?: string | null
+          role?: Database["public"]["Enums"]["aap_role_key"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aap_advertiser_members_advertiser_id_fkey"
+            columns: ["advertiser_id"]
+            isOneToOne: false
+            referencedRelation: "aap_advertisers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      aap_advertisers: {
+        Row: {
+          billing_mode: Database["public"]["Enums"]["aap_billing_mode"]
+          country: string | null
+          created_at: string
+          created_by: string | null
+          currency: string | null
+          daily_spend_limit: number | null
+          display_name: string
+          health_score: number | null
+          id: string
+          legal_name: string | null
+          metadata: Json
+          organization_id: string | null
+          owner_user_id: string | null
+          status: Database["public"]["Enums"]["aap_advertiser_status"]
+          timezone: string | null
+          type: Database["public"]["Enums"]["aap_advertiser_type"]
+          updated_at: string
+          verification_level: number
+        }
+        Insert: {
+          billing_mode?: Database["public"]["Enums"]["aap_billing_mode"]
+          country?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency?: string | null
+          daily_spend_limit?: number | null
+          display_name: string
+          health_score?: number | null
+          id?: string
+          legal_name?: string | null
+          metadata?: Json
+          organization_id?: string | null
+          owner_user_id?: string | null
+          status?: Database["public"]["Enums"]["aap_advertiser_status"]
+          timezone?: string | null
+          type: Database["public"]["Enums"]["aap_advertiser_type"]
+          updated_at?: string
+          verification_level?: number
+        }
+        Update: {
+          billing_mode?: Database["public"]["Enums"]["aap_billing_mode"]
+          country?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency?: string | null
+          daily_spend_limit?: number | null
+          display_name?: string
+          health_score?: number | null
+          id?: string
+          legal_name?: string | null
+          metadata?: Json
+          organization_id?: string | null
+          owner_user_id?: string | null
+          status?: Database["public"]["Enums"]["aap_advertiser_status"]
+          timezone?: string | null
+          type?: Database["public"]["Enums"]["aap_advertiser_type"]
+          updated_at?: string
+          verification_level?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aap_advertisers_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      aap_api_keys: {
+        Row: {
+          advertiser_id: string
+          created_at: string
+          created_by: string | null
+          hashed_key: string
+          id: string
+          key_prefix: string
+          last_used_at: string | null
+          name: string
+          revoked_at: string | null
+          scopes: string[]
+        }
+        Insert: {
+          advertiser_id: string
+          created_at?: string
+          created_by?: string | null
+          hashed_key: string
+          id?: string
+          key_prefix: string
+          last_used_at?: string | null
+          name: string
+          revoked_at?: string | null
+          scopes?: string[]
+        }
+        Update: {
+          advertiser_id?: string
+          created_at?: string
+          created_by?: string | null
+          hashed_key?: string
+          id?: string
+          key_prefix?: string
+          last_used_at?: string | null
+          name?: string
+          revoked_at?: string | null
+          scopes?: string[]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aap_api_keys_advertiser_id_fkey"
+            columns: ["advertiser_id"]
+            isOneToOne: false
+            referencedRelation: "aap_advertisers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      aap_appeals: {
+        Row: {
+          ad_id: string
+          advertiser_id: string
+          created_at: string
+          created_by: string | null
+          decided_at: string | null
+          decided_by: string | null
+          decision_notes: string | null
+          id: string
+          reason: string
+          state: string
+          updated_at: string
+        }
+        Insert: {
+          ad_id: string
+          advertiser_id: string
+          created_at?: string
+          created_by?: string | null
+          decided_at?: string | null
+          decided_by?: string | null
+          decision_notes?: string | null
+          id?: string
+          reason: string
+          state?: string
+          updated_at?: string
+        }
+        Update: {
+          ad_id?: string
+          advertiser_id?: string
+          created_at?: string
+          created_by?: string | null
+          decided_at?: string | null
+          decided_by?: string | null
+          decision_notes?: string | null
+          id?: string
+          reason?: string
+          state?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aap_appeals_ad_id_fkey"
+            columns: ["ad_id"]
+            isOneToOne: false
+            referencedRelation: "aap_ads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "aap_appeals_advertiser_id_fkey"
+            columns: ["advertiser_id"]
+            isOneToOne: false
+            referencedRelation: "aap_advertisers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      aap_asset_folders: {
+        Row: {
+          advertiser_id: string
+          created_at: string
+          created_by: string | null
+          id: string
+          name: string
+          parent_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          advertiser_id: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name: string
+          parent_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          advertiser_id?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name?: string
+          parent_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aap_asset_folders_advertiser_id_fkey"
+            columns: ["advertiser_id"]
+            isOneToOne: false
+            referencedRelation: "aap_advertisers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "aap_asset_folders_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "aap_asset_folders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      aap_assets: {
+        Row: {
+          advertiser_id: string
+          bytes: number | null
+          created_at: string
+          created_by: string | null
+          duration_ms: number | null
+          folder_id: string | null
+          height: number | null
+          id: string
+          kind: string
+          metadata: Json
+          mime_type: string | null
+          storage_path: string
+          updated_at: string
+          width: number | null
+        }
+        Insert: {
+          advertiser_id: string
+          bytes?: number | null
+          created_at?: string
+          created_by?: string | null
+          duration_ms?: number | null
+          folder_id?: string | null
+          height?: number | null
+          id?: string
+          kind: string
+          metadata?: Json
+          mime_type?: string | null
+          storage_path: string
+          updated_at?: string
+          width?: number | null
+        }
+        Update: {
+          advertiser_id?: string
+          bytes?: number | null
+          created_at?: string
+          created_by?: string | null
+          duration_ms?: number | null
+          folder_id?: string | null
+          height?: number | null
+          id?: string
+          kind?: string
+          metadata?: Json
+          mime_type?: string | null
+          storage_path?: string
+          updated_at?: string
+          width?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aap_assets_advertiser_id_fkey"
+            columns: ["advertiser_id"]
+            isOneToOne: false
+            referencedRelation: "aap_advertisers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "aap_assets_folder_id_fkey"
+            columns: ["folder_id"]
+            isOneToOne: false
+            referencedRelation: "aap_asset_folders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      aap_audiences: {
+        Row: {
+          advertiser_id: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          estimated_reach: number | null
+          id: string
+          is_saved: boolean
+          name: string
+          targeting: Json
+          updated_at: string
+        }
+        Insert: {
+          advertiser_id: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          estimated_reach?: number | null
+          id?: string
+          is_saved?: boolean
+          name: string
+          targeting?: Json
+          updated_at?: string
+        }
+        Update: {
+          advertiser_id?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          estimated_reach?: number | null
+          id?: string
+          is_saved?: boolean
+          name?: string
+          targeting?: Json
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aap_audiences_advertiser_id_fkey"
+            columns: ["advertiser_id"]
+            isOneToOne: false
+            referencedRelation: "aap_advertisers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      aap_audit_logs: {
+        Row: {
+          action: string
+          actor_user_id: string | null
+          advertiser_id: string | null
+          after: Json | null
+          before: Json | null
+          created_at: string
+          entity_id: string | null
+          entity_type: string
+          id: number
+          ip: unknown
+          user_agent: string | null
+        }
+        Insert: {
+          action: string
+          actor_user_id?: string | null
+          advertiser_id?: string | null
+          after?: Json | null
+          before?: Json | null
+          created_at?: string
+          entity_id?: string | null
+          entity_type: string
+          id?: number
+          ip?: unknown
+          user_agent?: string | null
+        }
+        Update: {
+          action?: string
+          actor_user_id?: string | null
+          advertiser_id?: string | null
+          after?: Json | null
+          before?: Json | null
+          created_at?: string
+          entity_id?: string | null
+          entity_type?: string
+          id?: number
+          ip?: unknown
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aap_audit_logs_advertiser_id_fkey"
+            columns: ["advertiser_id"]
+            isOneToOne: false
+            referencedRelation: "aap_advertisers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      aap_automation_runs: {
+        Row: {
+          automation_id: string
+          finished_at: string | null
+          id: string
+          output: Json | null
+          started_at: string
+          status: string
+        }
+        Insert: {
+          automation_id: string
+          finished_at?: string | null
+          id?: string
+          output?: Json | null
+          started_at?: string
+          status: string
+        }
+        Update: {
+          automation_id?: string
+          finished_at?: string | null
+          id?: string
+          output?: Json | null
+          started_at?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aap_automation_runs_automation_id_fkey"
+            columns: ["automation_id"]
+            isOneToOne: false
+            referencedRelation: "aap_automations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      aap_automations: {
+        Row: {
+          action: Json
+          advertiser_id: string
+          created_at: string
+          id: string
+          is_active: boolean
+          last_run_at: string | null
+          name: string
+          trigger: Json
+          updated_at: string
+        }
+        Insert: {
+          action?: Json
+          advertiser_id: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          last_run_at?: string | null
+          name: string
+          trigger?: Json
+          updated_at?: string
+        }
+        Update: {
+          action?: Json
+          advertiser_id?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          last_run_at?: string | null
+          name?: string
+          trigger?: Json
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aap_automations_advertiser_id_fkey"
+            columns: ["advertiser_id"]
+            isOneToOne: false
+            referencedRelation: "aap_advertisers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      aap_backups_log: {
+        Row: {
+          created_at: string
+          details: Json
+          id: string
+          kind: string
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          details?: Json
+          id?: string
+          kind: string
+          status: string
+        }
+        Update: {
+          created_at?: string
+          details?: Json
+          id?: string
+          kind?: string
+          status?: string
+        }
+        Relationships: []
+      }
+      aap_billing_profiles: {
+        Row: {
+          address_line1: string | null
+          address_line2: string | null
+          advertiser_id: string
+          billing_email: string
+          billing_name: string | null
+          city: string | null
+          country: string | null
+          created_at: string
+          gstin: string | null
+          id: string
+          is_default: boolean
+          postal_code: string | null
+          state: string | null
+          tax_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          address_line1?: string | null
+          address_line2?: string | null
+          advertiser_id: string
+          billing_email: string
+          billing_name?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          gstin?: string | null
+          id?: string
+          is_default?: boolean
+          postal_code?: string | null
+          state?: string | null
+          tax_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          address_line1?: string | null
+          address_line2?: string | null
+          advertiser_id?: string
+          billing_email?: string
+          billing_name?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          gstin?: string | null
+          id?: string
+          is_default?: boolean
+          postal_code?: string | null
+          state?: string | null
+          tax_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aap_billing_profiles_advertiser_id_fkey"
+            columns: ["advertiser_id"]
+            isOneToOne: false
+            referencedRelation: "aap_advertisers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      aap_blocked_categories: {
+        Row: {
+          advertiser_id: string | null
+          category: string
+          created_at: string
+          id: string
+        }
+        Insert: {
+          advertiser_id?: string | null
+          category: string
+          created_at?: string
+          id?: string
+        }
+        Update: {
+          advertiser_id?: string | null
+          category?: string
+          created_at?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aap_blocked_categories_advertiser_id_fkey"
+            columns: ["advertiser_id"]
+            isOneToOne: false
+            referencedRelation: "aap_advertisers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      aap_brand_safety_rules: {
+        Row: {
+          advertiser_id: string | null
+          created_at: string
+          id: string
+          is_active: boolean
+          rule: Json
+          scope: string
+          updated_at: string
+        }
+        Insert: {
+          advertiser_id?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          rule: Json
+          scope?: string
+          updated_at?: string
+        }
+        Update: {
+          advertiser_id?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          rule?: Json
+          scope?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aap_brand_safety_rules_advertiser_id_fkey"
+            columns: ["advertiser_id"]
+            isOneToOne: false
+            referencedRelation: "aap_advertisers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      aap_campaigns: {
+        Row: {
+          advertiser_id: string
+          archived_at: string | null
+          bid_strategy: string | null
+          created_at: string
+          created_by: string | null
+          daily_budget: number | null
+          end_at: string | null
+          id: string
+          name: string
+          notes: string | null
+          objective: Database["public"]["Enums"]["aap_campaign_objective"]
+          spent: number
+          start_at: string | null
+          status: Database["public"]["Enums"]["aap_campaign_status"]
+          total_budget: number | null
+          updated_at: string
+        }
+        Insert: {
+          advertiser_id: string
+          archived_at?: string | null
+          bid_strategy?: string | null
+          created_at?: string
+          created_by?: string | null
+          daily_budget?: number | null
+          end_at?: string | null
+          id?: string
+          name: string
+          notes?: string | null
+          objective: Database["public"]["Enums"]["aap_campaign_objective"]
+          spent?: number
+          start_at?: string | null
+          status?: Database["public"]["Enums"]["aap_campaign_status"]
+          total_budget?: number | null
+          updated_at?: string
+        }
+        Update: {
+          advertiser_id?: string
+          archived_at?: string | null
+          bid_strategy?: string | null
+          created_at?: string
+          created_by?: string | null
+          daily_budget?: number | null
+          end_at?: string | null
+          id?: string
+          name?: string
+          notes?: string | null
+          objective?: Database["public"]["Enums"]["aap_campaign_objective"]
+          spent?: number
+          start_at?: string | null
+          status?: Database["public"]["Enums"]["aap_campaign_status"]
+          total_budget?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aap_campaigns_advertiser_id_fkey"
+            columns: ["advertiser_id"]
+            isOneToOne: false
+            referencedRelation: "aap_advertisers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      aap_config: {
+        Row: {
+          created_at: string
+          id: string
+          key: string
+          scope: string
+          updated_at: string
+          updated_by: string | null
+          value: Json
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          key: string
+          scope?: string
+          updated_at?: string
+          updated_by?: string | null
+          value: Json
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          key?: string
+          scope?: string
+          updated_at?: string
+          updated_by?: string | null
+          value?: Json
+        }
+        Relationships: []
+      }
+      aap_conversion_events: {
+        Row: {
+          advertiser_id: string
+          created_at: string
+          id: string
+          is_active: boolean
+          kind: string
+          name: string
+          spec: Json
+          updated_at: string
+        }
+        Insert: {
+          advertiser_id: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          kind?: string
+          name: string
+          spec?: Json
+          updated_at?: string
+        }
+        Update: {
+          advertiser_id?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          kind?: string
+          name?: string
+          spec?: Json
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aap_conversion_events_advertiser_id_fkey"
+            columns: ["advertiser_id"]
+            isOneToOne: false
+            referencedRelation: "aap_advertisers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      aap_coupons: {
+        Row: {
+          amount: number
+          code: string
+          created_at: string
+          created_by: string | null
+          currency: string
+          id: string
+          is_active: boolean
+          max_uses: number | null
+          updated_at: string
+          uses: number
+          valid_from: string | null
+          valid_until: string | null
+        }
+        Insert: {
+          amount: number
+          code: string
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          id?: string
+          is_active?: boolean
+          max_uses?: number | null
+          updated_at?: string
+          uses?: number
+          valid_from?: string | null
+          valid_until?: string | null
+        }
+        Update: {
+          amount?: number
+          code?: string
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          id?: string
+          is_active?: boolean
+          max_uses?: number | null
+          updated_at?: string
+          uses?: number
+          valid_from?: string | null
+          valid_until?: string | null
+        }
+        Relationships: []
+      }
+      aap_creative_versions: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          creative_id: string
+          id: string
+          snapshot: Json
+          version: number
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          creative_id: string
+          id?: string
+          snapshot: Json
+          version: number
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          creative_id?: string
+          id?: string
+          snapshot?: Json
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aap_creative_versions_creative_id_fkey"
+            columns: ["creative_id"]
+            isOneToOne: false
+            referencedRelation: "aap_creatives"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      aap_creatives: {
+        Row: {
+          advertiser_id: string
+          created_at: string
+          created_by: string | null
+          cta: string | null
+          description: string | null
+          destination_url: string | null
+          format: Database["public"]["Enums"]["aap_ad_format"]
+          headline: string | null
+          id: string
+          name: string
+          payload: Json
+          primary_asset_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          advertiser_id: string
+          created_at?: string
+          created_by?: string | null
+          cta?: string | null
+          description?: string | null
+          destination_url?: string | null
+          format: Database["public"]["Enums"]["aap_ad_format"]
+          headline?: string | null
+          id?: string
+          name: string
+          payload?: Json
+          primary_asset_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          advertiser_id?: string
+          created_at?: string
+          created_by?: string | null
+          cta?: string | null
+          description?: string | null
+          destination_url?: string | null
+          format?: Database["public"]["Enums"]["aap_ad_format"]
+          headline?: string | null
+          id?: string
+          name?: string
+          payload?: Json
+          primary_asset_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aap_creatives_advertiser_id_fkey"
+            columns: ["advertiser_id"]
+            isOneToOne: false
+            referencedRelation: "aap_advertisers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "aap_creatives_primary_asset_id_fkey"
+            columns: ["primary_asset_id"]
+            isOneToOne: false
+            referencedRelation: "aap_assets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      aap_credits: {
+        Row: {
+          advertiser_id: string
+          amount: number
+          created_at: string
+          expires_at: string | null
+          granted_by: string | null
+          id: string
+          reason: string
+        }
+        Insert: {
+          advertiser_id: string
+          amount: number
+          created_at?: string
+          expires_at?: string | null
+          granted_by?: string | null
+          id?: string
+          reason: string
+        }
+        Update: {
+          advertiser_id?: string
+          amount?: number
+          created_at?: string
+          expires_at?: string | null
+          granted_by?: string | null
+          id?: string
+          reason?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aap_credits_advertiser_id_fkey"
+            columns: ["advertiser_id"]
+            isOneToOne: false
+            referencedRelation: "aap_advertisers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      aap_crm_activities: {
+        Row: {
+          advertiser_id: string
+          contact_id: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          kind: string
+          lead_id: string | null
+          note: string | null
+        }
+        Insert: {
+          advertiser_id: string
+          contact_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          kind: string
+          lead_id?: string | null
+          note?: string | null
+        }
+        Update: {
+          advertiser_id?: string
+          contact_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          kind?: string
+          lead_id?: string | null
+          note?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aap_crm_activities_advertiser_id_fkey"
+            columns: ["advertiser_id"]
+            isOneToOne: false
+            referencedRelation: "aap_advertisers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "aap_crm_activities_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "aap_crm_contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "aap_crm_activities_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "aap_crm_leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      aap_crm_contacts: {
+        Row: {
+          advertiser_id: string
+          created_at: string
+          data: Json
+          email: string | null
+          id: string
+          name: string
+          phone: string | null
+          role: string | null
+          updated_at: string
+        }
+        Insert: {
+          advertiser_id: string
+          created_at?: string
+          data?: Json
+          email?: string | null
+          id?: string
+          name: string
+          phone?: string | null
+          role?: string | null
+          updated_at?: string
+        }
+        Update: {
+          advertiser_id?: string
+          created_at?: string
+          data?: Json
+          email?: string | null
+          id?: string
+          name?: string
+          phone?: string | null
+          role?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aap_crm_contacts_advertiser_id_fkey"
+            columns: ["advertiser_id"]
+            isOneToOne: false
+            referencedRelation: "aap_advertisers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      aap_crm_leads: {
+        Row: {
+          advertiser_id: string
+          created_at: string
+          data: Json
+          email: string | null
+          id: string
+          name: string
+          owner_user_id: string | null
+          phone: string | null
+          source: string | null
+          stage: string
+          updated_at: string
+        }
+        Insert: {
+          advertiser_id: string
+          created_at?: string
+          data?: Json
+          email?: string | null
+          id?: string
+          name: string
+          owner_user_id?: string | null
+          phone?: string | null
+          source?: string | null
+          stage?: string
+          updated_at?: string
+        }
+        Update: {
+          advertiser_id?: string
+          created_at?: string
+          data?: Json
+          email?: string | null
+          id?: string
+          name?: string
+          owner_user_id?: string | null
+          phone?: string | null
+          source?: string | null
+          stage?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aap_crm_leads_advertiser_id_fkey"
+            columns: ["advertiser_id"]
+            isOneToOne: false
+            referencedRelation: "aap_advertisers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      aap_daily_rollups: {
+        Row: {
+          ad_id: string
+          advertiser_id: string
+          campaign_id: string
+          clicks: number
+          conversions: number
+          created_at: string
+          day: string
+          id: string
+          impressions: number
+          revenue: number
+          spend: number
+          surface: Database["public"]["Enums"]["aap_placement_surface"] | null
+          updated_at: string
+        }
+        Insert: {
+          ad_id: string
+          advertiser_id: string
+          campaign_id: string
+          clicks?: number
+          conversions?: number
+          created_at?: string
+          day: string
+          id?: string
+          impressions?: number
+          revenue?: number
+          spend?: number
+          surface?: Database["public"]["Enums"]["aap_placement_surface"] | null
+          updated_at?: string
+        }
+        Update: {
+          ad_id?: string
+          advertiser_id?: string
+          campaign_id?: string
+          clicks?: number
+          conversions?: number
+          created_at?: string
+          day?: string
+          id?: string
+          impressions?: number
+          revenue?: number
+          spend?: number
+          surface?: Database["public"]["Enums"]["aap_placement_surface"] | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aap_daily_rollups_ad_id_fkey"
+            columns: ["ad_id"]
+            isOneToOne: false
+            referencedRelation: "aap_ads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "aap_daily_rollups_advertiser_id_fkey"
+            columns: ["advertiser_id"]
+            isOneToOne: false
+            referencedRelation: "aap_advertisers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "aap_daily_rollups_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "aap_campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      aap_dashboards: {
+        Row: {
+          advertiser_id: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          layout: Json
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          advertiser_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          layout?: Json
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          advertiser_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          layout?: Json
+          name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aap_dashboards_advertiser_id_fkey"
+            columns: ["advertiser_id"]
+            isOneToOne: false
+            referencedRelation: "aap_advertisers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      aap_events: {
+        Row: {
+          ad_id: string
+          advertiser_id: string
+          amount: number | null
+          campaign_id: string
+          country: string | null
+          created_at: string
+          device: string | null
+          id: number
+          kind: Database["public"]["Enums"]["aap_event_kind"]
+          meta: Json
+          surface: Database["public"]["Enums"]["aap_placement_surface"] | null
+          user_id: string | null
+        }
+        Insert: {
+          ad_id: string
+          advertiser_id: string
+          amount?: number | null
+          campaign_id: string
+          country?: string | null
+          created_at?: string
+          device?: string | null
+          id?: number
+          kind: Database["public"]["Enums"]["aap_event_kind"]
+          meta?: Json
+          surface?: Database["public"]["Enums"]["aap_placement_surface"] | null
+          user_id?: string | null
+        }
+        Update: {
+          ad_id?: string
+          advertiser_id?: string
+          amount?: number | null
+          campaign_id?: string
+          country?: string | null
+          created_at?: string
+          device?: string | null
+          id?: number
+          kind?: Database["public"]["Enums"]["aap_event_kind"]
+          meta?: Json
+          surface?: Database["public"]["Enums"]["aap_placement_surface"] | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aap_events_ad_id_fkey"
+            columns: ["ad_id"]
+            isOneToOne: false
+            referencedRelation: "aap_ads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "aap_events_advertiser_id_fkey"
+            columns: ["advertiser_id"]
+            isOneToOne: false
+            referencedRelation: "aap_advertisers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "aap_events_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "aap_campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      aap_experiment_results: {
+        Row: {
+          experiment_id: string
+          id: string
+          metric: string
+          recorded_at: string
+          value: number
+          variant_id: string
+        }
+        Insert: {
+          experiment_id: string
+          id?: string
+          metric: string
+          recorded_at?: string
+          value: number
+          variant_id: string
+        }
+        Update: {
+          experiment_id?: string
+          id?: string
+          metric?: string
+          recorded_at?: string
+          value?: number
+          variant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aap_experiment_results_experiment_id_fkey"
+            columns: ["experiment_id"]
+            isOneToOne: false
+            referencedRelation: "aap_experiments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "aap_experiment_results_variant_id_fkey"
+            columns: ["variant_id"]
+            isOneToOne: false
+            referencedRelation: "aap_experiment_variants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      aap_experiment_variants: {
+        Row: {
+          allocation: number
+          created_at: string
+          experiment_id: string
+          id: string
+          name: string
+          spec: Json
+        }
+        Insert: {
+          allocation?: number
+          created_at?: string
+          experiment_id: string
+          id?: string
+          name: string
+          spec?: Json
+        }
+        Update: {
+          allocation?: number
+          created_at?: string
+          experiment_id?: string
+          id?: string
+          name?: string
+          spec?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aap_experiment_variants_experiment_id_fkey"
+            columns: ["experiment_id"]
+            isOneToOne: false
+            referencedRelation: "aap_experiments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      aap_experiments: {
+        Row: {
+          advertiser_id: string
+          campaign_id: string | null
+          created_at: string
+          ended_at: string | null
+          hypothesis: string | null
+          id: string
+          kind: string
+          name: string
+          started_at: string | null
+          status: string
+          updated_at: string
+          winner_variant_id: string | null
+        }
+        Insert: {
+          advertiser_id: string
+          campaign_id?: string | null
+          created_at?: string
+          ended_at?: string | null
+          hypothesis?: string | null
+          id?: string
+          kind?: string
+          name: string
+          started_at?: string | null
+          status?: string
+          updated_at?: string
+          winner_variant_id?: string | null
+        }
+        Update: {
+          advertiser_id?: string
+          campaign_id?: string | null
+          created_at?: string
+          ended_at?: string | null
+          hypothesis?: string | null
+          id?: string
+          kind?: string
+          name?: string
+          started_at?: string | null
+          status?: string
+          updated_at?: string
+          winner_variant_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aap_experiments_advertiser_id_fkey"
+            columns: ["advertiser_id"]
+            isOneToOne: false
+            referencedRelation: "aap_advertisers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "aap_experiments_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "aap_campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      aap_feature_flags: {
+        Row: {
+          created_at: string
+          id: string
+          is_enabled: boolean
+          key: string
+          rollout: Json
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_enabled?: boolean
+          key: string
+          rollout?: Json
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_enabled?: boolean
+          key?: string
+          rollout?: Json
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
+      aap_fraud_events: {
+        Row: {
+          advertiser_id: string | null
+          campaign_id: string | null
+          details: Json
+          detected_at: string
+          id: string
+          kind: string
+          severity: string
+        }
+        Insert: {
+          advertiser_id?: string | null
+          campaign_id?: string | null
+          details?: Json
+          detected_at?: string
+          id?: string
+          kind: string
+          severity?: string
+        }
+        Update: {
+          advertiser_id?: string | null
+          campaign_id?: string | null
+          details?: Json
+          detected_at?: string
+          id?: string
+          kind?: string
+          severity?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aap_fraud_events_advertiser_id_fkey"
+            columns: ["advertiser_id"]
+            isOneToOne: false
+            referencedRelation: "aap_advertisers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "aap_fraud_events_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "aap_campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      aap_invoice_lines: {
+        Row: {
+          amount: number
+          campaign_id: string | null
+          created_at: string
+          description: string
+          id: string
+          invoice_id: string
+          quantity: number
+          unit_price: number
+        }
+        Insert: {
+          amount?: number
+          campaign_id?: string | null
+          created_at?: string
+          description: string
+          id?: string
+          invoice_id: string
+          quantity?: number
+          unit_price?: number
+        }
+        Update: {
+          amount?: number
+          campaign_id?: string | null
+          created_at?: string
+          description?: string
+          id?: string
+          invoice_id?: string
+          quantity?: number
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aap_invoice_lines_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "aap_invoices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      aap_invoices: {
+        Row: {
+          advertiser_id: string
+          created_at: string
+          currency: string
+          due_at: string | null
+          id: string
+          invoice_number: string
+          issued_at: string | null
+          marked_paid_by: string | null
+          notes: string | null
+          paid_at: string | null
+          period_end: string
+          period_start: string
+          status: Database["public"]["Enums"]["aap_invoice_status"]
+          subtotal: number
+          tax: number
+          total: number
+          updated_at: string
+        }
+        Insert: {
+          advertiser_id: string
+          created_at?: string
+          currency?: string
+          due_at?: string | null
+          id?: string
+          invoice_number: string
+          issued_at?: string | null
+          marked_paid_by?: string | null
+          notes?: string | null
+          paid_at?: string | null
+          period_end: string
+          period_start: string
+          status?: Database["public"]["Enums"]["aap_invoice_status"]
+          subtotal?: number
+          tax?: number
+          total?: number
+          updated_at?: string
+        }
+        Update: {
+          advertiser_id?: string
+          created_at?: string
+          currency?: string
+          due_at?: string | null
+          id?: string
+          invoice_number?: string
+          issued_at?: string | null
+          marked_paid_by?: string | null
+          notes?: string | null
+          paid_at?: string | null
+          period_end?: string
+          period_start?: string
+          status?: Database["public"]["Enums"]["aap_invoice_status"]
+          subtotal?: number
+          tax?: number
+          total?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aap_invoices_advertiser_id_fkey"
+            columns: ["advertiser_id"]
+            isOneToOne: false
+            referencedRelation: "aap_advertisers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      aap_kb_docs: {
+        Row: {
+          author_id: string | null
+          category: string | null
+          content: string
+          created_at: string
+          id: string
+          is_public: boolean
+          slug: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          author_id?: string | null
+          category?: string | null
+          content: string
+          created_at?: string
+          id?: string
+          is_public?: boolean
+          slug: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          author_id?: string | null
+          category?: string | null
+          content?: string
+          created_at?: string
+          id?: string
+          is_public?: boolean
+          slug?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      aap_kb_versions: {
+        Row: {
+          content: string
+          created_at: string
+          created_by: string | null
+          doc_id: string
+          id: string
+          version: number
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          created_by?: string | null
+          doc_id: string
+          id?: string
+          version: number
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          created_by?: string | null
+          doc_id?: string
+          id?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aap_kb_versions_doc_id_fkey"
+            columns: ["doc_id"]
+            isOneToOne: false
+            referencedRelation: "aap_kb_docs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      aap_licenses: {
+        Row: {
+          advertiser_id: string
+          amount: number
+          created_at: string
+          ends_at: string | null
+          id: string
+          is_active: boolean
+          plan: string
+          seats: number
+          starts_at: string
+          updated_at: string
+        }
+        Insert: {
+          advertiser_id: string
+          amount?: number
+          created_at?: string
+          ends_at?: string | null
+          id?: string
+          is_active?: boolean
+          plan: string
+          seats?: number
+          starts_at: string
+          updated_at?: string
+        }
+        Update: {
+          advertiser_id?: string
+          amount?: number
+          created_at?: string
+          ends_at?: string | null
+          id?: string
+          is_active?: boolean
+          plan?: string
+          seats?: number
+          starts_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aap_licenses_advertiser_id_fkey"
+            columns: ["advertiser_id"]
+            isOneToOne: false
+            referencedRelation: "aap_advertisers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      aap_localization: {
+        Row: {
+          created_at: string
+          id: string
+          key: string
+          locale: string
+          namespace: string
+          updated_at: string
+          value: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          key: string
+          locale: string
+          namespace: string
+          updated_at?: string
+          value: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          key?: string
+          locale?: string
+          namespace?: string
+          updated_at?: string
+          value?: string
+        }
+        Relationships: []
+      }
+      aap_notifications: {
+        Row: {
+          advertiser_id: string | null
+          body: string | null
+          created_at: string
+          data: Json
+          id: string
+          kind: string
+          read_at: string | null
+          title: string
+          user_id: string | null
+        }
+        Insert: {
+          advertiser_id?: string | null
+          body?: string | null
+          created_at?: string
+          data?: Json
+          id?: string
+          kind: string
+          read_at?: string | null
+          title: string
+          user_id?: string | null
+        }
+        Update: {
+          advertiser_id?: string | null
+          body?: string | null
+          created_at?: string
+          data?: Json
+          id?: string
+          kind?: string
+          read_at?: string | null
+          title?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aap_notifications_advertiser_id_fkey"
+            columns: ["advertiser_id"]
+            isOneToOne: false
+            referencedRelation: "aap_advertisers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      aap_pacing_state: {
+        Row: {
+          ad_id: string
+          updated_at: string
+          window_impressions: number
+          window_spend: number
+          window_start: string
+        }
+        Insert: {
+          ad_id: string
+          updated_at?: string
+          window_impressions?: number
+          window_spend?: number
+          window_start?: string
+        }
+        Update: {
+          ad_id?: string
+          updated_at?: string
+          window_impressions?: number
+          window_spend?: number
+          window_start?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aap_pacing_state_ad_id_fkey"
+            columns: ["ad_id"]
+            isOneToOne: true
+            referencedRelation: "aap_ads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      aap_payments: {
+        Row: {
+          advertiser_id: string
+          amount: number
+          created_at: string
+          id: string
+          invoice_id: string | null
+          method: string
+          notes: string | null
+          status: Database["public"]["Enums"]["aap_payment_status"]
+          updated_at: string
+          utr: string | null
+          verified_at: string | null
+          verified_by: string | null
+        }
+        Insert: {
+          advertiser_id: string
+          amount: number
+          created_at?: string
+          id?: string
+          invoice_id?: string | null
+          method?: string
+          notes?: string | null
+          status?: Database["public"]["Enums"]["aap_payment_status"]
+          updated_at?: string
+          utr?: string | null
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Update: {
+          advertiser_id?: string
+          amount?: number
+          created_at?: string
+          id?: string
+          invoice_id?: string | null
+          method?: string
+          notes?: string | null
+          status?: Database["public"]["Enums"]["aap_payment_status"]
+          updated_at?: string
+          utr?: string | null
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aap_payments_advertiser_id_fkey"
+            columns: ["advertiser_id"]
+            isOneToOne: false
+            referencedRelation: "aap_advertisers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "aap_payments_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "aap_invoices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      aap_placement_configs: {
+        Row: {
+          created_at: string
+          frequency: number
+          id: string
+          is_enabled: boolean
+          max_per_session: number
+          notes: string | null
+          organization_id: string | null
+          scope: string
+          surface: Database["public"]["Enums"]["aap_placement_surface"]
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          frequency?: number
+          id?: string
+          is_enabled?: boolean
+          max_per_session?: number
+          notes?: string | null
+          organization_id?: string | null
+          scope?: string
+          surface: Database["public"]["Enums"]["aap_placement_surface"]
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          frequency?: number
+          id?: string
+          is_enabled?: boolean
+          max_per_session?: number
+          notes?: string | null
+          organization_id?: string | null
+          scope?: string
+          surface?: Database["public"]["Enums"]["aap_placement_surface"]
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aap_placement_configs_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      aap_placements: {
+        Row: {
+          created_at: string
+          display_name: string
+          id: string
+          is_enabled: boolean
+          metadata: Json
+          supported_formats: Database["public"]["Enums"]["aap_ad_format"][]
+          surface: Database["public"]["Enums"]["aap_placement_surface"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          display_name: string
+          id?: string
+          is_enabled?: boolean
+          metadata?: Json
+          supported_formats?: Database["public"]["Enums"]["aap_ad_format"][]
+          surface: Database["public"]["Enums"]["aap_placement_surface"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          display_name?: string
+          id?: string
+          is_enabled?: boolean
+          metadata?: Json
+          supported_formats?: Database["public"]["Enums"]["aap_ad_format"][]
+          surface?: Database["public"]["Enums"]["aap_placement_surface"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      aap_policy_refs: {
+        Row: {
+          code: string
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          severity: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          severity?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          severity?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      aap_quotas: {
+        Row: {
+          advertiser_id: string
+          id: string
+          period_end: string | null
+          period_start: string | null
+          quota: number
+          resource: string
+          updated_at: string
+          used: number
+        }
+        Insert: {
+          advertiser_id: string
+          id?: string
+          period_end?: string | null
+          period_start?: string | null
+          quota?: number
+          resource: string
+          updated_at?: string
+          used?: number
+        }
+        Update: {
+          advertiser_id?: string
+          id?: string
+          period_end?: string | null
+          period_start?: string | null
+          quota?: number
+          resource?: string
+          updated_at?: string
+          used?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aap_quotas_advertiser_id_fkey"
+            columns: ["advertiser_id"]
+            isOneToOne: false
+            referencedRelation: "aap_advertisers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      aap_report_runs: {
+        Row: {
+          finished_at: string | null
+          id: string
+          output_url: string | null
+          report_id: string
+          started_at: string | null
+          status: string
+        }
+        Insert: {
+          finished_at?: string | null
+          id?: string
+          output_url?: string | null
+          report_id: string
+          started_at?: string | null
+          status?: string
+        }
+        Update: {
+          finished_at?: string | null
+          id?: string
+          output_url?: string | null
+          report_id?: string
+          started_at?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aap_report_runs_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "aap_reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      aap_reports: {
+        Row: {
+          advertiser_id: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          last_run_at: string | null
+          name: string
+          schedule: string | null
+          spec: Json
+          updated_at: string
+        }
+        Insert: {
+          advertiser_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          last_run_at?: string | null
+          name: string
+          schedule?: string | null
+          spec: Json
+          updated_at?: string
+        }
+        Update: {
+          advertiser_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          last_run_at?: string | null
+          name?: string
+          schedule?: string | null
+          spec?: Json
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aap_reports_advertiser_id_fkey"
+            columns: ["advertiser_id"]
+            isOneToOne: false
+            referencedRelation: "aap_advertisers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      aap_review_decisions: {
+        Row: {
+          ad_id: string
+          created_at: string
+          decided_by: string | null
+          decision: Database["public"]["Enums"]["aap_review_state"]
+          id: string
+          notes: string | null
+          reason_code: string | null
+          review_id: string
+        }
+        Insert: {
+          ad_id: string
+          created_at?: string
+          decided_by?: string | null
+          decision: Database["public"]["Enums"]["aap_review_state"]
+          id?: string
+          notes?: string | null
+          reason_code?: string | null
+          review_id: string
+        }
+        Update: {
+          ad_id?: string
+          created_at?: string
+          decided_by?: string | null
+          decision?: Database["public"]["Enums"]["aap_review_state"]
+          id?: string
+          notes?: string | null
+          reason_code?: string | null
+          review_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aap_review_decisions_ad_id_fkey"
+            columns: ["ad_id"]
+            isOneToOne: false
+            referencedRelation: "aap_ads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "aap_review_decisions_review_id_fkey"
+            columns: ["review_id"]
+            isOneToOne: false
+            referencedRelation: "aap_review_queue"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      aap_review_queue: {
+        Row: {
+          ad_id: string
+          advertiser_id: string
+          assigned_to: string | null
+          created_at: string
+          id: string
+          priority: number
+          resolved_at: string | null
+          state: Database["public"]["Enums"]["aap_review_state"]
+          submitted_at: string
+          updated_at: string
+        }
+        Insert: {
+          ad_id: string
+          advertiser_id: string
+          assigned_to?: string | null
+          created_at?: string
+          id?: string
+          priority?: number
+          resolved_at?: string | null
+          state?: Database["public"]["Enums"]["aap_review_state"]
+          submitted_at?: string
+          updated_at?: string
+        }
+        Update: {
+          ad_id?: string
+          advertiser_id?: string
+          assigned_to?: string | null
+          created_at?: string
+          id?: string
+          priority?: number
+          resolved_at?: string | null
+          state?: Database["public"]["Enums"]["aap_review_state"]
+          submitted_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aap_review_queue_ad_id_fkey"
+            columns: ["ad_id"]
+            isOneToOne: false
+            referencedRelation: "aap_ads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "aap_review_queue_advertiser_id_fkey"
+            columns: ["advertiser_id"]
+            isOneToOne: false
+            referencedRelation: "aap_advertisers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      aap_risk_scores: {
+        Row: {
+          advertiser_id: string
+          computed_at: string
+          factors: Json
+          id: string
+          score: number
+        }
+        Insert: {
+          advertiser_id: string
+          computed_at?: string
+          factors?: Json
+          id?: string
+          score: number
+        }
+        Update: {
+          advertiser_id?: string
+          computed_at?: string
+          factors?: Json
+          id?: string
+          score?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aap_risk_scores_advertiser_id_fkey"
+            columns: ["advertiser_id"]
+            isOneToOne: false
+            referencedRelation: "aap_advertisers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      aap_scheduled_jobs: {
+        Row: {
+          advertiser_id: string | null
+          created_at: string
+          cron: string | null
+          id: string
+          is_active: boolean
+          kind: string
+          next_run_at: string | null
+          payload: Json
+          updated_at: string
+        }
+        Insert: {
+          advertiser_id?: string | null
+          created_at?: string
+          cron?: string | null
+          id?: string
+          is_active?: boolean
+          kind: string
+          next_run_at?: string | null
+          payload?: Json
+          updated_at?: string
+        }
+        Update: {
+          advertiser_id?: string | null
+          created_at?: string
+          cron?: string | null
+          id?: string
+          is_active?: boolean
+          kind?: string
+          next_run_at?: string | null
+          payload?: Json
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aap_scheduled_jobs_advertiser_id_fkey"
+            columns: ["advertiser_id"]
+            isOneToOne: false
+            referencedRelation: "aap_advertisers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      aap_seats: {
+        Row: {
+          assigned_at: string
+          id: string
+          license_id: string
+          user_id: string | null
+        }
+        Insert: {
+          assigned_at?: string
+          id?: string
+          license_id: string
+          user_id?: string | null
+        }
+        Update: {
+          assigned_at?: string
+          id?: string
+          license_id?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aap_seats_license_id_fkey"
+            columns: ["license_id"]
+            isOneToOne: false
+            referencedRelation: "aap_licenses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      aap_tax_profiles: {
+        Row: {
+          advertiser_id: string
+          country: string
+          created_at: string
+          id: string
+          rate: number
+          tax_number: string | null
+          tax_type: string
+          updated_at: string
+        }
+        Insert: {
+          advertiser_id: string
+          country: string
+          created_at?: string
+          id?: string
+          rate?: number
+          tax_number?: string | null
+          tax_type?: string
+          updated_at?: string
+        }
+        Update: {
+          advertiser_id?: string
+          country?: string
+          created_at?: string
+          id?: string
+          rate?: number
+          tax_number?: string | null
+          tax_type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aap_tax_profiles_advertiser_id_fkey"
+            columns: ["advertiser_id"]
+            isOneToOne: false
+            referencedRelation: "aap_advertisers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      aap_verification_documents: {
+        Row: {
+          created_at: string
+          id: string
+          kind: string | null
+          storage_path: string
+          uploaded_by: string | null
+          verification_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          kind?: string | null
+          storage_path: string
+          uploaded_by?: string | null
+          verification_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          kind?: string | null
+          storage_path?: string
+          uploaded_by?: string | null
+          verification_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aap_verification_documents_verification_id_fkey"
+            columns: ["verification_id"]
+            isOneToOne: false
+            referencedRelation: "aap_verifications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      aap_verifications: {
+        Row: {
+          advertiser_id: string
+          created_at: string
+          data: Json
+          id: string
+          kind: string
+          reviewed_by: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          advertiser_id: string
+          created_at?: string
+          data?: Json
+          id?: string
+          kind: string
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          advertiser_id?: string
+          created_at?: string
+          data?: Json
+          id?: string
+          kind?: string
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aap_verifications_advertiser_id_fkey"
+            columns: ["advertiser_id"]
+            isOneToOne: false
+            referencedRelation: "aap_advertisers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      aap_wallet_ledger: {
+        Row: {
+          advertiser_id: string
+          amount: number
+          created_at: string
+          created_by: string | null
+          direction: string
+          id: string
+          reason: string
+          reference_id: string | null
+          reference_type: string | null
+          wallet_id: string
+        }
+        Insert: {
+          advertiser_id: string
+          amount: number
+          created_at?: string
+          created_by?: string | null
+          direction: string
+          id?: string
+          reason: string
+          reference_id?: string | null
+          reference_type?: string | null
+          wallet_id: string
+        }
+        Update: {
+          advertiser_id?: string
+          amount?: number
+          created_at?: string
+          created_by?: string | null
+          direction?: string
+          id?: string
+          reason?: string
+          reference_id?: string | null
+          reference_type?: string | null
+          wallet_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aap_wallet_ledger_advertiser_id_fkey"
+            columns: ["advertiser_id"]
+            isOneToOne: false
+            referencedRelation: "aap_advertisers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "aap_wallet_ledger_wallet_id_fkey"
+            columns: ["wallet_id"]
+            isOneToOne: false
+            referencedRelation: "aap_wallets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      aap_wallets: {
+        Row: {
+          advertiser_id: string
+          balance: number
+          created_at: string
+          currency: string
+          id: string
+          reserved: number
+          updated_at: string
+        }
+        Insert: {
+          advertiser_id: string
+          balance?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          reserved?: number
+          updated_at?: string
+        }
+        Update: {
+          advertiser_id?: string
+          balance?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          reserved?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aap_wallets_advertiser_id_fkey"
+            columns: ["advertiser_id"]
+            isOneToOne: true
+            referencedRelation: "aap_advertisers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      aap_webhook_deliveries: {
+        Row: {
+          attempted_at: string
+          event: string
+          id: string
+          response: string | null
+          status: number | null
+          webhook_id: string
+        }
+        Insert: {
+          attempted_at?: string
+          event: string
+          id?: string
+          response?: string | null
+          status?: number | null
+          webhook_id: string
+        }
+        Update: {
+          attempted_at?: string
+          event?: string
+          id?: string
+          response?: string | null
+          status?: number | null
+          webhook_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aap_webhook_deliveries_webhook_id_fkey"
+            columns: ["webhook_id"]
+            isOneToOne: false
+            referencedRelation: "aap_webhooks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      aap_webhooks: {
+        Row: {
+          advertiser_id: string
+          created_at: string
+          events: string[]
+          id: string
+          is_active: boolean
+          secret: string | null
+          updated_at: string
+          url: string
+        }
+        Insert: {
+          advertiser_id: string
+          created_at?: string
+          events?: string[]
+          id?: string
+          is_active?: boolean
+          secret?: string | null
+          updated_at?: string
+          url: string
+        }
+        Update: {
+          advertiser_id?: string
+          created_at?: string
+          events?: string[]
+          id?: string
+          is_active?: boolean
+          secret?: string | null
+          updated_at?: string
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aap_webhooks_advertiser_id_fkey"
+            columns: ["advertiser_id"]
+            isOneToOne: false
+            referencedRelation: "aap_advertisers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       admin_audit_logs: {
         Row: {
           action: string
@@ -15475,6 +18279,24 @@ export type Database = {
     Functions: {
       _org_is_system_role_name: { Args: { _name: string }; Returns: boolean }
       _org_slug_is_reserved: { Args: { _slug: string }; Returns: boolean }
+      aap_advertiser_role: {
+        Args: { _advertiser_id: string }
+        Returns: Database["public"]["Enums"]["aap_role_key"]
+      }
+      aap_can_edit_advertiser: {
+        Args: { _advertiser_id: string }
+        Returns: boolean
+      }
+      aap_is_advertiser_member: {
+        Args: { _advertiser_id: string }
+        Returns: boolean
+      }
+      aap_is_engineering: { Args: never; Returns: boolean }
+      aap_is_finance: { Args: never; Returns: boolean }
+      aap_is_founder: { Args: never; Returns: boolean }
+      aap_is_platform_admin: { Args: never; Returns: boolean }
+      aap_is_reviewer: { Args: never; Returns: boolean }
+      aap_is_staff: { Args: { _dept_keys: string[] }; Returns: boolean }
       add_group_member: {
         Args: { _conv: string; _user: string }
         Returns: undefined
@@ -16020,6 +18842,76 @@ export type Database = {
       }
     }
     Enums: {
+      aap_ad_format:
+        | "image"
+        | "video"
+        | "carousel"
+        | "story"
+        | "feed"
+        | "reels"
+        | "search"
+        | "sponsored_profile"
+        | "sponsored_organization"
+      aap_ad_status:
+        | "draft"
+        | "pending_review"
+        | "approved"
+        | "rejected"
+        | "running"
+        | "paused"
+        | "archived"
+      aap_advertiser_status:
+        | "active"
+        | "suspended"
+        | "frozen"
+        | "blacklisted"
+        | "pending_verification"
+      aap_advertiser_type: "organization" | "creator"
+      aap_billing_mode: "prepaid_wallet" | "postpaid_invoice"
+      aap_campaign_objective:
+        | "awareness"
+        | "reach"
+        | "engagement"
+        | "traffic"
+        | "app_promotion"
+        | "video_views"
+        | "conversions"
+      aap_campaign_status:
+        | "draft"
+        | "pending_review"
+        | "approved"
+        | "rejected"
+        | "running"
+        | "paused"
+        | "completed"
+        | "archived"
+      aap_event_kind: "impression" | "click" | "view" | "conversion" | "skip"
+      aap_invoice_status:
+        | "draft"
+        | "issued"
+        | "paid"
+        | "overdue"
+        | "void"
+        | "refunded"
+      aap_payment_status: "pending" | "verified" | "failed" | "refunded"
+      aap_placement_surface:
+        | "feed"
+        | "reels"
+        | "stories"
+        | "explore"
+        | "search"
+        | "profile"
+        | "organization"
+      aap_review_state:
+        | "pending"
+        | "approved"
+        | "rejected"
+        | "appealed"
+        | "need_changes"
+      aap_role_key:
+        | "advertiser_admin"
+        | "advertiser_editor"
+        | "advertiser_viewer"
       account_type: "personal" | "organization"
       admin_user_type:
         | "founder"
@@ -16564,6 +19456,85 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      aap_ad_format: [
+        "image",
+        "video",
+        "carousel",
+        "story",
+        "feed",
+        "reels",
+        "search",
+        "sponsored_profile",
+        "sponsored_organization",
+      ],
+      aap_ad_status: [
+        "draft",
+        "pending_review",
+        "approved",
+        "rejected",
+        "running",
+        "paused",
+        "archived",
+      ],
+      aap_advertiser_status: [
+        "active",
+        "suspended",
+        "frozen",
+        "blacklisted",
+        "pending_verification",
+      ],
+      aap_advertiser_type: ["organization", "creator"],
+      aap_billing_mode: ["prepaid_wallet", "postpaid_invoice"],
+      aap_campaign_objective: [
+        "awareness",
+        "reach",
+        "engagement",
+        "traffic",
+        "app_promotion",
+        "video_views",
+        "conversions",
+      ],
+      aap_campaign_status: [
+        "draft",
+        "pending_review",
+        "approved",
+        "rejected",
+        "running",
+        "paused",
+        "completed",
+        "archived",
+      ],
+      aap_event_kind: ["impression", "click", "view", "conversion", "skip"],
+      aap_invoice_status: [
+        "draft",
+        "issued",
+        "paid",
+        "overdue",
+        "void",
+        "refunded",
+      ],
+      aap_payment_status: ["pending", "verified", "failed", "refunded"],
+      aap_placement_surface: [
+        "feed",
+        "reels",
+        "stories",
+        "explore",
+        "search",
+        "profile",
+        "organization",
+      ],
+      aap_review_state: [
+        "pending",
+        "approved",
+        "rejected",
+        "appealed",
+        "need_changes",
+      ],
+      aap_role_key: [
+        "advertiser_admin",
+        "advertiser_editor",
+        "advertiser_viewer",
+      ],
       account_type: ["personal", "organization"],
       admin_user_type: [
         "founder",
