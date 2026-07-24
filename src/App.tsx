@@ -70,6 +70,7 @@ const AdsGate = lazy(() => import("./components/layout/AdsGate"));
 const AdsBusinessCenter = lazy(() => import("./pages/ads/BusinessCenter"));
 const AdsOnboardingWizard = lazy(() => import("./pages/ads/OnboardingWizard"));
 const AdvertiserShell = lazy(() => import("./pages/ads/AdvertiserShell"));
+const AdsReviewQueue = lazy(() => import("./pages/ads/AdsReviewQueue"));
 
 const CreatorHub = lazy(() => import("./pages/CreatorHub"));
 const CreatorStudio = lazy(() => import("./pages/CreatorStudio"));
@@ -527,6 +528,7 @@ const App = () => (
               {/* Aurelix Ads Platform (AAP) */}
               <Route path="/ads" element={<AdsGate><AdsBusinessCenter /></AdsGate>} />
               <Route path="/ads/get-started" element={<AdsGate><AdsOnboardingWizard /></AdsGate>} />
+              <Route path="/ads/review" element={<AdsGate><AdsReviewQueue /></AdsGate>} />
               <Route path="/ads/:advertiserId/*" element={<AdsGate><AdvertiserShell /></AdsGate>} />
 
               {/* Legacy /admin removed — redirect to new Admin OS */}
