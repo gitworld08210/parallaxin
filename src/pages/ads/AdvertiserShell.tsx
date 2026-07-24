@@ -707,6 +707,8 @@ export default function AdvertiserShell() {
                 tab === "overview" ? <Overview advertiserId={advertiserId} />
                 : tab === "campaigns" ? <CampaignsList advertiserId={advertiserId} />
                 : tab === "creatives" ? <CreativesLibrary advertiserId={advertiserId} />
+                : tab === "experiments" ? <ExperimentsPanel advertiserId={advertiserId} />
+                : tab === "safety" ? <BrandSafetyPanel advertiserId={advertiserId} />
                 : <AudiencesLibrary advertiserId={advertiserId} />
               } />
               <Route path="campaigns/:campaignId" element={<CampaignDetail advertiserId={advertiserId} />} />
