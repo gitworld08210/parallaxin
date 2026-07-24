@@ -15,3 +15,7 @@ project_id = "xmztbdaupkvezhhokmwx"
     verify_jwt = true
   [functions.aap-conversions-api]
     verify_jwt = false
+  [functions.aap-api]
+    verify_jwt = false
+  [functions.aap-webhook-dispatcher]
+    verify_jwt = true

@@ -12,7 +12,8 @@ import {
 import { useEstimateReach, useCreateLookalike, useUpdatePacing, useResumeAdGroup } from "@/hooks/ads/useDelivery";
 import { ExperimentsPanel, BrandSafetyPanel, AdGroupSafetyPanel } from "./ExperimentsAndSafety";
 import { ConversionsPanel } from "./ConversionsPanel";
-import { ArrowLeft, Plus, Play, Pause, Send, Megaphone, Layers, Image as ImageIcon, Users, BarChart3, Wallet, Sparkles, Gauge, AlertCircle, FlaskConical, Shield, Target } from "lucide-react";
+import { DeveloperPanel } from "./DeveloperPanel";
+import { ArrowLeft, Plus, Play, Pause, Send, Megaphone, Layers, Image as ImageIcon, Users, BarChart3, Wallet, Sparkles, Gauge, AlertCircle, FlaskConical, Shield, Target, Code2 } from "lucide-react";
 
 const PLACEMENTS: Placement[] = ["feed", "reels", "stories", "explore", "search", "profile", "organization"];
 const OBJECTIVES: CampaignObjective[] = ["awareness", "reach", "engagement", "traffic", "app_promotion", "video_views", "conversions"];
@@ -657,6 +658,7 @@ const TABS: { key: string; label: string; icon: any }[] = [
   { key: "experiments", label: "Experiments", icon: FlaskConical },
   { key: "safety", label: "Brand safety", icon: Shield },
   { key: "conversions", label: "Conversions", icon: Target },
+  { key: "developers", label: "Developers", icon: Code2 },
 ];
 
 export default function AdvertiserShell() {
@@ -712,6 +714,7 @@ export default function AdvertiserShell() {
                 : tab === "experiments" ? <ExperimentsPanel advertiserId={advertiserId} />
                 : tab === "safety" ? <BrandSafetyPanel advertiserId={advertiserId} />
                 : tab === "conversions" ? <ConversionsPanel advertiserId={advertiserId} />
+                : tab === "developers" ? <DeveloperPanel advertiserId={advertiserId} />
                 : <AudiencesLibrary advertiserId={advertiserId} />
               } />
               <Route path="campaigns/:campaignId" element={<CampaignDetail advertiserId={advertiserId} />} />
