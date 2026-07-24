@@ -334,6 +334,7 @@ function AdGroupDetail({ advertiserId }: { advertiserId: string }) {
   return (
     <div>
       {group && <DeliveryPanel group={group} />}
+      {group && <div className="mb-3"><AdGroupSafetyPanel group={group} /></div>}
       <div className="flex items-center justify-between mb-3">
         <h2 className="text-base font-semibold">Ads</h2>
         <button className={btnPrimary} onClick={() => setOpen((v) => !v)}>
