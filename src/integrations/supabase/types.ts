@@ -1070,6 +1070,66 @@ export type Database = {
           },
         ]
       }
+      aap_collections_cases: {
+        Row: {
+          advertiser_id: string
+          assigned_to: string | null
+          created_at: string
+          id: string
+          invoice_id: string | null
+          legal_ref: string | null
+          notes: string | null
+          outstanding_amount: number
+          recovery_amount: number
+          settlement_offer: number | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          advertiser_id: string
+          assigned_to?: string | null
+          created_at?: string
+          id?: string
+          invoice_id?: string | null
+          legal_ref?: string | null
+          notes?: string | null
+          outstanding_amount?: number
+          recovery_amount?: number
+          settlement_offer?: number | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          advertiser_id?: string
+          assigned_to?: string | null
+          created_at?: string
+          id?: string
+          invoice_id?: string | null
+          legal_ref?: string | null
+          notes?: string | null
+          outstanding_amount?: number
+          recovery_amount?: number
+          settlement_offer?: number | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aap_collections_cases_advertiser_id_fkey"
+            columns: ["advertiser_id"]
+            isOneToOne: false
+            referencedRelation: "aap_advertisers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "aap_collections_cases_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "aap_invoices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       aap_config: {
         Row: {
           created_at: string
@@ -1299,6 +1359,115 @@ export type Database = {
             columns: ["primary_asset_id"]
             isOneToOne: false
             referencedRelation: "aap_assets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      aap_credit_applications: {
+        Row: {
+          advertiser_id: string
+          approved_cycle: string | null
+          approved_limit: number | null
+          created_at: string
+          currency: string
+          id: string
+          reason: string | null
+          requested_by: string
+          requested_cycle: string
+          requested_limit: number
+          review_notes: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          risk_level: string | null
+          security_deposit: number | null
+          status: string
+          supporting_docs: Json
+          updated_at: string
+        }
+        Insert: {
+          advertiser_id: string
+          approved_cycle?: string | null
+          approved_limit?: number | null
+          created_at?: string
+          currency?: string
+          id?: string
+          reason?: string | null
+          requested_by: string
+          requested_cycle?: string
+          requested_limit: number
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          risk_level?: string | null
+          security_deposit?: number | null
+          status?: string
+          supporting_docs?: Json
+          updated_at?: string
+        }
+        Update: {
+          advertiser_id?: string
+          approved_cycle?: string | null
+          approved_limit?: number | null
+          created_at?: string
+          currency?: string
+          id?: string
+          reason?: string | null
+          requested_by?: string
+          requested_cycle?: string
+          requested_limit?: number
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          risk_level?: string | null
+          security_deposit?: number | null
+          status?: string
+          supporting_docs?: Json
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aap_credit_applications_advertiser_id_fkey"
+            columns: ["advertiser_id"]
+            isOneToOne: false
+            referencedRelation: "aap_advertisers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      aap_credit_scores: {
+        Row: {
+          advertiser_id: string
+          band: string
+          factors: Json
+          recommendation: string | null
+          recommended_limit: number | null
+          recomputed_at: string
+          score: number
+        }
+        Insert: {
+          advertiser_id: string
+          band?: string
+          factors?: Json
+          recommendation?: string | null
+          recommended_limit?: number | null
+          recomputed_at?: string
+          score?: number
+        }
+        Update: {
+          advertiser_id?: string
+          band?: string
+          factors?: Json
+          recommendation?: string | null
+          recommended_limit?: number | null
+          recomputed_at?: string
+          score?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aap_credit_scores_advertiser_id_fkey"
+            columns: ["advertiser_id"]
+            isOneToOne: true
+            referencedRelation: "aap_advertisers"
             referencedColumns: ["id"]
           },
         ]
@@ -1598,6 +1767,54 @@ export type Database = {
           },
         ]
       }
+      aap_dunning_events: {
+        Row: {
+          advertiser_id: string
+          created_at: string
+          executed_at: string | null
+          id: string
+          invoice_id: string
+          outcome: string | null
+          scheduled_at: string
+          stage: string
+        }
+        Insert: {
+          advertiser_id: string
+          created_at?: string
+          executed_at?: string | null
+          id?: string
+          invoice_id: string
+          outcome?: string | null
+          scheduled_at: string
+          stage: string
+        }
+        Update: {
+          advertiser_id?: string
+          created_at?: string
+          executed_at?: string | null
+          id?: string
+          invoice_id?: string
+          outcome?: string | null
+          scheduled_at?: string
+          stage?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aap_dunning_events_advertiser_id_fkey"
+            columns: ["advertiser_id"]
+            isOneToOne: false
+            referencedRelation: "aap_advertisers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "aap_dunning_events_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "aap_invoices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       aap_events: {
         Row: {
           ad_id: string
@@ -1879,6 +2096,53 @@ export type Database = {
           updated_by?: string | null
         }
         Relationships: []
+      }
+      aap_financial_ledger: {
+        Row: {
+          actor_id: string | null
+          advertiser_id: string | null
+          amount: number | null
+          currency: string | null
+          event_type: string
+          id: number
+          occurred_at: string
+          payload: Json
+          reference_id: string | null
+          reference_type: string | null
+        }
+        Insert: {
+          actor_id?: string | null
+          advertiser_id?: string | null
+          amount?: number | null
+          currency?: string | null
+          event_type: string
+          id?: number
+          occurred_at?: string
+          payload?: Json
+          reference_id?: string | null
+          reference_type?: string | null
+        }
+        Update: {
+          actor_id?: string | null
+          advertiser_id?: string | null
+          amount?: number | null
+          currency?: string | null
+          event_type?: string
+          id?: number
+          occurred_at?: string
+          payload?: Json
+          reference_id?: string | null
+          reference_type?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aap_financial_ledger_advertiser_id_fkey"
+            columns: ["advertiser_id"]
+            isOneToOne: false
+            referencedRelation: "aap_advertisers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       aap_fraud_events: {
         Row: {
@@ -2475,6 +2739,83 @@ export type Database = {
         }
         Relationships: []
       }
+      aap_postpaid_accounts: {
+        Row: {
+          advertiser_id: string
+          approved_at: string
+          approved_by: string | null
+          autopay_enabled: boolean
+          billing_agreement_ref: string | null
+          billing_cycle: string
+          created_at: string
+          credit_limit: number
+          currency: string
+          custom_cycle_days: number | null
+          id: string
+          notes: string | null
+          payment_method: string
+          risk_level: string
+          security_deposit: number
+          status: string
+          tax_id: string | null
+          tax_rate: number
+          terms_accepted_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          advertiser_id: string
+          approved_at?: string
+          approved_by?: string | null
+          autopay_enabled?: boolean
+          billing_agreement_ref?: string | null
+          billing_cycle?: string
+          created_at?: string
+          credit_limit?: number
+          currency?: string
+          custom_cycle_days?: number | null
+          id?: string
+          notes?: string | null
+          payment_method?: string
+          risk_level?: string
+          security_deposit?: number
+          status?: string
+          tax_id?: string | null
+          tax_rate?: number
+          terms_accepted_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          advertiser_id?: string
+          approved_at?: string
+          approved_by?: string | null
+          autopay_enabled?: boolean
+          billing_agreement_ref?: string | null
+          billing_cycle?: string
+          created_at?: string
+          credit_limit?: number
+          currency?: string
+          custom_cycle_days?: number | null
+          id?: string
+          notes?: string | null
+          payment_method?: string
+          risk_level?: string
+          security_deposit?: number
+          status?: string
+          tax_id?: string | null
+          tax_rate?: number
+          terms_accepted_at?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aap_postpaid_accounts_advertiser_id_fkey"
+            columns: ["advertiser_id"]
+            isOneToOne: true
+            referencedRelation: "aap_advertisers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       aap_quotas: {
         Row: {
           advertiser_id: string
@@ -2697,6 +3038,53 @@ export type Database = {
           },
         ]
       }
+      aap_risk_events: {
+        Row: {
+          advertiser_id: string
+          created_at: string
+          details: Json
+          event_type: string
+          id: string
+          probability: number | null
+          resolved: boolean
+          resolved_at: string | null
+          resolved_by: string | null
+          severity: string
+        }
+        Insert: {
+          advertiser_id: string
+          created_at?: string
+          details?: Json
+          event_type: string
+          id?: string
+          probability?: number | null
+          resolved?: boolean
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity?: string
+        }
+        Update: {
+          advertiser_id?: string
+          created_at?: string
+          details?: Json
+          event_type?: string
+          id?: string
+          probability?: number | null
+          resolved?: boolean
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aap_risk_events_advertiser_id_fkey"
+            columns: ["advertiser_id"]
+            isOneToOne: false
+            referencedRelation: "aap_advertisers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       aap_risk_scores: {
         Row: {
           advertiser_id: string
@@ -2798,6 +3186,54 @@ export type Database = {
             columns: ["license_id"]
             isOneToOne: false
             referencedRelation: "aap_licenses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      aap_security_deposits: {
+        Row: {
+          advertiser_id: string
+          amount: number
+          approved_by: string | null
+          created_at: string
+          direction: string
+          id: string
+          invoice_id: string | null
+          reason: string | null
+        }
+        Insert: {
+          advertiser_id: string
+          amount: number
+          approved_by?: string | null
+          created_at?: string
+          direction: string
+          id?: string
+          invoice_id?: string | null
+          reason?: string | null
+        }
+        Update: {
+          advertiser_id?: string
+          amount?: number
+          approved_by?: string | null
+          created_at?: string
+          direction?: string
+          id?: string
+          invoice_id?: string | null
+          reason?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aap_security_deposits_advertiser_id_fkey"
+            columns: ["advertiser_id"]
+            isOneToOne: false
+            referencedRelation: "aap_advertisers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "aap_security_deposits_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "aap_invoices"
             referencedColumns: ["id"]
           },
         ]
@@ -18635,6 +19071,20 @@ export type Database = {
       }
     }
     Views: {
+      aap_founder_finance_overview: {
+        Row: {
+          active_risk_alerts: number | null
+          bad_debt: number | null
+          collected_revenue: number | null
+          outstanding_revenue: number | null
+          overdue_revenue: number | null
+          pending_applications: number | null
+          postpaid_accounts: number | null
+          total_credit_exposure: number | null
+          total_revenue: number | null
+        }
+        Relationships: []
+      }
       executive_approval_timeline: {
         Row: {
           actor_id: string | null
@@ -18773,6 +19223,23 @@ export type Database = {
           variant_name: string
         }[]
       }
+      aap_finance_approve_credit: {
+        Args: {
+          _application_id: string
+          _approved_cycle: string
+          _approved_limit: number
+          _autopay: boolean
+          _notes: string
+          _payment_method: string
+          _risk_level: string
+          _security_deposit: number
+        }
+        Returns: string
+      }
+      aap_finance_reject_credit: {
+        Args: { _application_id: string; _notes: string }
+        Returns: undefined
+      }
       aap_ingest_conversion: {
         Args: {
           p_currency: string
@@ -18805,7 +19272,23 @@ export type Database = {
         }
         Returns: Json
       }
+      aap_log_financial_event: {
+        Args: {
+          _advertiser_id: string
+          _amount: number
+          _currency: string
+          _event: string
+          _payload: Json
+          _ref_id: string
+          _ref_type: string
+        }
+        Returns: undefined
+      }
       aap_mark_outbox_delivered: { Args: { p_id: number }; Returns: undefined }
+      aap_postpaid_credit_status: {
+        Args: { _advertiser_id: string }
+        Returns: Json
+      }
       aap_promote_experiment_winner: {
         Args: { _experiment_id: string; _metric?: string }
         Returns: string
