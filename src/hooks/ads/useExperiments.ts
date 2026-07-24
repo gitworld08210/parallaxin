@@ -123,8 +123,7 @@ export const usePromoteWinner = () => {
   return useMutation({
     mutationFn: async ({ id, metric }: { id: string; metric: string }) => {
       const { data, error } = await supabase.rpc("aap_promote_experiment_winner" as any, {
-        _experiment_id: id,
-        _metric: metric,
+        _experiment_id: id, _metric: metric,
       });
       if (error) throw error;
       return data as string;
