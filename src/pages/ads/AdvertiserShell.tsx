@@ -483,11 +483,67 @@ function CreativesLibrary({ advertiserId }: { advertiserId: string }) {
 
 /* --------------------------------- Audiences -------------------------------- */
 
+function AudienceCard({ a, onLookalike }: { a: any; onLookalike: (id: string, name: string) => void }) {
+  const t = a.targeting ?? {};
+  const geo = Array.isArray(t.locations) ? t.locations : Array.isArray(t.geo) ? t.geo : [];
+  const interests = Array.isArray(t.interests) ? t.interests : [];
+  const genders = Array.isArray(t.genders) ? t.genders : [];
+  const ageMin = t.min_age ?? t.age?.min;
+  const ageMax = t.max_age ?? t.age?.max;
+  const { data: reach } = useEstimateReach(t);
+  return (
+    <Card>
+      <div className="flex items-start justify-between gap-2">
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-semibold truncate">{a.name}</p>
+          <p className="text-[10px] uppercase tracking-wide text-muted-foreground mt-0.5">
+            {a.audience_type ?? "custom"}
+            {a.lookalike_similarity ? ` · ${Math.round(a.lookalike_similarity * 100)}%` : ""}
+          </p>
+        </div>
+        {a.audience_type !== "lookalike" && (
+          <button className={btnGhost} onClick={() => onLookalike(a.id, a.name)}>
+            <Sparkles className="h-3 w-3" /> Lookalike
+          </button>
+        )}
+      </div>
+      <div className="mt-2 flex flex-wrap gap-1">
+        {ageMin != null && ageMax != null && (
+          <span className="text-[10px] rounded-full bg-secondary px-2 py-0.5">Age {ageMin}–{ageMax}</span>
+        )}
+        {genders.map((g: string) => <span key={g} className="text-[10px] rounded-full bg-secondary px-2 py-0.5">{g}</span>)}
+        {geo.slice(0, 3).map((g: string) => <span key={g} className="text-[10px] rounded-full bg-secondary px-2 py-0.5">{g}</span>)}
+        {interests.slice(0, 4).map((i: string) => <span key={i} className="text-[10px] rounded-full bg-primary/10 text-primary px-2 py-0.5">{i}</span>)}
+      </div>
+      <div className="mt-2 flex items-center justify-between text-xs">
+        <span className="text-muted-foreground">Est. reach</span>
+        <span className="font-semibold">{reach != null ? Number(reach).toLocaleString() : "—"}</span>
+      </div>
+    </Card>
+  );
+}
+
 function AudiencesLibrary({ advertiserId }: { advertiserId: string }) {
   const { data: audiences = [], isLoading } = useAudiences(advertiserId);
   const create = useCreateAudience();
+  const lookalike = useCreateLookalike();
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState({ name: "", age_min: "18", age_max: "65", interests: "", geo: "IN" });
+  const [form, setForm] = useState({
+    name: "", age_min: "18", age_max: "65", interests: "", locations: "IN",
+    genders: [] as string[],
+  });
+  const [laOpen, setLaOpen] = useState<null | { seedId: string; seedName: string }>(null);
+  const [laForm, setLaForm] = useState({ name: "", similarity: 0.5 });
+
+  const targetingPreview = useMemo(() => ({
+    min_age: Number(form.age_min) || undefined,
+    max_age: Number(form.age_max) || undefined,
+    locations: form.locations.split(",").map((s) => s.trim()).filter(Boolean),
+    interests: form.interests.split(",").map((s) => s.trim()).filter(Boolean),
+    genders: form.genders,
+  }), [form]);
+  const { data: previewReach } = useEstimateReach(open ? targetingPreview : null);
+
   return (
     <div>
       <div className="flex items-center justify-between mb-3">
@@ -503,10 +559,29 @@ function AudiencesLibrary({ advertiserId }: { advertiserId: string }) {
             <Field label="Age min"><input type="number" className={inputCls} value={form.age_min} onChange={(e) => setForm({ ...form, age_min: e.target.value })} /></Field>
             <Field label="Age max"><input type="number" className={inputCls} value={form.age_max} onChange={(e) => setForm({ ...form, age_max: e.target.value })} /></Field>
           </div>
-          <Field label="Country"><input className={inputCls} value={form.geo} onChange={(e) => setForm({ ...form, geo: e.target.value })} /></Field>
+          <Field label="Genders">
+            <div className="flex flex-wrap gap-1">
+              {GENDERS.map((g) => {
+                const on = form.genders.includes(g);
+                return (
+                  <button type="button" key={g}
+                    onClick={() => setForm({ ...form, genders: on ? form.genders.filter((x) => x !== g) : [...form.genders, g] })}
+                    className={`rounded-full px-2 py-1 text-xs border ${on ? "bg-primary text-primary-foreground border-primary" : "border-border bg-background"}`}
+                  >{g}</button>
+                );
+              })}
+            </div>
+          </Field>
+          <Field label="Locations (comma separated country codes)">
+            <input className={inputCls} value={form.locations} onChange={(e) => setForm({ ...form, locations: e.target.value })} />
+          </Field>
           <Field label="Interests (comma separated)">
             <input className={inputCls} value={form.interests} onChange={(e) => setForm({ ...form, interests: e.target.value })} />
           </Field>
+          <div className="flex items-center justify-between rounded-lg bg-secondary/60 px-3 py-2 text-xs">
+            <span className="text-muted-foreground">Estimated reach</span>
+            <span className="font-semibold">{previewReach != null ? Number(previewReach).toLocaleString() : "—"}</span>
+          </div>
           <div className="flex justify-end gap-2">
             <button className={btnGhost} onClick={() => setOpen(false)}>Cancel</button>
             <button className={btnPrimary} disabled={!form.name || create.isPending}
@@ -514,15 +589,42 @@ function AudiencesLibrary({ advertiserId }: { advertiserId: string }) {
                 await create.mutateAsync({
                   advertiser_id: advertiserId,
                   name: form.name,
-                  targeting: {
-                    age: { min: Number(form.age_min), max: Number(form.age_max) },
-                    geo: [form.geo],
-                    interests: form.interests.split(",").map((s) => s.trim()).filter(Boolean),
-                  },
+                  targeting: targetingPreview,
                 });
-                setForm({ name: "", age_min: "18", age_max: "65", interests: "", geo: "IN" });
+                setForm({ name: "", age_min: "18", age_max: "65", interests: "", locations: "IN", genders: [] });
                 setOpen(false);
               }}>Save</button>
+          </div>
+        </Card>
+      )}
+      {laOpen && (
+        <Card className="mb-3 space-y-3">
+          <div className="flex items-center gap-2">
+            <Sparkles className="h-4 w-4 text-primary" />
+            <h3 className="text-sm font-semibold">Lookalike of "{laOpen.seedName}"</h3>
+          </div>
+          <Field label="Name"><input className={inputCls} value={laForm.name} onChange={(e) => setLaForm({ ...laForm, name: e.target.value })} placeholder={`Lookalike of ${laOpen.seedName}`} /></Field>
+          <Field label={`Similarity: ${Math.round(laForm.similarity * 100)}%`}>
+            <input type="range" min={0.1} max={1} step={0.05} value={laForm.similarity}
+              onChange={(e) => setLaForm({ ...laForm, similarity: Number(e.target.value) })}
+              className="w-full" />
+            <p className="text-[10px] text-muted-foreground mt-1">
+              Lower % = larger, less similar. Higher % = tighter, more similar to seed.
+            </p>
+          </Field>
+          <div className="flex justify-end gap-2">
+            <button className={btnGhost} onClick={() => setLaOpen(null)}>Cancel</button>
+            <button className={btnPrimary} disabled={lookalike.isPending}
+              onClick={async () => {
+                await lookalike.mutateAsync({
+                  advertiser_id: advertiserId,
+                  seed_audience_id: laOpen.seedId,
+                  name: laForm.name || `Lookalike of ${laOpen.seedName}`,
+                  similarity: laForm.similarity,
+                });
+                setLaForm({ name: "", similarity: 0.5 });
+                setLaOpen(null);
+              }}>Create lookalike</button>
           </div>
         </Card>
       )}
@@ -533,12 +635,8 @@ function AudiencesLibrary({ advertiserId }: { advertiserId: string }) {
       ) : (
         <div className="space-y-2">
           {audiences.map((a: any) => (
-            <Card key={a.id}>
-              <p className="text-sm font-semibold">{a.name}</p>
-              <p className="text-xs text-muted-foreground line-clamp-2">
-                {JSON.stringify(a.targeting)}
-              </p>
-            </Card>
+            <AudienceCard key={a.id} a={a}
+              onLookalike={(id, name) => { setLaOpen({ seedId: id, seedName: name }); setLaForm({ name: `Lookalike of ${name}`, similarity: 0.5 }); }} />
           ))}
         </div>
       )}
