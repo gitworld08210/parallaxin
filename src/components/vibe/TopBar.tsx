@@ -15,7 +15,7 @@ export const TopBar = ({
     <header className={cn("sticky top-0 z-30 h-14 px-4 flex items-center justify-between gap-3 bg-background/60 backdrop-blur-2xl supports-[backdrop-filter]:bg-background/40 border-b border-border/60", className)}>
       <div className="min-w-0 flex items-baseline gap-2">
         {title && (
-          <h1 className="text-xl font-bold tracking-tight truncate">{title}</h1>
+          <div role="heading" aria-level={2} className="text-xl font-bold tracking-tight truncate">{title}</div>
         )}
         {subtitle && (
           <p className="text-xs text-muted-foreground truncate hidden sm:block">{subtitle}</p>

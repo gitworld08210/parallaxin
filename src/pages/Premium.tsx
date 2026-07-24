@@ -105,8 +105,9 @@ const Premium = () => {
             <Link
               to="/store"
               className="h-11 px-5 rounded-full border border-white/15 text-[14px] font-semibold text-white/90 inline-flex items-center gap-1 active:scale-95 transition"
+              aria-label="Explore the Aurelix Store"
             >
-              Learn more <ChevronRight className="h-4 w-4" />
+              Explore the Store <ChevronRight className="h-4 w-4" />
             </Link>
           </div>
           <p className="mt-4 text-[12px] text-white/40">Powered by the Aura economy · No fiat required.</p>
