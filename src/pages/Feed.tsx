@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { Helmet } from "react-helmet-async";
 import { Link } from "react-router-dom";
 import { Menu, Sparkles, Users, PenSquare, Bell } from "lucide-react";
 import { motion } from "framer-motion";
