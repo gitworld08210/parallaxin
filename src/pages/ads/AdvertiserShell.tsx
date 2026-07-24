@@ -248,10 +248,80 @@ function CampaignDetail({ advertiserId }: { advertiserId: string }) {
 
 /* --------------------------------- Ad Group Detail --------------------------------- */
 
+function DeliveryPanel({ group }: { group: any }) {
+  const update = useUpdatePacing();
+  const resume = useResumeAdGroup();
+  const [form, setForm] = useState({
+    pacing_type: group.pacing_type ?? "standard",
+    daily_budget: group.daily_budget ?? "",
+    daily_impression_cap: group.daily_impression_cap ?? "",
+    frequency_cap_per_user: group.frequency_cap_per_user ?? "",
+    frequency_cap_window_hours: group.frequency_cap_window_hours ?? 24,
+  });
+  return (
+    <Card className="mb-3 space-y-3">
+      <div className="flex items-center gap-2">
+        <Gauge className="h-4 w-4 text-primary" />
+        <h3 className="text-sm font-semibold">Delivery & pacing</h3>
+      </div>
+      {group.auto_paused_reason && (
+        <div className="flex items-start gap-2 rounded-lg border border-amber-500/40 bg-amber-500/10 p-2 text-xs">
+          <AlertCircle className="h-3 w-3 mt-0.5 text-amber-500 shrink-0" />
+          <div className="flex-1">
+            Auto-paused: <span className="font-medium">{group.auto_paused_reason.replace(/_/g, " ")}</span>
+          </div>
+          <button className={btnGhost} onClick={() => resume.mutate(group.id)}>Resume</button>
+        </div>
+      )}
+      <Field label="Pacing">
+        <select className={inputCls} value={form.pacing_type}
+          onChange={(e) => setForm({ ...form, pacing_type: e.target.value as any })}>
+          <option value="standard">Standard — even spend across the day</option>
+          <option value="accelerated">Accelerated — spend as fast as possible</option>
+        </select>
+      </Field>
+      <div className="grid grid-cols-2 gap-2">
+        <Field label="Daily budget (₹)">
+          <input type="number" className={inputCls} value={form.daily_budget}
+            onChange={(e) => setForm({ ...form, daily_budget: e.target.value })} />
+        </Field>
+        <Field label="Daily impression cap">
+          <input type="number" className={inputCls} value={form.daily_impression_cap}
+            onChange={(e) => setForm({ ...form, daily_impression_cap: e.target.value })} />
+        </Field>
+      </div>
+      <div className="grid grid-cols-2 gap-2">
+        <Field label="Freq. cap / user">
+          <input type="number" className={inputCls} value={form.frequency_cap_per_user}
+            onChange={(e) => setForm({ ...form, frequency_cap_per_user: e.target.value })} />
+        </Field>
+        <Field label="Window (hours)">
+          <input type="number" className={inputCls} value={form.frequency_cap_window_hours}
+            onChange={(e) => setForm({ ...form, frequency_cap_window_hours: Number(e.target.value) })} />
+        </Field>
+      </div>
+      <div className="flex justify-end">
+        <button className={btnPrimary} disabled={update.isPending}
+          onClick={() => update.mutate({
+            ad_group_id: group.id,
+            pacing_type: form.pacing_type,
+            daily_budget: form.daily_budget === "" ? null : Number(form.daily_budget),
+            daily_impression_cap: form.daily_impression_cap === "" ? null : Number(form.daily_impression_cap),
+            frequency_cap_per_user: form.frequency_cap_per_user === "" ? null : Number(form.frequency_cap_per_user),
+            frequency_cap_window_hours: Number(form.frequency_cap_window_hours) || 24,
+          })}
+        >Save delivery</button>
+      </div>
+    </Card>
+  );
+}
+
 function AdGroupDetail({ advertiserId }: { advertiserId: string }) {
   const { campaignId, groupId } = useParams();
   const { data: ads = [], isLoading } = useAds(groupId);
   const { data: creatives = [] } = useCreatives(advertiserId);
+  const { data: groups = [] } = useAdGroups(campaignId);
+  const group = groups.find((g: any) => g.id === groupId);
   const create = useCreateAd();
   const submit = useSubmitAdForReview();
   const [open, setOpen] = useState(false);
@@ -262,6 +332,7 @@ function AdGroupDetail({ advertiserId }: { advertiserId: string }) {
 
   return (
     <div>
+      {group && <DeliveryPanel group={group} />}
       <div className="flex items-center justify-between mb-3">
         <h2 className="text-base font-semibold">Ads</h2>
         <button className={btnPrimary} onClick={() => setOpen((v) => !v)}>
