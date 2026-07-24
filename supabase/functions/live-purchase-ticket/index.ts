@@ -32,25 +32,29 @@ Deno.serve(async (req) => {
     if (existing) return json({ ok: true, reason: "already owned" });
 
     const price = stream.ticket_price_coins ?? 0;
-
-    // Check balance = sum(coin_transactions.amount)
-    const { data: txns } = await admin.from("coin_transactions").select("amount").eq("user_id", uid);
-    const bal = (txns ?? []).reduce((a: number, r: any) => a + Number(r.amount || 0), 0);
-    if (bal < price) return json({ error: "insufficient coins", balance: bal, required: price }, 402);
-
-    // Debit buyer, credit host, insert ticket
     const env = "live";
-    const debit = admin.from("coin_transactions").insert({
-      user_id: uid, amount: -price, kind: "live_ticket", environment: env,
-    });
-    const credit = admin.from("coin_transactions").insert({
-      user_id: stream.host_id, amount: price, kind: "live_ticket_earn", environment: env,
-    });
-    const ticket = admin.from("live_tickets").insert({
-      stream_id, user_id: uid, price_coins: price,
-    });
-    const [d, c, t] = await Promise.all([debit, credit, ticket]);
-    if (d.error || c.error || t.error) return json({ error: d.error?.message || c.error?.message || t.error?.message }, 500);
+
+    // Atomic debit via SECURITY DEFINER RPC (prevents double-spend races).
+    if (price > 0) {
+      const { error: spendErr } = await asUser.rpc("spend_coins_atomic", {
+        _reason: "live_ticket",
+        _amount: price,
+        _reference_id: stream_id,
+        _reference_type: "live_stream",
+      });
+      if (spendErr) {
+        return json({ error: spendErr.message || "insufficient coins", required: price }, 402);
+      }
+    }
+
+    // Credit host + issue ticket (admin, non-race-sensitive).
+    const [c, t] = await Promise.all([
+      admin.from("coin_transactions").insert({
+        user_id: stream.host_id, amount: price, kind: "live_ticket_earn", environment: env,
+      }),
+      admin.from("live_tickets").insert({ stream_id, user_id: uid, price_coins: price }),
+    ]);
+    if (c.error || t.error) return json({ error: c.error?.message || t.error?.message }, 500);
     return json({ ok: true });
   } catch (e) {
     return json({ error: (e as Error).message }, 500);
