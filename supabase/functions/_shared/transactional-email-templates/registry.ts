@@ -8,6 +8,7 @@ import { template as offerLetter } from './offer-letter.tsx'
 import { template as credentialsIssued } from './credentials-issued.tsx'
 import { template as departmentAppointment } from './department-appointment.tsx'
 import { template as payslipReleased } from './payslip-released.tsx'
+import { template as aapInvoice } from './aap-invoice.tsx'
 
 export interface TemplateEntry {
   // React component (typed loose to keep this Deno-safe)
@@ -30,4 +31,5 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'credentials-issued': credentialsIssued,
   'department-appointment': departmentAppointment,
   'payslip-released': payslipReleased,
+  'aap-invoice': aapInvoice,
 }

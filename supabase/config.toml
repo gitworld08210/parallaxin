@@ -19,3 +19,5 @@ project_id = "xmztbdaupkvezhhokmwx"
     verify_jwt = false
   [functions.aap-webhook-dispatcher]
     verify_jwt = true
+  [functions.aap-generate-invoices]
+    verify_jwt = true
