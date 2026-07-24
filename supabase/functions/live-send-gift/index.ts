@@ -32,27 +32,33 @@ Deno.serve(async (req) => {
     if (stream.host_id === uid) return json({ error: "cannot gift your own stream" }, 400);
 
     const total = gift.cost_coins * q;
-
-    const { data: txns } = await admin.from("coin_transactions").select("amount").eq("user_id", uid);
-    const bal = (txns ?? []).reduce((a: number, r: any) => a + Number(r.amount || 0), 0);
-    if (bal < total) return json({ error: "insufficient coins", balance: bal, required: total }, 402);
-
     const env = "live";
-    const debit = admin.from("coin_transactions").insert({
-      user_id: uid, amount: -total, kind: "live_gift", environment: env,
-    });
-    const credit = admin.from("coin_transactions").insert({
-      user_id: stream.host_id, amount: total, kind: "live_gift_earn", environment: env,
-    });
-    const log = admin.from("live_gifts").insert({
-      stream_id, sender_id: uid, host_id: stream.host_id, gift_id, qty: q, coins_total: total,
-    });
-    const bump = admin.from("live_streams").update({
-      total_tips_coins: (stream.total_tips_coins ?? 0) + total,
-    }).eq("id", stream_id);
 
-    const [d, c, l, b] = await Promise.all([debit, credit, log, bump]);
-    const err = d.error?.message || c.error?.message || l.error?.message || b.error?.message;
+    // Atomic debit via SECURITY DEFINER RPC (prevents double-spend races).
+    if (total > 0) {
+      const { error: spendErr } = await asUser.rpc("spend_coins_atomic", {
+        _reason: "live_gift",
+        _amount: total,
+        _reference_id: stream_id,
+        _reference_type: "live_stream",
+      });
+      if (spendErr) {
+        return json({ error: spendErr.message || "insufficient coins", required: total }, 402);
+      }
+    }
+
+    const [c, l, b] = await Promise.all([
+      admin.from("coin_transactions").insert({
+        user_id: stream.host_id, amount: total, kind: "live_gift_earn", environment: env,
+      }),
+      admin.from("live_gifts").insert({
+        stream_id, sender_id: uid, host_id: stream.host_id, gift_id, qty: q, coins_total: total,
+      }),
+      admin.from("live_streams").update({
+        total_tips_coins: (stream.total_tips_coins ?? 0) + total,
+      }).eq("id", stream_id),
+    ]);
+    const err = c.error?.message || l.error?.message || b.error?.message;
     if (err) return json({ error: err }, 500);
     return json({ ok: true, coins_total: total });
   } catch (e) {
