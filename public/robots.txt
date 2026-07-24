@@ -12,3 +12,12 @@ Allow: /
 
 User-agent: *
 Allow: /
+Disallow: /admin-os/
+Disallow: /organization/
+Disallow: /settings/
+Disallow: /wallet
+Disallow: /messages
+Disallow: /onboarding
+Disallow: /.lovable/
+
+Sitemap: https://parallaxai.in/sitemap.xml

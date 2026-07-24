@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { Helmet } from "react-helmet-async";
 import { Link } from "react-router-dom";
 import { Menu, Sparkles, Users, PenSquare, Bell } from "lucide-react";
 import { motion } from "framer-motion";
@@ -96,6 +97,15 @@ const Feed = () => {
 
   return (
     <div>
+      <Helmet>
+        <title>Aurelix Feed — Discover creators, reels & live culture</title>
+        <meta name="description" content="Your personalized Aurelix feed: creators, reels, live streams, and AI-native community moments in one place." />
+        <meta property="og:title" content="Aurelix Feed — Discover creators, reels & live culture" />
+        <meta property="og:description" content="Your personalized Aurelix feed: creators, reels, live streams, and AI-native community moments in one place." />
+        <link rel="canonical" href="https://parallaxai.in/" />
+        <meta property="og:url" content="https://parallaxai.in/" />
+      </Helmet>
+      <h1 className="sr-only">Aurelix Feed</h1>
       {/* X-style translucent top chrome */}
       <div
         className={cn(

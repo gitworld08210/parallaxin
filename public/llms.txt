@@ -1,0 +1,21 @@
+# Aurelix
+
+> Aurelix is an AI-native creator universe for realtime interaction, premium creator monetization, live streaming, and intelligent digital culture.
+
+Aurelix combines a social feed, short-form reels, live streams, creator subscriptions, and an AI assistant into one platform.
+
+## Pages
+
+- [Feed](/): Personalized feed of posts, creators, and community moments.
+- [Reels](/reels): Short-form vertical video from creators across Aurelix.
+- [Discover](/discover): Explore trending creators, tags, and communities.
+- [Live](/live): Live streams and paid live events from creators.
+- [Premium](/premium): Aura Pro membership — subscribe for exclusive creator content.
+- [Store](/store): Aurelix store — creator products and digital goods.
+- [Hall of Founders](/hall-of-founders): Featured founders shaping the Aurelix ecosystem.
+- [News](/news): Latest updates, announcements, and creator news.
+- [Support](/support): Help center — contact support, report content, verification.
+
+## Optional
+
+- [Sign in](/auth): Sign in or create an Aurelix account.
