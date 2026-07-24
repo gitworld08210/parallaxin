@@ -1,6 +1,6 @@
 // Public server-to-server Conversions API for Aurelix Ads Platform.
 // Client (advertiser server) POSTs pixel events; we authorise via pixel secret,
-// dedup, attribute to last click/view, and write to ledger + events.
+// dedup by external event id, attribute to last click/view, and write to ledger.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
 
 const cors = {
