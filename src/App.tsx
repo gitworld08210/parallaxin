@@ -65,6 +65,12 @@ const ChangePhoneScreen = lazy(() => import("./pages/security/ChangePhoneScreen"
 const Onboarding = lazy(() => import("./pages/Onboarding"));
 const OrganizationOnboarding = lazy(() => import("./pages/OrganizationOnboarding"));
 
+// Aurelix Ads Platform (AAP)
+const AdsGate = lazy(() => import("./components/layout/AdsGate"));
+const AdsBusinessCenter = lazy(() => import("./pages/ads/BusinessCenter"));
+const AdsOnboardingWizard = lazy(() => import("./pages/ads/OnboardingWizard"));
+const AdvertiserShell = lazy(() => import("./pages/ads/AdvertiserShell"));
+
 const CreatorHub = lazy(() => import("./pages/CreatorHub"));
 const CreatorStudio = lazy(() => import("./pages/CreatorStudio"));
 const CreatorNews = lazy(() => import("./pages/CreatorNews"));
@@ -517,6 +523,12 @@ const App = () => (
                   </Route>
                 </Route>
               </Route>
+
+              {/* Aurelix Ads Platform (AAP) */}
+              <Route path="/ads" element={<AdsGate><AdsBusinessCenter /></AdsGate>} />
+              <Route path="/ads/get-started" element={<AdsGate><AdsOnboardingWizard /></AdsGate>} />
+              <Route path="/ads/:advertiserId/*" element={<AdsGate><AdvertiserShell /></AdsGate>} />
+
               {/* Legacy /admin removed — redirect to new Admin OS */}
               <Route path="/admin" element={<Navigate to="/admin-os" replace />} />
               <Route path="/admin/*" element={<Navigate to="/admin-os" replace />} />
