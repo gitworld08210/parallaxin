@@ -74,6 +74,7 @@ export const SideMenu = ({ trigger }: { trigger: React.ReactNode }) => {
           { to: "/monetization", icon: DollarSign, label: "Monetization" } as Row,
         ]
       : []),
+    { to: "/ads", icon: Megaphone, label: "Aurelix Ads", badge: "ADS" },
     { to: "/premium", icon: Crown, label: "Aurelix Premium", badge: "PRO" },
   ];
 
