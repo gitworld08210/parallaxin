@@ -72,6 +72,8 @@ const AdsOnboardingWizard = lazy(() => import("./pages/ads/OnboardingWizard"));
 const AdvertiserShell = lazy(() => import("./pages/ads/AdvertiserShell"));
 const AdsReviewQueue = lazy(() => import("./pages/ads/AdsReviewQueue"));
 const AdsBillingCenter = lazy(() => import("./pages/ads/BillingCenter"));
+const AdsCreditCenter = lazy(() => import("./pages/ads/CreditCenter"));
+const AdsFinanceCreditReview = lazy(() => import("./pages/ads/FinanceCreditReview"));
 const AdsAnalytics = lazy(() => import("./pages/ads/AnalyticsDashboard"));
 
 const CreatorHub = lazy(() => import("./pages/CreatorHub"));
