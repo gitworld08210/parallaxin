@@ -507,6 +507,15 @@ export default function AdvertiserShell() {
               {data.type} · {data.status} · {data.billing_mode.replace("_", " ")}
             </p>
 
+            <div className="flex gap-2 mt-3">
+              <Link to={`/ads/${advertiserId}/analytics`} className={btnGhost}>
+                <BarChart3 className="h-3 w-3" /> Analytics
+              </Link>
+              <Link to={`/ads/${advertiserId}/billing`} className={btnGhost}>
+                <Wallet className="h-3 w-3" /> Billing
+              </Link>
+            </div>
+
             <div className="flex gap-1 mt-4 mb-4 overflow-x-auto scrollbar-none">
               {TABS.map((t) => (
                 <button key={t.key} onClick={() => setTab(t.key)}
