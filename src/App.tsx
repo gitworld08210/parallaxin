@@ -523,6 +523,12 @@ const App = () => (
                   </Route>
                 </Route>
               </Route>
+
+              {/* Aurelix Ads Platform (AAP) */}
+              <Route path="/ads" element={<AdsGate><AdsBusinessCenter /></AdsGate>} />
+              <Route path="/ads/get-started" element={<AdsGate><AdsOnboardingWizard /></AdsGate>} />
+              <Route path="/ads/:advertiserId/*" element={<AdsGate><AdvertiserShell /></AdsGate>} />
+
               {/* Legacy /admin removed — redirect to new Admin OS */}
               <Route path="/admin" element={<Navigate to="/admin-os" replace />} />
               <Route path="/admin/*" element={<Navigate to="/admin-os" replace />} />
