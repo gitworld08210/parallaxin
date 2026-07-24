@@ -690,12 +690,15 @@ export default function AdvertiserShell() {
               {data.type} · {data.status} · {data.billing_mode.replace("_", " ")}
             </p>
 
-            <div className="flex gap-2 mt-3">
+            <div className="flex gap-2 mt-3 flex-wrap">
               <Link to={`/ads/${advertiserId}/analytics`} className={btnGhost}>
                 <BarChart3 className="h-3 w-3" /> Analytics
               </Link>
               <Link to={`/ads/${advertiserId}/billing`} className={btnGhost}>
                 <Wallet className="h-3 w-3" /> Billing
+              </Link>
+              <Link to={`/ads/${advertiserId}/credit`} className={btnGhost}>
+                <Gauge className="h-3 w-3" /> Credit
               </Link>
             </div>
 
