@@ -338,11 +338,14 @@ export type Database = {
           advertiser_id: string
           created_at: string
           created_by: string | null
+          expires_at: string | null
+          hash_algo: string
           hashed_key: string
           id: string
           key_prefix: string
           last_used_at: string | null
           name: string
+          rate_limit_per_min: number
           revoked_at: string | null
           scopes: string[]
         }
@@ -350,11 +353,14 @@ export type Database = {
           advertiser_id: string
           created_at?: string
           created_by?: string | null
+          expires_at?: string | null
+          hash_algo?: string
           hashed_key: string
           id?: string
           key_prefix: string
           last_used_at?: string | null
           name: string
+          rate_limit_per_min?: number
           revoked_at?: string | null
           scopes?: string[]
         }
@@ -362,11 +368,14 @@ export type Database = {
           advertiser_id?: string
           created_at?: string
           created_by?: string | null
+          expires_at?: string | null
+          hash_algo?: string
           hashed_key?: string
           id?: string
           key_prefix?: string
           last_used_at?: string | null
           name?: string
+          rate_limit_per_min?: number
           revoked_at?: string | null
           scopes?: string[]
         }
@@ -1652,6 +1661,47 @@ export type Database = {
             columns: ["campaign_id"]
             isOneToOne: false
             referencedRelation: "aap_campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      aap_events_outbox: {
+        Row: {
+          advertiser_id: string
+          attempts: number
+          created_at: string
+          delivered_at: string | null
+          event: string
+          id: number
+          next_attempt_at: string
+          payload: Json
+        }
+        Insert: {
+          advertiser_id: string
+          attempts?: number
+          created_at?: string
+          delivered_at?: string | null
+          event: string
+          id?: number
+          next_attempt_at?: string
+          payload?: Json
+        }
+        Update: {
+          advertiser_id?: string
+          attempts?: number
+          created_at?: string
+          delivered_at?: string | null
+          event?: string
+          id?: number
+          next_attempt_at?: string
+          payload?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aap_events_outbox_advertiser_id_fkey"
+            columns: ["advertiser_id"]
+            isOneToOne: false
+            referencedRelation: "aap_advertisers"
             referencedColumns: ["id"]
           },
         ]
@@ -2963,25 +3013,34 @@ export type Database = {
       }
       aap_webhook_deliveries: {
         Row: {
+          attempt: number
           attempted_at: string
+          duration_ms: number | null
           event: string
           id: string
+          payload: Json | null
           response: string | null
           status: number | null
           webhook_id: string
         }
         Insert: {
+          attempt?: number
           attempted_at?: string
+          duration_ms?: number | null
           event: string
           id?: string
+          payload?: Json | null
           response?: string | null
           status?: number | null
           webhook_id: string
         }
         Update: {
+          attempt?: number
           attempted_at?: string
+          duration_ms?: number | null
           event?: string
           id?: string
+          payload?: Json | null
           response?: string | null
           status?: number | null
           webhook_id?: string
@@ -3001,8 +3060,12 @@ export type Database = {
           advertiser_id: string
           created_at: string
           events: string[]
+          failure_count: number
           id: string
           is_active: boolean
+          last_failure_at: string | null
+          last_success_at: string | null
+          name: string | null
           secret: string | null
           updated_at: string
           url: string
@@ -3011,8 +3074,12 @@ export type Database = {
           advertiser_id: string
           created_at?: string
           events?: string[]
+          failure_count?: number
           id?: string
           is_active?: boolean
+          last_failure_at?: string | null
+          last_success_at?: string | null
+          name?: string | null
           secret?: string | null
           updated_at?: string
           url: string
@@ -3021,8 +3088,12 @@ export type Database = {
           advertiser_id?: string
           created_at?: string
           events?: string[]
+          failure_count?: number
           id?: string
           is_active?: boolean
+          last_failure_at?: string | null
+          last_success_at?: string | null
+          name?: string | null
           secret?: string | null
           updated_at?: string
           url?: string
@@ -18668,6 +18739,29 @@ export type Database = {
         Args: { _ad_id: string; _context: Json; _user_id: string }
         Returns: boolean
       }
+      aap_claim_outbox_batch: {
+        Args: { p_limit?: number }
+        Returns: {
+          advertiser_id: string
+          attempts: number
+          created_at: string
+          delivered_at: string | null
+          event: string
+          id: number
+          next_attempt_at: string
+          payload: Json
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "aap_events_outbox"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      aap_enqueue_event: {
+        Args: { p_advertiser_id: string; p_event: string; p_payload: Json }
+        Returns: number
+      }
       aap_estimate_reach: { Args: { _targeting: Json }; Returns: number }
       aap_experiment_summary: {
         Args: { _experiment_id: string }
@@ -18702,9 +18796,27 @@ export type Database = {
       aap_is_platform_admin: { Args: never; Returns: boolean }
       aap_is_reviewer: { Args: never; Returns: boolean }
       aap_is_staff: { Args: { _dept_keys: string[] }; Returns: boolean }
+      aap_issue_api_key: {
+        Args: {
+          p_advertiser_id: string
+          p_expires_at: string
+          p_name: string
+          p_scopes: string[]
+        }
+        Returns: Json
+      }
+      aap_mark_outbox_delivered: { Args: { p_id: number }; Returns: undefined }
       aap_promote_experiment_winner: {
         Args: { _experiment_id: string; _metric?: string }
         Returns: string
+      }
+      aap_verify_api_key: {
+        Args: { p_raw: string }
+        Returns: {
+          advertiser_id: string
+          api_key_id: string
+          scopes: string[]
+        }[]
       }
       add_group_member: {
         Args: { _conv: string; _user: string }
