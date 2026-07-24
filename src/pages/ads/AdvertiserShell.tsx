@@ -653,6 +653,8 @@ const TABS: { key: string; label: string; icon: any }[] = [
   { key: "campaigns", label: "Campaigns", icon: Megaphone },
   { key: "creatives", label: "Creatives", icon: ImageIcon },
   { key: "audiences", label: "Audiences", icon: Users },
+  { key: "experiments", label: "Experiments", icon: FlaskConical },
+  { key: "safety", label: "Brand safety", icon: Shield },
 ];
 
 export default function AdvertiserShell() {
