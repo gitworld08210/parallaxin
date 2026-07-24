@@ -18,6 +18,8 @@ export type Database = {
         Row: {
           advertiser_id: string
           audience_id: string | null
+          auto_paused_at: string | null
+          auto_paused_reason: string | null
           bid_amount: number | null
           bid_strategy: string | null
           budget: number | null
@@ -25,9 +27,13 @@ export type Database = {
           created_at: string
           created_by: string | null
           daily_budget: number | null
+          daily_impression_cap: number | null
+          frequency_cap_per_user: number | null
+          frequency_cap_window_hours: number
           id: string
           name: string
           optimization_goal: string | null
+          pacing_type: string
           placements: Database["public"]["Enums"]["aap_placement_surface"][]
           schedule: Json
           status: Database["public"]["Enums"]["aap_ad_status"]
@@ -36,6 +42,8 @@ export type Database = {
         Insert: {
           advertiser_id: string
           audience_id?: string | null
+          auto_paused_at?: string | null
+          auto_paused_reason?: string | null
           bid_amount?: number | null
           bid_strategy?: string | null
           budget?: number | null
@@ -43,9 +51,13 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           daily_budget?: number | null
+          daily_impression_cap?: number | null
+          frequency_cap_per_user?: number | null
+          frequency_cap_window_hours?: number
           id?: string
           name: string
           optimization_goal?: string | null
+          pacing_type?: string
           placements?: Database["public"]["Enums"]["aap_placement_surface"][]
           schedule?: Json
           status?: Database["public"]["Enums"]["aap_ad_status"]
@@ -54,6 +66,8 @@ export type Database = {
         Update: {
           advertiser_id?: string
           audience_id?: string | null
+          auto_paused_at?: string | null
+          auto_paused_reason?: string | null
           bid_amount?: number | null
           bid_strategy?: string | null
           budget?: number | null
@@ -61,9 +75,13 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           daily_budget?: number | null
+          daily_impression_cap?: number | null
+          frequency_cap_per_user?: number | null
+          frequency_cap_window_hours?: number
           id?: string
           name?: string
           optimization_goal?: string | null
+          pacing_type?: string
           placements?: Database["public"]["Enums"]["aap_placement_surface"][]
           schedule?: Json
           status?: Database["public"]["Enums"]["aap_ad_status"]
@@ -518,36 +536,45 @@ export type Database = {
       aap_audiences: {
         Row: {
           advertiser_id: string
+          audience_type: string
           created_at: string
           created_by: string | null
           description: string | null
           estimated_reach: number | null
           id: string
           is_saved: boolean
+          lookalike_seed_audience_id: string | null
+          lookalike_similarity: number | null
           name: string
           targeting: Json
           updated_at: string
         }
         Insert: {
           advertiser_id: string
+          audience_type?: string
           created_at?: string
           created_by?: string | null
           description?: string | null
           estimated_reach?: number | null
           id?: string
           is_saved?: boolean
+          lookalike_seed_audience_id?: string | null
+          lookalike_similarity?: number | null
           name: string
           targeting?: Json
           updated_at?: string
         }
         Update: {
           advertiser_id?: string
+          audience_type?: string
           created_at?: string
           created_by?: string | null
           description?: string | null
           estimated_reach?: number | null
           id?: string
           is_saved?: boolean
+          lookalike_seed_audience_id?: string | null
+          lookalike_similarity?: number | null
           name?: string
           targeting?: Json
           updated_at?: string
@@ -558,6 +585,13 @@ export type Database = {
             columns: ["advertiser_id"]
             isOneToOne: false
             referencedRelation: "aap_advertisers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "aap_audiences_lookalike_seed_audience_id_fkey"
+            columns: ["lookalike_seed_audience_id"]
+            isOneToOne: false
+            referencedRelation: "aap_audiences"
             referencedColumns: ["id"]
           },
         ]
@@ -18422,6 +18456,11 @@ export type Database = {
         Args: { _advertiser_id: string }
         Returns: boolean
       }
+      aap_can_serve_ad: {
+        Args: { _ad_id: string; _user_id: string }
+        Returns: boolean
+      }
+      aap_estimate_reach: { Args: { _targeting: Json }; Returns: number }
       aap_is_advertiser_member: {
         Args: { _advertiser_id: string }
         Returns: boolean
