@@ -8,8 +8,9 @@
 //   expired access token via the stored refresh token.
 import { supabase } from "@/integrations/supabase/client";
 
-const KEY = "aurelix.savedAccounts.v1";
-export const MAX_ACCOUNTS = 5;
+const KEY = "aurelix.savedAccounts.v2";
+// Reduced from 5 → 2 to shrink the XSS blast radius of cached refresh tokens.
+export const MAX_ACCOUNTS = 2;
 
 export type SavedAccount = {
   userId: string;
