@@ -18474,6 +18474,10 @@ export type Database = {
         Returns: boolean
       }
       can_manage_passports: { Args: { _uid: string }; Returns: boolean }
+      can_send_transactional_email: {
+        Args: { _user_id: string }
+        Returns: boolean
+      }
       cancel_creator_subscription: {
         Args: { _creator_id: string }
         Returns: Json
@@ -18946,6 +18950,15 @@ export type Database = {
         Returns: string
       }
       slugify_org_name: { Args: { _name: string }; Returns: string }
+      spend_coins_atomic: {
+        Args: {
+          _amount: number
+          _reason: string
+          _reference_id?: string
+          _reference_type?: string
+        }
+        Returns: string
+      }
       start_dm: { Args: { other_user_id: string }; Returns: string }
       subscribe_creator: { Args: { _creator_id: string }; Returns: Json }
       toggle_post_pin: {
