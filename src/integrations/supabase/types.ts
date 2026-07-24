@@ -3005,6 +3005,87 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_gateway_runs: {
+        Row: {
+          advertiser_id: string | null
+          created_at: string
+          error: string | null
+          fallback_used: boolean
+          id: string
+          input_tokens: number | null
+          latency_ms: number | null
+          model_used: string
+          output_tokens: number | null
+          source: string | null
+          status: string
+          task_key: string
+          user_id: string | null
+        }
+        Insert: {
+          advertiser_id?: string | null
+          created_at?: string
+          error?: string | null
+          fallback_used?: boolean
+          id?: string
+          input_tokens?: number | null
+          latency_ms?: number | null
+          model_used: string
+          output_tokens?: number | null
+          source?: string | null
+          status?: string
+          task_key: string
+          user_id?: string | null
+        }
+        Update: {
+          advertiser_id?: string | null
+          created_at?: string
+          error?: string | null
+          fallback_used?: boolean
+          id?: string
+          input_tokens?: number | null
+          latency_ms?: number | null
+          model_used?: string
+          output_tokens?: number | null
+          source?: string | null
+          status?: string
+          task_key?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      ai_task_routes: {
+        Row: {
+          created_at: string
+          fallback_model: string | null
+          notes: string | null
+          primary_model: string
+          purpose: string | null
+          task_key: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          fallback_model?: string | null
+          notes?: string | null
+          primary_model: string
+          purpose?: string | null
+          task_key: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          fallback_model?: string | null
+          notes?: string | null
+          primary_model?: string
+          purpose?: string | null
+          task_key?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       app_config: {
         Row: {
           key: string
@@ -17565,6 +17646,60 @@ export type Database = {
           is_active?: boolean
           title?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      user_ad_consent: {
+        Row: {
+          opted_in: boolean
+          opted_in_at: string | null
+          policy_version: string
+          revoked_at: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          opted_in?: boolean
+          opted_in_at?: string | null
+          policy_version?: string
+          revoked_at?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          opted_in?: boolean
+          opted_in_at?: string | null
+          policy_version?: string
+          revoked_at?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_dm_ai_consent: {
+        Row: {
+          opted_in: boolean
+          opted_in_at: string | null
+          policy_version: string
+          revoked_at: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          opted_in?: boolean
+          opted_in_at?: string | null
+          policy_version?: string
+          revoked_at?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          opted_in?: boolean
+          opted_in_at?: string | null
+          policy_version?: string
+          revoked_at?: string | null
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
