@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useParams, Link, Routes, Route, useNavigate } from "react-router-dom";
 import { useAdvertiser } from "@/hooks/ads/useAdvertiser";
 import {
@@ -9,11 +9,13 @@ import {
   useAudiences, useCreateAudience,
   type CampaignObjective, type AdFormat, type Placement,
 } from "@/hooks/ads/useCampaigns";
-import { ArrowLeft, Plus, Play, Pause, Send, Megaphone, Layers, Image as ImageIcon, Users, BarChart3, Wallet } from "lucide-react";
+import { useEstimateReach, useCreateLookalike, useUpdatePacing, useResumeAdGroup } from "@/hooks/ads/useDelivery";
+import { ArrowLeft, Plus, Play, Pause, Send, Megaphone, Layers, Image as ImageIcon, Users, BarChart3, Wallet, Sparkles, Gauge, AlertCircle } from "lucide-react";
 
 const PLACEMENTS: Placement[] = ["feed", "reels", "stories", "explore", "search", "profile", "organization"];
 const OBJECTIVES: CampaignObjective[] = ["awareness", "reach", "engagement", "traffic", "app_promotion", "video_views", "conversions"];
 const FORMATS: AdFormat[] = ["image", "video", "carousel", "story", "feed", "reels", "search", "sponsored_profile", "sponsored_organization"];
+const GENDERS = ["male", "female", "other"];
 
 function Card({ children, className = "", onClick }: { children: React.ReactNode; className?: string; onClick?: () => void }) {
   return <div onClick={onClick} className={`rounded-2xl border border-border bg-secondary/40 p-4 ${className}`}>{children}</div>;
