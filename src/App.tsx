@@ -70,6 +70,7 @@ const AdsGate = lazy(() => import("./components/layout/AdsGate"));
 const AdsBusinessCenter = lazy(() => import("./pages/ads/BusinessCenter"));
 const AdsOnboardingWizard = lazy(() => import("./pages/ads/OnboardingWizard"));
 const AdvertiserShell = lazy(() => import("./pages/ads/AdvertiserShell"));
+const AdsReviewQueue = lazy(() => import("./pages/ads/AdsReviewQueue"));
 
 const CreatorHub = lazy(() => import("./pages/CreatorHub"));
 const CreatorStudio = lazy(() => import("./pages/CreatorStudio"));
