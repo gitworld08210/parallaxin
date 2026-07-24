@@ -13,3 +13,6 @@ project_id = "xmztbdaupkvezhhokmwx"
     verify_jwt = true
   [functions.send-transactional-email]
     verify_jwt = true
+
+[functions.aap-conversions-api]
+verify_jwt = false
