@@ -22,6 +22,8 @@ export type Database = {
           auto_paused_reason: string | null
           bid_amount: number | null
           bid_strategy: string | null
+          blocked_categories: string[]
+          blocked_keywords: string[]
           budget: number | null
           campaign_id: string
           created_at: string
@@ -31,6 +33,7 @@ export type Database = {
           frequency_cap_per_user: number | null
           frequency_cap_window_hours: number
           id: string
+          min_content_rating: string | null
           name: string
           optimization_goal: string | null
           pacing_type: string
@@ -46,6 +49,8 @@ export type Database = {
           auto_paused_reason?: string | null
           bid_amount?: number | null
           bid_strategy?: string | null
+          blocked_categories?: string[]
+          blocked_keywords?: string[]
           budget?: number | null
           campaign_id: string
           created_at?: string
@@ -55,6 +60,7 @@ export type Database = {
           frequency_cap_per_user?: number | null
           frequency_cap_window_hours?: number
           id?: string
+          min_content_rating?: string | null
           name: string
           optimization_goal?: string | null
           pacing_type?: string
@@ -70,6 +76,8 @@ export type Database = {
           auto_paused_reason?: string | null
           bid_amount?: number | null
           bid_strategy?: string | null
+          blocked_categories?: string[]
+          blocked_keywords?: string[]
           budget?: number | null
           campaign_id?: string
           created_at?: string
@@ -79,6 +87,7 @@ export type Database = {
           frequency_cap_per_user?: number | null
           frequency_cap_window_hours?: number
           id?: string
+          min_content_rating?: string | null
           name?: string
           optimization_goal?: string | null
           pacing_type?: string
@@ -1652,6 +1661,13 @@ export type Database = {
             columns: ["campaign_id"]
             isOneToOne: false
             referencedRelation: "aap_campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "aap_experiments_winner_fk"
+            columns: ["winner_variant_id"]
+            isOneToOne: false
+            referencedRelation: "aap_experiment_variants"
             referencedColumns: ["id"]
           },
         ]
@@ -18452,6 +18468,14 @@ export type Database = {
         Args: { _advertiser_id: string }
         Returns: Database["public"]["Enums"]["aap_role_key"]
       }
+      aap_assign_variant: {
+        Args: { _experiment_id: string; _user_id: string }
+        Returns: string
+      }
+      aap_brand_safety_check: {
+        Args: { _ad_id: string; _context: Json }
+        Returns: boolean
+      }
       aap_can_edit_advertiser: {
         Args: { _advertiser_id: string }
         Returns: boolean
@@ -18460,7 +18484,21 @@ export type Database = {
         Args: { _ad_id: string; _user_id: string }
         Returns: boolean
       }
+      aap_can_serve_ad_ctx: {
+        Args: { _ad_id: string; _context: Json; _user_id: string }
+        Returns: boolean
+      }
       aap_estimate_reach: { Args: { _targeting: Json }; Returns: number }
+      aap_experiment_summary: {
+        Args: { _experiment_id: string }
+        Returns: {
+          metric: string
+          sample_size: number
+          total_value: number
+          variant_id: string
+          variant_name: string
+        }[]
+      }
       aap_is_advertiser_member: {
         Args: { _advertiser_id: string }
         Returns: boolean
@@ -18471,6 +18509,10 @@ export type Database = {
       aap_is_platform_admin: { Args: never; Returns: boolean }
       aap_is_reviewer: { Args: never; Returns: boolean }
       aap_is_staff: { Args: { _dept_keys: string[] }; Returns: boolean }
+      aap_promote_experiment_winner: {
+        Args: { _experiment_id: string; _metric?: string }
+        Returns: string
+      }
       add_group_member: {
         Args: { _conv: string; _user: string }
         Returns: undefined

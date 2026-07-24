@@ -10,7 +10,8 @@ import {
   type CampaignObjective, type AdFormat, type Placement,
 } from "@/hooks/ads/useCampaigns";
 import { useEstimateReach, useCreateLookalike, useUpdatePacing, useResumeAdGroup } from "@/hooks/ads/useDelivery";
-import { ArrowLeft, Plus, Play, Pause, Send, Megaphone, Layers, Image as ImageIcon, Users, BarChart3, Wallet, Sparkles, Gauge, AlertCircle } from "lucide-react";
+import { ExperimentsPanel, BrandSafetyPanel, AdGroupSafetyPanel } from "./ExperimentsAndSafety";
+import { ArrowLeft, Plus, Play, Pause, Send, Megaphone, Layers, Image as ImageIcon, Users, BarChart3, Wallet, Sparkles, Gauge, AlertCircle, FlaskConical, Shield } from "lucide-react";
 
 const PLACEMENTS: Placement[] = ["feed", "reels", "stories", "explore", "search", "profile", "organization"];
 const OBJECTIVES: CampaignObjective[] = ["awareness", "reach", "engagement", "traffic", "app_promotion", "video_views", "conversions"];
@@ -333,6 +334,7 @@ function AdGroupDetail({ advertiserId }: { advertiserId: string }) {
   return (
     <div>
       {group && <DeliveryPanel group={group} />}
+      {group && <div className="mb-3"><AdGroupSafetyPanel group={group} /></div>}
       <div className="flex items-center justify-between mb-3">
         <h2 className="text-base font-semibold">Ads</h2>
         <button className={btnPrimary} onClick={() => setOpen((v) => !v)}>
@@ -651,6 +653,8 @@ const TABS: { key: string; label: string; icon: any }[] = [
   { key: "campaigns", label: "Campaigns", icon: Megaphone },
   { key: "creatives", label: "Creatives", icon: ImageIcon },
   { key: "audiences", label: "Audiences", icon: Users },
+  { key: "experiments", label: "Experiments", icon: FlaskConical },
+  { key: "safety", label: "Brand safety", icon: Shield },
 ];
 
 export default function AdvertiserShell() {
@@ -703,6 +707,8 @@ export default function AdvertiserShell() {
                 tab === "overview" ? <Overview advertiserId={advertiserId} />
                 : tab === "campaigns" ? <CampaignsList advertiserId={advertiserId} />
                 : tab === "creatives" ? <CreativesLibrary advertiserId={advertiserId} />
+                : tab === "experiments" ? <ExperimentsPanel advertiserId={advertiserId} />
+                : tab === "safety" ? <BrandSafetyPanel advertiserId={advertiserId} />
                 : <AudiencesLibrary advertiserId={advertiserId} />
               } />
               <Route path="campaigns/:campaignId" element={<CampaignDetail advertiserId={advertiserId} />} />
