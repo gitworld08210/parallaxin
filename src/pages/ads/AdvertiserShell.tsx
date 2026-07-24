@@ -10,7 +10,8 @@ import {
   type CampaignObjective, type AdFormat, type Placement,
 } from "@/hooks/ads/useCampaigns";
 import { useEstimateReach, useCreateLookalike, useUpdatePacing, useResumeAdGroup } from "@/hooks/ads/useDelivery";
-import { ArrowLeft, Plus, Play, Pause, Send, Megaphone, Layers, Image as ImageIcon, Users, BarChart3, Wallet, Sparkles, Gauge, AlertCircle } from "lucide-react";
+import { ExperimentsPanel, BrandSafetyPanel, AdGroupSafetyPanel } from "./ExperimentsAndSafety";
+import { ArrowLeft, Plus, Play, Pause, Send, Megaphone, Layers, Image as ImageIcon, Users, BarChart3, Wallet, Sparkles, Gauge, AlertCircle, FlaskConical, Shield } from "lucide-react";
 
 const PLACEMENTS: Placement[] = ["feed", "reels", "stories", "explore", "search", "profile", "organization"];
 const OBJECTIVES: CampaignObjective[] = ["awareness", "reach", "engagement", "traffic", "app_promotion", "video_views", "conversions"];
