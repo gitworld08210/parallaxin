@@ -15,8 +15,8 @@ const PLACEMENTS: Placement[] = ["feed", "reels", "stories", "explore", "search"
 const OBJECTIVES: CampaignObjective[] = ["awareness", "reach", "engagement", "traffic", "app_promotion", "video_views", "conversions"];
 const FORMATS: AdFormat[] = ["image", "video", "carousel", "story", "feed", "reels", "search", "sponsored_profile", "sponsored_organization"];
 
-function Card({ children, className = "" }: { children: React.ReactNode; className?: string }) {
-  return <div className={`rounded-2xl border border-border bg-secondary/40 p-4 ${className}`}>{children}</div>;
+function Card({ children, className = "", onClick }: { children: React.ReactNode; className?: string; onClick?: () => void }) {
+  return <div onClick={onClick} className={`rounded-2xl border border-border bg-secondary/40 p-4 ${className}`}>{children}</div>;
 }
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
