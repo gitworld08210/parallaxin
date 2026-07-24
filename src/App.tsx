@@ -72,6 +72,8 @@ const AdsOnboardingWizard = lazy(() => import("./pages/ads/OnboardingWizard"));
 const AdvertiserShell = lazy(() => import("./pages/ads/AdvertiserShell"));
 const AdsReviewQueue = lazy(() => import("./pages/ads/AdsReviewQueue"));
 const AdsBillingCenter = lazy(() => import("./pages/ads/BillingCenter"));
+const AdsCreditCenter = lazy(() => import("./pages/ads/CreditCenter"));
+const AdsFinanceCreditReview = lazy(() => import("./pages/ads/FinanceCreditReview"));
 const AdsAnalytics = lazy(() => import("./pages/ads/AnalyticsDashboard"));
 
 const CreatorHub = lazy(() => import("./pages/CreatorHub"));
@@ -531,7 +533,9 @@ const App = () => (
               <Route path="/ads" element={<AdsGate><AdsBusinessCenter /></AdsGate>} />
               <Route path="/ads/get-started" element={<AdsGate><AdsOnboardingWizard /></AdsGate>} />
               <Route path="/ads/review" element={<AdsGate><AdsReviewQueue /></AdsGate>} />
+              <Route path="/ads/finance/credit-review" element={<AdsGate><AdsFinanceCreditReview /></AdsGate>} />
               <Route path="/ads/:advertiserId/billing" element={<AdsGate><AdsBillingCenter /></AdsGate>} />
+              <Route path="/ads/:advertiserId/credit" element={<AdsGate><AdsCreditCenter /></AdsGate>} />
               <Route path="/ads/:advertiserId/analytics" element={<AdsGate><AdsAnalytics /></AdsGate>} />
               <Route path="/ads/:advertiserId/*" element={<AdsGate><AdvertiserShell /></AdsGate>} />
 
