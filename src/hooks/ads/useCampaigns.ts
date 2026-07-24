@@ -238,9 +238,12 @@ export interface CreateCreativeInput {
   name: string;
   format: AdFormat;
   media_url?: string | null;
+  media_path?: string | null;
+  media_mime?: string | null;
   thumbnail_url?: string | null;
   metadata?: Record<string, unknown>;
 }
+
 
 export const useCreateCreative = () => {
   const qc = useQueryClient();
