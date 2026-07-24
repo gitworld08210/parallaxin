@@ -71,6 +71,8 @@ const AdsBusinessCenter = lazy(() => import("./pages/ads/BusinessCenter"));
 const AdsOnboardingWizard = lazy(() => import("./pages/ads/OnboardingWizard"));
 const AdvertiserShell = lazy(() => import("./pages/ads/AdvertiserShell"));
 const AdsReviewQueue = lazy(() => import("./pages/ads/AdsReviewQueue"));
+const AdsBillingCenter = lazy(() => import("./pages/ads/BillingCenter"));
+const AdsAnalytics = lazy(() => import("./pages/ads/AnalyticsDashboard"));
 
 const CreatorHub = lazy(() => import("./pages/CreatorHub"));
 const CreatorStudio = lazy(() => import("./pages/CreatorStudio"));
@@ -529,6 +531,8 @@ const App = () => (
               <Route path="/ads" element={<AdsGate><AdsBusinessCenter /></AdsGate>} />
               <Route path="/ads/get-started" element={<AdsGate><AdsOnboardingWizard /></AdsGate>} />
               <Route path="/ads/review" element={<AdsGate><AdsReviewQueue /></AdsGate>} />
+              <Route path="/ads/:advertiserId/billing" element={<AdsGate><AdsBillingCenter /></AdsGate>} />
+              <Route path="/ads/:advertiserId/analytics" element={<AdsGate><AdsAnalytics /></AdsGate>} />
               <Route path="/ads/:advertiserId/*" element={<AdsGate><AdvertiserShell /></AdsGate>} />
 
               {/* Legacy /admin removed — redirect to new Admin OS */}
