@@ -1,4 +1,7 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+
 import { useParams, Link, Routes, Route, useNavigate } from "react-router-dom";
 import { useAdvertiser } from "@/hooks/ads/useAdvertiser";
 import {
@@ -429,53 +432,135 @@ function AdGroupDetail({ advertiserId }: { advertiserId: string }) {
 
 /* --------------------------------- Creatives -------------------------------- */
 
+function CreativeThumb({ creative }: { creative: any }) {
+  const [url, setUrl] = useState<string | null>(creative.media_url ?? null);
+  useEffect(() => {
+    let cancelled = false;
+    if (creative.media_path && !creative.media_url) {
+      supabase.storage.from("ad-creatives").createSignedUrl(creative.media_path, 3600).then(({ data }) => {
+        if (!cancelled) setUrl(data?.signedUrl ?? null);
+      });
+    }
+    return () => { cancelled = true; };
+  }, [creative.media_path, creative.media_url]);
+  const isVideo = (creative.media_mime ?? "").startsWith("video/") || creative.format === "video";
+  if (!url) return <ImageIcon className="h-6 w-6 text-muted-foreground" />;
+  if (isVideo) return <video src={url} className="h-full w-full object-cover" muted playsInline preload="metadata" />;
+  return <img src={url} alt={creative.name} className="h-full w-full object-cover" />;
+}
+
 function CreativesLibrary({ advertiserId }: { advertiserId: string }) {
   const { data: creatives = [], isLoading } = useCreatives(advertiserId);
   const create = useCreateCreative();
   const [open, setOpen] = useState(false);
+  const [mode, setMode] = useState<"upload" | "url">("upload");
   const [form, setForm] = useState({ name: "", format: "image" as AdFormat, media_url: "" });
+  const [file, setFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [progress, setProgress] = useState<string>("");
+
+  const acceptFor = (fmt: AdFormat) => (fmt === "video" ? "video/*" : "image/*");
+  const maxBytes = (fmt: AdFormat) => (fmt === "video" ? 100 * 1024 * 1024 : 10 * 1024 * 1024);
+
+  const reset = () => {
+    setForm({ name: "", format: "image", media_url: "" });
+    setFile(null); setProgress(""); setMode("upload"); setOpen(false);
+  };
+
+  const handleSave = async () => {
+    if (!form.name.trim()) return;
+    try {
+      if (mode === "upload") {
+        if (!file) { toast.error("Choose a file to upload"); return; }
+        if (file.size > maxBytes(form.format)) {
+          toast.error(`File too large. Max ${form.format === "video" ? "100 MB" : "10 MB"}.`);
+          return;
+        }
+        const expectedPrefix = form.format === "video" ? "video/" : "image/";
+        if (!file.type.startsWith(expectedPrefix)) {
+          toast.error(`Selected file must be ${expectedPrefix}*`);
+          return;
+        }
+        setUploading(true); setProgress("Uploading…");
+        const ext = (file.name.split(".").pop() || "bin").toLowerCase().replace(/[^a-z0-9]/g, "");
+        const path = `${advertiserId}/${crypto.randomUUID()}.${ext}`;
+        const { error: upErr } = await supabase.storage.from("ad-creatives")
+          .upload(path, file, { cacheControl: "3600", upsert: false, contentType: file.type });
+        if (upErr) throw upErr;
+        await create.mutateAsync({
+          advertiser_id: advertiserId,
+          name: form.name, format: form.format,
+          media_path: path, media_mime: file.type, media_url: null,
+        });
+      } else {
+        if (!form.media_url.trim()) { toast.error("Paste a media URL"); return; }
+        await create.mutateAsync({
+          advertiser_id: advertiserId,
+          name: form.name, format: form.format,
+          media_url: form.media_url.trim(),
+        });
+      }
+      reset();
+    } catch (e: any) {
+      toast.error(e?.message ?? "Upload failed");
+    } finally {
+      setUploading(false); setProgress("");
+    }
+  };
+
+  const tabBtn = (active: boolean) =>
+    `flex-1 px-3 py-1.5 rounded-lg text-xs font-medium transition ${active ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`;
+
   return (
     <div>
       <div className="flex items-center justify-between mb-3">
         <h2 className="text-base font-semibold">Creative library</h2>
         <button className={btnPrimary} onClick={() => setOpen((v) => !v)}>
-          <Plus className="h-3 w-3" /> Upload URL
+          <Plus className="h-3 w-3" /> Add creative
         </button>
       </div>
       {open && (
         <Card className="mb-3 space-y-3">
-          <Field label="Name"><input className={inputCls} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></Field>
+          <div className="flex gap-2 rounded-lg bg-muted/40 p-1">
+            <button type="button" className={tabBtn(mode === "upload")} onClick={() => setMode("upload")}>Upload file</button>
+            <button type="button" className={tabBtn(mode === "url")} onClick={() => setMode("url")}>Paste URL</button>
+          </div>
+          <Field label="Name"><input className={inputCls} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} maxLength={120} /></Field>
           <Field label="Format">
-            <select className={inputCls} value={form.format} onChange={(e) => setForm({ ...form, format: e.target.value as AdFormat })}>
+            <select className={inputCls} value={form.format}
+              onChange={(e) => { setForm({ ...form, format: e.target.value as AdFormat }); setFile(null); }}>
               {FORMATS.map((f) => <option key={f} value={f}>{f}</option>)}
             </select>
           </Field>
-          <Field label="Media URL"><input className={inputCls} value={form.media_url} onChange={(e) => setForm({ ...form, media_url: e.target.value })} /></Field>
+          {mode === "upload" ? (
+            <Field label={form.format === "video" ? "Video file (mp4, mov · max 100 MB)" : "Image file (jpg, png, webp · max 10 MB)"}>
+              <input type="file" accept={acceptFor(form.format)} className={inputCls}
+                onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
+              {file && <p className="text-[11px] text-muted-foreground mt-1">{file.name} · {(file.size / 1024 / 1024).toFixed(2)} MB</p>}
+            </Field>
+          ) : (
+            <Field label="Media URL"><input className={inputCls} value={form.media_url} placeholder="https://…"
+              onChange={(e) => setForm({ ...form, media_url: e.target.value })} /></Field>
+          )}
+          {progress && <p className="text-xs text-muted-foreground">{progress}</p>}
           <div className="flex justify-end gap-2">
-            <button className={btnGhost} onClick={() => setOpen(false)}>Cancel</button>
-            <button className={btnPrimary} disabled={!form.name || create.isPending}
-              onClick={async () => {
-                await create.mutateAsync({
-                  advertiser_id: advertiserId,
-                  name: form.name, format: form.format,
-                  media_url: form.media_url || null,
-                });
-                setForm({ name: "", format: "image", media_url: "" });
-                setOpen(false);
-              }}>Save</button>
+            <button className={btnGhost} onClick={reset} disabled={uploading}>Cancel</button>
+            <button className={btnPrimary} disabled={!form.name || uploading || create.isPending} onClick={handleSave}>
+              {uploading ? "Uploading…" : "Save"}
+            </button>
           </div>
         </Card>
       )}
       {isLoading ? (
         <p className="text-sm text-muted-foreground">Loading…</p>
       ) : creatives.length === 0 ? (
-        <Card><p className="text-sm text-muted-foreground">No creatives yet. Upload an image, video, or carousel to reuse across ads.</p></Card>
+        <Card><p className="text-sm text-muted-foreground">No creatives yet. Upload an image or video to reuse across ads.</p></Card>
       ) : (
         <div className="grid grid-cols-2 gap-2">
           {creatives.map((c: any) => (
             <Card key={c.id}>
               <div className="aspect-video rounded-lg bg-muted mb-2 grid place-items-center overflow-hidden">
-                {c.media_url ? <img src={c.media_url} alt={c.name} className="h-full w-full object-cover" /> : <ImageIcon className="h-6 w-6 text-muted-foreground" />}
+                <CreativeThumb creative={c} />
               </div>
               <p className="text-xs font-semibold truncate">{c.name}</p>
               <p className="text-[10px] text-muted-foreground">{c.format}</p>
@@ -486,6 +571,7 @@ function CreativesLibrary({ advertiserId }: { advertiserId: string }) {
     </div>
   );
 }
+
 
 /* --------------------------------- Audiences -------------------------------- */
 

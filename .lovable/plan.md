@@ -1,46 +1,36 @@
-## Aurelix Ads Platform — Remaining Roadmap (Phases 10–14)
+## Problem
+In Business Center → Creatives, the only way to add a creative is to paste a "Media URL". Advertisers don't have a link handy — they need to upload the file (photo/video) directly from their device.
 
-Phases 1–9 are shipped (DB, onboarding, campaigns, moderation, analytics/billing, delivery/audiences, experiments/brand safety, conversions/attribution, public API + webhooks). Here's what's left to make AAP feature-complete against the v1.0 spec.
+## Plan
 
-### Phase 10 — Creative Intelligence & AI Assist
-- AI creative generator (copy + image variants) via `hi-aig` (Gemini)
-- Predicted CTR/CVR scoring on creative upload
-- Auto-tagging (objects, brand safety pre-flags) before human review
-- "Creative Studio" tab in AdvertiserShell with variant A/B seeding into Phase 7 experiments
+**1. Create a private storage bucket `ad-creatives`**
+- Private bucket (files served via short-lived signed URLs).
+- RLS on `storage.objects`:
+  - Advertiser members can upload/read/delete files under `<advertiser_id>/…`.
+  - Staff (Reviewer, Platform Admin, Founder) can read all — needed for moderation.
 
-### Phase 11 — Budget Automation & Smart Bidding
-- Portfolio budgets across campaigns (`aap_portfolios`)
-- Auto-bidding strategies: Max Conversions, Target CPA, Target ROAS
-- Pacing controller Edge Function (cron) that reallocates spend hourly
-- Anomaly detection + alerts (spend spikes, delivery drops)
+**2. Rework the Creatives "Upload" panel in `src/pages/ads/AdvertiserShell.tsx`**
+- Replace the single "Upload URL" button with a segmented control: **Upload file** (default) / **Paste URL**.
+- Upload file mode:
+  - Native file picker restricted by chosen Format (`image/*` for image/carousel, `video/*` for video).
+  - Client-side size guard (image ≤ 10 MB, video ≤ 100 MB) and MIME check.
+  - Progress indicator while uploading to `ad-creatives/<advertiser_id>/<uuid>.<ext>`.
+  - On success, store the storage path in `aap_creatives.media_url` (or a new `media_path` field — see technical notes) and refresh the library.
+- Paste URL mode: keeps the current text input for external hosted media.
+- Preview tile: if the creative is a stored file, fetch a signed URL to render; video files render in a `<video>` element with `muted` poster.
 
-### Phase 12 — Marketplace & Deals
-- Direct deals / PMP between premium creators and advertisers
-- `aap_deals`, `aap_deal_line_items`, negotiation state machine
-- Reserved inventory in the delivery engine (priority tier above auction)
-- Creator-side "Brand Deals" inbox
+**3. Carousel support**
+- When Format = `carousel`, allow selecting up to 10 images in one go and store them as an array (either JSON in `media_url` or a new `media_urls text[]` column — decide in build).
 
-### Phase 13 — Measurement, Reporting & Exports
-- Scheduled reports (email/webhook) with saved views
-- Cohort + funnel reports on top of `aap_attributions`
-- CSV/Parquet exports via signed URLs
-- Incrementality / lift study module (holdout groups)
+**4. No changes to campaigns/ad groups/finance** — this is a Creative Library UX change only.
 
-### Phase 14 — Compliance, Trust & Ops
-- Ad transparency center (public page listing active ads per advertiser)
-- Advertiser verification (business KYC) tied to spend limits
-- DSAR/data deletion workflow for pixel data
-- Full audit log viewer + SOC2-style access reports
-- Billing: GST invoices, tax IDs, dunning for failed top-ups
+## Technical notes
+- Bucket creation via `supabase--storage_create_bucket` (private).
+- Signed URL helper: `supabase.storage.from('ad-creatives').createSignedUrl(path, 3600)` used inside the creative card component; cache per session.
+- Schema: prefer adding `media_path text` + `media_mime text` + `media_kind text` columns to `aap_creatives` (keeps `media_url` for external links). Migration + regenerated types before the UI edit.
+- `useCreateCreative` hook (already in `src/hooks/ads/useCreatives.ts`) extended to accept the new fields.
+- File input uses `accept="image/*"` or `accept="video/*"`; upload runs through `supabase.storage.from(...).upload()` with `upsert:false` and `cacheControl:'3600'`.
 
-### Cross-cutting gaps still open
-- Cron wiring for `aap-webhook-dispatcher`, pacing, outbox retention cleanup
-- Rate-limit enforcement on `aap-api` (table exists, gateway check pending)
-- Advertiser role management UI (invite members, scoped permissions)
-- Notification center for advertisers (moderation decisions, budget alerts)
-- End-to-end smoke tests for the full campaign → serve → convert → report loop
-
-### Suggested order
-10 → 11 (creator/advertiser value) → 13 (reporting depth) → 12 (marketplace) → 14 (compliance before scale). Cross-cutting gaps folded in alongside.
-
-Tell me which phase to start, or say "Phase 10" to continue sequentially.
+## Out of scope
+- Video transcoding / thumbnail extraction (defer; show first frame via `<video preload="metadata">`).
+- Ad-level creative override (still uses selector from library).

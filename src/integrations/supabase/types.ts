@@ -1311,9 +1311,13 @@ export type Database = {
           format: Database["public"]["Enums"]["aap_ad_format"]
           headline: string | null
           id: string
+          media_mime: string | null
+          media_path: string | null
+          media_url: string | null
           name: string
           payload: Json
           primary_asset_id: string | null
+          thumbnail_url: string | null
           updated_at: string
         }
         Insert: {
@@ -1326,9 +1330,13 @@ export type Database = {
           format: Database["public"]["Enums"]["aap_ad_format"]
           headline?: string | null
           id?: string
+          media_mime?: string | null
+          media_path?: string | null
+          media_url?: string | null
           name: string
           payload?: Json
           primary_asset_id?: string | null
+          thumbnail_url?: string | null
           updated_at?: string
         }
         Update: {
@@ -1341,9 +1349,13 @@ export type Database = {
           format?: Database["public"]["Enums"]["aap_ad_format"]
           headline?: string | null
           id?: string
+          media_mime?: string | null
+          media_path?: string | null
+          media_url?: string | null
           name?: string
           payload?: Json
           primary_asset_id?: string | null
+          thumbnail_url?: string | null
           updated_at?: string
         }
         Relationships: [
