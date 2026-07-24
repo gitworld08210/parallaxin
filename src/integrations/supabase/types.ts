@@ -17,6 +17,8 @@ export type Database = {
       aap_ad_groups: {
         Row: {
           advertiser_id: string
+          attribution_click_days: number
+          attribution_view_days: number
           audience_id: string | null
           auto_paused_at: string | null
           auto_paused_reason: string | null
@@ -44,6 +46,8 @@ export type Database = {
         }
         Insert: {
           advertiser_id: string
+          attribution_click_days?: number
+          attribution_view_days?: number
           audience_id?: string | null
           auto_paused_at?: string | null
           auto_paused_reason?: string | null
@@ -71,6 +75,8 @@ export type Database = {
         }
         Update: {
           advertiser_id?: string
+          attribution_click_days?: number
+          attribution_view_days?: number
           audience_id?: string | null
           auto_paused_at?: string | null
           auto_paused_reason?: string | null
@@ -542,6 +548,109 @@ export type Database = {
           },
         ]
       }
+      aap_attributions: {
+        Row: {
+          ad_group_id: string | null
+          ad_id: string | null
+          advertiser_id: string
+          campaign_id: string | null
+          conversion_event_id: string | null
+          created_at: string
+          currency: string
+          event_code: string
+          external_event_id: string | null
+          id: string
+          meta: Json
+          occurred_at: string
+          pixel_id: string | null
+          touch_event_id: number | null
+          touch_kind: string | null
+          user_id: string | null
+          value: number
+        }
+        Insert: {
+          ad_group_id?: string | null
+          ad_id?: string | null
+          advertiser_id: string
+          campaign_id?: string | null
+          conversion_event_id?: string | null
+          created_at?: string
+          currency?: string
+          event_code: string
+          external_event_id?: string | null
+          id?: string
+          meta?: Json
+          occurred_at?: string
+          pixel_id?: string | null
+          touch_event_id?: number | null
+          touch_kind?: string | null
+          user_id?: string | null
+          value?: number
+        }
+        Update: {
+          ad_group_id?: string | null
+          ad_id?: string | null
+          advertiser_id?: string
+          campaign_id?: string | null
+          conversion_event_id?: string | null
+          created_at?: string
+          currency?: string
+          event_code?: string
+          external_event_id?: string | null
+          id?: string
+          meta?: Json
+          occurred_at?: string
+          pixel_id?: string | null
+          touch_event_id?: number | null
+          touch_kind?: string | null
+          user_id?: string | null
+          value?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aap_attributions_ad_group_id_fkey"
+            columns: ["ad_group_id"]
+            isOneToOne: false
+            referencedRelation: "aap_ad_groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "aap_attributions_ad_id_fkey"
+            columns: ["ad_id"]
+            isOneToOne: false
+            referencedRelation: "aap_ads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "aap_attributions_advertiser_id_fkey"
+            columns: ["advertiser_id"]
+            isOneToOne: false
+            referencedRelation: "aap_advertisers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "aap_attributions_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "aap_campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "aap_attributions_conversion_event_id_fkey"
+            columns: ["conversion_event_id"]
+            isOneToOne: false
+            referencedRelation: "aap_conversion_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "aap_attributions_pixel_id_fkey"
+            columns: ["pixel_id"]
+            isOneToOne: false
+            referencedRelation: "aap_pixels"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       aap_audiences: {
         Row: {
           advertiser_id: string
@@ -986,30 +1095,42 @@ export type Database = {
         Row: {
           advertiser_id: string
           created_at: string
+          currency: string
+          default_value: number
+          event_code: string | null
           id: string
           is_active: boolean
           kind: string
           name: string
+          pixel_id: string | null
           spec: Json
           updated_at: string
         }
         Insert: {
           advertiser_id: string
           created_at?: string
+          currency?: string
+          default_value?: number
+          event_code?: string | null
           id?: string
           is_active?: boolean
           kind?: string
           name: string
+          pixel_id?: string | null
           spec?: Json
           updated_at?: string
         }
         Update: {
           advertiser_id?: string
           created_at?: string
+          currency?: string
+          default_value?: number
+          event_code?: string | null
           id?: string
           is_active?: boolean
           kind?: string
           name?: string
+          pixel_id?: string | null
           spec?: Json
           updated_at?: string
         }
@@ -1019,6 +1140,13 @@ export type Database = {
             columns: ["advertiser_id"]
             isOneToOne: false
             referencedRelation: "aap_advertisers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "aap_conversion_events_pixel_id_fkey"
+            columns: ["pixel_id"]
+            isOneToOne: false
+            referencedRelation: "aap_pixels"
             referencedColumns: ["id"]
           },
         ]
@@ -2136,6 +2264,47 @@ export type Database = {
             columns: ["invoice_id"]
             isOneToOne: false
             referencedRelation: "aap_invoices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      aap_pixels: {
+        Row: {
+          advertiser_id: string
+          created_at: string
+          domain: string | null
+          id: string
+          is_active: boolean
+          last_event_at: string | null
+          name: string
+          secret: string
+        }
+        Insert: {
+          advertiser_id: string
+          created_at?: string
+          domain?: string | null
+          id?: string
+          is_active?: boolean
+          last_event_at?: string | null
+          name: string
+          secret?: string
+        }
+        Update: {
+          advertiser_id?: string
+          created_at?: string
+          domain?: string | null
+          id?: string
+          is_active?: boolean
+          last_event_at?: string | null
+          name?: string
+          secret?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aap_pixels_advertiser_id_fkey"
+            columns: ["advertiser_id"]
+            isOneToOne: false
+            referencedRelation: "aap_advertisers"
             referencedColumns: ["id"]
           },
         ]
@@ -18472,6 +18641,17 @@ export type Database = {
         Args: { _experiment_id: string; _user_id: string }
         Returns: string
       }
+      aap_attribution_summary: {
+        Args: { p_advertiser_id: string; p_days?: number }
+        Returns: {
+          click_conversions: number
+          event_code: string
+          total_conversions: number
+          total_value: number
+          unattributed: number
+          view_conversions: number
+        }[]
+      }
       aap_brand_safety_check: {
         Args: { _ad_id: string; _context: Json }
         Returns: boolean
@@ -18498,6 +18678,19 @@ export type Database = {
           variant_id: string
           variant_name: string
         }[]
+      }
+      aap_ingest_conversion: {
+        Args: {
+          p_currency: string
+          p_event_code: string
+          p_external_event_id: string
+          p_meta: Json
+          p_pixel_id: string
+          p_secret: string
+          p_user_id: string
+          p_value: number
+        }
+        Returns: Json
       }
       aap_is_advertiser_member: {
         Args: { _advertiser_id: string }
