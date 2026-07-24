@@ -13,7 +13,9 @@ import { useEstimateReach, useCreateLookalike, useUpdatePacing, useResumeAdGroup
 import { ExperimentsPanel, BrandSafetyPanel, AdGroupSafetyPanel } from "./ExperimentsAndSafety";
 import { ConversionsPanel } from "./ConversionsPanel";
 import { DeveloperPanel } from "./DeveloperPanel";
-import { ArrowLeft, Plus, Play, Pause, Send, Megaphone, Layers, Image as ImageIcon, Users, BarChart3, Wallet, Sparkles, Gauge, AlertCircle, FlaskConical, Shield, Target, Code2 } from "lucide-react";
+import { CreativeStudio } from "./CreativeStudio";
+import { ArrowLeft, Plus, Play, Pause, Send, Megaphone, Layers, Image as ImageIcon, Users, BarChart3, Wallet, Sparkles, Gauge, AlertCircle, FlaskConical, Shield, Target, Code2, Wand2 } from "lucide-react";
+
 
 const PLACEMENTS: Placement[] = ["feed", "reels", "stories", "explore", "search", "profile", "organization"];
 const OBJECTIVES: CampaignObjective[] = ["awareness", "reach", "engagement", "traffic", "app_promotion", "video_views", "conversions"];
@@ -654,12 +656,14 @@ const TABS: { key: string; label: string; icon: any }[] = [
   { key: "overview", label: "Overview", icon: BarChart3 },
   { key: "campaigns", label: "Campaigns", icon: Megaphone },
   { key: "creatives", label: "Creatives", icon: ImageIcon },
+  { key: "studio", label: "Creative Studio", icon: Wand2 },
   { key: "audiences", label: "Audiences", icon: Users },
   { key: "experiments", label: "Experiments", icon: FlaskConical },
   { key: "safety", label: "Brand safety", icon: Shield },
   { key: "conversions", label: "Conversions", icon: Target },
   { key: "developers", label: "Developers", icon: Code2 },
 ];
+
 
 export default function AdvertiserShell() {
   const { advertiserId } = useParams();
@@ -711,12 +715,14 @@ export default function AdvertiserShell() {
                 tab === "overview" ? <Overview advertiserId={advertiserId} />
                 : tab === "campaigns" ? <CampaignsList advertiserId={advertiserId} />
                 : tab === "creatives" ? <CreativesLibrary advertiserId={advertiserId} />
+                : tab === "studio" ? <CreativeStudio advertiserId={advertiserId} />
                 : tab === "experiments" ? <ExperimentsPanel advertiserId={advertiserId} />
                 : tab === "safety" ? <BrandSafetyPanel advertiserId={advertiserId} />
                 : tab === "conversions" ? <ConversionsPanel advertiserId={advertiserId} />
                 : tab === "developers" ? <DeveloperPanel advertiserId={advertiserId} />
                 : <AudiencesLibrary advertiserId={advertiserId} />
               } />
+
               <Route path="campaigns/:campaignId" element={<CampaignDetail advertiserId={advertiserId} />} />
               <Route path="campaigns/:campaignId/groups/:groupId" element={<AdGroupDetail advertiserId={advertiserId} />} />
             </Routes>
