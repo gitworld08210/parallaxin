@@ -15,16 +15,10 @@ import { useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Delete, ArrowLeft, ShieldCheck, KeyRound, Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthProvider";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 const KEY = (uid: string) => `msg_passcode:${uid}`;
-
-type Stored = {
-  hash: string;
-  question: string;
-  answerHash: string;
-  createdAt: string;
-};
 
 const QUESTIONS = [
   "What was the name of your first pet?",
@@ -35,15 +29,14 @@ const QUESTIONS = [
   "Who was your childhood best friend?",
 ];
 
-async function sha256(input: string): Promise<string> {
-  const buf = new TextEncoder().encode(input);
-  const digest = await crypto.subtle.digest("SHA-256", buf);
-  return Array.from(new Uint8Array(digest))
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
-}
+type Stored = {
+  hash: string;
+  question: string;
+  answerHash: string;
+  createdAt: string;
+};
 
-const readStored = (uid: string): Stored | null => {
+const readCache = (uid: string): Stored | null => {
   try {
     const raw = localStorage.getItem(KEY(uid));
     return raw ? (JSON.parse(raw) as Stored) : null;
@@ -52,9 +45,47 @@ const readStored = (uid: string): Stored | null => {
   }
 };
 
-const writeStored = (uid: string, value: Stored) => {
-  localStorage.setItem(KEY(uid), JSON.stringify(value));
+const writeCache = (uid: string, value: Stored) => {
+  try { localStorage.setItem(KEY(uid), JSON.stringify(value)); } catch {}
 };
+
+const fetchRemote = async (uid: string): Promise<Stored | null> => {
+  const { data, error } = await supabase
+    .from("message_passcodes" as any)
+    .select("hash, question, answer_hash, created_at")
+    .eq("user_id", uid)
+    .maybeSingle();
+  if (error || !data) return null;
+  const row: any = data;
+  return {
+    hash: row.hash,
+    question: row.question,
+    answerHash: row.answer_hash,
+    createdAt: row.created_at,
+  };
+};
+
+const saveRemote = async (uid: string, value: Stored) => {
+  await supabase
+    .from("message_passcodes" as any)
+    .upsert(
+      {
+        user_id: uid,
+        hash: value.hash,
+        question: value.question,
+        answer_hash: value.answerHash,
+      } as any,
+      { onConflict: "user_id" },
+    );
+};
+
+async function sha256(input: string): Promise<string> {
+  const buf = new TextEncoder().encode(input);
+  const digest = await crypto.subtle.digest("SHA-256", buf);
+  return Array.from(new Uint8Array(digest))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+}
 
 // Persistent unlock — once the user enters the passcode on this device we
 // remember it, so DM taps don't re-prompt every time. Cleared only if the
@@ -76,8 +107,28 @@ export const MessagesPasscodeGate = ({ children }: { children: React.ReactNode }
 
   useEffect(() => {
     if (!user) return;
-    setStored(readStored(uid));
-    setReady(true);
+    let cancelled = false;
+    (async () => {
+      // 1. Warm start from cache so the keypad shows instantly if we have it.
+      const cached = readCache(uid);
+      if (cached && !cancelled) setStored(cached);
+
+      // 2. DB is source of truth — hydrate and overwrite cache.
+      const remote = await fetchRemote(uid);
+      if (cancelled) return;
+      if (remote) {
+        setStored(remote);
+        writeCache(uid, remote);
+      } else if (cached) {
+        // Cache exists but no DB row → backfill so it survives origin changes.
+        saveRemote(uid, cached).catch(() => {});
+        setStored(cached);
+      } else {
+        setStored(null);
+      }
+      setReady(true);
+    })();
+    return () => { cancelled = true; };
   }, [uid, user]);
 
   // Re-lock whenever the user leaves the Messages surface entirely.
@@ -94,7 +145,10 @@ export const MessagesPasscodeGate = ({ children }: { children: React.ReactNode }
   };
 
   const handleCreated = (s: Stored) => {
-    writeStored(uid, s);
+    writeCache(uid, s);
+    saveRemote(uid, s).catch(() => {
+      toast.error("Couldn't sync passcode to your account — will retry on next unlock.");
+    });
     setStored(s);
     sessionUnlocked = true;
     setUnlocked(true);
