@@ -20,6 +20,15 @@ import { toast } from "sonner";
 
 const KEY = (uid: string) => `msg_passcode:${uid}`;
 
+const QUESTIONS = [
+  "What was the name of your first pet?",
+  "What city were you born in?",
+  "What is your mother's maiden name?",
+  "What was the name of your first school?",
+  "What is your favourite movie?",
+  "Who was your childhood best friend?",
+];
+
 type Stored = {
   hash: string;
   question: string;
