@@ -259,58 +259,114 @@
   }
 }
 
-/* ===== Liquid Glass utilities (work in both themes, shine in light) ===== */
+/* ===== iOS 26 Liquid Glass utilities ===== */
 @layer components {
-  .liquid-glass {
+  .liquid-glass,
+  .liquid-nav {
     position: relative;
-    background: linear-gradient(135deg, hsl(0 0% 100% / 0.15), hsl(0 0% 100% / 0.06));
-    backdrop-filter: blur(30px) saturate(180%);
-    -webkit-backdrop-filter: blur(30px) saturate(180%);
-    border: 1px solid hsl(0 0% 100% / 0.22);
+    isolation: isolate;
+    background-clip: padding-box;
+  }
+
+  /* Base (dark theme keeps a subtle version) */
+  .liquid-glass {
+    background: linear-gradient(135deg, hsl(0 0% 100% / 0.14), hsl(0 0% 100% / 0.05));
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid hsl(0 0% 100% / 0.18);
     box-shadow:
-      0 8px 32px hsl(0 0% 0% / 0.08),
-      inset 0 1px 0 hsl(0 0% 100% / 0.3);
+      0 8px 32px hsl(0 0% 0% / 0.10),
+      inset 0 1px 0 hsl(0 0% 100% / 0.24);
     border-radius: 1.5rem;
   }
-  .light .liquid-glass {
-    background: linear-gradient(135deg, hsl(0 0% 100% / 0.55), hsl(220 40% 98% / 0.3));
-    border: 1px solid hsl(0 0% 100% / 0.65);
+
+  /* --- LIGHT MODE: true iOS liquid glass --- */
+  .light .liquid-glass,
+  .light .liquid-nav {
+    background:
+      radial-gradient(120% 80% at 20% 0%, hsl(0 0% 100% / 0.55), transparent 60%),
+      radial-gradient(140% 90% at 100% 100%, hsl(220 100% 96% / 0.35), transparent 55%),
+      linear-gradient(180deg, hsl(0 0% 100% / 0.42), hsl(0 0% 100% / 0.22));
+    backdrop-filter: blur(40px) saturate(200%) brightness(1.08);
+    -webkit-backdrop-filter: blur(40px) saturate(200%) brightness(1.08);
+    border: 1px solid hsl(0 0% 100% / 0.55);
     box-shadow:
-      0 10px 36px -10px hsl(220 40% 20% / 0.18),
-      inset 0 1px 0 hsl(0 0% 100% / 0.9),
-      inset 0 -1px 0 hsl(220 30% 70% / 0.22);
+      /* soft outer drop */
+      0 12px 40px -12px hsl(220 40% 20% / 0.18),
+      0 2px 8px -2px hsl(220 40% 20% / 0.10),
+      /* top inner highlight (specular) */
+      inset 0 1px 0 hsl(0 0% 100% / 0.95),
+      inset 0 2px 6px hsl(0 0% 100% / 0.35),
+      /* bottom inner shade (glass thickness) */
+      inset 0 -1px 0 hsl(220 30% 60% / 0.20),
+      inset 0 -8px 24px hsl(220 40% 70% / 0.10);
   }
-  /* Iridescent specular highlight strip */
-  .liquid-glass::before {
+
+  /* Iridescent sheen sweep (top layer) */
+  .liquid-glass::before,
+  .liquid-nav::before {
     content: "";
     position: absolute;
     inset: 0;
     border-radius: inherit;
-    background: linear-gradient(125deg, transparent 0%, hsl(0 0% 100% / 0.18) 28%, transparent 42%, transparent 100%);
+    background: linear-gradient(
+      120deg,
+      transparent 0%,
+      hsl(0 0% 100% / 0.10) 18%,
+      hsl(0 0% 100% / 0.55) 30%,
+      hsl(0 0% 100% / 0.08) 42%,
+      transparent 70%
+    );
     mix-blend-mode: overlay;
     pointer-events: none;
+    z-index: 1;
+    opacity: 0;
+    transition: opacity 400ms ease;
   }
-  .light .liquid-glass::before {
-    background: linear-gradient(125deg, transparent 0%, hsl(0 0% 100% / 0.55) 28%, transparent 42%, transparent 100%);
-  }
+  .light .liquid-glass::before,
+  .light .liquid-nav::before { opacity: 1; }
 
+  /* Chromatic edge shimmer (bottom layer) */
+  .liquid-glass::after,
+  .liquid-nav::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(
+      135deg,
+      hsl(0 0% 100% / 0.9) 0%,
+      hsl(210 100% 90% / 0.5) 25%,
+      hsl(280 60% 92% / 0.35) 50%,
+      hsl(180 60% 92% / 0.4) 75%,
+      hsl(0 0% 100% / 0.7) 100%
+    );
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+            mask-composite: exclude;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 400ms ease;
+  }
+  .light .liquid-glass::after,
+  .light .liquid-nav::after { opacity: 0.9; }
+
+  /* Navigation variant — sits on top/bottom edges */
   .liquid-nav {
-    background: linear-gradient(180deg, hsl(0 0% 100% / 0.1), hsl(0 0% 100% / 0.04));
-    backdrop-filter: blur(34px) saturate(180%);
-    -webkit-backdrop-filter: blur(34px) saturate(180%);
-    border: 1px solid hsl(0 0% 100% / 0.16);
+    background: linear-gradient(180deg, hsl(0 0% 100% / 0.10), hsl(0 0% 100% / 0.04));
+    backdrop-filter: blur(32px) saturate(180%);
+    -webkit-backdrop-filter: blur(32px) saturate(180%);
+    border: 1px solid hsl(0 0% 100% / 0.14);
     box-shadow:
       0 18px 50px -20px hsl(0 0% 0% / 0.55),
-      inset 0 1px 0 hsl(0 0% 100% / 0.18);
+      inset 0 1px 0 hsl(0 0% 100% / 0.16);
   }
-  .light .liquid-nav {
-    background: linear-gradient(180deg, hsl(0 0% 100% / 0.7), hsl(220 40% 98% / 0.45));
-    border: 1px solid hsl(0 0% 100% / 0.7);
-    box-shadow:
-      0 18px 50px -22px hsl(220 40% 20% / 0.22),
-      inset 0 1px 0 hsl(0 0% 100% / 0.95),
-      inset 0 -1px 0 hsl(220 30% 70% / 0.25);
-  }
+
+
+
 
   .liquid-hover {
     transition:
