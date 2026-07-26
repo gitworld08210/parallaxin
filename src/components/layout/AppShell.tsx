@@ -91,8 +91,10 @@ export const AppShell = () => {
       {/* Fixed bottom navigation — Twitter/Instagram/WhatsApp style */}
       <nav
         className={cn(
-          "fixed bottom-0 inset-x-0 z-50 mx-auto max-w-md h-16 grid grid-cols-5 items-center border-t border-border bg-background/95 backdrop-blur-xl pb-[env(safe-area-inset-bottom)]",
-          isReels && "bg-black/90 border-white/10",
+          "fixed bottom-0 inset-x-0 z-50 mx-auto max-w-md h-16 grid grid-cols-5 items-center pb-[env(safe-area-inset-bottom)]",
+          isReels
+            ? "bg-black/90 border-t border-white/10"
+            : "liquid-nav border-t border-border/50",
         )}
       >
         <NavSlot to="/" end label="Home" icon={Home} isReels={isReels} />

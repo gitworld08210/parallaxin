@@ -155,7 +155,7 @@ const Assistant = () => {
 
       <form
         onSubmit={(e) => { e.preventDefault(); send(); }}
-        className="fixed bottom-0 inset-x-0 mx-auto max-w-md p-3 flex gap-2 bg-background/95 backdrop-blur-sm border-t border-border"
+        className="fixed bottom-0 inset-x-0 mx-auto max-w-md p-3 flex gap-2 liquid-nav border-t border-border/50 rounded-none"
       >
         <input
           value={input}
