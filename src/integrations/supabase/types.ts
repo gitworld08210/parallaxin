@@ -12076,6 +12076,33 @@ export type Database = {
         }
         Relationships: []
       }
+      message_passcodes: {
+        Row: {
+          answer_hash: string
+          created_at: string
+          hash: string
+          question: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          answer_hash: string
+          created_at?: string
+          hash: string
+          question: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          answer_hash?: string
+          created_at?: string
+          hash?: string
+          question?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       messages: {
         Row: {
           content: string
