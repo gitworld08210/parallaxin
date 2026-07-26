@@ -26,7 +26,7 @@ export const CreateSheet = ({ open, onOpenChange }: Props) => {
   const close = () => onOpenChange(false);
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="bottom" className="bg-background border-t border-border rounded-t-3xl pb-[env(safe-area-inset-bottom)] max-w-md mx-auto">
+      <SheetContent side="bottom" className="liquid-glass rounded-b-none border-t border-border/50 rounded-t-3xl pb-[env(safe-area-inset-bottom)] max-w-md mx-auto">
         <div className="flex items-center justify-between pt-1 pb-3">
           <div>
             <p className="text-xs uppercase tracking-widest text-muted-foreground font-semibold">Create</p>
