@@ -109,7 +109,7 @@ const Feed = () => {
       {/* X-style translucent top chrome */}
       <div
         className={cn(
-          "sticky top-0 z-30 bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60 transition-transform duration-300 border-b border-border/70",
+          "sticky top-0 z-30 liquid-nav border-b border-border/50 rounded-none transition-transform duration-300",
           chromeHidden ? "-translate-y-full" : "translate-y-0",
         )}
       >
