@@ -537,6 +537,8 @@ const App = () => (
               <Route path="/ads/:advertiserId/billing" element={<AdsGate><AdsBillingCenter /></AdsGate>} />
               <Route path="/ads/:advertiserId/credit" element={<AdsGate><AdsCreditCenter /></AdsGate>} />
               <Route path="/ads/:advertiserId/analytics" element={<AdsGate><AdsAnalytics /></AdsGate>} />
+              <Route path="/ads/manager" element={<AdsGate><AdsManager /></AdsGate>} />
+              <Route path="/ads/:advertiserId/manager" element={<AdsGate><AdsManager /></AdsGate>} />
               <Route path="/ads/:advertiserId/*" element={<AdsGate><AdvertiserShell /></AdsGate>} />
 
               {/* Legacy /admin removed — redirect to new Admin OS */}
