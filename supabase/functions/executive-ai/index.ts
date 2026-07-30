@@ -74,6 +74,7 @@ ${context ? `\nCurrent context provided by the user:\n${String(context).slice(0,
       body: JSON.stringify({
         model,
         stream: true,
+        ...(String(model).startsWith('openai/gpt-5.6') ? { reasoning_effort: 'none' } : {}),
         messages: [system, ...safeMessages],
       }),
     });
