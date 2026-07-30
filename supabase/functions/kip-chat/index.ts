@@ -2,7 +2,7 @@ import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors';
 import { createClient } from 'npm:@supabase/supabase-js@2';
 
 const EMBED_MODEL = 'openai/text-embedding-3-small';
-const CHAT_MODEL = 'google/gemini-2.5-flash';
+const CHAT_MODEL = 'openai/gpt-5.6-sol';
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
@@ -91,7 +91,7 @@ ${contextBlock}`,
     const resp = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
-      body: JSON.stringify({ model: CHAT_MODEL, stream: true, messages: [system, ...safeMsgs] }),
+      body: JSON.stringify({ model: CHAT_MODEL, stream: true, reasoning_effort: 'none', messages: [system, ...safeMsgs] }),
     });
     if (resp.status === 429) return new Response(JSON.stringify({ error: 'Rate limit — try again shortly.' }), { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     if (resp.status === 402) return new Response(JSON.stringify({ error: 'AI credits exhausted.' }), { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });

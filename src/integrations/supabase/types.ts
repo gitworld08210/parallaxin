@@ -1130,6 +1130,44 @@ export type Database = {
           },
         ]
       }
+      aap_column_presets: {
+        Row: {
+          advertiser_id: string
+          columns: Json
+          created_at: string
+          id: string
+          name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          advertiser_id: string
+          columns?: Json
+          created_at?: string
+          id?: string
+          name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          advertiser_id?: string
+          columns?: Json
+          created_at?: string
+          id?: string
+          name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aap_column_presets_advertiser_id_fkey"
+            columns: ["advertiser_id"]
+            isOneToOne: false
+            referencedRelation: "aap_advertisers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       aap_config: {
         Row: {
           created_at: string
@@ -2869,6 +2907,68 @@ export type Database = {
           },
         ]
       }
+      aap_recommendations: {
+        Row: {
+          advertiser_id: string
+          applied_at: string | null
+          applied_by: string | null
+          created_at: string
+          detail: string | null
+          entity_id: string | null
+          entity_level: string
+          id: string
+          impact_score: number
+          kind: string
+          model: string | null
+          state: string
+          suggested_action: Json
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          advertiser_id: string
+          applied_at?: string | null
+          applied_by?: string | null
+          created_at?: string
+          detail?: string | null
+          entity_id?: string | null
+          entity_level?: string
+          id?: string
+          impact_score?: number
+          kind: string
+          model?: string | null
+          state?: string
+          suggested_action?: Json
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          advertiser_id?: string
+          applied_at?: string | null
+          applied_by?: string | null
+          created_at?: string
+          detail?: string | null
+          entity_id?: string | null
+          entity_level?: string
+          id?: string
+          impact_score?: number
+          kind?: string
+          model?: string | null
+          state?: string
+          suggested_action?: Json
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aap_recommendations_advertiser_id_fkey"
+            columns: ["advertiser_id"]
+            isOneToOne: false
+            referencedRelation: "aap_advertisers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       aap_report_runs: {
         Row: {
           finished_at: string | null
@@ -3122,6 +3222,163 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "aap_risk_scores_advertiser_id_fkey"
+            columns: ["advertiser_id"]
+            isOneToOne: false
+            referencedRelation: "aap_advertisers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      aap_rule_runs: {
+        Row: {
+          advertiser_id: string
+          affected: Json
+          created_at: string
+          id: string
+          matched_count: number
+          message: string | null
+          rule_id: string
+          status: string
+        }
+        Insert: {
+          advertiser_id: string
+          affected?: Json
+          created_at?: string
+          id?: string
+          matched_count?: number
+          message?: string | null
+          rule_id: string
+          status?: string
+        }
+        Update: {
+          advertiser_id?: string
+          affected?: Json
+          created_at?: string
+          id?: string
+          matched_count?: number
+          message?: string | null
+          rule_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aap_rule_runs_advertiser_id_fkey"
+            columns: ["advertiser_id"]
+            isOneToOne: false
+            referencedRelation: "aap_advertisers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "aap_rule_runs_rule_id_fkey"
+            columns: ["rule_id"]
+            isOneToOne: false
+            referencedRelation: "aap_rules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      aap_rules: {
+        Row: {
+          action: string
+          action_params: Json
+          advertiser_id: string
+          conditions: Json
+          created_at: string
+          created_by: string | null
+          frequency: string
+          id: string
+          is_active: boolean
+          last_run_at: string | null
+          lookback_days: number
+          name: string
+          scope: string
+          scope_ids: string[]
+          updated_at: string
+        }
+        Insert: {
+          action?: string
+          action_params?: Json
+          advertiser_id: string
+          conditions?: Json
+          created_at?: string
+          created_by?: string | null
+          frequency?: string
+          id?: string
+          is_active?: boolean
+          last_run_at?: string | null
+          lookback_days?: number
+          name: string
+          scope?: string
+          scope_ids?: string[]
+          updated_at?: string
+        }
+        Update: {
+          action?: string
+          action_params?: Json
+          advertiser_id?: string
+          conditions?: Json
+          created_at?: string
+          created_by?: string | null
+          frequency?: string
+          id?: string
+          is_active?: boolean
+          last_run_at?: string | null
+          lookback_days?: number
+          name?: string
+          scope?: string
+          scope_ids?: string[]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aap_rules_advertiser_id_fkey"
+            columns: ["advertiser_id"]
+            isOneToOne: false
+            referencedRelation: "aap_advertisers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      aap_saved_views: {
+        Row: {
+          advertiser_id: string
+          created_at: string
+          id: string
+          is_default: boolean
+          is_shared: boolean
+          level: string
+          name: string
+          state: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          advertiser_id: string
+          created_at?: string
+          id?: string
+          is_default?: boolean
+          is_shared?: boolean
+          level?: string
+          name: string
+          state?: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          advertiser_id?: string
+          created_at?: string
+          id?: string
+          is_default?: boolean
+          is_shared?: boolean
+          level?: string
+          name?: string
+          state?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aap_saved_views_advertiser_id_fkey"
             columns: ["advertiser_id"]
             isOneToOne: false
             referencedRelation: "aap_advertisers"
@@ -19331,6 +19588,57 @@ export type Database = {
       aap_promote_experiment_winner: {
         Args: { _experiment_id: string; _metric?: string }
         Returns: string
+      }
+      aap_report_breakdown: {
+        Args: {
+          _advertiser_id: string
+          _entity_id?: string
+          _entity_level?: string
+          _from: string
+          _to: string
+        }
+        Returns: {
+          clicks: number
+          conversions: number
+          impressions: number
+          revenue: number
+          spend: number
+          surface: string
+        }[]
+      }
+      aap_report_rows: {
+        Args: {
+          _advertiser_id: string
+          _from: string
+          _level: string
+          _parent_id?: string
+          _to: string
+        }
+        Returns: {
+          clicks: number
+          conversions: number
+          entity_id: string
+          impressions: number
+          revenue: number
+          spend: number
+        }[]
+      }
+      aap_report_timeseries: {
+        Args: {
+          _advertiser_id: string
+          _entity_id?: string
+          _entity_level?: string
+          _from: string
+          _to: string
+        }
+        Returns: {
+          clicks: number
+          conversions: number
+          day: string
+          impressions: number
+          revenue: number
+          spend: number
+        }[]
       }
       aap_verify_api_key: {
         Args: { p_raw: string }

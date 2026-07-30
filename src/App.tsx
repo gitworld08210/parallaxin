@@ -70,6 +70,7 @@ const AdsGate = lazy(() => import("./components/layout/AdsGate"));
 const AdsBusinessCenter = lazy(() => import("./pages/ads/BusinessCenter"));
 const AdsOnboardingWizard = lazy(() => import("./pages/ads/OnboardingWizard"));
 const AdvertiserShell = lazy(() => import("./pages/ads/AdvertiserShell"));
+const AdsManager = lazy(() => import("./pages/ads/manager/AdsManager"));
 const AdsReviewQueue = lazy(() => import("./pages/ads/AdsReviewQueue"));
 const AdsBillingCenter = lazy(() => import("./pages/ads/BillingCenter"));
 const AdsCreditCenter = lazy(() => import("./pages/ads/CreditCenter"));
@@ -537,6 +538,8 @@ const App = () => (
               <Route path="/ads/:advertiserId/billing" element={<AdsGate><AdsBillingCenter /></AdsGate>} />
               <Route path="/ads/:advertiserId/credit" element={<AdsGate><AdsCreditCenter /></AdsGate>} />
               <Route path="/ads/:advertiserId/analytics" element={<AdsGate><AdsAnalytics /></AdsGate>} />
+              <Route path="/ads/manager" element={<AdsGate><AdsManager /></AdsGate>} />
+              <Route path="/ads/:advertiserId/manager" element={<AdsGate><AdsManager /></AdsGate>} />
               <Route path="/ads/:advertiserId/*" element={<AdsGate><AdvertiserShell /></AdsGate>} />
 
               {/* Legacy /admin removed — redirect to new Admin OS */}

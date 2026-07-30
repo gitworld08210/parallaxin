@@ -63,7 +63,7 @@ Last posts:
 ${summary || "No posts yet."}`;
 
     const text = await generateGemini({
-      model: "google/gemini-2.5-flash",
+      task: "creator_coach",
       system,
       messages: [{ role: "user", parts: [{ text: user }] }],
       json: true,
