@@ -68,7 +68,7 @@ Deno.serve(async (req) => {
         "Lovable-API-Key": LOVABLE_API_KEY,
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
+        task: "authenticity_score",
         messages: [
           { role: "system", content: SYS },
           { role: "user", content: userContent },

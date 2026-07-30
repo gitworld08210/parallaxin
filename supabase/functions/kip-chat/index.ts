@@ -2,7 +2,7 @@ import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors';
 import { createClient } from 'npm:@supabase/supabase-js@2';
 
 const EMBED_MODEL = 'openai/text-embedding-3-small';
-const CHAT_MODEL = 'google/gemini-2.5-flash';
+const CHAT_MODEL = 'openai/gpt-5.6-sol';
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });

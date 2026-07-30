@@ -39,7 +39,7 @@ Deno.serve(async (req) => {
     const system = `You are Aurelix AI — a warm, sharp growth coach for creators on the Aurelix social network. Help with: writing captions, hashtag strategy, content ideas, profile/bio rewrites, audience growth tactics, and analyzing engagement patterns. Be concise, specific, and friendly. Use short paragraphs and bullet lists when helpful. Never invent stats you don't have.`;
 
     const upstream = await streamGemini({
-      model: "gemini-2.5-pro",
+      task: "ai_assistant",
       system,
       messages: geminiMessages,
       temperature: 0.85,

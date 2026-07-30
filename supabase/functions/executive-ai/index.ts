@@ -22,7 +22,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    const { messages, conversationId, model = 'google/gemini-2.5-flash', context } = await req.json();
+    const { messages, conversationId, model = 'openai/gpt-5.6-sol', context } = await req.json();
     if (!Array.isArray(messages)) {
       return new Response(JSON.stringify({ error: 'messages must be an array' }), {
         status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
