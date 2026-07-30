@@ -91,7 +91,7 @@ ${contextBlock}`,
     const resp = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
-      body: JSON.stringify({ model: CHAT_MODEL, stream: true, messages: [system, ...safeMsgs] }),
+      body: JSON.stringify({ model: CHAT_MODEL, stream: true, reasoning_effort: 'none', messages: [system, ...safeMsgs] }),
     });
     if (resp.status === 429) return new Response(JSON.stringify({ error: 'Rate limit — try again shortly.' }), { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     if (resp.status === 402) return new Response(JSON.stringify({ error: 'AI credits exhausted.' }), { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
