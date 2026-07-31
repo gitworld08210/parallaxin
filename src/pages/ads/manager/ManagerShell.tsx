@@ -12,8 +12,6 @@ const NAV = [
   { to: "/ads/manager/campaigns", label: "Campaigns", icon: Megaphone },
   { to: "/ads/manager/adsets", label: "Ad Sets", icon: Layers },
   { to: "/ads/manager/ads", label: "Ads", icon: MonitorSmartphone },
-  { to: "/ads/manager/creatives", label: "Creatives", icon: ImageIcon },
-  { to: "/ads/manager/audiences", label: "Audiences", icon: Users },
   { to: "/ads/manager/placements", label: "Placements", icon: Target },
   { to: "/ads/manager/reports", label: "Reports", icon: BarChart3 },
 ];
