@@ -9,7 +9,7 @@ import {
   useSurfaceBreakdown, useBulkUpdate, useBulkDelete, useDuplicate, useRecommendations,
   useGenerateRecommendations, useUpdateRecommendation, type DatePresetKey, type Level,
 } from "@/hooks/ads/useAdsManager";
-import { useAdvertiser } from "@/hooks/ads/useAdvertiser";
+import { useResolvedAdvertiser } from "./shared";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 
 const LEVELS: { key: Level; label: string }[] = [
@@ -18,12 +18,14 @@ const LEVELS: { key: Level; label: string }[] = [
   { key: "ad", label: "Ads" },
 ];
 
-export default function AdsManager() {
+export default function AdsManager({
+  initialLevel = "campaign",
+  embedded = false,
+}: { initialLevel?: Level; embedded?: boolean } = {}) {
   const navigate = useNavigate();
-  const { data: advertiser } = useAdvertiser();
-  const advertiserId = advertiser?.id as string | undefined;
+  const { advertiserId } = useResolvedAdvertiser();
 
-  const [level, setLevel] = useState<Level>("campaign");
+  const [level, setLevel] = useState<Level>(initialLevel);
   const [parent, setParent] = useState<{ campaign?: any; adGroup?: any }>({});
   const [presetKey, setPresetKey] = useState<DatePresetKey>("last_30");
   const [compareOn, setCompareOn] = useState(false);
@@ -85,7 +87,7 @@ export default function AdsManager() {
   }, [visible, metrics]);
 
   return (
-    <div className="flex h-[100dvh] flex-col bg-background">
+    <div className={embedded ? "flex min-h-0 flex-1 flex-col bg-background" : "flex h-[100dvh] flex-col bg-background"}>
       <Helmet>
         <title>Ads Manager | Aurelix Ads</title>
         <meta name="description" content="Manage campaigns, ad sets and ads with live performance metrics, bulk edits and AI optimisation." />
@@ -93,7 +95,7 @@ export default function AdsManager() {
 
       {/* Top bar */}
       <header className="flex flex-wrap items-center gap-2 border-b border-border px-4 py-2">
-        <h1 className="mr-2 text-sm font-semibold">Ads Manager</h1>
+        {!embedded && <h1 className="mr-2 text-sm font-semibold">Ads Manager</h1>}
 
         <div className="flex items-center rounded-lg border border-border p-0.5">
           {LEVELS.map((l) => (
@@ -175,7 +177,7 @@ export default function AdsManager() {
             {generate.isPending ? <RefreshCw className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
             AI insights
           </button>
-          <button onClick={() => navigate("/ads/campaigns/new")} className="h-8 rounded-lg bg-primary px-3 text-xs font-semibold text-primary-foreground">
+          <button onClick={() => navigate("/ads/manager/create")} className="h-8 rounded-lg bg-primary px-3 text-xs font-semibold text-primary-foreground">
             Create
           </button>
         </div>

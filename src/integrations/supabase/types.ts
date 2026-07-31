@@ -32,6 +32,7 @@ export type Database = {
           created_by: string | null
           daily_budget: number | null
           daily_impression_cap: number | null
+          estimated_reach: number | null
           frequency_cap_per_user: number | null
           frequency_cap_window_hours: number
           id: string
@@ -42,6 +43,7 @@ export type Database = {
           placements: Database["public"]["Enums"]["aap_placement_surface"][]
           schedule: Json
           status: Database["public"]["Enums"]["aap_ad_status"]
+          targeting: Json
           updated_at: string
         }
         Insert: {
@@ -61,6 +63,7 @@ export type Database = {
           created_by?: string | null
           daily_budget?: number | null
           daily_impression_cap?: number | null
+          estimated_reach?: number | null
           frequency_cap_per_user?: number | null
           frequency_cap_window_hours?: number
           id?: string
@@ -71,6 +74,7 @@ export type Database = {
           placements?: Database["public"]["Enums"]["aap_placement_surface"][]
           schedule?: Json
           status?: Database["public"]["Enums"]["aap_ad_status"]
+          targeting?: Json
           updated_at?: string
         }
         Update: {
@@ -90,6 +94,7 @@ export type Database = {
           created_by?: string | null
           daily_budget?: number | null
           daily_impression_cap?: number | null
+          estimated_reach?: number | null
           frequency_cap_per_user?: number | null
           frequency_cap_window_hours?: number
           id?: string
@@ -100,6 +105,7 @@ export type Database = {
           placements?: Database["public"]["Enums"]["aap_placement_surface"][]
           schedule?: Json
           status?: Database["public"]["Enums"]["aap_ad_status"]
+          targeting?: Json
           updated_at?: string
         }
         Relationships: [
