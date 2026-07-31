@@ -1,103 +1,80 @@
 ## Goal
 
-Two things:
-1. Replace the current Ads UI (a stack of narrow mobile cards at `/ads/:advertiserId/*`) with a real **desktop-class Ads Manager workspace** modelled on Meta Ads Manager + Google Ads.
-2. Re-route all AI calls: **OpenAI `gpt-5.6-sol`** for reasoning-heavy work, **`google/gemini-3.6-flash`** for fast/high-volume and anything touching image/video. (Claude Opus is not available on the Lovable AI Gateway — only OpenAI + Google models — so Opus is replaced by GPT-5.6-sol.)
+Rebuild `/ads/manager` to match the uploaded Aurelix Ads Manager mockup: a dark/ light Meta-Ads-style workspace with a left sidebar, an Overview dashboard, and a guided campaign creation flow that ends in real Reels / Stories / Feed / In-Stream / Explore ad previews on a phone mockup.
 
-Existing backend (`aap_*` tables, edge functions, billing/invoices/credit) stays. Only additive schema.
+## What exists today
 
----
+- `/ads/manager` is a single-page grid (levels tabs + data grid + charts + AI recs) — `src/pages/ads/manager/AdsManager.tsx`, `DataGrid.tsx`, `columns.ts`.
+- Data hooks already available: `useAdsManager` (report RPCs, bulk edit, recommendations), `useCampaigns` (campaign / ad set / ad CRUD, `Placement` = feed | reels | stories | explore | search | profile | organization), `useCreativeStudio`, `useBilling`, `useConversions`, `useAdvertiser`.
+- Reporting RPCs `aap_report_rows`, `aap_report_timeseries`, `aap_report_breakdown` already exist.
 
-## Part A — Ads Manager rebuild
+So this is mostly a UI/UX rebuild on top of existing data, plus one small schema addition for ad-set targeting.
 
-### A1. Workspace shell (replaces `AdvertiserShell.tsx` card stack)
-Full-height three-region layout, Meta-style:
+## New structure
 
-```text
-┌──────────────────────────────────────────────────────────────┐
-│ Account switcher · Date range · Currency · Wallet · Search   │  top bar
-├───────────┬──────────────────────────────────────────────────┤
-│           │  Campaigns │ Ad sets │ Ads   (3-tier tabs)       │
-│  Nav rail │  ─────────────────────────────────────────────   │
-│  Manage   │  [Create] [Duplicate] [Edit] [⏸] [🗑] [Rules]    │  bulk bar
-│  Analyze  │  Filters ▾  Breakdown ▾  Columns ▾  Export       │
-│  Audiences│  ┌──────── data grid ─────────────────────────┐  │
-│  Creatives│  │ ☑ Name | Status | Delivery | Budget | Res.│  │
-│  Billing  │  │   Reach Impr CPM CPC CTR Spend Conv CPA   │  │
-│  Tools    │  └────────────────────────────────────────────┘  │
-│           │  Sticky totals row                               │
-└───────────┴──────────────────────────────────────────────────┘
+Shell: `src/pages/ads/manager/ManagerShell.tsx` — persistent left sidebar (Overview, Campaigns, Ad Sets, Ads, Creatives, Audiences, Placements, Reports, Conversions, Billing & Payments, Settings, Help), account chip at bottom, content area on the right. Mobile: sidebar collapses to a drawer + top tab bar (app is used at 420px too).
+
+Routes (all nested under `/ads/manager`):
+
+```
+/ads/manager                → Overview
+/ads/manager/campaigns      → Campaigns list (existing DataGrid, restyled)
+/ads/manager/adsets         → Ad sets list
+/ads/manager/ads            → Ads list
+/ads/manager/creatives      → Creatives library
+/ads/manager/audiences      → Audience manager
+/ads/manager/placements     → Placements report
+/ads/manager/reports        → Reports dashboard (performance/demographics/placement/conversion/device)
+/ads/manager/conversions    → Conversion funnel + pixel events
+/ads/manager/billing        → Billing & payments
+/ads/manager/create         → Full-screen campaign creation wizard
 ```
 
-- Left rail collapsible; keeps mobile fallback (stacked) below `md`.
-- Tab drill-down with selection context: pick a campaign → Ad sets tab auto-filters to it (Meta behaviour), breadcrumb chips to clear.
+## 1. Overview page
 
-### A2. Data grid (the core of the whole thing)
-- Virtualised table, resizable + reorderable + pinned columns, sticky header and sticky totals footer.
-- **Inline editing**: name, status toggle, daily/lifetime budget, bid — optimistic save with toast + undo.
-- **Row selection** → bulk bar: pause/resume, duplicate, budget change (fixed or %), delete, add to rule.
-- **Column presets**: Performance, Delivery, Engagement, Conversions, Video, Cost per result, Custom. Saved per user.
-- **Breakdowns** (Meta parity): by time (day/week/month), by delivery (age, gender, placement, device, region), by action type. Rendered as expandable sub-rows.
-- **Filters**: chip builder — status, objective, delivery status, metric thresholds (`Spend > 1000`), date, name contains.
-- **Date range picker**: presets (today, yesterday, last 7/14/30, this month, lifetime, maximum) + custom + compare-to-previous with delta arrows in every metric cell.
-- **Charts drawer**: click any row → side panel with time-series of the selected metrics + breakdown donuts.
-- Export CSV of the current view.
+KPI strip (Spend, Impressions, Clicks, CTR, Conversions, CPA) each with delta vs previous period; date-range picker + "Customize"; "Performance Overview" multi-series line chart (spend / clicks / conversions) with hover tooltip; "Campaign Status" counts (Active, Learning, Limited, Inactive, Rejected); "Top Campaigns" list with spend + ROAS. All from the existing report RPCs.
 
-### A3. Campaign creation (Meta-style guided flow, replaces the 3-field form)
-Full-screen 3-column wizard: **Campaign → Ad set → Ad**, with a live right-hand preview and an always-visible validation/publish panel.
-- Campaign: objective picker with descriptions and predicted result type, buying type, CBO toggle (campaign budget optimisation), spend limits, A/B test toggle.
-- Ad set: budget & schedule (daily/lifetime, dayparting grid), optimisation goal + bid strategy (lowest cost / cost cap / bid cap / ROAS), attribution window selector, audience (saved / new / lookalike / custom), detailed targeting with include-exclude narrowing, placements (automatic vs manual per surface), frequency caps, **live audience size gauge** wired to `aap_estimate_reach`.
-- Ad: identity, format, creative from library or upload, primary text / headline / description with multi-variant (dynamic creative), CTA, destination + UTM builder, **multi-placement live preview** (feed, reels, story, explore, search, profile) rendered with real app chrome.
-- Draft autosave at each step, "Publish" runs the full validation list and submits to review.
+## 2. Campaign creation wizard (the core ask)
 
-### A4. Supporting surfaces (Google Ads parity)
-- **Automated rules**: condition builder (if CPA > X over last 3 days → pause / adjust budget / notify), schedule, run history.
-- **Recommendations / Opportunities page**: AI-generated, scored, one-click apply (uses reasoning model — Part B).
-- **Delivery diagnostics** per ad set: learning phase, auction overlap, budget-limited / bid-limited flags, rejection reasons with policy links.
-- **Audience manager**: sources, size, overlap matrix, lookalike creation.
-- **Creative library**: grid + performance per asset, tagging, folders (uses existing `ad-creatives` bucket).
-- **Experiments**: existing A/B panel folded into the workspace with significance/confidence display.
-- **Billing/Credit/Invoices**: existing pages re-skinned into the shell (no logic change).
+Full-screen, step-based, matching the mockup panels:
 
-### A5. Design pass
-- Dense, information-first: 13px table type, tabular numerals, restrained colour — status dots, green/red deltas only. Liquid-glass treatment reserved for the top bar in light mode (consistent with the rest of the app), never inside the grid.
-- All colours via existing semantic tokens; dark mode unchanged.
+1. **Objective** — card grid: Awareness, Traffic, Engagement, App Promotion, Video Views, Lead Generation, Conversions, Catalog Sales (mapped to existing `CampaignObjective`; unsupported ones map to nearest valid value).
+2. **Campaign type** — Automatic (Aurelix AI optimizes) / Manual / A/B Test.
+3. **Campaign setup** — name, buying type (Auction / Reach & Frequency), Campaign Budget Optimization toggle, budgets.
+4. **Ad set** — left sub-nav (Audience, Placements, Budget & Schedule, Optimization & Delivery):
+  - Audience: saved audience picker + custom (locations, age, gender, interests) with a live "Estimated Reach" gauge.
+  - **Placements**: Automatic (recommended) vs Manual with checkboxes — Aurelix Feed, Aurelix Reels, Aurelix Stories, In-Stream Ads (Videos), Aurelix Explore, Profile Feed. This is the Instagram/Meta behaviour requested: ads placed between users' reels, in stories, and in feed.
+  - Budget & schedule: daily/lifetime, start/end date.
+  - Optimization goal + bid strategy/amount.
+5. **Ad creation** — format (Single Image / Single Video / Carousel / Collection), media picker from the creatives library (direct upload already supported), primary text, headline, description, website URL, display link, CTA button, deep link.
+6. **Ad preview** — tabbed phone mockups rendering the real creative + copy in **Feed, Reels, Stories, In-Stream, Explore** frames, styled like the app's actual surfaces (Reels: full-bleed video, overlay CTA button, Sponsored label, like/comment/share rail; Stories: 9:16 with progress bar and swipe-up CTA; Feed: 1:1/4:5 card with avatar + Sponsored).
+7. **Review & Publish** — summary of campaign / ad set / ad + budget, then Publish (creates campaign → ad set → ad, status `pending_review`).
 
-### A6. Additive schema (minor)
-- `aap_saved_views` — per-user saved filter+column+breakdown+date state, shareable within advertiser.
-- `aap_column_presets` — named column sets.
-- `aap_rules` + `aap_rule_runs` — automated rules and execution log.
-- `aap_recommendations` — AI opportunities with state (new/applied/dismissed).
-All with GRANTs, RLS scoped through `aap_is_advertiser_member`.
+Wizard state is kept in one reducer, drafts saved to the campaign row so users can resume.
 
----
+## 3. Supporting pages
 
-## Part B — AI model routing change
+- **Placements report** — donut by surface + table (Impressions / Clicks / CTR / Spend / Results) using `aap_report_breakdown`.
+- **Reports dashboard** — left tab rail (Performance, Demographics, Placement, Conversion, Device) with chart + top-campaign table.
+- **Demographics** — age bars + gender donut + top locations.
+- **Conversions** — funnel (Purchase / Add to Cart / Initiate Checkout / View Content / Lead) + top conversion events.
+- **Creatives library** — All / Images / Videos / Templates tabs, grid of thumbnails with size labels, Upload button (reuses the existing `ad-creatives` private bucket flow).
+- **Audience manager** — table of audiences (name, type, size, availability) + create.
+- **Billing & payments** — current balance, Add Funds, transactions table with status pills.
+- **Notifications panel** — recent campaign/payment/approval events.
+- **Ad approval status** — All / Pending / Approved / Rejected with reason column.
 
-- Add `src/../supabase/functions/_shared/ai-router.ts`: single Lovable AI Gateway client (`@ai-sdk/openai-compatible`, base `https://ai.gateway.lovable.dev/v1`, `Lovable-API-Key` header) exposing two tiers:
-  - `reasoning` → `openai/gpt-5.6-sol` with `reasoning_effort: "none"` in the chat body (required for GPT-5.6 with tools) — used for: campaign optimisation recommendations, budget/bid advice, credit-risk scoring, executive AI, KIP chat, authenticity scoring, moderation adjudication.
-  - `fast` → `google/gemini-3.6-flash` — used for: captions, bio rewrite, alt text, DM suggest, post suggestions, creative critique on images/video, ranking, embeddings-adjacent text work.
-- Drive the mapping from the existing `ai_task_routes` table so tiers can be changed without redeploys; ship seed rows for every task.
-- Migrate the existing functions (`executive-ai`, `kip-chat`, `ai-assistant`, `ai-creator-coach`, `ai-caption`, `ai-bio-rewrite`, `ai-dm-suggest`, `ai-post-suggestions`, `ai-moderate`, `suggest-alt-text`, `authenticity-score`, `rank-foryou`) off `_shared/gemini.ts` onto the router; keep `_shared/gemini.ts` as a thin re-export so nothing breaks mid-migration.
-- Surface 429 / 402 gateway errors to the UI as real messages (rate limit / credits) instead of generic failures.
+## 4. Ad formats guide
 
----
-
-## Build order
-
-1. Migration: saved views, column presets, rules, recommendations, `ai_task_routes` seed.
-2. AI router + migrate edge functions; verify one live call per tier.
-3. Workspace shell + nav + top bar + date range/compare.
-4. Data grid engine (columns, presets, breakdowns, filters, inline edit, bulk actions, totals, export).
-5. Campaign/Ad set/Ad creation flow with live placement previews.
-6. Automated rules, recommendations, delivery diagnostics.
-7. Audiences, creative library, experiments, billing re-skin.
-8. Mobile fallback + polish pass.
-
-This is a multi-turn build; each numbered step ships working and verified before the next.
+A small reference strip (Reels 9:16, Stories 9:16, Feed 1:1 / 4:5) shown in the creative step and in the creatives library, so advertisers upload correct sizes.
 
 ## Technical notes
 
-- Grid is built in-house on TanStack Table + TanStack Virtual (already React Query based) — no new heavyweight UI dependency.
-- Metrics read from `aap_daily_rollups` with a date-range aggregate RPC; breakdowns from `aap_events` roll-ups so the grid stays fast.
-- No changes to `aap_campaigns` / `aap_ad_groups` / `aap_ads` structure — only reads/writes through existing hooks.
+- New folder `src/pages/ads/manager/` with `ManagerShell.tsx`, `Overview.tsx`, `wizard/` (one file per step + `AdPreview.tsx` with the phone frames), and `panels/` for the report/creative/audience/billing pages. Existing `DataGrid.tsx` / `columns.ts` / `useAdsManager.ts` are kept and reused, not rewritten.
+- One migration: add `targeting jsonb` (locations, age range, gender, interests) and `estimated_reach` to `aap_ad_groups` if not already present, plus GRANTs unchanged (table already exists with RLS).
+- No AI-routing changes; the AI recommendation panel from the current page moves into Overview.
+- All colors via existing semantic tokens; the mockup's dark indigo look maps to the current dark theme, and light mode stays readable.
+
+## Out of scope
+
+Existing `/ads/:advertiserId/*` shell pages stay as they are and remain reachable; nothing is deleted.
