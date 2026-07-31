@@ -18,12 +18,14 @@ const LEVELS: { key: Level; label: string }[] = [
   { key: "ad", label: "Ads" },
 ];
 
-export default function AdsManager() {
+export default function AdsManager({
+  initialLevel = "campaign",
+  embedded = false,
+}: { initialLevel?: Level; embedded?: boolean } = {}) {
   const navigate = useNavigate();
-  const { data: advertiser } = useAdvertiser();
-  const advertiserId = advertiser?.id as string | undefined;
+  const { advertiserId } = useResolvedAdvertiser();
 
-  const [level, setLevel] = useState<Level>("campaign");
+  const [level, setLevel] = useState<Level>(initialLevel);
   const [parent, setParent] = useState<{ campaign?: any; adGroup?: any }>({});
   const [presetKey, setPresetKey] = useState<DatePresetKey>("last_30");
   const [compareOn, setCompareOn] = useState(false);
