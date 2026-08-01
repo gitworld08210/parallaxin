@@ -522,25 +522,10 @@ const App = () => (
                 </Route>
               </Route>
 
-              {/* Aurelix Ads Platform (AAP) */}
-              <Route path="/ads" element={<AdsGate><AdsBusinessCenter /></AdsGate>} />
-              <Route path="/ads/get-started" element={<AdsGate><AdsOnboardingWizard /></AdsGate>} />
-              <Route path="/ads/review" element={<AdsGate><AdsReviewQueue /></AdsGate>} />
-              <Route path="/ads/finance/credit-review" element={<AdsGate><AdsFinanceCreditReview /></AdsGate>} />
-              <Route path="/ads/:advertiserId/billing" element={<AdsGate><AdsBillingCenter /></AdsGate>} />
-              <Route path="/ads/:advertiserId/credit" element={<AdsGate><AdsCreditCenter /></AdsGate>} />
-              <Route path="/ads/:advertiserId/analytics" element={<AdsGate><AdsAnalytics /></AdsGate>} />
-              <Route path="/ads/manager" element={<AdsGate><AdsManagerShell /></AdsGate>}>
-                <Route index element={<AdsOverview />} />
-                <Route path="create" element={<AdsCampaignWizard />} />
-                <Route path="campaigns" element={<AdsManager initialLevel="campaign" embedded />} />
-                <Route path="adsets" element={<AdsManager initialLevel="ad_group" embedded />} />
-                <Route path="ads" element={<AdsManager initialLevel="ad" embedded />} />
-                <Route path="placements" element={<AdsPlacementsPanel />} />
-                <Route path="reports" element={<AdsReportsPanel />} />
-              </Route>
-              <Route path="/ads/:advertiserId/manager" element={<AdsGate><AdsManager /></AdsGate>} />
-              <Route path="/ads/:advertiserId/*" element={<AdsGate><AdvertiserShell /></AdsGate>} />
+              {/* Aurelix Ads — rebuild in progress */}
+              <Route path="/ads" element={<AdsComingSoon />} />
+              <Route path="/ads/*" element={<Navigate to="/ads" replace />} />
+
 
               {/* Legacy /admin removed — redirect to new Admin OS */}
               <Route path="/admin" element={<Navigate to="/admin-os" replace />} />
