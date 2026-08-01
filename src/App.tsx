@@ -66,21 +66,8 @@ const Onboarding = lazy(() => import("./pages/Onboarding"));
 const OrganizationOnboarding = lazy(() => import("./pages/OrganizationOnboarding"));
 
 // Aurelix Ads Platform (AAP)
-const AdsGate = lazy(() => import("./components/layout/AdsGate"));
-const AdsBusinessCenter = lazy(() => import("./pages/ads/BusinessCenter"));
-const AdsOnboardingWizard = lazy(() => import("./pages/ads/OnboardingWizard"));
-const AdvertiserShell = lazy(() => import("./pages/ads/AdvertiserShell"));
-const AdsManager = lazy(() => import("./pages/ads/manager/AdsManager"));
-const AdsManagerShell = lazy(() => import("./pages/ads/manager/ManagerShell"));
-const AdsOverview = lazy(() => import("./pages/ads/manager/Overview"));
-const AdsPlacementsPanel = lazy(() => import("./pages/ads/manager/PlacementsPanel"));
-const AdsReportsPanel = lazy(() => import("./pages/ads/manager/ReportsPanel"));
-const AdsCampaignWizard = lazy(() => import("./pages/ads/manager/wizard/CampaignWizard"));
-const AdsReviewQueue = lazy(() => import("./pages/ads/AdsReviewQueue"));
-const AdsBillingCenter = lazy(() => import("./pages/ads/BillingCenter"));
-const AdsCreditCenter = lazy(() => import("./pages/ads/CreditCenter"));
-const AdsFinanceCreditReview = lazy(() => import("./pages/ads/FinanceCreditReview"));
-const AdsAnalytics = lazy(() => import("./pages/ads/AnalyticsDashboard"));
+const AdsComingSoon = lazy(() => import("./pages/ads/ComingSoon"));
+
 
 const CreatorHub = lazy(() => import("./pages/CreatorHub"));
 const CreatorStudio = lazy(() => import("./pages/CreatorStudio"));
