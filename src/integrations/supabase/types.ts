@@ -4006,6 +4006,529 @@ export type Database = {
         }
         Relationships: []
       }
+      ads_accounts: {
+        Row: {
+          business_type: string
+          created_at: string
+          currency: string
+          id: string
+          name: string
+          owner_user_id: string
+          status: string
+          timezone: string
+          updated_at: string
+          website: string | null
+        }
+        Insert: {
+          business_type?: string
+          created_at?: string
+          currency?: string
+          id?: string
+          name: string
+          owner_user_id: string
+          status?: string
+          timezone?: string
+          updated_at?: string
+          website?: string | null
+        }
+        Update: {
+          business_type?: string
+          created_at?: string
+          currency?: string
+          id?: string
+          name?: string
+          owner_user_id?: string
+          status?: string
+          timezone?: string
+          updated_at?: string
+          website?: string | null
+        }
+        Relationships: []
+      }
+      ads_ads: {
+        Row: {
+          account_id: string
+          adset_id: string
+          created_at: string
+          creative_id: string | null
+          cta: string
+          destination_url: string | null
+          headline: string | null
+          id: string
+          name: string
+          primary_text: string | null
+          review_reason: string | null
+          review_state: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          account_id: string
+          adset_id: string
+          created_at?: string
+          creative_id?: string | null
+          cta?: string
+          destination_url?: string | null
+          headline?: string | null
+          id?: string
+          name: string
+          primary_text?: string | null
+          review_reason?: string | null
+          review_state?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          account_id?: string
+          adset_id?: string
+          created_at?: string
+          creative_id?: string | null
+          cta?: string
+          destination_url?: string | null
+          headline?: string | null
+          id?: string
+          name?: string
+          primary_text?: string | null
+          review_reason?: string | null
+          review_state?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ads_ads_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "ads_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ads_ads_adset_id_fkey"
+            columns: ["adset_id"]
+            isOneToOne: false
+            referencedRelation: "ads_adsets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ads_ads_creative_id_fkey"
+            columns: ["creative_id"]
+            isOneToOne: false
+            referencedRelation: "ads_creatives"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ads_adsets: {
+        Row: {
+          account_id: string
+          bid_cap_coins: number | null
+          bid_strategy: string
+          campaign_id: string
+          created_at: string
+          daily_budget_coins: number
+          estimated_reach: number
+          id: string
+          name: string
+          optimization_goal: string
+          placement_mode: string
+          placements: string[]
+          schedule_end: string | null
+          schedule_start: string | null
+          status: string
+          targeting: Json
+          updated_at: string
+        }
+        Insert: {
+          account_id: string
+          bid_cap_coins?: number | null
+          bid_strategy?: string
+          campaign_id: string
+          created_at?: string
+          daily_budget_coins?: number
+          estimated_reach?: number
+          id?: string
+          name: string
+          optimization_goal?: string
+          placement_mode?: string
+          placements?: string[]
+          schedule_end?: string | null
+          schedule_start?: string | null
+          status?: string
+          targeting?: Json
+          updated_at?: string
+        }
+        Update: {
+          account_id?: string
+          bid_cap_coins?: number | null
+          bid_strategy?: string
+          campaign_id?: string
+          created_at?: string
+          daily_budget_coins?: number
+          estimated_reach?: number
+          id?: string
+          name?: string
+          optimization_goal?: string
+          placement_mode?: string
+          placements?: string[]
+          schedule_end?: string | null
+          schedule_start?: string | null
+          status?: string
+          targeting?: Json
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ads_adsets_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "ads_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ads_adsets_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "ads_campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ads_campaigns: {
+        Row: {
+          account_id: string
+          budget_coins: number
+          budget_type: string
+          created_at: string
+          created_by: string | null
+          end_at: string | null
+          id: string
+          name: string
+          objective: string
+          start_at: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          account_id: string
+          budget_coins?: number
+          budget_type?: string
+          created_at?: string
+          created_by?: string | null
+          end_at?: string | null
+          id?: string
+          name: string
+          objective?: string
+          start_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          account_id?: string
+          budget_coins?: number
+          budget_type?: string
+          created_at?: string
+          created_by?: string | null
+          end_at?: string | null
+          id?: string
+          name?: string
+          objective?: string
+          start_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ads_campaigns_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "ads_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ads_creatives: {
+        Row: {
+          account_id: string
+          aspect_ratio: string
+          created_at: string
+          created_by: string | null
+          duration_seconds: number | null
+          file_size_bytes: number | null
+          height: number | null
+          id: string
+          media_type: string
+          name: string
+          storage_path: string
+          width: number | null
+        }
+        Insert: {
+          account_id: string
+          aspect_ratio?: string
+          created_at?: string
+          created_by?: string | null
+          duration_seconds?: number | null
+          file_size_bytes?: number | null
+          height?: number | null
+          id?: string
+          media_type: string
+          name: string
+          storage_path: string
+          width?: number | null
+        }
+        Update: {
+          account_id?: string
+          aspect_ratio?: string
+          created_at?: string
+          created_by?: string | null
+          duration_seconds?: number | null
+          file_size_bytes?: number | null
+          height?: number | null
+          id?: string
+          media_type?: string
+          name?: string
+          storage_path?: string
+          width?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ads_creatives_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "ads_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ads_daily_stats: {
+        Row: {
+          account_id: string
+          ad_id: string | null
+          adset_id: string | null
+          campaign_id: string | null
+          clicks: number
+          conversions: number
+          created_at: string
+          id: string
+          impressions: number
+          placement: string
+          spend_coins: number
+          stat_date: string
+        }
+        Insert: {
+          account_id: string
+          ad_id?: string | null
+          adset_id?: string | null
+          campaign_id?: string | null
+          clicks?: number
+          conversions?: number
+          created_at?: string
+          id?: string
+          impressions?: number
+          placement: string
+          spend_coins?: number
+          stat_date: string
+        }
+        Update: {
+          account_id?: string
+          ad_id?: string | null
+          adset_id?: string | null
+          campaign_id?: string | null
+          clicks?: number
+          conversions?: number
+          created_at?: string
+          id?: string
+          impressions?: number
+          placement?: string
+          spend_coins?: number
+          stat_date?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ads_daily_stats_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "ads_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ads_daily_stats_ad_id_fkey"
+            columns: ["ad_id"]
+            isOneToOne: false
+            referencedRelation: "ads_ads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ads_daily_stats_adset_id_fkey"
+            columns: ["adset_id"]
+            isOneToOne: false
+            referencedRelation: "ads_adsets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ads_daily_stats_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "ads_campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ads_invoice_requests: {
+        Row: {
+          account_id: string
+          created_at: string
+          handled_by: string | null
+          id: string
+          note: string | null
+          period_end: string
+          period_start: string
+          requested_by: string | null
+          sent_at: string | null
+          sent_to_email: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          account_id: string
+          created_at?: string
+          handled_by?: string | null
+          id?: string
+          note?: string | null
+          period_end: string
+          period_start: string
+          requested_by?: string | null
+          sent_at?: string | null
+          sent_to_email?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          account_id?: string
+          created_at?: string
+          handled_by?: string | null
+          id?: string
+          note?: string | null
+          period_end?: string
+          period_start?: string
+          requested_by?: string | null
+          sent_at?: string | null
+          sent_to_email?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ads_invoice_requests_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "ads_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ads_members: {
+        Row: {
+          account_id: string
+          created_at: string
+          id: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          account_id: string
+          created_at?: string
+          id?: string
+          role?: string
+          user_id: string
+        }
+        Update: {
+          account_id?: string
+          created_at?: string
+          id?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ads_members_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "ads_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ads_payment_settings: {
+        Row: {
+          coins_per_inr: number
+          id: boolean
+          instructions: string | null
+          min_topup_inr: number
+          payee_name: string | null
+          qr_storage_path: string | null
+          updated_at: string
+          updated_by: string | null
+          upi_id: string | null
+        }
+        Insert: {
+          coins_per_inr?: number
+          id?: boolean
+          instructions?: string | null
+          min_topup_inr?: number
+          payee_name?: string | null
+          qr_storage_path?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          upi_id?: string | null
+        }
+        Update: {
+          coins_per_inr?: number
+          id?: boolean
+          instructions?: string | null
+          min_topup_inr?: number
+          payee_name?: string | null
+          qr_storage_path?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          upi_id?: string | null
+        }
+        Relationships: []
+      }
+      ads_reviews: {
+        Row: {
+          ad_id: string
+          created_at: string
+          id: string
+          reason: string | null
+          reviewer_id: string | null
+          state: string
+        }
+        Insert: {
+          ad_id: string
+          created_at?: string
+          id?: string
+          reason?: string | null
+          reviewer_id?: string | null
+          state: string
+        }
+        Update: {
+          ad_id?: string
+          created_at?: string
+          id?: string
+          reason?: string | null
+          reviewer_id?: string | null
+          state?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ads_reviews_ad_id_fkey"
+            columns: ["ad_id"]
+            isOneToOne: false
+            referencedRelation: "ads_ads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ai_gateway_runs: {
         Row: {
           advertiser_id: string | null
@@ -19685,6 +20208,26 @@ export type Database = {
         Args: { _reason: string; _tip_id: string }
         Returns: undefined
       }
+      ads_account_summary: {
+        Args: { _account_id: string; _from: string; _to: string }
+        Returns: {
+          clicks: number
+          conversions: number
+          cpc: number
+          cpm: number
+          ctr: number
+          impressions: number
+          spend_coins: number
+        }[]
+      }
+      ads_can_manage: { Args: { _account_id: string }; Returns: boolean }
+      ads_estimate_reach: {
+        Args: { _placements: string[]; _targeting: Json }
+        Returns: number
+      }
+      ads_is_finance: { Args: never; Returns: boolean }
+      ads_is_member: { Args: { _account_id: string }; Returns: boolean }
+      ads_is_reviewer: { Args: never; Returns: boolean }
       apply_movement: { Args: { _movement_id: string }; Returns: undefined }
       assign_owner_role: {
         Args: { p_member_id: string; p_organization_id: string }
