@@ -35,8 +35,8 @@ Deno.serve(async (req) => {
       global: { headers: { Authorization: `Bearer ${bearer}` } },
       auth: { persistSession: false },
     });
-    const { data: claims } = await asUser.auth.getClaims(bearer);
-    if (claims?.claims?.sub) {
+    const { data: userData } = await asUser.auth.getUser(bearer);
+    if (userData?.user) {
       const [admin, eng] = await Promise.all([
         asUser.rpc("aap_is_platform_admin"),
         asUser.rpc("aap_is_engineering"),
