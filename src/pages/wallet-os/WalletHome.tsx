@@ -37,9 +37,12 @@ export default function WalletHome() {
         </div>
       ) : (
         <div className="space-y-5">
-          <Link to="/wallet/card" aria-label="Open digital card details" className="block">
+          <div className="space-y-2">
             <WalletCard wallet={wallet} card={cardState} />
-          </Link>
+            <Link to="/wallet/card" className="block rounded-xl border border-border/60 px-3 py-2 text-center text-[11px] font-medium text-muted-foreground hover:text-foreground">
+              Card details, editions &amp; security review{cardState ? ` · V${cardState.card.version}` : ""}
+            </Link>
+          </div>
           <BalanceStrip b={wallet.balances} />
 
           <section aria-label="Quick actions" className="space-y-2">
