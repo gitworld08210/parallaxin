@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, Link } from "react-router-dom";
 import { Loader2, Sparkles, TrendingUp, TrendingDown } from "lucide-react";
 import { motion } from "framer-motion";
 import { WalletShell } from "@/components/wallet-os/WalletShell";
 import { WalletCard } from "@/components/wallet-os/WalletCard";
+import { useWalletCard } from "@/hooks/useWalletCard";
 import { BalanceStrip } from "@/components/wallet-os/BalanceStrip";
 import { QuickActions } from "@/components/wallet-os/QuickActions";
 import { WalletEmpty } from "@/components/wallet-os/WalletEmpty";
@@ -15,6 +16,7 @@ const nf = new Intl.NumberFormat("en-IN");
 
 export default function WalletHome() {
   const { wallet, loading } = useWalletOS();
+  const { state: cardState } = useWalletCard();
   const { rows } = useWalletLedgerOS(5);
   const [params, setParams] = useSearchParams();
   const [buyOpen, setBuyOpen] = useState(false);
@@ -35,7 +37,9 @@ export default function WalletHome() {
         </div>
       ) : (
         <div className="space-y-5">
-          <WalletCard wallet={wallet} />
+          <Link to="/wallet/card" aria-label="Open digital card details" className="block">
+            <WalletCard wallet={wallet} card={cardState} />
+          </Link>
           <BalanceStrip b={wallet.balances} />
 
           <section aria-label="Quick actions" className="space-y-2">
