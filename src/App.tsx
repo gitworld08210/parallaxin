@@ -522,9 +522,19 @@ const App = () => (
                 </Route>
               </Route>
 
-              {/* Aurelix Ads — rebuild in progress */}
-              <Route path="/ads" element={<AdsComingSoon />} />
-              <Route path="/ads/*" element={<Navigate to="/ads" replace />} />
+              {/* Aurelix Ads Manager */}
+              <Route element={<ProtectedRoute />}>
+                <Route path="/ads" element={<AdsBusinessCenter />} />
+                <Route path="/ads/review" element={<AdsReviewQueue />} />
+                <Route path="/ads/finance" element={<AdsFinanceConsole />} />
+                <Route path="/ads/:accountId" element={<AdsLayout />}>
+                  <Route index element={<AdsDashboard />} />
+                  <Route path="campaigns" element={<AdsManager />} />
+                  <Route path="create" element={<AdsCampaignWizard />} />
+                  <Route path="creatives" element={<AdsCreatives />} />
+                  <Route path="billing" element={<AdsBilling />} />
+                </Route>
+              </Route>
 
 
               {/* Legacy /admin removed — redirect to new Admin OS */}
