@@ -142,7 +142,13 @@ Deno.serve(async (req) => {
   // Internal-only: scheduled cron or service-role callers.
   const cronSecret = Deno.env.get('CRON_SECRET')
   const bearer = req.headers.get('Authorization')?.replace('Bearer ', '')?.trim()
-  const authorized = !!bearer && ((!!cronSecret && bearer === cronSecret) || bearer === SERVICE_ROLE)
+  let authorized = !!bearer && ((!!cronSecret && bearer === cronSecret) || bearer === SERVICE_ROLE)
+  if (!authorized && bearer) {
+    // Scheduled pg_cron job token (stored server-side, never exposed to clients)
+    const svc = createClient(SUPABASE_URL, SERVICE_ROLE)
+    const { data: tok } = await svc.from('internal_job_tokens').select('token').eq('name', 'cron').maybeSingle()
+    authorized = !!tok?.token && bearer === tok.token
+  }
   if (!authorized) {
     return new Response(JSON.stringify({ error: 'forbidden' }), {
       status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
