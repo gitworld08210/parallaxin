@@ -1,77 +1,66 @@
-## Aurelix Ads Manager v2 — clean rebuild
+# Aurelix Wallet OS — Build Plan
 
-Purana `aap_*` sab kuch chhod kar ek naya, chhota aur saaf schema (`ads_*`) banayenge. Phase 1 = advertiser experience (campaign banane se le kar reporting tak) + prepaid wallet billing. Ad delivery (Feed/Reels/Story me actual ad dikhana) Phase 2 me, lekin schema abhi se usko support karega.
+The current `/wallet` page is a simple coin balance + transaction list. Wallet OS turns it into the financial identity layer: a premium wallet card, passport, bucketed balances, double-entry ledger, QR, security, and a Finance/Founder admin console.
 
-### Naya data model (`ads_*`)
+We reuse what already exists — auth, RBAC/RLS, audit logs, notifications, AI Gateway, `coin_transactions`, `tips`, `live_gifts`, `payout_requests`, `coin_topup_requests`, `profiles_private.coin_balance`. No duplicate services.
 
-```text
-ads_accounts        advertiser account (owner_user_id, org_id, name, currency, status, timezone)
-ads_members         account ke members (role: owner/admin/analyst)
-ads_wallets         balance_paise, reserved_paise
-ads_wallet_txns     topup / spend / refund — immutable ledger
-ads_campaigns       objective(awareness|traffic|engagement|leads|conversions), budget_type, budget, schedule, status
-ads_adsets          targeting jsonb, placements text[], bid_strategy, daily_budget, optimization_goal
-ads_creatives       uploaded media (private bucket), type(image|video), aspect, duration
-ads_ads             adset_id, creative_id, headline, primary_text, cta, destination_url, review_state
-ads_ad_reviews      T&S review queue (pending/approved/rejected + reason)
-ads_daily_stats     ad_id x date x placement → impressions, clicks, spend, conversions
-```
+## Phase 1 — Wallet core (foundation)
 
-Har table par RLS: account members hi apna data dekhein; T&S/Founder staff review kar sakein; `service_role` edge functions ke liye.
+Database:
 
-### Ad formats (chaaron launch me)
+- `wallets` — internal `id` (never exposed), public `wallet_id` (AUX-XXXX-XXXX-XXXX), `handle` (@adit.wallet), this is user id  (active/pending/restricted/suspended/frozen/closed), version, created_at, security score, trust score.
+- `wallet_balances` — one row per wallet with separate buckets: purchased, reward, gift, ads, bonus, locked, pending, withdrawable. Never mixed.
+- `wallet_ledger` — append-only double-entry rows: txn_id, wallet, direction, bucket, amount, fee, balance_after, source (gift/ads/marketplace/subscription/purchase/withdrawal/reward/refund), status, metadata.
+- `wallet_status_history`, `wallet_notes` (internal), `wallet_risk_alerts`.
+- Server-side RPCs only for movement: `wallet_credit`, `wallet_debit`, `wallet_transfer` — atomic, no negative balances, all writes append to ledger and audit log. Clients can never write balances directly (RLS: select-own only).
+- Backfill: create a wallet for every existing profile, seed buckets from `profiles_private.coin_balance`, import history from existing coin/tip/gift/payout tables.
 
-- **Reels ad** — 9:16 full-screen video, auto-play, "Sponsored" chip + CTA bar.
-- **Story ad** — 9:16, 5s ke baad skip, progress bar.
-- **Feed ad** — sponsored post card, image ya video, CTA button.
-- **Explore/Search ad** — grid tile, tap par full view.
+## Phase 2 — Wallet home (premium UI)
 
-Har format ke liye ek **live phone preview** jo actual app UI clone karega (Feed card, Reels overlay, Story frame, Explore grid) — creative upload karte hi real-time update.
+- Deep black / graphite / glass design tokens with electric blue accent, added to the design system (dark stays dark; light mode uses existing liquid glass).
+- 3D flip Wallet Card: front (brand, verified badge, wallet ID, handle, Aura balance, ₹ equivalent) → tap → back (permanent QR, created date, status, security status, version).
+- Balance strip: Available / Pending / Locked / Reward / Withdrawable.
+- Quick Actions grid with premium motion: Buy Aura, Gift Aura, Withdraw, Scan QR, Request Coins, History, Rewards, More.
+- Bottom wallet nav: Home · Analytics · Transactions · Profile.
 
-### Screens (route: `/ads`)
+## Phase 3 — Passport, Coin Breakdown, Analytics
 
-1. `**/ads` — Business Center**: account nahi hai to 3-step create; hai to account switcher + spend snapshot.
-2. `**/ads/:id` — Dashboard**: spend/impressions/clicks/CTR/CPM tiles, 30-din chart, placement breakdown, active campaign list, wallet balance strip.
-3. `**/ads/:id/campaigns` — Manager grid**: Meta jaisa 3-tab structure (Campaigns / Ad sets / Ads) with parent filtering, on/off toggle, inline budget edit, bulk actions, date-range presets, column chooser, CSV export.
-4. `**/ads/:id/create` — 5-step wizard**:
-  - Objective → Budget & schedule → Audience (location, age, gender, language, interests + live reach estimate) → Placements (auto ya manual: Reels/Story/Feed/Explore) → Creative & preview → Review & publish.
-  - Har step par right side live phone preview, left side form. Draft auto-save.
-5. `**/ads/:id/creatives` — Library**: direct upload (image 10MB / video 100MB) private bucket + signed URLs, aspect ratio validation per placement.
-6. `**/ads/:id/billing` — Wallet**: balance, top-up, spend ledger, invoices list.
-7. `**/ads/review` — T&S queue**: staff-only approve/reject with reason; rejection advertiser ko notification.
+- Wallet Passport screen: wallet age, creator since, verification, creator level, premium, trust score, total earned/spent/withdrawn, gifts in/out, ads / marketplace / subscription earnings, lifetime activity.
+- Coin Breakdown screen: each bucket listed separately with totals.
+- Analytics: daily/weekly/monthly/yearly/lifetime charts (income, expense, net) + a source donut (creator revenue, gifts, ads, subscriptions, others), served by a reporting RPC, not client aggregation.
 
-### Billing (Phase 1 me shamil)
+## Phase 4 — Transactions, Gift, Withdraw, QR
 
-- Prepaid wallet: top-up → balance; campaign chalne par daily spend deduct.
-- Balance khatam → campaigns auto-pause + notification.
-- Payment provider: Manually qr code se payment karna hoga qr code admission os ke finance department se hoga jaha option rahega english kuch aacha sa manage payment ya kuch waha se qr upload hoga ye sab aur payment karne ke baad user ko utr number dalna hoga us admin os ka finance department approve karega tab hi coin wallet me jayega wallet ek hi universal hoga Aurelix wallet us me Aurelix coin hoga 
-- Har mahine ya ads chalane wala organization chahe to har 15 days me bhi khud se download kar sakta hai alaga case me  ads chalne wala ko 2-3 din ya us se jade din ka chahiye to wo ticket bhi raise kar sakte hain jo finance department ke pass jayega waha se finance department us kitan din ka bhi generate kar ke ek click me omads orzination ke email pe bhej sakta hai ka branded invoice PDF/email (pehle wala finance email pipeline reuse).
+- Transaction timeline: txn ID, type, amount, fee, status, date/time, balance after; filters (all/purchase/gift/reward/withdrawal/marketplace/subscription/refund), search, date range, CSV export.
+- Gift flow: search creator → wallet preview → amount + fee breakdown → gift animation → success with txn ID.
+- Withdrawal flow: request → status timeline (Submitted → Finance Review → Verification → Approved → Transferred) with estimated time, reference number, assigned finance officer, receipt download.
+- QR: one permanent QR per wallet, share/download, scan handler for receive / gift / pay / request / tips.
+- Premium empty states for every list.
 
-### Design direction
+## Phase 5 — Security & Notifications
 
-Dark-first, data-dense workspace: left rail navigation, sticky toolbar (date range + account switcher), 8px spacing rhythm, tabular numerals for metrics, ek hi Lucide icon set, koi emoji nahi. Mobile par grid horizontally scroll ke bajaye card list me collapse hoga. Sab colors semantic tokens se (light + dark dono test honge).
+- Wallet Shield screen: security score, biometric/passkey/2FA toggles (wired to existing security screens), trusted devices, recent logins, emergency freeze, recovery options.
+- Wallet notification center fed by the existing notification system: coins credited/debited, gift received, withdrawal approved, finance review, security alerts, rewards, marketplace purchases.
 
-### Delivery karne ka order
+## Phase 6 — Admin Wallet OS (Finance / Founder / Support)
 
-- **Step 1** — Schema migration + RLS + storage bucket.
-- **Step 2** — Hooks layer (`src/hooks/ads/`) + shared UI atoms.
-- **Step 3** — Business Center + account creation.
-- **Step 4** — Campaign wizard + live previews (sabse bada piece).
-- **Step 5** — Manager grid (3 tabs) + dashboard.
-- **Step 6** — Creatives library + upload.
-- **Step 7** — Wallet, top-up checkout, spend ledger, invoices.
-- **Step 8** — T&S review queue + notifications.
+- `/admin-os/wallet` search by wallet ID, handle, username, email, phone, creator ID.
+- Wallet profile: summary, balances, transactions, withdrawals, rewards, gifts, marketplace, ads earnings, trust score, risk level, devices, audit logs, KYC status, fraud flags, support history.
+- Actions gated to Finance Department (Support gets read-only): freeze, unfreeze, manual credit, manual debit, reverse transaction, approve/reject withdrawal, adjust balance, internal notes. Every action requires a reason and writes an immutable audit log. No financial approval bypasses Finance.
+- Treasury dashboard for Founder Office: minted, burned, circulation, treasury balance, company revenue, pending liability, creator liability, financial health.
 
-### Mera suggestion (jo aap ne poocha)
+## Phase 7 — AI Risk Engine
 
-1. **Delivery pehle mock rakhein**: Phase 1 me stats seed/simulate honge taki UI real lage; Phase 2 me actual ad serving + impression tracking jodenge — warna wizard ka feedback loop late milega.
-2. **Auto placements default**: Meta ki tarah "Advantage+" style default rakho, manual sirf advanced users ke liye — clean UI ka yahi raaz hai.
-3. **AI sirf wahan jahan value hai**: headline/primary-text suggestions aur "budget badhao / audience widen karo" recommendations — pura AI dashboard nahi.
-4. **Review gate mandatory**: har ad publish se pehle T&S approve kare, tabhi platform enterprise lagega.
+- Edge function on the existing AI Gateway scoring wallets for gift farming, bot activity, multi-account, rapid withdrawals, suspicious transfers, reward abuse.
+- Output is advisory only: Normal / Medium / High / Critical alerts into `wallet_risk_alerts` for manual Finance review. Never auto-blocks.
 
-### Technical notes
+## Technical notes
 
-- Naya `ads_*` schema banega; purana `aap_*` chhua nahi jayega (baad me archive/drop kar sakte hain — abhi aapka data safe rehta hai).
-- Payments ke liye Lovable ka built-in Stripe integration enable karna hoga (Pro plan required) — wallet top-up ka checkout aur webhook usi par chalega.
-- Storage: private `ads-creatives` bucket, signed URL reads.
-- Reach estimate ek DB function se aayega (profiles/interests par count), UI me debounce ke saath.
+- Money movement is server-side only (Postgres functions + edge functions); the client never sends balances.
+- Ledger is append-only; corrections are reversing entries, never updates.
+- Internal wallet UUID stays server-side; only `wallet_id`/handle are ever rendered.
+- Existing `/wallet` code stays reachable until Phase 4 lands, then routes are cut over.
+
+## Suggested order
+
+I'll start with Phase 1 + 2 in this turn (schema, RPCs, backfill, and the new wallet home with card flip and quick actions), then continue phase by phase.
