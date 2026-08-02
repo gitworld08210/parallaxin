@@ -22,6 +22,18 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Internal staff only — this assistant burns paid AI credits and returns
+    // internally-scoped advisory output.
+    const { data: isEmployee } = await supabase.rpc('is_active_employee', { _uid: userData.user.id });
+    const { data: isFounderOffice } = await supabase.rpc('is_admin_department_member', {
+      _uid: userData.user.id, _department_key: 'founder_office',
+    });
+    if (!isEmployee && !isFounderOffice) {
+      return new Response(JSON.stringify({ error: 'Forbidden' }), {
+        status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     const { messages, conversationId, model = 'openai/gpt-5.6-sol', context } = await req.json();
     if (!Array.isArray(messages)) {
       return new Response(JSON.stringify({ error: 'messages must be an array' }), {
