@@ -4,8 +4,8 @@ import { useWalletOS } from "@/hooks/useWalletOS";
 
 const nf = new Intl.NumberFormat("en-IN");
 
-const BUCKETS: { key: keyof ReturnType<typeof keys>; label: string; hint: string; color: string }[] = [] as any;
-function keys() { return {} as any; }
+
+
 
 const DEFS = [
   { key: "purchased", label: "Purchased Coins", hint: "Bought with money", color: "#60a5fa" },
