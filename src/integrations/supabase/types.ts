@@ -19802,6 +19802,35 @@ export type Database = {
           },
         ]
       }
+      wallet_badges: {
+        Row: {
+          badge: Database["public"]["Enums"]["wallet_badge_kind"]
+          granted_at: string
+          id: string
+          wallet_id: string
+        }
+        Insert: {
+          badge: Database["public"]["Enums"]["wallet_badge_kind"]
+          granted_at?: string
+          id?: string
+          wallet_id: string
+        }
+        Update: {
+          badge?: Database["public"]["Enums"]["wallet_badge_kind"]
+          granted_at?: string
+          id?: string
+          wallet_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wallet_badges_wallet_id_fkey"
+            columns: ["wallet_id"]
+            isOneToOne: false
+            referencedRelation: "wallets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       wallet_balances: {
         Row: {
           ads: number
@@ -19844,6 +19873,65 @@ export type Database = {
             foreignKeyName: "wallet_balances_wallet_id_fkey"
             columns: ["wallet_id"]
             isOneToOne: true
+            referencedRelation: "wallets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      wallet_cards: {
+        Row: {
+          card_type: Database["public"]["Enums"]["wallet_card_type"]
+          created_at: string
+          encryption: string
+          id: string
+          is_current: boolean
+          issued_at: string
+          refresh_due_at: string
+          refresh_reason: string | null
+          retired_at: string | null
+          security_status: Database["public"]["Enums"]["wallet_card_security"]
+          theme: Database["public"]["Enums"]["wallet_card_theme"]
+          updated_at: string
+          version: number
+          wallet_id: string
+        }
+        Insert: {
+          card_type?: Database["public"]["Enums"]["wallet_card_type"]
+          created_at?: string
+          encryption?: string
+          id?: string
+          is_current?: boolean
+          issued_at?: string
+          refresh_due_at?: string
+          refresh_reason?: string | null
+          retired_at?: string | null
+          security_status?: Database["public"]["Enums"]["wallet_card_security"]
+          theme?: Database["public"]["Enums"]["wallet_card_theme"]
+          updated_at?: string
+          version: number
+          wallet_id: string
+        }
+        Update: {
+          card_type?: Database["public"]["Enums"]["wallet_card_type"]
+          created_at?: string
+          encryption?: string
+          id?: string
+          is_current?: boolean
+          issued_at?: string
+          refresh_due_at?: string
+          refresh_reason?: string | null
+          retired_at?: string | null
+          security_status?: Database["public"]["Enums"]["wallet_card_security"]
+          theme?: Database["public"]["Enums"]["wallet_card_theme"]
+          updated_at?: string
+          version?: number
+          wallet_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wallet_cards_wallet_id_fkey"
+            columns: ["wallet_id"]
+            isOneToOne: false
             referencedRelation: "wallets"
             referencedColumns: ["id"]
           },
@@ -19990,6 +20078,44 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "wallet_risk_alerts_wallet_id_fkey"
+            columns: ["wallet_id"]
+            isOneToOne: false
+            referencedRelation: "wallets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      wallet_security_reviews: {
+        Row: {
+          checks: Json
+          grade: string
+          id: string
+          next_due_at: string
+          reviewed_at: string
+          score: number
+          wallet_id: string
+        }
+        Insert: {
+          checks?: Json
+          grade: string
+          id?: string
+          next_due_at?: string
+          reviewed_at?: string
+          score: number
+          wallet_id: string
+        }
+        Update: {
+          checks?: Json
+          grade?: string
+          id?: string
+          next_due_at?: string
+          reviewed_at?: string
+          score?: number
+          wallet_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wallet_security_reviews_wallet_id_fkey"
             columns: ["wallet_id"]
             isOneToOne: false
             referencedRelation: "wallets"
@@ -21072,6 +21198,46 @@ export type Database = {
         }
         Returns: string
       }
+      wallet_card_admin: { Args: { _wallet: string }; Returns: Json }
+      wallet_card_ensure: {
+        Args: { _wallet: string }
+        Returns: {
+          card_type: Database["public"]["Enums"]["wallet_card_type"]
+          created_at: string
+          encryption: string
+          id: string
+          is_current: boolean
+          issued_at: string
+          refresh_due_at: string
+          refresh_reason: string | null
+          retired_at: string | null
+          security_status: Database["public"]["Enums"]["wallet_card_security"]
+          theme: Database["public"]["Enums"]["wallet_card_theme"]
+          updated_at: string
+          version: number
+          wallet_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "wallet_cards"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      wallet_card_refresh: { Args: { _reason?: string }; Returns: Json }
+      wallet_card_set_theme: {
+        Args: { _theme: Database["public"]["Enums"]["wallet_card_theme"] }
+        Returns: Json
+      }
+      wallet_card_state: { Args: never; Returns: Json }
+      wallet_card_themes: {
+        Args: { _type: Database["public"]["Enums"]["wallet_card_type"] }
+        Returns: Database["public"]["Enums"]["wallet_card_theme"][]
+      }
+      wallet_card_type_for: {
+        Args: { _user: string }
+        Returns: Database["public"]["Enums"]["wallet_card_type"]
+      }
       wallet_ensure: { Args: { _user?: string }; Returns: string }
       wallet_generate_id: { Args: never; Returns: string }
       wallet_gift: {
@@ -21116,6 +21282,7 @@ export type Database = {
           verified: boolean
         }[]
       }
+      wallet_security_review: { Args: { _force?: boolean }; Returns: Json }
       wallet_set_status: {
         Args: {
           _reason: string
@@ -21124,6 +21291,7 @@ export type Database = {
         }
         Returns: undefined
       }
+      wallet_sync_badges: { Args: { _wallet: string }; Returns: undefined }
       wallet_transfer: {
         Args: {
           _actor?: string
@@ -21637,6 +21805,17 @@ export type Database = {
         | "public_figure"
         | "government"
         | "education"
+      wallet_badge_kind:
+        | "verified"
+        | "creator"
+        | "premium"
+        | "organization"
+        | "early_supporter"
+        | "top_creator"
+        | "top_earner"
+        | "community_leader"
+        | "founder"
+        | "internal"
       wallet_bucket:
         | "purchased"
         | "reward"
@@ -21646,6 +21825,29 @@ export type Database = {
         | "locked"
         | "pending"
         | "withdrawable"
+      wallet_card_security:
+        | "secure"
+        | "review_recommended"
+        | "refresh_recommended"
+      wallet_card_theme:
+        | "standard"
+        | "creator"
+        | "premium"
+        | "elite"
+        | "founder"
+        | "organization"
+        | "internal"
+        | "holiday"
+        | "anniversary"
+        | "limited"
+      wallet_card_type:
+        | "standard"
+        | "verified"
+        | "creator"
+        | "organization"
+        | "premium"
+        | "founder"
+        | "internal"
       wallet_risk_level: "normal" | "medium" | "high" | "critical"
       wallet_source:
         | "purchase"
@@ -22330,6 +22532,18 @@ export const Constants = {
         "government",
         "education",
       ],
+      wallet_badge_kind: [
+        "verified",
+        "creator",
+        "premium",
+        "organization",
+        "early_supporter",
+        "top_creator",
+        "top_earner",
+        "community_leader",
+        "founder",
+        "internal",
+      ],
       wallet_bucket: [
         "purchased",
         "reward",
@@ -22339,6 +22553,32 @@ export const Constants = {
         "locked",
         "pending",
         "withdrawable",
+      ],
+      wallet_card_security: [
+        "secure",
+        "review_recommended",
+        "refresh_recommended",
+      ],
+      wallet_card_theme: [
+        "standard",
+        "creator",
+        "premium",
+        "elite",
+        "founder",
+        "organization",
+        "internal",
+        "holiday",
+        "anniversary",
+        "limited",
+      ],
+      wallet_card_type: [
+        "standard",
+        "verified",
+        "creator",
+        "organization",
+        "premium",
+        "founder",
+        "internal",
       ],
       wallet_risk_level: ["normal", "medium", "high", "critical"],
       wallet_source: [

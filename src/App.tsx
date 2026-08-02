@@ -42,6 +42,7 @@ const WalletGift = lazy(() => import("./pages/wallet-os/WalletGift"));
 const WalletWithdraw = lazy(() => import("./pages/wallet-os/WalletWithdraw"));
 const WalletQR = lazy(() => import("./pages/wallet-os/WalletQR"));
 const WalletSecurity = lazy(() => import("./pages/wallet-os/WalletSecurity"));
+const WalletCardPage = lazy(() => import("./pages/wallet-os/WalletCardPage"));
 const MyPayslips = lazy(() => import("./pages/MyPayslips"));
 const PayslipDetail = lazy(() => import("./pages/PayslipDetail"));
 const Profile = lazy(() => import("./pages/Profile"));
@@ -460,6 +461,7 @@ const App = () => (
                   <Route path="/wallet/withdraw" element={<WalletWithdraw />} />
                   <Route path="/wallet/qr" element={<WalletQR />} />
                   <Route path="/wallet/security" element={<WalletSecurity />} />
+                  <Route path="/wallet/card" element={<WalletCardPage />} />
                   <Route path="/wallet/payslips" element={<MyPayslips />} />
                   <Route path="/wallet/payslips/:itemId" element={<PayslipDetail />} />
                   <Route path="/profile" element={<Profile />} />
