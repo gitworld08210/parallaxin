@@ -8,6 +8,7 @@ export type WalletBuckets = {
 };
 
 export type WalletOverview = {
+  id: string;
   wallet_id: string;
   handle: string;
   status: "active" | "pending" | "restricted" | "suspended" | "frozen" | "closed";
@@ -16,6 +17,10 @@ export type WalletOverview = {
   security_score: number;
   risk_level: "normal" | "medium" | "high" | "critical";
   created_at: string;
+  shield_enabled: boolean;
+  biometric_enabled: boolean;
+  pin_enabled: boolean;
+  alerts_enabled: boolean;
   balances: WalletBuckets;
   total: number;
   earned: number;
