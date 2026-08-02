@@ -19802,6 +19802,296 @@ export type Database = {
           },
         ]
       }
+      wallet_balances: {
+        Row: {
+          ads: number
+          bonus: number
+          gift: number
+          locked: number
+          pending: number
+          purchased: number
+          reward: number
+          updated_at: string
+          wallet_id: string
+          withdrawable: number
+        }
+        Insert: {
+          ads?: number
+          bonus?: number
+          gift?: number
+          locked?: number
+          pending?: number
+          purchased?: number
+          reward?: number
+          updated_at?: string
+          wallet_id: string
+          withdrawable?: number
+        }
+        Update: {
+          ads?: number
+          bonus?: number
+          gift?: number
+          locked?: number
+          pending?: number
+          purchased?: number
+          reward?: number
+          updated_at?: string
+          wallet_id?: string
+          withdrawable?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wallet_balances_wallet_id_fkey"
+            columns: ["wallet_id"]
+            isOneToOne: true
+            referencedRelation: "wallets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      wallet_ledger: {
+        Row: {
+          amount: number
+          balance_after: number
+          bucket: Database["public"]["Enums"]["wallet_bucket"]
+          counterparty_wallet_id: string | null
+          created_at: string
+          created_by: string | null
+          direction: string
+          fee: number
+          id: string
+          label: string | null
+          metadata: Json
+          source: Database["public"]["Enums"]["wallet_source"]
+          status: string
+          txn_id: string
+          wallet_id: string
+        }
+        Insert: {
+          amount: number
+          balance_after: number
+          bucket: Database["public"]["Enums"]["wallet_bucket"]
+          counterparty_wallet_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          direction: string
+          fee?: number
+          id?: string
+          label?: string | null
+          metadata?: Json
+          source: Database["public"]["Enums"]["wallet_source"]
+          status?: string
+          txn_id: string
+          wallet_id: string
+        }
+        Update: {
+          amount?: number
+          balance_after?: number
+          bucket?: Database["public"]["Enums"]["wallet_bucket"]
+          counterparty_wallet_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          direction?: string
+          fee?: number
+          id?: string
+          label?: string | null
+          metadata?: Json
+          source?: Database["public"]["Enums"]["wallet_source"]
+          status?: string
+          txn_id?: string
+          wallet_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wallet_ledger_counterparty_wallet_id_fkey"
+            columns: ["counterparty_wallet_id"]
+            isOneToOne: false
+            referencedRelation: "wallets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wallet_ledger_wallet_id_fkey"
+            columns: ["wallet_id"]
+            isOneToOne: false
+            referencedRelation: "wallets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      wallet_notes: {
+        Row: {
+          author_id: string | null
+          created_at: string
+          id: string
+          note: string
+          wallet_id: string
+        }
+        Insert: {
+          author_id?: string | null
+          created_at?: string
+          id?: string
+          note: string
+          wallet_id: string
+        }
+        Update: {
+          author_id?: string | null
+          created_at?: string
+          id?: string
+          note?: string
+          wallet_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wallet_notes_wallet_id_fkey"
+            columns: ["wallet_id"]
+            isOneToOne: false
+            referencedRelation: "wallets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      wallet_risk_alerts: {
+        Row: {
+          created_at: string
+          details: Json
+          id: string
+          kind: string
+          level: Database["public"]["Enums"]["wallet_risk_level"]
+          resolved: boolean
+          resolved_at: string | null
+          resolved_by: string | null
+          summary: string
+          wallet_id: string
+        }
+        Insert: {
+          created_at?: string
+          details?: Json
+          id?: string
+          kind: string
+          level?: Database["public"]["Enums"]["wallet_risk_level"]
+          resolved?: boolean
+          resolved_at?: string | null
+          resolved_by?: string | null
+          summary: string
+          wallet_id: string
+        }
+        Update: {
+          created_at?: string
+          details?: Json
+          id?: string
+          kind?: string
+          level?: Database["public"]["Enums"]["wallet_risk_level"]
+          resolved?: boolean
+          resolved_at?: string | null
+          resolved_by?: string | null
+          summary?: string
+          wallet_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wallet_risk_alerts_wallet_id_fkey"
+            columns: ["wallet_id"]
+            isOneToOne: false
+            referencedRelation: "wallets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      wallet_status_history: {
+        Row: {
+          changed_by: string | null
+          created_at: string
+          from_status: Database["public"]["Enums"]["wallet_status"] | null
+          id: string
+          reason: string | null
+          to_status: Database["public"]["Enums"]["wallet_status"]
+          wallet_id: string
+        }
+        Insert: {
+          changed_by?: string | null
+          created_at?: string
+          from_status?: Database["public"]["Enums"]["wallet_status"] | null
+          id?: string
+          reason?: string | null
+          to_status: Database["public"]["Enums"]["wallet_status"]
+          wallet_id: string
+        }
+        Update: {
+          changed_by?: string | null
+          created_at?: string
+          from_status?: Database["public"]["Enums"]["wallet_status"] | null
+          id?: string
+          reason?: string | null
+          to_status?: Database["public"]["Enums"]["wallet_status"]
+          wallet_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wallet_status_history_wallet_id_fkey"
+            columns: ["wallet_id"]
+            isOneToOne: false
+            referencedRelation: "wallets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      wallets: {
+        Row: {
+          alerts_enabled: boolean
+          biometric_enabled: boolean
+          created_at: string
+          frozen_reason: string | null
+          handle: string
+          id: string
+          pin_enabled: boolean
+          risk_level: Database["public"]["Enums"]["wallet_risk_level"]
+          security_score: number
+          shield_enabled: boolean
+          status: Database["public"]["Enums"]["wallet_status"]
+          trust_score: number
+          updated_at: string
+          user_id: string
+          version: string
+          wallet_id: string
+        }
+        Insert: {
+          alerts_enabled?: boolean
+          biometric_enabled?: boolean
+          created_at?: string
+          frozen_reason?: string | null
+          handle: string
+          id?: string
+          pin_enabled?: boolean
+          risk_level?: Database["public"]["Enums"]["wallet_risk_level"]
+          security_score?: number
+          shield_enabled?: boolean
+          status?: Database["public"]["Enums"]["wallet_status"]
+          trust_score?: number
+          updated_at?: string
+          user_id: string
+          version?: string
+          wallet_id: string
+        }
+        Update: {
+          alerts_enabled?: boolean
+          biometric_enabled?: boolean
+          created_at?: string
+          frozen_reason?: string | null
+          handle?: string
+          id?: string
+          pin_enabled?: boolean
+          risk_level?: Database["public"]["Enums"]["wallet_risk_level"]
+          security_score?: number
+          shield_enabled?: boolean
+          status?: Database["public"]["Enums"]["wallet_status"]
+          trust_score?: number
+          updated_at?: string
+          user_id?: string
+          version?: string
+          wallet_id?: string
+        }
+        Relationships: []
+      }
       welcome_email_history: {
         Row: {
           body: string
@@ -20742,6 +21032,111 @@ export type Database = {
         Args: { _tip_id: string; _utr: string }
         Returns: Json
       }
+      wallet_admin_profile: { Args: { _wallet: string }; Returns: Json }
+      wallet_admin_search: {
+        Args: { _q: string }
+        Returns: {
+          avatar_url: string
+          display_name: string
+          handle: string
+          risk_level: Database["public"]["Enums"]["wallet_risk_level"]
+          status: Database["public"]["Enums"]["wallet_status"]
+          total: number
+          trust_score: number
+          username: string
+          wallet_id: string
+          wallet_uuid: string
+        }[]
+      }
+      wallet_analytics: {
+        Args: { _days?: number; _user?: string }
+        Returns: {
+          day: string
+          expense: number
+          income: number
+        }[]
+      }
+      wallet_apply: {
+        Args: {
+          _actor?: string
+          _amount: number
+          _bucket: Database["public"]["Enums"]["wallet_bucket"]
+          _counterparty?: string
+          _direction: string
+          _fee?: number
+          _label?: string
+          _metadata?: Json
+          _source: Database["public"]["Enums"]["wallet_source"]
+          _txn?: string
+          _wallet: string
+        }
+        Returns: string
+      }
+      wallet_ensure: { Args: { _user?: string }; Returns: string }
+      wallet_generate_id: { Args: never; Returns: string }
+      wallet_gift: {
+        Args: { _amount: number; _to_handle: string }
+        Returns: Json
+      }
+      wallet_is_finance: { Args: { _uid?: string }; Returns: boolean }
+      wallet_is_staff: { Args: { _uid?: string }; Returns: boolean }
+      wallet_lookup: {
+        Args: { _handle: string }
+        Returns: {
+          avatar_url: string
+          display_name: string
+          handle: string
+          username: string
+          verified: boolean
+        }[]
+      }
+      wallet_manual_adjust: {
+        Args: {
+          _amount: number
+          _bucket: Database["public"]["Enums"]["wallet_bucket"]
+          _direction: string
+          _reason: string
+          _wallet: string
+        }
+        Returns: string
+      }
+      wallet_overview: { Args: { _user?: string }; Returns: Json }
+      wallet_owner: { Args: { _wallet: string }; Returns: string }
+      wallet_request_withdrawal: {
+        Args: { _amount: number; _method?: string }
+        Returns: Json
+      }
+      wallet_search_handles: {
+        Args: { _q: string }
+        Returns: {
+          avatar_url: string
+          display_name: string
+          handle: string
+          username: string
+          verified: boolean
+        }[]
+      }
+      wallet_set_status: {
+        Args: {
+          _reason: string
+          _status: Database["public"]["Enums"]["wallet_status"]
+          _wallet: string
+        }
+        Returns: undefined
+      }
+      wallet_transfer: {
+        Args: {
+          _actor?: string
+          _amount: number
+          _fee?: number
+          _from: string
+          _label?: string
+          _source?: Database["public"]["Enums"]["wallet_source"]
+          _to: string
+        }
+        Returns: string
+      }
+      wallet_treasury: { Args: never; Returns: Json }
       write_org_audit_log: {
         Args: {
           _action: string
@@ -21242,6 +21637,36 @@ export type Database = {
         | "public_figure"
         | "government"
         | "education"
+      wallet_bucket:
+        | "purchased"
+        | "reward"
+        | "gift"
+        | "ads"
+        | "bonus"
+        | "locked"
+        | "pending"
+        | "withdrawable"
+      wallet_risk_level: "normal" | "medium" | "high" | "critical"
+      wallet_source:
+        | "purchase"
+        | "gift"
+        | "reward"
+        | "ads"
+        | "marketplace"
+        | "subscription"
+        | "withdrawal"
+        | "refund"
+        | "tip"
+        | "adjustment"
+        | "transfer"
+        | "system"
+      wallet_status:
+        | "active"
+        | "pending"
+        | "restricted"
+        | "suspended"
+        | "frozen"
+        | "closed"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -21904,6 +22329,39 @@ export const Constants = {
         "public_figure",
         "government",
         "education",
+      ],
+      wallet_bucket: [
+        "purchased",
+        "reward",
+        "gift",
+        "ads",
+        "bonus",
+        "locked",
+        "pending",
+        "withdrawable",
+      ],
+      wallet_risk_level: ["normal", "medium", "high", "critical"],
+      wallet_source: [
+        "purchase",
+        "gift",
+        "reward",
+        "ads",
+        "marketplace",
+        "subscription",
+        "withdrawal",
+        "refund",
+        "tip",
+        "adjustment",
+        "transfer",
+        "system",
+      ],
+      wallet_status: [
+        "active",
+        "pending",
+        "restricted",
+        "suspended",
+        "frozen",
+        "closed",
       ],
     },
   },

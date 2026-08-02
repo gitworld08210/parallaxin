@@ -546,3 +546,92 @@
     opacity: 0;
   }
 }
+
+/* ============ AURELIX WALLET OS ============ */
+:root {
+  --wallet-accent: 224 92% 62%;
+  --wallet-ink: 0 0% 4%;
+  --wallet-graphite: 220 8% 12%;
+}
+
+.wallet-os {
+  --background: 0 0% 4%;
+  background:
+    radial-gradient(120% 80% at 50% -10%, hsl(var(--wallet-accent) / 0.16), transparent 60%),
+    hsl(var(--wallet-ink));
+  color: hsl(0 0% 98%);
+}
+
+.wallet-os-header {
+  background: hsl(var(--wallet-ink) / 0.72);
+  backdrop-filter: blur(22px) saturate(160%);
+  -webkit-backdrop-filter: blur(22px) saturate(160%);
+  border-bottom: 1px solid hsl(0 0% 100% / 0.06);
+}
+
+.wallet-os-tabbar {
+  background: hsl(var(--wallet-ink) / 0.78);
+  backdrop-filter: blur(24px) saturate(170%);
+  -webkit-backdrop-filter: blur(24px) saturate(170%);
+  border-top: 1px solid hsl(0 0% 100% / 0.07);
+}
+
+.wallet-os-card {
+  border-radius: 22px;
+  overflow: hidden;
+  background:
+    radial-gradient(120% 140% at 85% 0%, hsl(var(--wallet-accent) / 0.28), transparent 55%),
+    linear-gradient(150deg, hsl(220 10% 16%) 0%, hsl(0 0% 6%) 55%, hsl(0 0% 3%) 100%);
+  border: 1px solid hsl(0 0% 100% / 0.1);
+  box-shadow:
+    0 1px 0 0 hsl(0 0% 100% / 0.12) inset,
+    0 24px 60px -20px hsl(var(--wallet-accent) / 0.35),
+    0 10px 30px -10px hsl(0 0% 0% / 0.8);
+}
+
+.wallet-os-brand {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.32em;
+  color: hsl(0 0% 100% / 0.9);
+}
+
+.wallet-os-amount {
+  font-size: 30px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: hsl(0 0% 100%);
+  font-variant-numeric: tabular-nums;
+}
+
+.wallet-os-chip {
+  display: block;
+  width: 38px;
+  height: 28px;
+  border-radius: 6px;
+  background: linear-gradient(135deg, #e6c98a, #b8933f 45%, #f3e2b3 70%, #a9822f);
+  box-shadow: 0 1px 2px hsl(0 0% 0% / 0.6) inset;
+}
+
+.wallet-os-tile {
+  border-radius: 16px;
+  background: hsl(0 0% 100% / 0.045);
+  border: 1px solid hsl(0 0% 100% / 0.08);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.wallet-os-action {
+  border-radius: 16px;
+  background: hsl(0 0% 100% / 0.05);
+  border: 1px solid hsl(0 0% 100% / 0.08);
+  transition: background 180ms ease, transform 180ms ease, border-color 180ms ease;
+}
+.wallet-os-action:hover {
+  background: hsl(var(--wallet-accent) / 0.14);
+  border-color: hsl(var(--wallet-accent) / 0.4);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wallet-os-action { transition: none; }
+}

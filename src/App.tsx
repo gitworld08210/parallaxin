@@ -33,6 +33,15 @@ const StoryCompose = lazy(() => import("./pages/StoryCompose"));
 const PostDetail = lazy(() => import("./pages/PostDetail"));
 const Tag = lazy(() => import("./pages/Tag"));
 const Wallet = lazy(() => import("./pages/Wallet"));
+const WalletHome = lazy(() => import("./pages/wallet-os/WalletHome"));
+const WalletAnalytics = lazy(() => import("./pages/wallet-os/WalletAnalytics"));
+const WalletTransactions = lazy(() => import("./pages/wallet-os/WalletTransactions"));
+const WalletPassport = lazy(() => import("./pages/wallet-os/WalletPassport"));
+const WalletCoins = lazy(() => import("./pages/wallet-os/WalletCoins"));
+const WalletGift = lazy(() => import("./pages/wallet-os/WalletGift"));
+const WalletWithdraw = lazy(() => import("./pages/wallet-os/WalletWithdraw"));
+const WalletQR = lazy(() => import("./pages/wallet-os/WalletQR"));
+const WalletSecurity = lazy(() => import("./pages/wallet-os/WalletSecurity"));
 const MyPayslips = lazy(() => import("./pages/MyPayslips"));
 const PayslipDetail = lazy(() => import("./pages/PayslipDetail"));
 const Profile = lazy(() => import("./pages/Profile"));
@@ -339,6 +348,7 @@ const FinComplianceDashboard = lazy(() => import("./pages/admin-os/finance-legal
 const FinCreatorPayoutQueue = lazy(() => import("./pages/admin-os/finance-legal/CreatorPayoutQueue"));
 const FinHireApprovals = lazy(() => import("./pages/admin-os/finance-legal/HireApprovals"));
 const FinNewHireBankDetails = lazy(() => import("./pages/admin-os/finance-legal/NewHireBankDetails"));
+const FinWalletLookup = lazy(() => import("./pages/admin-os/finance/WalletLookup"));
 const HireCompensationPage = lazy(() => import("./pages/admin-os/people-ops/recruitment/HireCompensation"));
 const EmployeeFinanceOnboarding = lazy(() => import("./pages/admin-os/employee/FinanceOnboardingForm"));
 const SecurityDeptShell = lazy(() => import("./pages/admin-os/security/SecurityShell"));
@@ -440,7 +450,16 @@ const App = () => (
                   <Route path="/creator/terms" element={<CreatorTerms />} />
                   <Route path="/p/:postId" element={<PostDetail />} />
                   <Route path="/tag/:tag" element={<Tag />} />
-                  <Route path="/wallet" element={<Wallet />} />
+                  <Route path="/wallet" element={<WalletHome />} />
+                  <Route path="/wallet/legacy" element={<Wallet />} />
+                  <Route path="/wallet/analytics" element={<WalletAnalytics />} />
+                  <Route path="/wallet/transactions" element={<WalletTransactions />} />
+                  <Route path="/wallet/passport" element={<WalletPassport />} />
+                  <Route path="/wallet/coins" element={<WalletCoins />} />
+                  <Route path="/wallet/gift" element={<WalletGift />} />
+                  <Route path="/wallet/withdraw" element={<WalletWithdraw />} />
+                  <Route path="/wallet/qr" element={<WalletQR />} />
+                  <Route path="/wallet/security" element={<WalletSecurity />} />
                   <Route path="/wallet/payslips" element={<MyPayslips />} />
                   <Route path="/wallet/payslips/:itemId" element={<PayslipDetail />} />
                   <Route path="/profile" element={<Profile />} />
@@ -796,6 +815,7 @@ const App = () => (
                     <Route path="creator-payouts" element={<FinCreatorPayoutQueue />} />
                     <Route path="hire-approvals" element={<FinHireApprovals />} />
                     <Route path="new-hire-bank" element={<FinNewHireBankDetails />} />
+                    <Route path="wallet-lookup" element={<FinWalletLookup />} />
                   </Route>
                   <Route path="security" element={<SecurityDeptShell />}>
                     <Route index element={<SecurityDashboardPage />} />
