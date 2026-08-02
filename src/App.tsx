@@ -814,6 +814,7 @@ const App = () => (
                     <Route path="creator-payouts" element={<FinCreatorPayoutQueue />} />
                     <Route path="hire-approvals" element={<FinHireApprovals />} />
                     <Route path="new-hire-bank" element={<FinNewHireBankDetails />} />
+                    <Route path="wallet-lookup" element={<FinWalletLookup />} />
                   </Route>
                   <Route path="security" element={<SecurityDeptShell />}>
                     <Route index element={<SecurityDashboardPage />} />
