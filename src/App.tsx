@@ -65,8 +65,16 @@ const ChangePhoneScreen = lazy(() => import("./pages/security/ChangePhoneScreen"
 const Onboarding = lazy(() => import("./pages/Onboarding"));
 const OrganizationOnboarding = lazy(() => import("./pages/OrganizationOnboarding"));
 
-// Aurelix Ads Platform (AAP)
-const AdsComingSoon = lazy(() => import("./pages/ads/ComingSoon"));
+// Aurelix Ads Manager
+const AdsLayout = lazy(() => import("./pages/ads/AdsLayout"));
+const AdsBusinessCenter = lazy(() => import("./pages/ads/BusinessCenter"));
+const AdsDashboard = lazy(() => import("./pages/ads/Dashboard"));
+const AdsManager = lazy(() => import("./pages/ads/Manager"));
+const AdsCampaignWizard = lazy(() => import("./pages/ads/CampaignWizard"));
+const AdsCreatives = lazy(() => import("./pages/ads/Creatives"));
+const AdsBilling = lazy(() => import("./pages/ads/Billing"));
+const AdsReviewQueue = lazy(() => import("./pages/ads/ReviewQueue"));
+const AdsFinanceConsole = lazy(() => import("./pages/ads/FinanceConsole"));
 
 
 const CreatorHub = lazy(() => import("./pages/CreatorHub"));
