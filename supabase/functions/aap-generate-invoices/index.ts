@@ -138,6 +138,17 @@ async function generateForAdvertiser(admin: any, advertiserId: string, force = f
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders })
+
+  // Internal-only: scheduled cron or service-role callers.
+  const cronSecret = Deno.env.get('CRON_SECRET')
+  const bearer = req.headers.get('Authorization')?.replace('Bearer ', '')?.trim()
+  const authorized = !!bearer && ((!!cronSecret && bearer === cronSecret) || bearer === SERVICE_ROLE)
+  if (!authorized) {
+    return new Response(JSON.stringify({ error: 'forbidden' }), {
+      status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    })
+  }
+
   try {
     const admin = createClient(SUPABASE_URL, SERVICE_ROLE)
     const body = await req.json().catch(() => ({} as any))

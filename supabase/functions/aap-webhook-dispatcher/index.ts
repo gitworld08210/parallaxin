@@ -21,11 +21,32 @@ async function hmacSha256Hex(secret: string, message: string) {
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: cors });
 
-  const supabase = createClient(
-    Deno.env.get("SUPABASE_URL")!,
-    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
-    { auth: { persistSession: false } },
-  );
+  const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+  const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
+
+  const supabase = createClient(SUPABASE_URL, SERVICE_ROLE, { auth: { persistSession: false } });
+
+  // Internal-only: cron secret, service role, or a platform admin / engineering staff JWT.
+  const bearer = req.headers.get("Authorization")?.replace("Bearer ", "")?.trim();
+  const cronSecret = Deno.env.get("CRON_SECRET");
+  let authorized = !!bearer && ((!!cronSecret && bearer === cronSecret) || bearer === SERVICE_ROLE);
+  if (!authorized && bearer) {
+    const asUser = createClient(SUPABASE_URL, Deno.env.get("SUPABASE_ANON_KEY")!, {
+      global: { headers: { Authorization: `Bearer ${bearer}` } },
+      auth: { persistSession: false },
+    });
+    const { data: claims } = await asUser.auth.getClaims(bearer);
+    if (claims?.claims?.sub) {
+      const [admin, eng] = await Promise.all([
+        asUser.rpc("aap_is_platform_admin"),
+        asUser.rpc("aap_is_engineering"),
+      ]);
+      authorized = admin.data === true || eng.data === true;
+    }
+  }
+  if (!authorized) {
+    return new Response(JSON.stringify({ error: "forbidden" }), { status: 403, headers: cors });
+  }
 
   const { data: batch, error } = await supabase.rpc("aap_claim_outbox_batch", { p_limit: 50 });
   if (error) return new Response(JSON.stringify({ error: error.message }), { status: 500, headers: cors });
