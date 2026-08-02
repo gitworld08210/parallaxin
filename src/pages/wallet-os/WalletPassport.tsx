@@ -1,5 +1,8 @@
 import { Loader2, IdCard } from "lucide-react";
 import { WalletShell } from "@/components/wallet-os/WalletShell";
+import { WalletBadges } from "@/components/wallet-os/WalletBadges";
+import { CARD_TYPE_LABEL } from "@/components/wallet-os/cardThemes";
+import { useWalletCard } from "@/hooks/useWalletCard";
 import { useWalletOS, useWalletLedgerOS } from "@/hooks/useWalletOS";
 import { useAuth } from "@/contexts/AuthProvider";
 import { useMemo } from "react";
@@ -8,6 +11,7 @@ const nf = new Intl.NumberFormat("en-IN");
 
 export default function WalletPassport() {
   const { wallet, loading } = useWalletOS();
+  const { state: cardState } = useWalletCard();
   const { rows } = useWalletLedgerOS(500);
   const { profile } = useAuth();
 
