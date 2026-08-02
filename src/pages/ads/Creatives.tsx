@@ -46,7 +46,8 @@ export default function Creatives() {
           name: file.name.slice(0, 80),
           media_type: isVideo ? "video" : "image",
           storage_path: path,
-          uploaded_by: user.id,
+          file_size_bytes: file.size,
+          created_by: user.id,
         });
         if (error) throw error;
       }
