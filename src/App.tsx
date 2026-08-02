@@ -440,7 +440,16 @@ const App = () => (
                   <Route path="/creator/terms" element={<CreatorTerms />} />
                   <Route path="/p/:postId" element={<PostDetail />} />
                   <Route path="/tag/:tag" element={<Tag />} />
-                  <Route path="/wallet" element={<Wallet />} />
+                  <Route path="/wallet" element={<WalletHome />} />
+                  <Route path="/wallet/legacy" element={<Wallet />} />
+                  <Route path="/wallet/analytics" element={<WalletAnalytics />} />
+                  <Route path="/wallet/transactions" element={<WalletTransactions />} />
+                  <Route path="/wallet/passport" element={<WalletPassport />} />
+                  <Route path="/wallet/coins" element={<WalletCoins />} />
+                  <Route path="/wallet/gift" element={<WalletGift />} />
+                  <Route path="/wallet/withdraw" element={<WalletWithdraw />} />
+                  <Route path="/wallet/qr" element={<WalletQR />} />
+                  <Route path="/wallet/security" element={<WalletSecurity />} />
                   <Route path="/wallet/payslips" element={<MyPayslips />} />
                   <Route path="/wallet/payslips/:itemId" element={<PayslipDetail />} />
                   <Route path="/profile" element={<Profile />} />
