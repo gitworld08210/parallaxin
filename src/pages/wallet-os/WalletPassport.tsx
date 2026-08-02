@@ -62,11 +62,24 @@ export default function WalletPassport() {
           <span className="grid h-12 w-12 place-items-center rounded-2xl bg-[hsl(var(--wallet-accent)/0.15)]">
             <IdCard className="h-5 w-5 text-[hsl(var(--wallet-accent))]" />
           </span>
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-semibold">{p?.display_name ?? p?.username ?? "Aurelix member"}</p>
             <p className="truncate font-mono text-[11px] text-muted-foreground">{wallet.wallet_id}</p>
+            {cardState && (
+              <p className="mt-0.5 text-[10px] text-muted-foreground">
+                {CARD_TYPE_LABEL[cardState.card.card_type]} · V{cardState.card.version}
+              </p>
+            )}
           </div>
         </div>
+
+        {cardState && cardState.badges.length > 0 && (
+          <div className="wallet-os-tile p-4">
+            <h2 className="mb-2 text-xs font-semibold">Badges</h2>
+            <WalletBadges badges={cardState.badges} />
+          </div>
+        )}
+
 
         <dl className="wallet-os-tile divide-y divide-border/40 overflow-hidden">
           {rows2.map((r) => (
