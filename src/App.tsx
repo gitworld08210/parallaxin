@@ -348,6 +348,7 @@ const FinComplianceDashboard = lazy(() => import("./pages/admin-os/finance-legal
 const FinCreatorPayoutQueue = lazy(() => import("./pages/admin-os/finance-legal/CreatorPayoutQueue"));
 const FinHireApprovals = lazy(() => import("./pages/admin-os/finance-legal/HireApprovals"));
 const FinNewHireBankDetails = lazy(() => import("./pages/admin-os/finance-legal/NewHireBankDetails"));
+const FinWalletLookup = lazy(() => import("./pages/admin-os/finance/WalletLookup"));
 const HireCompensationPage = lazy(() => import("./pages/admin-os/people-ops/recruitment/HireCompensation"));
 const EmployeeFinanceOnboarding = lazy(() => import("./pages/admin-os/employee/FinanceOnboardingForm"));
 const SecurityDeptShell = lazy(() => import("./pages/admin-os/security/SecurityShell"));
