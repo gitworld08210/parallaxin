@@ -24,9 +24,9 @@ Deno.serve(async (req) => {
 
     // Internal staff only — this assistant burns paid AI credits and returns
     // internally-scoped advisory output.
-    const { data: isEmployee } = await supabase.rpc('is_active_employee', { _user_id: userData.user.id });
+    const { data: isEmployee } = await supabase.rpc('is_active_employee', { _uid: userData.user.id });
     const { data: isFounderOffice } = await supabase.rpc('is_admin_department_member', {
-      _user_id: userData.user.id, _slug: 'founder_office',
+      _uid: userData.user.id, _department_key: 'founder_office',
     });
     if (!isEmployee && !isFounderOffice) {
       return new Response(JSON.stringify({ error: 'Forbidden' }), {
