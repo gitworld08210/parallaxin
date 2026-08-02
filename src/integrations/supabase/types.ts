@@ -21020,6 +21020,22 @@ export type Database = {
         Args: { _tip_id: string; _utr: string }
         Returns: Json
       }
+      wallet_admin_profile: { Args: { _wallet: string }; Returns: Json }
+      wallet_admin_search: {
+        Args: { _q: string }
+        Returns: {
+          avatar_url: string
+          display_name: string
+          handle: string
+          risk_level: Database["public"]["Enums"]["wallet_risk_level"]
+          status: Database["public"]["Enums"]["wallet_status"]
+          total: number
+          trust_score: number
+          username: string
+          wallet_id: string
+          wallet_uuid: string
+        }[]
+      }
       wallet_analytics: {
         Args: { _days?: number; _user?: string }
         Returns: {
@@ -21046,8 +21062,22 @@ export type Database = {
       }
       wallet_ensure: { Args: { _user?: string }; Returns: string }
       wallet_generate_id: { Args: never; Returns: string }
+      wallet_gift: {
+        Args: { _amount: number; _to_handle: string }
+        Returns: Json
+      }
       wallet_is_finance: { Args: { _uid?: string }; Returns: boolean }
       wallet_is_staff: { Args: { _uid?: string }; Returns: boolean }
+      wallet_lookup: {
+        Args: { _handle: string }
+        Returns: {
+          avatar_url: string
+          display_name: string
+          handle: string
+          username: string
+          verified: boolean
+        }[]
+      }
       wallet_manual_adjust: {
         Args: {
           _amount: number
@@ -21060,6 +21090,20 @@ export type Database = {
       }
       wallet_overview: { Args: { _user?: string }; Returns: Json }
       wallet_owner: { Args: { _wallet: string }; Returns: string }
+      wallet_request_withdrawal: {
+        Args: { _amount: number; _method?: string }
+        Returns: Json
+      }
+      wallet_search_handles: {
+        Args: { _q: string }
+        Returns: {
+          avatar_url: string
+          display_name: string
+          handle: string
+          username: string
+          verified: boolean
+        }[]
+      }
       wallet_set_status: {
         Args: {
           _reason: string
@@ -21080,6 +21124,7 @@ export type Database = {
         }
         Returns: string
       }
+      wallet_treasury: { Args: never; Returns: Json }
       write_org_audit_log: {
         Args: {
           _action: string
