@@ -20037,12 +20037,16 @@ export type Database = {
       }
       wallets: {
         Row: {
+          alerts_enabled: boolean
+          biometric_enabled: boolean
           created_at: string
           frozen_reason: string | null
           handle: string
           id: string
+          pin_enabled: boolean
           risk_level: Database["public"]["Enums"]["wallet_risk_level"]
           security_score: number
+          shield_enabled: boolean
           status: Database["public"]["Enums"]["wallet_status"]
           trust_score: number
           updated_at: string
@@ -20051,12 +20055,16 @@ export type Database = {
           wallet_id: string
         }
         Insert: {
+          alerts_enabled?: boolean
+          biometric_enabled?: boolean
           created_at?: string
           frozen_reason?: string | null
           handle: string
           id?: string
+          pin_enabled?: boolean
           risk_level?: Database["public"]["Enums"]["wallet_risk_level"]
           security_score?: number
+          shield_enabled?: boolean
           status?: Database["public"]["Enums"]["wallet_status"]
           trust_score?: number
           updated_at?: string
@@ -20065,12 +20073,16 @@ export type Database = {
           wallet_id: string
         }
         Update: {
+          alerts_enabled?: boolean
+          biometric_enabled?: boolean
           created_at?: string
           frozen_reason?: string | null
           handle?: string
           id?: string
+          pin_enabled?: boolean
           risk_level?: Database["public"]["Enums"]["wallet_risk_level"]
           security_score?: number
+          shield_enabled?: boolean
           status?: Database["public"]["Enums"]["wallet_status"]
           trust_score?: number
           updated_at?: string
