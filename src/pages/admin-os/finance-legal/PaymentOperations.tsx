@@ -83,11 +83,11 @@ export default function PaymentOperations() {
 
   const reviewTopup = async (id: string, decision: "approved" | "rejected") => {
     setBusy(id);
-    const { error } = await supabase.rpc("finance_review_coin_topup" as never, {
+    const { error } = await supabase.rpc("finance_review_coin_topup", {
       _topup_id: id,
       _decision: decision,
       _note: notes[id]?.trim() || null,
-    } as never);
+    });
     setBusy(null);
     if (error) return toast.error(error.message);
     toast.success(decision === "approved" ? "Coins credit kar diye gaye" : "Top-up reject ho gaya");
@@ -130,6 +130,7 @@ export default function PaymentOperations() {
 
   const pendingTopups = topups.filter((row) => row.status === "pending_review");
   const pendingCredits = applications.filter((row) => ["pending", "under_review"].includes(row.status));
+  const approvedCredits = applications.filter((row) => row.status === "approved");
 
   return (
     <div className="space-y-4">
@@ -147,6 +148,7 @@ export default function PaymentOperations() {
         <TabsList>
           <TabsTrigger value="coins">Coin top-ups ({pendingTopups.length})</TabsTrigger>
           <TabsTrigger value="credit">Postpaid credit ({pendingCredits.length})</TabsTrigger>
+          <TabsTrigger value="invoices">Advertiser invoices ({approvedCredits.length})</TabsTrigger>
         </TabsList>
 
         <TabsContent value="coins" className="space-y-3 pt-2">
@@ -194,8 +196,27 @@ export default function PaymentOperations() {
                   <div className="flex flex-wrap gap-2">
                     <Button onClick={() => reviewCredit(row, "approved")} disabled={busy === row.id || Number(limits[row.id]) <= 0}><BadgeCheck className="mr-2 h-4 w-4" />Approve credit</Button>
                     <Button variant="destructive" onClick={() => reviewCredit(row, "rejected")} disabled={busy === row.id}><Ban className="mr-2 h-4 w-4" />Reject</Button>
-                    <Button variant="outline" onClick={() => generateInvoice(row.advertiser_id)} disabled={busy === `invoice-${row.advertiser_id}`}><FileText className="mr-2 h-4 w-4" />Generate invoice</Button>
                   </div>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </TabsContent>
+
+        <TabsContent value="invoices" className="space-y-3 pt-2">
+          {loading ? <Loading /> : approvedCredits.length === 0 ? <Empty text="Approve a postpaid account before generating its invoice." /> : approvedCredits.map((row) => {
+            const advertiser = advertisers[row.advertiser_id];
+            return (
+              <Card key={row.id}>
+                <CardContent className="flex flex-wrap items-center justify-between gap-3 p-4">
+                  <div>
+                    <p className="font-semibold">{advertiser?.legal_name || advertiser?.display_name || "Advertiser"}</p>
+                    <p className="text-sm text-muted-foreground">Approved limit: {row.currency} {Number(row.requested_limit).toLocaleString("en-IN")}</p>
+                  </div>
+                  <Button variant="outline" onClick={() => generateInvoice(row.advertiser_id)} disabled={busy === `invoice-${row.advertiser_id}`}>
+                    {busy === `invoice-${row.advertiser_id}` ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <FileText className="mr-2 h-4 w-4" />}
+                    Generate & email invoice
+                  </Button>
                 </CardContent>
               </Card>
             );
