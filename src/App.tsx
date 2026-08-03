@@ -788,6 +788,7 @@ const App = () => (
                     <Route path="affiliations" element={<VerAffiliationManager />} />
                     <Route path="appeals" element={<VerAppealsCenter />} />
                     <Route path="history" element={<VerHistoryPage />} />
+                    <Route path="virtual-world" element={<VerVirtualWorldRequests />} />
                   </Route>
                   <Route path="engineering" element={<EngineeringShell />}>
                     <Route index element={<EngDashboard />} />
