@@ -3,7 +3,7 @@ import {
   Bookmark, BarChart3, Settings, HelpCircle, BadgeCheck, LogOut, Users,
   Film, Bell, DollarSign, Crown, Moon, Sun, Sparkles, ChevronDown, ChevronRight,
   Building2, Clock, Archive, QrCode, Heart, ShieldCheck, Wallet, Activity,
-  Palette, PlusSquare, LayoutGrid, MessageCircle, Shield, Megaphone,
+  Palette, PlusSquare, LayoutGrid, MessageCircle, Shield, Megaphone, Globe2,
 } from "lucide-react";
 
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -86,6 +86,7 @@ export const SideMenu = ({ trigger }: { trigger: React.ReactNode }) => {
 
   const community: Row[] = [
     { to: "/verification-center", icon: BadgeCheck, label: "Verification center", badge: "NEW" },
+    { to: "/virtual-world", icon: Globe2, label: "Virtual World", badge: "NEW" },
     { to: "/discover", icon: Users, label: "Communities" },
     { to: "/reels", icon: Film, label: "Reels" },
     ...(adminOrgSlug

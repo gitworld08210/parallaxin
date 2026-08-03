@@ -1,12 +1,13 @@
 import { Link, Outlet, useLocation } from "react-router-dom";
 import {
-  BadgeCheck, LayoutDashboard, Inbox, ShieldCheck, Link2, Gavel, History,
+  BadgeCheck, LayoutDashboard, Inbox, ShieldCheck, Link2, Gavel, History, Globe2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const tabs = [
   { to: "/admin-os/verification", label: "Dashboard", icon: LayoutDashboard, end: true },
   { to: "/admin-os/verification/queue", label: "Applications", icon: Inbox },
+  { to: "/admin-os/verification/virtual-world", label: "Virtual World", icon: Globe2 },
   { to: "/admin-os/verification/badges", label: "Badges", icon: ShieldCheck },
   { to: "/admin-os/verification/affiliations", label: "Affiliations", icon: Link2 },
   { to: "/admin-os/verification/appeals", label: "Appeals", icon: Gavel },

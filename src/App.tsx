@@ -98,6 +98,7 @@ const Achievements = lazy(() => import("./pages/Achievements"));
 const AuraLevel = lazy(() => import("./pages/AuraLevel"));
 const Monetization = lazy(() => import("./pages/Monetization"));
 const VerificationCenter = lazy(() => import("./pages/VerificationCenter"));
+const VirtualWorld = lazy(() => import("./pages/VirtualWorld"));
 const Store = lazy(() => import("./pages/Store"));
 const CheckoutReturn = lazy(() => import("./pages/CheckoutReturn"));
 const NotFound = lazy(() => import("./pages/NotFound.tsx"));
@@ -317,6 +318,7 @@ const VerBadgeManager = lazy(() => import("./pages/admin-os/verification/BadgeMa
 const VerAffiliationManager = lazy(() => import("./pages/admin-os/verification/AffiliationManager"));
 const VerAppealsCenter = lazy(() => import("./pages/admin-os/verification/AppealsCenter"));
 const VerHistoryPage = lazy(() => import("./pages/admin-os/verification/VerificationHistory"));
+const VerVirtualWorldRequests = lazy(() => import("./pages/admin-os/verification/VirtualWorldRequests"));
 // Phase 4.3 — Support
 const SupportShell = lazy(() => import("./pages/admin-os/support/SupportShell"));
 const SupportDashboardPage = lazy(() => import("./pages/admin-os/support/SupportDashboard"));
@@ -500,6 +502,7 @@ const App = () => (
                   <Route path="/aura-level" element={<AuraLevel />} />
                   <Route path="/monetization" element={<CreatorGate><Monetization /></CreatorGate>} />
                   <Route path="/verification-center" element={<VerificationCenter />} />
+                  <Route path="/virtual-world" element={<VirtualWorld />} />
                   <Route path="/live" element={<LiveList />} />
                   <Route path="/live/host" element={<CreatorGate><LiveHost /></CreatorGate>} />
                   <Route path="/live/:id" element={<LiveViewer />} />
@@ -785,6 +788,7 @@ const App = () => (
                     <Route path="affiliations" element={<VerAffiliationManager />} />
                     <Route path="appeals" element={<VerAppealsCenter />} />
                     <Route path="history" element={<VerHistoryPage />} />
+                    <Route path="virtual-world" element={<VerVirtualWorldRequests />} />
                   </Route>
                   <Route path="engineering" element={<EngineeringShell />}>
                     <Route index element={<EngDashboard />} />
