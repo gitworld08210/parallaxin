@@ -19820,6 +19820,140 @@ export type Database = {
           },
         ]
       }
+      virtual_world_access: {
+        Row: {
+          application_id: string | null
+          created_at: string
+          daily_limit: number
+          granted_at: string
+          granted_by: string | null
+          is_active: boolean
+          revoked_at: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          application_id?: string | null
+          created_at?: string
+          daily_limit?: number
+          granted_at?: string
+          granted_by?: string | null
+          is_active?: boolean
+          revoked_at?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          application_id?: string | null
+          created_at?: string
+          daily_limit?: number
+          granted_at?: string
+          granted_by?: string | null
+          is_active?: boolean
+          revoked_at?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "virtual_world_access_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "virtual_world_applications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      virtual_world_applications: {
+        Row: {
+          aadhaar_back_path: string | null
+          aadhaar_front_path: string | null
+          aadhaar_number: string
+          contact_phone: string | null
+          created_at: string
+          full_name: string
+          id: string
+          purpose: string
+          review_note: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          selfie_path: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          aadhaar_back_path?: string | null
+          aadhaar_front_path?: string | null
+          aadhaar_number: string
+          contact_phone?: string | null
+          created_at?: string
+          full_name: string
+          id?: string
+          purpose: string
+          review_note?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          selfie_path?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          aadhaar_back_path?: string | null
+          aadhaar_front_path?: string | null
+          aadhaar_number?: string
+          contact_phone?: string | null
+          created_at?: string
+          full_name?: string
+          id?: string
+          purpose?: string
+          review_note?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          selfie_path?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      virtual_world_logs: {
+        Row: {
+          body: string | null
+          channel: string
+          created_at: string
+          error: string | null
+          id: string
+          provider_sid: string | null
+          status: string
+          to_number: string
+          user_id: string
+        }
+        Insert: {
+          body?: string | null
+          channel: string
+          created_at?: string
+          error?: string | null
+          id?: string
+          provider_sid?: string | null
+          status?: string
+          to_number: string
+          user_id: string
+        }
+        Update: {
+          body?: string | null
+          channel?: string
+          created_at?: string
+          error?: string | null
+          id?: string
+          provider_sid?: string | null
+          status?: string
+          to_number?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       wallet_badges: {
         Row: {
           badge: Database["public"]["Enums"]["wallet_badge_kind"]
@@ -21176,6 +21310,12 @@ export type Database = {
         Args: { _tip_id: string; _utr: string }
         Returns: Json
       }
+      vw_decide_application: {
+        Args: { _application_id: string; _approve: boolean; _note?: string }
+        Returns: undefined
+      }
+      vw_has_access: { Args: { _uid?: string }; Returns: boolean }
+      vw_is_reviewer: { Args: { _uid?: string }; Returns: boolean }
       wallet_admin_profile: { Args: { _wallet: string }; Returns: Json }
       wallet_admin_search: {
         Args: { _q: string }
