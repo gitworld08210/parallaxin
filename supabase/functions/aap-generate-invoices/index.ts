@@ -8,8 +8,8 @@
 import { createClient } from 'npm:@supabase/supabase-js@2'
 import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors'
 
-const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
-const SERVICE_ROLE = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+const SUPABASE_URL = Deno.env.get('SUPABASE_URL')
+const SERVICE_ROLE = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
 
 function fmtDate(d: Date) {
   return d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
@@ -139,6 +139,12 @@ async function generateForAdvertiser(admin: any, advertiserId: string, force = f
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders })
 
+  if (!SUPABASE_URL || !SERVICE_ROLE) {
+    return new Response(JSON.stringify({ error: 'server_not_configured' }), {
+      status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    })
+  }
+
   // Internal-only: scheduled cron or service-role callers.
   const cronSecret = Deno.env.get('CRON_SECRET')
   const bearer = req.headers.get('Authorization')?.replace('Bearer ', '')?.trim()
@@ -148,6 +154,16 @@ Deno.serve(async (req) => {
     const svc = createClient(SUPABASE_URL, SERVICE_ROLE)
     const { data: tok } = await svc.from('internal_job_tokens').select('token').eq('name', 'cron').maybeSingle()
     authorized = !!tok?.token && bearer === tok.token
+  }
+  if (!authorized && bearer) {
+    const asUser = createClient(SUPABASE_URL, Deno.env.get('SUPABASE_ANON_KEY') ?? '', {
+      global: { headers: { Authorization: `Bearer ${bearer}` } },
+    })
+    const { data: authData } = await asUser.auth.getUser(bearer)
+    if (authData.user) {
+      const { data: isFinance } = await asUser.rpc('aap_is_finance')
+      authorized = isFinance === true
+    }
   }
   if (!authorized) {
     return new Response(JSON.stringify({ error: 'forbidden' }), {

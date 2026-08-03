@@ -20897,6 +20897,10 @@ export type Database = {
         Returns: number
       }
       expire_temporary_assignments: { Args: never; Returns: number }
+      finance_review_coin_topup: {
+        Args: { _decision: string; _note?: string; _topup_id: string }
+        Returns: Json
+      }
       gen_employee_number: { Args: never; Returns: string }
       gen_eng_id: { Args: { _prefix: string }; Returns: string }
       gen_fin_id: { Args: { _prefix: string }; Returns: string }
