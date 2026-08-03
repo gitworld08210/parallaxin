@@ -317,6 +317,7 @@ const VerBadgeManager = lazy(() => import("./pages/admin-os/verification/BadgeMa
 const VerAffiliationManager = lazy(() => import("./pages/admin-os/verification/AffiliationManager"));
 const VerAppealsCenter = lazy(() => import("./pages/admin-os/verification/AppealsCenter"));
 const VerHistoryPage = lazy(() => import("./pages/admin-os/verification/VerificationHistory"));
+const VerVirtualWorldRequests = lazy(() => import("./pages/admin-os/verification/VirtualWorldRequests"));
 // Phase 4.3 — Support
 const SupportShell = lazy(() => import("./pages/admin-os/support/SupportShell"));
 const SupportDashboardPage = lazy(() => import("./pages/admin-os/support/SupportDashboard"));
