@@ -85,6 +85,7 @@ const AdsCreatives = lazy(() => import("./pages/ads/Creatives"));
 const AdsBilling = lazy(() => import("./pages/ads/Billing"));
 const AdsReviewQueue = lazy(() => import("./pages/ads/ReviewQueue"));
 const AdsFinanceConsole = lazy(() => import("./pages/ads/FinanceConsole"));
+const FinPaymentOperations = lazy(() => import("./pages/admin-os/finance-legal/PaymentOperations"));
 
 
 const CreatorHub = lazy(() => import("./pages/CreatorHub"));
@@ -814,6 +815,7 @@ const App = () => (
                     <Route path="budgets" element={<FinBudgetCenter />} />
                     <Route path="expenses" element={<FinExpenseCenter />} />
                     <Route path="invoices" element={<FinInvoiceCenter />} />
+                    <Route path="payment-operations" element={<FinPaymentOperations />} />
                     <Route path="procurement" element={<FinProcurementCenter />} />
                     <Route path="vendors" element={<FinVendorCenter />} />
                     <Route path="contracts" element={<FinContractCenter />} />

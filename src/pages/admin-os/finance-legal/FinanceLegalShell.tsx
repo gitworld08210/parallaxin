@@ -12,6 +12,7 @@ import {
   Landmark,
   BadgeDollarSign,
   HandCoins,
+  CircleDollarSign,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -20,6 +21,7 @@ const tabs = [
   { to: "/admin-os/finance-legal/budgets", label: "Budgets", icon: PiggyBank },
   { to: "/admin-os/finance-legal/expenses", label: "Expenses", icon: Receipt },
   { to: "/admin-os/finance-legal/invoices", label: "Invoices", icon: FileText },
+  { to: "/admin-os/finance-legal/payment-operations", label: "Payment Operations", icon: CircleDollarSign },
   { to: "/admin-os/finance-legal/procurement", label: "Procurement", icon: ShoppingCart },
   { to: "/admin-os/finance-legal/vendors", label: "Vendors", icon: Building2 },
   { to: "/admin-os/finance-legal/contracts", label: "Contracts", icon: FileCheck },
