@@ -501,6 +501,7 @@ const App = () => (
                   <Route path="/aura-level" element={<AuraLevel />} />
                   <Route path="/monetization" element={<CreatorGate><Monetization /></CreatorGate>} />
                   <Route path="/verification-center" element={<VerificationCenter />} />
+                  <Route path="/virtual-world" element={<VirtualWorld />} />
                   <Route path="/live" element={<LiveList />} />
                   <Route path="/live/host" element={<CreatorGate><LiveHost /></CreatorGate>} />
                   <Route path="/live/:id" element={<LiveViewer />} />
