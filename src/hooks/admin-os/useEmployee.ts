@@ -75,10 +75,24 @@ export const useEmployee = (): EmployeeContext => {
     (q.data?.permissions ?? []) as AdminPermissionKey[],
   );
 
+  // Finance queue authorization is department-based in the backend. Mirror
+  // that rule for module discovery so valid Finance staff never lose the
+  // Finance sidebar entry just because their role uses an L1/L2 permission set.
+  const financeDepartments = new Set([
+    "finance",
+    "legal",
+    "finance_legal",
+    "procurement",
+    "compliance",
+  ]);
+  const isFinanceStaff = financeDepartments.has(q.data?.employee?.department?.key ?? "");
+  const hasPermission = (key: AdminPermissionKey) =>
+    permissions.has(key) || (isFinanceStaff && key === "finance.payouts.view");
+
   return {
     employee: q.data?.employee ?? null,
     permissions,
-    hasPermission: (k) => permissions.has(k),
+    hasPermission,
     loading: authLoading || q.isLoading,
     error: (q.error as Error | null) ?? null,
   };
