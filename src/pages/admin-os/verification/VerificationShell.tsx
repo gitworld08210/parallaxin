@@ -29,7 +29,7 @@ const VerificationShell = () => {
           <h1 className="text-2xl font-bold">Verification Department</h1>
         </div>
       </div>
-      <div className="flex overflow-x-auto gap-1 border-b border-border/60 pb-1">
+      <div className="flex overflow-x-auto gap-1 border-b border-border/60 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {tabs.map((t) => {
           const active = t.end ? loc.pathname === t.to : loc.pathname.startsWith(t.to);
           return (

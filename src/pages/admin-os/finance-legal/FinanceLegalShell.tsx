@@ -17,11 +17,11 @@ import {
 import { cn } from "@/lib/utils";
 
 const tabs = [
-  { to: "/admin-os/finance-legal", label: "Dashboard", icon: LayoutDashboard, end: true },
+  { to: "/admin-os/finance-legal", label: "Payment Approvals", icon: CircleDollarSign, end: true },
+  { to: "/admin-os/finance-legal/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { to: "/admin-os/finance-legal/budgets", label: "Budgets", icon: PiggyBank },
   { to: "/admin-os/finance-legal/expenses", label: "Expenses", icon: Receipt },
   { to: "/admin-os/finance-legal/invoices", label: "Invoices", icon: FileText },
-  { to: "/admin-os/finance-legal/payment-operations", label: "Payment Operations", icon: CircleDollarSign },
   { to: "/admin-os/finance-legal/procurement", label: "Procurement", icon: ShoppingCart },
   { to: "/admin-os/finance-legal/vendors", label: "Vendors", icon: Building2 },
   { to: "/admin-os/finance-legal/contracts", label: "Contracts", icon: FileCheck },
@@ -46,7 +46,7 @@ const FinanceLegalShell = () => {
           <h1 className="text-2xl font-bold">Finance & Legal</h1>
         </div>
       </div>
-      <div className="flex overflow-x-auto gap-1 border-b border-border/60 pb-1">
+      <div className="flex overflow-x-auto gap-1 border-b border-border/60 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {tabs.map((t) => {
           const active = t.end ? loc.pathname === t.to : loc.pathname.startsWith(t.to);
           return (

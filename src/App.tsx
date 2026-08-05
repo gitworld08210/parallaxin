@@ -811,11 +811,12 @@ const App = () => (
                     <Route path="analytics" element={<SupportAnalyticsPage />} />
                   </Route>
                   <Route path="finance-legal" element={<FinanceLegalShell />}>
-                    <Route index element={<FinanceDashboard />} />
+                    <Route index element={<FinPaymentOperations />} />
+                    <Route path="dashboard" element={<FinanceDashboard />} />
                     <Route path="budgets" element={<FinBudgetCenter />} />
                     <Route path="expenses" element={<FinExpenseCenter />} />
                     <Route path="invoices" element={<FinInvoiceCenter />} />
-                    <Route path="payment-operations" element={<FinPaymentOperations />} />
+                    <Route path="payment-operations" element={<Navigate to="/admin-os/finance-legal" replace />} />
                     <Route path="procurement" element={<FinProcurementCenter />} />
                     <Route path="vendors" element={<FinVendorCenter />} />
                     <Route path="contracts" element={<FinContractCenter />} />
