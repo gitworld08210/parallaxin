@@ -145,7 +145,7 @@ export default function PaymentOperations() {
       </div>
 
       <Tabs defaultValue="coins">
-        <TabsList>
+        <TabsList className="w-full justify-start overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           <TabsTrigger value="coins">Coin top-ups ({pendingTopups.length})</TabsTrigger>
           <TabsTrigger value="credit">Postpaid credit ({pendingCredits.length})</TabsTrigger>
           <TabsTrigger value="invoices">Advertiser invoices ({approvedCredits.length})</TabsTrigger>

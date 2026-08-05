@@ -20,7 +20,7 @@ const VirtualWorldRequests = () => {
   const [tab, setTab] = useState<(typeof TABS)[number]>("pending");
   const [notes, setNotes] = useState<Record<string, string>>({});
 
-  const { data: rows = [], isLoading } = useQuery({
+  const { data: rows = [], isLoading, error } = useQuery({
     queryKey: ["vw-requests", tab],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -83,6 +83,10 @@ const VirtualWorldRequests = () => {
 
       {isLoading ? (
         <div className="flex justify-center py-12"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>
+      ) : error ? (
+        <div className="rounded-xl border border-destructive/40 bg-destructive/5 p-4 text-sm text-destructive">
+          Request queue could not be loaded: {error instanceof Error ? error.message : "Access denied"}
+        </div>
       ) : rows.length === 0 ? (
         <p className="rounded-xl border bg-card p-6 text-center text-sm text-muted-foreground">
           No {tab} requests.
