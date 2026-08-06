@@ -38,6 +38,48 @@ async function nextInvoiceNumber(admin: any, when: Date) {
   return `${prefix}${seq}`
 }
 
+async function emailExistingInvoice(admin: any, invoiceId: string) {
+  const { data: invoice, error: invoiceError } = await admin.from('aap_invoices').select('*').eq('id', invoiceId).maybeSingle()
+  if (invoiceError) throw invoiceError
+  if (!invoice) return { error: 'invoice_not_found' }
+
+  const [{ data: adv }, { data: bp }, { data: lines }] = await Promise.all([
+    admin.from('aap_advertisers').select('*').eq('id', invoice.advertiser_id).maybeSingle(),
+    admin.from('aap_billing_profiles').select('*').eq('advertiser_id', invoice.advertiser_id).eq('is_default', true).maybeSingle(),
+    admin.from('aap_invoice_lines').select('description, amount').eq('invoice_id', invoice.id).order('created_at'),
+  ])
+  const recipient = bp?.billing_email
+  if (!adv || !recipient) return { invoice_id: invoice.id, invoice_number: invoice.invoice_number, error: !adv ? 'advertiser_not_found' : 'no_billing_email' }
+
+  const address = [bp?.address_line1, bp?.address_line2, [bp?.city, bp?.state, bp?.postal_code].filter(Boolean).join(', '), bp?.country].filter(Boolean).join('\n')
+  const periodStart = new Date(`${invoice.period_start}T00:00:00Z`)
+  const periodEnd = new Date(`${invoice.period_end}T00:00:00Z`)
+  const dueDate = invoice.due_at ? new Date(invoice.due_at) : addDays(periodEnd, 30)
+  const templateData = {
+    invoiceNumber: invoice.invoice_number,
+    billTo: { name: bp?.billing_name || adv.legal_name || adv.display_name, address, gstin: bp?.gstin, email: recipient },
+    billingCycle: fmtRange(periodStart, periodEnd),
+    invoiceDate: fmtDate(invoice.issued_at ? new Date(invoice.issued_at) : new Date()),
+    dueDate: fmtDate(dueDate),
+    currency: invoice.currency ?? 'INR',
+    lines: (lines ?? []).map((line: any) => ({ description: line.description, ad_account: adv.display_name, amount: Number(line.amount) })),
+    subtotal: Number(invoice.subtotal), taxRate: Number(invoice.subtotal) > 0 ? Math.round((Number(invoice.tax) / Number(invoice.subtotal)) * 100) : 18,
+    taxAmount: Number(invoice.tax), total: Number(invoice.total), amountDue: Number(invoice.total),
+    invoiceUrl: `https://parallaxai.in/ads/${invoice.advertiser_id}/billing`,
+  }
+  const sendRes = await fetch(`${SUPABASE_URL}/functions/v1/send-transactional-email`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${SERVICE_ROLE}` },
+    body: JSON.stringify({
+      templateName: 'aap-invoice', recipientEmail: recipient,
+      idempotencyKey: `aap-invoice-resend-${invoice.id}-${Date.now()}`,
+      templateData,
+    }),
+  })
+  const sendJson = await sendRes.json().catch(() => ({}))
+  return { invoice_id: invoice.id, invoice_number: invoice.invoice_number, recipient, emailed: sendRes.ok, send: sendJson }
+}
+
 async function generateForAdvertiser(admin: any, advertiserId: string, force = false) {
   const { data: adv } = await admin.from('aap_advertisers').select('*').eq('id', advertiserId).maybeSingle()
   if (!adv) return { advertiser_id: advertiserId, skipped: 'not_found' }
@@ -174,6 +216,14 @@ Deno.serve(async (req) => {
   try {
     const admin = createClient(SUPABASE_URL, SERVICE_ROLE)
     const body = await req.json().catch(() => ({} as any))
+
+    if (body?.invoice_id) {
+      const result = await emailExistingInvoice(admin, body.invoice_id)
+      return new Response(JSON.stringify(result), {
+        status: result.error ? 400 : 200,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
 
     if (body?.advertiser_id) {
       const r = await generateForAdvertiser(admin, body.advertiser_id, !!body.force)
