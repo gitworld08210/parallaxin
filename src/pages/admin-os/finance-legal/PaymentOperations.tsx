@@ -329,7 +329,7 @@ export default function PaymentOperations() {
 
 function createSimplePdf(lines: string[]) {
   const escapePdf = (value: string) => value.replace(/[^\x20-\x7E]/g, "-").replace(/([\\()])/g, "\\$1");
-  const text = lines.map((line, index) => `${index === 0 ? "/F1 18 Tf" : "/F1 10 Tf"} 50 ${790 - index * 24} Td (${escapePdf(line)}) Tj ${index < lines.length - 1 ? `${-50} ${-(790 - index * 24)} Td` : ""}`).join("\n");
+  const text = lines.map((line, index) => `${index === 0 ? "/F1 18 Tf" : "/F1 10 Tf"} 1 0 0 1 50 ${790 - index * 24} Tm (${escapePdf(line)}) Tj`).join("\n");
   const stream = `BT\n${text}\nET`;
   const objects = [
     "<< /Type /Catalog /Pages 2 0 R >>",
