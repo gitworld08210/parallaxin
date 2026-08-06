@@ -28,22 +28,17 @@ export function useAdsAccounts() {
       return;
     }
     setLoading(true);
-    const { data: memberships } = await supabase
-      .from("ads_members")
-      .select("account_id")
-      .eq("user_id", user.id);
-    const ids = (memberships ?? []).map((m) => m.account_id);
-    if (!ids.length) {
-      setAccounts([]);
-      setLoading(false);
-      return;
-    }
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("ads_accounts")
       .select("*")
-      .in("id", ids)
       .order("created_at", { ascending: true });
-    setAccounts((data ?? []) as AdsAccount[]);
+    
+    if (error) {
+      console.error("Error loading ads accounts:", error);
+      setAccounts([]);
+    } else {
+      setAccounts((data ?? []) as AdsAccount[]);
+    }
     setLoading(false);
   }, [user?.id]);
 
