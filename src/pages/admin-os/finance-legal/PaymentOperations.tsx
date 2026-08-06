@@ -174,12 +174,31 @@ export default function PaymentOperations() {
     if (error) return toast.error(error.message);
     const advertiser = advertisers[invoice.advertiser_id];
     const money = (value: number) => `${invoice.currency} ${Number(value).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-    const rows = (lines ?? []).map((line) => `<tr><td>${escapeHtml(line.description)}</td><td>${Number(line.quantity)}</td><td>${money(Number(line.unit_price))}</td><td>${money(Number(line.amount))}</td></tr>`).join("");
-    const html = `<!doctype html><html><head><meta charset="utf-8"><title>${escapeHtml(invoice.invoice_number)}</title><style>body{font-family:Arial,sans-serif;color:#172033;padding:40px;max-width:900px;margin:auto}header{display:flex;justify-content:space-between;border-bottom:3px solid #172033;padding-bottom:20px}h1{margin:0;font-size:30px}small{color:#667085}table{width:100%;border-collapse:collapse;margin-top:28px}th,td{padding:11px;border-bottom:1px solid #d0d5dd;text-align:left}th{background:#f2f4f7}.summary{margin:28px 0 0 auto;width:320px}.summary p{display:flex;justify-content:space-between}.total{font-size:20px;font-weight:700;border-top:2px solid #172033;padding-top:12px}@media print{button{display:none}body{padding:0}}</style></head><body><header><div><h1>AURELIX ADS</h1><small>Tax Invoice</small></div><div><strong>${escapeHtml(invoice.invoice_number)}</strong><br><small>Issued ${invoice.issued_at ? new Date(invoice.issued_at).toLocaleDateString("en-IN") : "—"}</small></div></header><h2>Bill to</h2><p>${escapeHtml(advertiser?.legal_name || advertiser?.display_name || "Advertiser")}</p><p><small>Billing period: ${invoice.period_start} – ${invoice.period_end}</small></p><table><thead><tr><th>Description</th><th>Qty</th><th>Rate</th><th>Amount</th></tr></thead><tbody>${rows || '<tr><td colspan="4">No line items</td></tr>'}</tbody></table><div class="summary"><p><span>Subtotal</span><span>${money(invoice.subtotal)}</span></p><p><span>GST</span><span>${money(invoice.tax)}</span></p><p class="total"><span>Total</span><span>${money(invoice.total)}</span></p></div><p><small>This is a computer-generated invoice.</small></p><button onclick="window.print()">Download / Print PDF</button><script>window.onload=()=>window.print()</script></body></html>`;
-    const blobUrl = URL.createObjectURL(new Blob([html], { type: "text/html" }));
-    const popup = window.open(blobUrl, "_blank", "noopener,noreferrer");
-    if (!popup) toast.error("Popup blocked—browser me popups allow karke dobara try karein");
-    window.setTimeout(() => URL.revokeObjectURL(blobUrl), 60_000);
+    const documentLines = [
+      "AURELIX ADS - TAX INVOICE",
+      invoice.invoice_number,
+      `Bill to: ${advertiser?.legal_name || advertiser?.display_name || "Advertiser"}`,
+      `Billing period: ${invoice.period_start} to ${invoice.period_end}`,
+      `Issued: ${invoice.issued_at ? new Date(invoice.issued_at).toLocaleDateString("en-IN") : "-"}`,
+      "",
+      "DESCRIPTION                                      QTY       AMOUNT",
+      ...((lines ?? []).slice(0, 18).map((line) => `${String(line.description).slice(0, 46).padEnd(48)}${String(Number(line.quantity)).padEnd(10)}${money(Number(line.amount))}`)),
+      "",
+      `Subtotal: ${money(invoice.subtotal)}`,
+      `GST: ${money(invoice.tax)}`,
+      `TOTAL: ${money(invoice.total)}`,
+      "",
+      "This is a computer-generated invoice.",
+    ];
+    const pdf = createSimplePdf(documentLines);
+    const blobUrl = URL.createObjectURL(new Blob([pdf], { type: "application/pdf" }));
+    const link = document.createElement("a");
+    link.href = blobUrl;
+    link.download = `${invoice.invoice_number}.pdf`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.setTimeout(() => URL.revokeObjectURL(blobUrl), 10_000);
   };
 
   const pendingTopups = topups.filter((row) => row.status === "pending_review");
@@ -308,8 +327,28 @@ export default function PaymentOperations() {
   );
 }
 
-function escapeHtml(value: string) {
-  return value.replace(/[&<>'"]/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" })[character] ?? character);
+function createSimplePdf(lines: string[]) {
+  const escapePdf = (value: string) => value.replace(/[^\x20-\x7E]/g, "-").replace(/([\\()])/g, "\\$1");
+  const text = lines.map((line, index) => `${index === 0 ? "/F1 18 Tf" : "/F1 10 Tf"} 50 ${790 - index * 24} Td (${escapePdf(line)}) Tj ${index < lines.length - 1 ? `${-50} ${-(790 - index * 24)} Td` : ""}`).join("\n");
+  const stream = `BT\n${text}\nET`;
+  const objects = [
+    "<< /Type /Catalog /Pages 2 0 R >>",
+    "<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
+    "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 5 0 R >> >> /Contents 4 0 R >>",
+    `<< /Length ${stream.length} >>\nstream\n${stream}\nendstream`,
+    "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>",
+  ];
+  let body = "%PDF-1.4\n";
+  const offsets = [0];
+  objects.forEach((object, index) => {
+    offsets.push(body.length);
+    body += `${index + 1} 0 obj\n${object}\nendobj\n`;
+  });
+  const xref = body.length;
+  body += `xref\n0 ${objects.length + 1}\n0000000000 65535 f \n`;
+  body += offsets.slice(1).map((offset) => `${String(offset).padStart(10, "0")} 00000 n \n`).join("");
+  body += `trailer\n<< /Size ${objects.length + 1} /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF`;
+  return new TextEncoder().encode(body);
 }
 
 function Loading() {
