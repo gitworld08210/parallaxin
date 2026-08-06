@@ -50,19 +50,17 @@ export function useAdsAccounts() {
     async (input: { name: string; business_type: string; website?: string }) => {
       if (!user) throw new Error("Not signed in");
       const { data, error } = await supabase
-        .from("ads_accounts")
-        .insert({
-          owner_user_id: user.id,
-          name: input.name,
-          business_type: input.business_type,
-          website: input.website || null,
-        })
-        .select()
-        .single();
+        .rpc("ads_create_account", {
+          _name: input.name,
+          _business_type: input.business_type,
+          _website: input.website || null,
+        });
       if (error) throw error;
+      const account = Array.isArray(data) ? data[0] : data;
+      if (!account?.id) throw new Error("Ad account create nahi hua");
       await load();
-      localStorage.setItem(LAST_KEY, data.id);
-      return data as AdsAccount;
+      localStorage.setItem(LAST_KEY, account.id);
+      return account as AdsAccount;
     },
     [user?.id, load],
   );
