@@ -20789,6 +20789,27 @@ export type Database = {
         }[]
       }
       ads_can_manage: { Args: { _account_id: string }; Returns: boolean }
+      ads_create_account: {
+        Args: { _business_type?: string; _name: string; _website?: string }
+        Returns: {
+          business_type: string
+          created_at: string
+          currency: string
+          id: string
+          name: string
+          owner_user_id: string
+          status: string
+          timezone: string
+          updated_at: string
+          website: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "ads_accounts"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       ads_estimate_reach: {
         Args: { _placements: string[]; _targeting: Json }
         Returns: number
