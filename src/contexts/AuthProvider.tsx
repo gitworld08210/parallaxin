@@ -21,13 +21,14 @@ type Profile = {
 };
 
 type Ctx = {
-  user: User | null;
-  session: any | null; // Firebase handles session differently
+  user: (User & { id: string }) | null;
+  session: any | null; 
   profile: Profile | null;
   loading: boolean;
   refreshProfile: () => Promise<void>;
   signOut: () => Promise<void>;
 };
+
 
 const AuthCtx = createContext<Ctx | undefined>(undefined);
 
