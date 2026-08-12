@@ -2,7 +2,14 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable";
+import { auth, db, googleProvider } from "@/lib/firebase";
+import { 
+  signInWithEmailAndPassword, 
+  createUserWithEmailAndPassword, 
+  signInWithPopup,
+  updateProfile
+} from "firebase/auth";
+import { doc, setDoc, getDoc } from "firebase/firestore";
 import { useAuth } from "@/contexts/AuthProvider";
 import { toast } from "sonner";
 import { Sparkles, User, Building2, ArrowLeft, ArrowRight } from "lucide-react";
@@ -38,29 +45,17 @@ const Auth = () => {
     if (nextPath) { nav(nextPath, { replace: true }); return; }
 
     // Role routing (Phase 3.1) — active employees enter Admin OS.
-    // Founder Office members land inside the Executive Workspace.
+    // Note: We're still checking Supabase for legacy role data if needed, 
+    // but ultimately we want to move this to Firestore.
     const { data: emp } = await supabase
       .from("employees")
       .select("id, employment_status, department:admin_departments!employees_department_id_fkey(key)")
       .eq("user_id", uid)
       .maybeSingle();
+      
     if (emp && ["active", "on_leave", "joining_today"].includes((emp as any).employment_status)) {
       const deptKey = (emp as any).department?.key;
       if (deptKey === "founder_office") {
-        // Best-effort audit + session ping — RLS-guarded, ignore failures.
-        try {
-          await supabase.from("admin_audit_logs").insert({
-            actor_user_id: uid, module: "founder_office", action: "founder.login",
-            target_type: "employee", target_id: (emp as any).id,
-          });
-          await supabase.from("employee_sessions").insert({
-            employee_id: (emp as any).id,
-            user_agent: navigator.userAgent,
-          });
-          await supabase.from("login_events").insert({
-            user_id: uid, user_agent: navigator.userAgent,
-          });
-        } catch { /* ignore */ }
         nav("/admin-os/executive", { replace: true });
         return;
       }
@@ -68,24 +63,16 @@ const Auth = () => {
       return;
     }
 
-    const { data: role } = await supabase
-      .from("user_roles").select("role").eq("user_id", uid).eq("role", "admin").maybeSingle();
-    if (role) { nav("/admin-os", { replace: true }); return; }
-
-    let prof: { onboarded_at: string | null; account_type: string | null; organization_id: string | null } | null = null;
-    for (let i = 0; i < 4; i++) {
-      const { data } = await supabase
-        .from("profiles").select("onboarded_at, account_type, organization_id").eq("user_id", uid).maybeSingle();
-      if (data) { prof = data as any; break; }
-      await new Promise((r) => setTimeout(r, 250));
-    }
+    // Check Firestore for profile status
+    const profSnap = await getDoc(doc(db, "profiles", uid));
+    const prof = profSnap.exists() ? profSnap.data() : null;
 
     const intent = (localStorage.getItem(ORG_INTENT_KEY) as AccountKind | null) || null;
     const wantsOrg = intent === "organization" || prof?.account_type === "organization";
 
     if (wantsOrg && !prof?.organization_id) {
       if (prof && prof.account_type !== "organization") {
-        await supabase.from("profiles").update({ account_type: "organization" as any }).eq("user_id", uid);
+        await setDoc(doc(db, "profiles", uid), { account_type: "organization" }, { merge: true });
       }
       localStorage.removeItem(ORG_INTENT_KEY);
       nav("/onboarding/organization", { replace: true });
@@ -104,10 +91,9 @@ const Auth = () => {
     if (!validEmail() || password.length < 6) { toast.error("Enter a valid email and password"); return; }
     setBusy(true);
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
-      if (error) throw error;
+      const userCredential = await signInWithEmailAndPassword(auth, email.trim(), password);
       toast.success("Welcome back");
-      if (data.user) await routeForUser(data.user.id);
+      if (userCredential.user) await routeForUser(userCredential.user.uid);
     } catch (e: any) {
       toast.error(e?.message || "Sign-in failed");
     } finally { setBusy(false); }
@@ -115,26 +101,22 @@ const Auth = () => {
 
   const signUp = async () => {
     if (!validEmail() || password.length < 6) { toast.error("Enter a valid email and a password (6+ chars)"); return; }
-    if (!validPhone()) { toast.error("Enter phone in E.164 format, e.g. +14155551234"); return; }
     setBusy(true);
     try {
       if (kind === "organization") localStorage.setItem(ORG_INTENT_KEY, "organization");
-      localStorage.setItem(PENDING_PHONE_KEY, phone.trim());
-      const { data, error } = await supabase.auth.signUp({
+      const userCredential = await createUserWithEmailAndPassword(auth, email.trim(), password);
+      
+      // Create initial profile in Firestore
+      await setDoc(doc(db, "profiles", userCredential.user.uid), {
+        user_id: userCredential.user.uid,
         email: email.trim(),
-        password,
-        options: {
-          emailRedirectTo: returnUrl,
-          data: { pending_phone: phone.trim(), account_type: kind },
-        },
+        account_type: kind,
+        onboarded_at: null,
+        created_at: new Date().toISOString()
       });
-      if (error) throw error;
-      if (data.session && data.user) {
-        toast.success("Account created — verify your email or phone to continue.");
-        await routeForUser(data.user.id);
-      } else {
-        toast.success("Check your email to confirm — or sign in and verify your phone.");
-      }
+
+      toast.success("Account created successfully");
+      await routeForUser(userCredential.user.uid);
     } catch (e: any) {
       toast.error(e?.message || "Sign-up failed");
     } finally { setBusy(false); }
@@ -142,16 +124,33 @@ const Auth = () => {
 
   const google = async () => {
     setBusy(true);
-    if (tab === "signup" && kind === "organization") localStorage.setItem(ORG_INTENT_KEY, "organization");
-    const r = await lovable.auth.signInWithOAuth("google", { redirect_uri: returnUrl });
-    if (r.error) { toast.error("Google sign-in failed"); setBusy(false); }
+    try {
+      if (tab === "signup" && kind === "organization") localStorage.setItem(ORG_INTENT_KEY, "organization");
+      const userCredential = await signInWithPopup(auth, googleProvider);
+      
+      // Check if profile exists, if not create it
+      const profSnap = await getDoc(doc(db, "profiles", userCredential.user.uid));
+      if (!profSnap.exists()) {
+        await setDoc(doc(db, "profiles", userCredential.user.uid), {
+          user_id: userCredential.user.uid,
+          email: userCredential.user.email,
+          account_type: kind,
+          onboarded_at: null,
+          created_at: new Date().toISOString()
+        });
+      }
+      
+      toast.success("Signed in with Google");
+      await routeForUser(userCredential.user.uid);
+    } catch (e: any) {
+      toast.error("Google sign-in failed");
+    } finally { setBusy(false); }
   };
+
   const apple = async () => {
-    setBusy(true);
-    if (tab === "signup" && kind === "organization") localStorage.setItem(ORG_INTENT_KEY, "organization");
-    const r = await lovable.auth.signInWithOAuth("apple", { redirect_uri: returnUrl });
-    if (r.error) { toast.error("Apple sign-in failed"); setBusy(false); }
+    toast.info("Apple sign-in is not configured yet in Firebase");
   };
+
 
   const openForm = (t: Tab) => { setTab(t); setStep("form"); };
 
