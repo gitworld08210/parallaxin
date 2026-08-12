@@ -95,8 +95,10 @@ const Auth = () => {
       const idToken = await userCredential.user.getIdToken();
       
       // Background sync with Supabase for legacy staff features
-      supabase.functions.invoke("firebase-bridge", { body: { idToken } })
-        .catch(err => console.warn("Background bridge sync skipped", err));
+      if (idToken) {
+        supabase.functions.invoke("firebase-bridge", { body: { idToken } })
+          .catch(err => console.warn("Background bridge sync skipped", err));
+      }
 
       toast.success("Welcome back");
       if (userCredential.user) await routeForUser(userCredential.user.uid);
@@ -116,8 +118,10 @@ const Auth = () => {
       const idToken = await userCredential.user.getIdToken();
 
       // Background sync with Supabase
-      supabase.functions.invoke("firebase-bridge", { body: { idToken } })
-        .catch(err => console.warn("Background bridge sync skipped", err));
+      if (idToken) {
+        supabase.functions.invoke("firebase-bridge", { body: { idToken } })
+          .catch(err => console.warn("Background bridge sync skipped", err));
+      }
       
       // Create initial profile in Firestore
       await setDoc(doc(db, "profiles", userCredential.user.uid), {
@@ -143,8 +147,10 @@ const Auth = () => {
       const idToken = await userCredential.user.getIdToken();
       
       // Background sync with Supabase
-      supabase.functions.invoke("firebase-bridge", { body: { idToken } })
-        .catch(err => console.warn("Background bridge sync skipped", err));
+      if (idToken) {
+        supabase.functions.invoke("firebase-bridge", { body: { idToken } })
+          .catch(err => console.warn("Background bridge sync skipped", err));
+      }
 
       // Check if profile exists, if not create it
       const profSnap = await getDoc(doc(db, "profiles", userCredential.user.uid));
