@@ -95,10 +95,17 @@ const Auth = () => {
   // Legacy accounts live in the old auth system and have no Firebase user yet.
   // On first login we verify the old credentials and transparently create the
   // Firebase account with the same email + password.
-  const migrateLegacyAccount = async () => {
+  const migrateLegacyAccount = async (): Promise<{ cred: any } | { unavailable: true } | null> => {
     const mail = email.trim();
-    const { data, error } = await supabase.auth.signInWithPassword({ email: mail, password });
-    if (error || !data?.user) return null;
+    let data: any = null;
+    try {
+      const res = await supabase.auth.signInWithPassword({ email: mail, password });
+      if (res.error || !res.data?.user) return null;
+      data = res.data;
+    } catch (err) {
+      console.warn("Legacy auth unreachable:", err);
+      return { unavailable: true };
+    }
 
     let cred;
     try {
@@ -122,8 +129,8 @@ const Auth = () => {
         created_at: new Date().toISOString(),
       }, { merge: true });
     }
-    await supabase.auth.signOut();
-    return cred;
+    await supabase.auth.signOut().catch(() => {});
+    return { cred };
   };
 
   const signIn = async () => {
@@ -137,9 +144,14 @@ const Auth = () => {
         const migratable = ["auth/invalid-credential", "auth/user-not-found", "auth/wrong-password", "auth/invalid-login-credentials"];
         if (!migratable.includes(err?.code)) throw err;
         const migrated = await migrateLegacyAccount();
+        if (migrated && "unavailable" in migrated) {
+          toast.error("Legacy account service is temporarily unavailable. Please try again shortly.");
+          setBusy(false); return;
+        }
         if (!migrated) { toast.error("Incorrect email or password"); setBusy(false); return; }
-        userCredential = migrated;
+        userCredential = migrated.cred;
       }
+
 
       const idToken = await userCredential.user.getIdToken();
       
