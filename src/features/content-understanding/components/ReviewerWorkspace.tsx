@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { 
   Play, Pause, RotateCcw, Volume2, Maximize, 
-  Check, X, AlertCircle, Info, Brain
+  Check, X, AlertCircle, Info, Brain, Sparkles
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
