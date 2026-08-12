@@ -106,6 +106,8 @@ const NotFound = lazy(() => import("./pages/NotFound.tsx"));
 const Certificate = lazy(() => import("./pages/Certificate"));
 const CreatorTerms = lazy(() => import("./pages/CreatorTerms"));
 import { CreatorGate } from "@/components/creator/CreatorGate";
+const ContentClassificationQueue = lazy(() => import("./features/content-understanding/components/ContentClassificationQueue").then(m => ({ default: m.ContentClassificationQueue })));
+const ReviewerWorkspace = lazy(() => import("./features/content-understanding/components/ReviewerWorkspace").then(m => ({ default: m.ReviewerWorkspace })));
 
 // Admin OS workspace (Phase 1 foundation)
 const AdminOSGate = lazy(() =>
@@ -790,6 +792,8 @@ const App = () => (
                     <Route path="appeals" element={<VerAppealsCenter />} />
                     <Route path="history" element={<VerHistoryPage />} />
                     <Route path="virtual-world" element={<VerVirtualWorldRequests />} />
+                    <Route path="content-review" element={<ContentClassificationQueue />} />
+                    <Route path="content-review/:id" element={<ReviewerWorkspace />} />
                   </Route>
                   <Route path="engineering" element={<EngineeringShell />}>
                     <Route index element={<EngDashboard />} />
