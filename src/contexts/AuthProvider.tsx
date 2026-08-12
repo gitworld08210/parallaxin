@@ -109,7 +109,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
 
   const refreshProfile = async () => {
-    if (user) await loadProfile(user.uid);
+    if (user) await loadProfile(user.id);
   };
 
   const signOut = async () => {
