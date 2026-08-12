@@ -812,9 +812,11 @@ function buildRfc2822(opts: {
   pdfBytes: Uint8Array; pdfFilename: string;
 }): string {
   const boundary = `aurelix-${crypto.randomUUID()}`;
-  const pdfB64 = base64UrlEncode(opts.pdfBytes).replace(/-/g, "+").replace(/_/g, "/");
-  // Convert back to standard base64 for MIME
-  const std = btoa(String.fromCharCode(...opts.pdfBytes));
+  
+  // Standard Base64 for MIME attachments
+  let bin = "";
+  for (const b of opts.pdfBytes) bin += String.fromCharCode(b);
+  const std = btoa(bin);
   const wrapped = std.match(/.{1,76}/g)?.join("\r\n") ?? std;
   return [
     `From: "${opts.fromName}" <${opts.fromEmail}>`,
@@ -839,8 +841,6 @@ function buildRfc2822(opts: {
     `--${boundary}--`,
     "",
   ].join("\r\n");
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  void pdfB64;
 }
 
 Deno.serve(async (req) => {
