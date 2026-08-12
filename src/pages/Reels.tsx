@@ -220,8 +220,8 @@ const ReelItem = ({
   const ad = ads[0];
 
   useEffect(() => {
-    if (isActive && isActive !== lastActiveId.current) {
-      lastActiveId.current = isActive ? r.id : null;
+    if (isActive && r.id !== lastActiveId.current) {
+      lastActiveId.current = r.id;
       // Start tracking watch time for interest engine
       if (watchTimer.current) window.clearInterval(watchTimer.current);
       
