@@ -3,6 +3,8 @@ import { useNavigate, useParams, Link } from "react-router-dom";
 import { ChevronLeft, Send, Search, Phone, Video, MoreVertical, Paperclip, Smile, Check, CheckCheck, Users } from "lucide-react";
 import { AuraAvatar } from "@/components/vibe/AuraAvatar";
 import { VerificationBadge } from "@/components/vibe/VerificationBadge";
+import { collection, query, where, orderBy, onSnapshot, addDoc, serverTimestamp, updateDoc, doc, getDoc, getDocs, limit, arrayUnion } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthProvider";
 import { gradientFor, initialsOf } from "@/lib/format";
@@ -67,73 +69,71 @@ const Conversation = () => {
   const longPressRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const markRead = async () => {
-    if (!id) return;
-    await supabase.rpc("mark_conversation_read", { _conversation_id: id });
+    if (!id || !user) return;
+    const convRef = doc(db, "conversations", id);
+    await updateDoc(convRef, {
+      [`unread_counts.${user.id}`]: 0,
+      last_read: true
+    });
   };
 
   useEffect(() => {
     if (!id || !user) return;
-    (async () => {
-      const { data: msgs } = await supabase
-        .from("messages").select("id, content, sender_id, created_at, shared_post_id, read_at, media_url, media_type")
-        .eq("conversation_id", id).order("created_at", { ascending: true });
-      setMessages((msgs ?? []) as Msg[]);
 
-      const ids = Array.from(new Set(((msgs ?? []) as Msg[]).map((m) => m.shared_post_id).filter(Boolean) as string[]));
-      if (ids.length) {
-        const sel = "id, media_url, media_type, content, profile:profiles!posts_user_profile_fkey(username, display_name, avatar_url)";
-        const { data: ps } = await supabase.from("posts").select(sel).in("id", ids);
+    // Listen to messages
+    const qMessages = query(
+      collection(db, "conversations", id, "messages"),
+      orderBy("created_at", "asc")
+    );
+    const unsubMsgs = onSnapshot(qMessages, async (snap) => {
+      const msgs = snap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as any[];
+      setMessages(msgs);
+
+      // Fetch shared posts if any
+      const sharedIds = Array.from(new Set(msgs.map(m => m.shared_post_id).filter(Boolean)));
+      if (sharedIds.length) {
+        // We'll keep posts in Supabase for now as per plan Step 2.C logic for "social graph" 
+        // until fully migrated, or fetch from Firestore if Step 2.B is complete.
+        // Assuming Firestore 'posts' collection based on step 2.A/B.
+        const postIds = sharedIds as string[];
         const map: Record<string, SharedPost> = {};
-        (ps ?? []).forEach((p: any) => { map[p.id] = p; });
-        setSharedPosts(map);
+        for (const pid of postIds) {
+          if (sharedPosts[pid]) continue;
+          const pDoc = await getDoc(doc(db, "posts", pid));
+          if (pDoc.exists()) map[pid] = { id: pDoc.id, ...pDoc.data() } as any;
+        }
+        if (Object.keys(map).length) setSharedPosts(s => ({ ...s, ...map }));
       }
+    });
 
-      const { data: parts } = await supabase
-        .from("conversation_participants")
-        .select("user_id, profile:profiles!conv_participants_user_profile_fkey(username, display_name, avatar_url, verification_kind)")
-        .eq("conversation_id", id).neq("user_id", user.id);
-      const row: any = parts?.[0];
-      setOther(row?.profile ? { user_id: row.user_id, ...row.profile } : null);
+    // Listen to conversation metadata (for 'other' profile and typing)
+    const unsubConv = onSnapshot(doc(db, "conversations", id), (snap) => {
+      const d = snap.data();
+      if (!d) return;
+      
+      // Find 'other' member
+      const otherMember = d.members?.find((m: any) => m.user_id !== user.id);
+      if (otherMember) setOther(otherMember);
 
-      markRead();
-    })();
-
-    const dbChannel = supabase.channel(`conv-db:${id}`)
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages", filter: `conversation_id=eq.${id}` },
-        async (payload) => {
-          const m = payload.new as Msg;
-          setMessages((arr) => arr.some((x) => x.id === m.id) ? arr : [...arr, m]);
-          if (m.sender_id !== user.id) markRead();
-          if (m.shared_post_id) {
-            const sel = "id, media_url, media_type, content, profile:profiles!posts_user_profile_fkey(username, display_name, avatar_url)";
-            const { data: p } = await supabase.from("posts").select(sel).eq("id", m.shared_post_id).maybeSingle();
-            if (p) setSharedPosts((s) => ({ ...s, [(p as any).id]: p as any }));
-          }
-        })
-      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "messages", filter: `conversation_id=eq.${id}` },
-        (payload) => {
-          const m = payload.new as Msg;
-          setMessages((arr) => arr.map((x) => x.id === m.id ? { ...x, read_at: m.read_at } : x));
-        })
-      .subscribe();
-
-    const tChannel = supabase.channel(`conv-typing:${id}`, { config: { broadcast: { self: false } } })
-      .on("broadcast", { event: "typing" }, (payload) => {
-        if (payload.payload?.user_id && payload.payload.user_id !== user.id) {
+      // Typing state
+      if (d.typing && d.typing.user_id !== user.id) {
+        const now = Date.now();
+        if (now - d.typing.at < 3500) {
           setOtherTyping(true);
           if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
           typingTimeoutRef.current = setTimeout(() => setOtherTyping(false), 3500);
         }
-      })
-      .subscribe();
-    typingChannelRef.current = tChannel;
+      }
+    });
+
+    markRead();
 
     const onVis = () => { if (document.visibilityState === "visible") markRead(); };
     document.addEventListener("visibilitychange", onVis);
 
     return () => {
-      supabase.removeChannel(dbChannel);
-      supabase.removeChannel(tChannel);
+      unsubMsgs();
+      unsubConv();
       document.removeEventListener("visibilitychange", onVis);
       if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
     };
@@ -147,7 +147,21 @@ const Conversation = () => {
     const content = text.trim().slice(0, 2000);
     setText("");
     setAiSuggestions([]);
-    await supabase.from("messages").insert({ conversation_id: id, sender_id: user.id, content });
+    const convRef = doc(db, "conversations", id);
+    const msgRef = collection(db, "conversations", id, "messages");
+    
+    await addDoc(msgRef, {
+      sender_id: user.id,
+      content,
+      created_at: serverTimestamp()
+    });
+
+    await updateDoc(convRef, {
+      last_message_text: content,
+      last_message_at: serverTimestamp(),
+      last_sender_id: user.id,
+      last_read: false
+    });
   };
 
   const fetchSuggestions = async () => {
@@ -171,9 +185,23 @@ const Conversation = () => {
 
   const sendVoice = async (mediaUrl: string) => {
     if (!user || !id) return;
-    await (supabase.from("messages").insert({
-      conversation_id: id, sender_id: user.id, content: "", media_url: mediaUrl, media_type: "audio",
-    } as any) as any);
+    const convRef = doc(db, "conversations", id);
+    const msgRef = collection(db, "conversations", id, "messages");
+    
+    await addDoc(msgRef, {
+      sender_id: user.id,
+      content: "",
+      media_url: mediaUrl,
+      media_type: "audio",
+      created_at: serverTimestamp()
+    });
+
+    await updateDoc(convRef, {
+      last_message_text: "🎤 Voice message",
+      last_message_at: serverTimestamp(),
+      last_sender_id: user.id,
+      last_read: false
+    });
   };
 
   const startLongPress = (msgId: string, mine: boolean) => {
@@ -184,11 +212,15 @@ const Conversation = () => {
 
   const onType = (v: string) => {
     setText(v);
-    if (!typingChannelRef.current || !user) return;
+    if (!user || !id) return;
     const now = Date.now();
     if (now - lastTypingSentRef.current < 1500) return;
     lastTypingSentRef.current = now;
-    typingChannelRef.current.send({ type: "broadcast", event: "typing", payload: { user_id: user.id } });
+    
+    const convRef = doc(db, "conversations", id);
+    await updateDoc(convRef, {
+      typing: { user_id: user.id, at: now }
+    });
   };
 
   // Render rows with day-dividers and grouping flags
