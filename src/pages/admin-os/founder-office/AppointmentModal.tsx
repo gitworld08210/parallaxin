@@ -162,7 +162,7 @@ export const AppointmentModal = ({ slot, onClose, onSuccess }: Props) => {
               ) : (
                 <>
                   <Send className="h-3.5 w-3.5" />
-                  Appoint &amp; email letter
+                  Appoint & Send Email
                 </>
               )}
             </button>
