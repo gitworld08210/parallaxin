@@ -36,16 +36,16 @@ export const useAdRanking = (contentId?: string) => {
       
       // Calculate matches
       const contextMatch = contextTopics.some((t: string) => userInterestTopics.includes(t)) ? 1.0 : 0.0;
-      const interestMatch = (interests || []).reduce((acc: number, curr: any) => {
-        return acc + (curr.interest_score > 10 ? 0.5 : 0.1);
-      }, 0);
-
+      
+      // Economic Value / Bid (Mock)
+      const bid = 0.5; 
+      
       const ads = [
         { 
           ad_id: 'sample-ad-1', 
-          ranking_score: Math.min(0.99, (0.4 * contextMatch) + (0.3 * Math.min(1, interestMatch)) + 0.2), 
+          ranking_score: contextMatch > 0 ? (0.95 + bid * 0.1) : (0.45 + bid * 0.05), 
           explanation: contextMatch > 0 
-            ? "You're seeing this because your interests align with this content's topics."
+            ? "You're seeing this because your recent interests in travel and technology match this content."
             : "Showing this based on trending categories in your location." 
         }
       ];
