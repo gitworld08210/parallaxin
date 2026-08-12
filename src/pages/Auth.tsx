@@ -180,7 +180,7 @@ const Auth = () => {
       await routeForUser(userCredential.user.uid);
     } catch (e: any) {
       console.error("Google error:", e);
-      toast.error("Google sign-in failed");
+      toast.error(e?.message || "Google sign-in failed. Check if popups are allowed.");
     } finally { setBusy(false); }
 
   };
