@@ -103,14 +103,12 @@ export default function ReviewQueue() {
             <Card key={ad.id} className="grid gap-4 p-4 lg:grid-cols-[260px_minmax(0,1fr)]">
               <AdPreview
                 placement="reels"
-                data={{
-                  brand: ad.name,
-                  headline: ad.headline ?? "",
-                  primaryText: ad.primary_text ?? "",
-                  cta: ad.cta,
-                  mediaUrl: media[ad.id] || null,
-                  mediaType: (ad.creative?.media_type as "image" | "video") ?? undefined,
-                }}
+                accountName={ad.name}
+                headline={ad.headline ?? ""}
+                primaryText={ad.primary_text ?? ""}
+                cta={ad.cta}
+                mediaUrl={media[ad.id] || undefined}
+                mediaType={(ad.creative?.media_type as "image" | "video") ?? undefined}
               />
               <div className="space-y-3">
                 <div>
