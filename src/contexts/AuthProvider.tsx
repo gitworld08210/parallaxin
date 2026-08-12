@@ -121,7 +121,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setUser(mappedUser);
 
         // Bridge to Supabase in the background
-        syncSupabase(firebaseUser);
+        await syncSupabase(firebaseUser);
         
         const profileUnsubscribe = onSnapshot(doc(db, "profiles", firebaseUser.uid), (doc) => {
           if (doc.exists()) {

@@ -108,6 +108,7 @@ const Auth = () => {
         }
       } catch (e) {
         console.warn("Supabase bridge failed during login, will retry in background", e);
+        toast.error("Cloud sync failed. Staff features might be limited until next refresh.");
       }
 
       toast.success("Welcome back");
@@ -140,6 +141,7 @@ const Auth = () => {
         }
       } catch (e) {
         console.warn("Supabase bridge failed during signup", e);
+        toast.error("Cloud sync failed. Please try logging in again if you are staff.");
       }
       
       // Create initial profile in Firestore
@@ -179,6 +181,7 @@ const Auth = () => {
         }
       } catch (e) {
         console.warn("Supabase bridge failed during Google auth", e);
+        toast.error("Cloud sync failed. Staff features might be limited.");
       }
 
       // Check if profile exists, if not create it
