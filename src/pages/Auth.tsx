@@ -353,13 +353,21 @@ const Auth = () => {
                     exit={{ opacity: 0, y: -12 }}
                     transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
                   >
-                    <h2 className="font-display font-black tracking-tight text-3xl sm:text-4xl leading-tight">
-                      {tab === "signin" ? "Sign in to Aurelix" : "Create your account"}
-                    </h2>
+                    <div className="flex items-center justify-between mb-6">
+                      <h2 className="font-display font-black tracking-tight text-3xl sm:text-4xl leading-tight">
+                        {tab === "signin" ? "Sign in to Aurelix" : "Create your account"}
+                      </h2>
+                      <button
+                        onClick={() => setStep("landing")}
+                        className="p-2 rounded-full hover:bg-secondary/60 transition-colors"
+                      >
+                        <ArrowLeft className="h-5 w-5" />
+                      </button>
+                    </div>
 
                     <form
                       onSubmit={(e) => { e.preventDefault(); tab === "signin" ? signIn() : signUp(); }}
-                      className="mt-8 space-y-3"
+                      className="mt-8 space-y-4"
                     >
                       {tab === "signup" && (
                         <div className="grid grid-cols-2 gap-2 pb-2">
@@ -383,85 +391,66 @@ const Auth = () => {
                         </div>
                       )}
 
-                      <div className="relative">
+                      <div className="relative group">
                         <input
-                          id="email"
-                          className={inputCls}
                           type="email"
                           placeholder=" "
                           value={email}
                           onChange={(e) => setEmail(e.target.value)}
-                          autoComplete="email"
+                          className={inputCls}
                           required
                         />
-                        <label htmlFor="email" className={labelCls}>Email</label>
+                        <label className={labelCls}>Email address</label>
                       </div>
 
-                      {tab === "signup" && (
-                        <div className="relative">
-                          <input
-                            id="phone"
-                            className={inputCls}
-                            type="tel"
-                            placeholder=" "
-                            value={phone}
-                            onChange={(e) => setPhone(e.target.value)}
-                            autoComplete="tel"
-                            required
-                          />
-                          <label htmlFor="phone" className={labelCls}>Phone (E.164, e.g. +14155551234)</label>
-                        </div>
-                      )}
-
-                      <div className="relative">
+                      <div className="relative group">
                         <input
-                          id="password"
-                          className={inputCls}
                           type="password"
                           placeholder=" "
-                          minLength={6}
                           value={password}
                           onChange={(e) => setPassword(e.target.value)}
-                          autoComplete={tab === "signin" ? "current-password" : "new-password"}
+                          className={inputCls}
                           required
                         />
-                        <label htmlFor="password" className={labelCls}>Password</label>
+                        <label className={labelCls}>Password</label>
                       </div>
 
-                      {tab === "signin" && (
-                        <div className="flex justify-end pt-1">
-                          <Link to="/reset-password" className="text-xs text-muted-foreground hover:text-foreground">
+                      <button
+                        type="submit"
+                        disabled={busy}
+                        className="w-full h-12 mt-4 rounded-full bg-primary text-primary-foreground font-semibold text-sm hover:brightness-110 transition-all shadow-glow active:scale-[0.98] disabled:opacity-50"
+                      >
+                        {busy ? (
+                          <div className="flex items-center justify-center gap-2">
+                            <div className="h-4 w-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
+                            {tab === "signin" ? "Signing in..." : "Creating account..."}
+                          </div>
+                        ) : (
+                          tab === "signin" ? "Sign in" : "Create account"
+                        )}
+                      </button>
+
+                      <div className="text-center pt-2 space-y-3">
+                        {tab === "signin" && (
+                          <button 
+                            type="button"
+                            onClick={() => toast.info("Reset password feature coming soon")}
+                            className="text-sm text-primary hover:underline block w-full"
+                          >
                             Forgot password?
-                          </Link>
-                        </div>
-                      )}
-
-                      {tab === "signup" && (
-                        <p className="text-[11px] text-muted-foreground px-1 pt-1">
-                          You'll verify your email or phone after signing up — either one unlocks your account.
+                          </button>
+                        )}
+                        <p className="text-sm text-muted-foreground">
+                          {tab === "signin" ? "Don't have an account? " : "Already have one? "}
+                          <button
+                            type="button"
+                            onClick={() => setTab(tab === "signin" ? "signup" : "signin")}
+                            className="text-primary font-semibold hover:underline"
+                          >
+                            {tab === "signin" ? "Sign up" : "Sign in"}
+                          </button>
                         </p>
-                      )}
-
-                      <div className="pt-4">
-                        <button
-                          disabled={busy}
-                          className="w-full h-12 rounded-full bg-foreground text-background font-semibold text-sm inline-flex items-center justify-center gap-2 hover:opacity-90 transition-opacity disabled:opacity-60 active:scale-[0.98]"
-                        >
-                          {busy ? "Please wait…" : tab === "signin" ? "Log in" : "Create account"}
-                          {!busy && <ArrowRight className="h-4 w-4" />}
-                        </button>
                       </div>
-
-                      <p className="text-center text-sm text-muted-foreground pt-3">
-                        {tab === "signin" ? "Don't have an account? " : "Already have one? "}
-                        <button
-                          type="button"
-                          onClick={() => setTab(tab === "signin" ? "signup" : "signin")}
-                          className="text-primary font-semibold hover:underline"
-                        >
-                          {tab === "signin" ? "Sign up" : "Sign in"}
-                        </button>
-                      </p>
                     </form>
                   </motion.div>
                 )}
