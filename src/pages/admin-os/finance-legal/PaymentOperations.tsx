@@ -75,7 +75,7 @@ export default function PaymentOperations() {
     ]);
 
     if (topupRes.error || creditRes.error || invoiceRes.error) {
-      toast.error(topupRes.error?.message || creditRes.error?.message || invoiceRes.error?.message || "Finance queues load nahi hui");
+      toast.error(topupRes.error?.message || creditRes.error?.message || invoiceRes.error?.message || "Failed to load finance queues");
       setLoading(false);
       return;
     }
@@ -111,10 +111,10 @@ export default function PaymentOperations() {
         _note: notes[id]?.trim() || null,
       });
       if (error) throw error;
-      toast.success(decision === "approved" ? "Coins credit kar diye gaye" : "Top-up reject ho gaya");
+      toast.success(decision === "approved" ? "Coins credited successfully" : "Top-up request rejected");
       await load();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Top-up review nahi hua");
+      toast.error(error instanceof Error ? error.message : "Failed to review top-up");
     } finally {
       setBusy(null);
     }
@@ -150,8 +150,8 @@ export default function PaymentOperations() {
       body: { advertiser_id: advertiserId, force: true },
     });
     setBusy(null);
-    if (error || data?.error) return toast.error(error?.message || data?.error || "Invoice generate nahi hua");
-    toast.success(data?.invoice_number ? `Invoice ${data.invoice_number} generated` : "Invoice generated");
+    if (error || data?.error) return toast.error(error?.message || data?.error || "Failed to generate invoice");
+    toast.success(data?.invoice_number ? `Invoice ${data.invoice_number} generated` : "Invoice generated successfully");
     load();
   };
 
@@ -159,8 +159,8 @@ export default function PaymentOperations() {
     setBusy(`send-${invoice.id}`);
     const { data, error } = await supabase.functions.invoke("aap-generate-invoices", { body: { invoice_id: invoice.id } });
     setBusy(null);
-    if (error || data?.error || data?.emailed === false) return toast.error(error?.message || data?.error || "Invoice email nahi hua");
-    toast.success(`Invoice ${invoice.invoice_number} ${data?.recipient ? `sent to ${data.recipient}` : "sent"}`);
+    if (error || data?.error || data?.emailed === false) return toast.error(error?.message || data?.error || "Failed to email invoice");
+    toast.success(`Invoice ${invoice.invoice_number} ${data?.recipient ? `sent to ${data.recipient}` : "sent successfully"}`);
   };
 
   const downloadInvoice = async (invoice: Invoice) => {
@@ -210,7 +210,7 @@ export default function PaymentOperations() {
       <div className="flex items-center justify-between gap-3">
         <div>
           <h2 className="text-lg font-semibold">Payment Operations</h2>
-          <p className="text-sm text-muted-foreground">Coin verification, postpaid credit aur advertiser invoices.</p>
+          <p className="text-sm text-muted-foreground">Coin verification, postpaid credit, and advertiser invoices.</p>
         </div>
         <Button variant="outline" size="icon" onClick={load} disabled={loading} aria-label="Refresh queues">
           <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
