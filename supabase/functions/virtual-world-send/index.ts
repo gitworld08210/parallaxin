@@ -26,9 +26,13 @@ Deno.serve(async (req) => {
     const asUser = createClient(supabaseUrl, anonKey, {
       global: { headers: { Authorization: authHeader } },
     });
-    const { data: claims, error: claimErr } = await asUser.auth.getClaims(token);
-    if (claimErr || !claims?.claims?.sub) return json({ error: "Unauthorized" }, 401);
-    const userId = claims.claims.sub as string;
+    // With Firebase migration, we need to ensure the Supabase user exists or fallback to direct JWT check if claims are missing.
+    const { data: { user: supabaseUser }, error: userErr } = await asUser.auth.getUser();
+    if (userErr || !supabaseUser) {
+      console.error("Supabase user not found via token:", userErr);
+      return json({ error: "Unauthorized: User session invalid" }, 401);
+    }
+    const userId = supabaseUser.id;
 
     const payload = await req.json().catch(() => null);
     const channel = String(payload?.channel ?? "");
