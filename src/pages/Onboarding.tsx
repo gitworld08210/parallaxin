@@ -63,6 +63,16 @@ const Onboarding = () => {
     if (!user) return;
     setSaving(true);
     try {
+      // 1. Update Firestore (Primary)
+      const { doc, setDoc } = await import("firebase/firestore");
+      const { db: firestoreDb } = await import("@/lib/firebase");
+      
+      await setDoc(doc(firestoreDb, "profiles", user.id), {
+        interests,
+        onboarded_at: new Date().toISOString(),
+      }, { merge: true });
+
+      // 2. Update Supabase (Secondary/Admin OS)
       await supabase
         .from("profiles")
         .update({
@@ -76,6 +86,8 @@ const Onboarding = () => {
           _dob: dob || null,
           _gender: gender || null,
         });
+        
+        // Also save to Firestore private if needed (implementation varies)
       }
 
       if (followed.size > 0) {
