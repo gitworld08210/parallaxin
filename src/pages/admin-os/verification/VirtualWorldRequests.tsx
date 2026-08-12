@@ -52,11 +52,15 @@ const VirtualWorldRequests = () => {
 
   const openDoc = async (path: string | null) => {
     if (!path) return;
-    const { data, error } = await supabase.storage
-      .from("virtual-world-kyc")
-      .createSignedUrl(path, 300);
-    if (error || !data?.signedUrl) return toast.error("Could not open document");
-    window.open(data.signedUrl, "_blank", "noopener");
+    try {
+      const { data, error } = await supabase.storage
+        .from("virtual-world-kyc")
+        .createSignedUrl(path, 600);
+      if (error || !data?.signedUrl) throw new Error(error?.message ?? "Could not generate signed URL");
+      window.open(data.signedUrl, "_blank", "noopener");
+    } catch (e: any) {
+      toast.error(e.message ?? "Could not open document");
+    }
   };
 
   return (
