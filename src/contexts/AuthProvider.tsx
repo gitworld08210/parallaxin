@@ -1,7 +1,8 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { auth, db } from "@/lib/firebase";
-import { onAuthStateChanged, signOut as firebaseSignOut, User as FirebaseUser } from "firebase/auth";
+import { onAuthStateChanged, signOut as firebaseSignOut } from "firebase/auth";
 import { doc, getDoc, onSnapshot } from "firebase/firestore";
+import { supabase } from "@/integrations/supabase/client";
 
 type Profile = {
   id: string;
@@ -52,6 +53,7 @@ const AuthCtx = createContext<Ctx | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<SupabaseUser | null>(null);
+  const [supabaseSession, setSupabaseSession] = useState<any>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -71,7 +73,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
         const mappedUser: SupabaseUser = {
           id: firebaseUser.uid,
@@ -87,6 +89,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           last_sign_in_at: firebaseUser.metadata.lastSignInTime || new Date().toISOString(),
         };
         setUser(mappedUser);
+
+        // Bridge to Supabase
+        try {
+          const idToken = await firebaseUser.getIdToken();
+          const { data: bridge, error: bridgeErr } = await supabase.functions.invoke("firebase-bridge", {
+            body: { idToken }
+          });
+
+          if (!bridgeErr && bridge?.token_hash) {
+            const { data: { session }, error: sessionErr } = await supabase.auth.verifyOtp({
+              token_hash: bridge.token_hash,
+              type: 'magiclink'
+            });
+            if (!sessionErr) setSupabaseSession(session);
+          }
+        } catch (e) {
+          console.error("Supabase bridge failed:", e);
+        }
         
         const profileUnsubscribe = onSnapshot(doc(db, "profiles", firebaseUser.uid), (doc) => {
           if (doc.exists()) {
@@ -99,8 +119,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return () => profileUnsubscribe();
       } else {
         setUser(null);
+        setSupabaseSession(null);
         setProfile(null);
         setLoading(false);
+        // Clear Supabase session on logout
+        await supabase.auth.signOut();
       }
     });
 
@@ -117,7 +140,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <AuthCtx.Provider value={{ user, session: user, profile, loading, refreshProfile, signOut }}>
+    <AuthCtx.Provider value={{ user, session: supabaseSession, profile, loading, refreshProfile, signOut }}>
       {children}
     </AuthCtx.Provider>
   );

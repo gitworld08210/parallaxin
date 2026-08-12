@@ -109,27 +109,26 @@ export const MessagesPasscodeGate = ({ children }: { children: React.ReactNode }
     if (!user) return;
     let cancelled = false;
     (async () => {
-      // 1. Warm start from cache so the keypad shows instantly if we have it.
+      // 1. Warm start from cache
       const cached = readCache(uid);
       if (cached && !cancelled) setStored(cached);
 
-      // 2. DB is source of truth — hydrate and overwrite cache.
+      // 2. Supabase is source of truth
       const remote = await fetchRemote(uid);
       if (cancelled) return;
+      
       if (remote) {
         setStored(remote);
         writeCache(uid, remote);
       } else if (cached) {
-        // Cache exists but no DB row → backfill so it survives origin changes.
+        // Backfill if cache exists but no remote
         saveRemote(uid, cached).catch(() => {});
         setStored(cached);
-      } else {
-        setStored(null);
       }
       setReady(true);
     })();
     return () => { cancelled = true; };
-  }, [uid, user]);
+  }, [uid, user?.id]);
 
   // Re-lock whenever the user leaves the Messages surface entirely.
   useEffect(() => {

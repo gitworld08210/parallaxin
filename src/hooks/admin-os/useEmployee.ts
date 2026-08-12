@@ -39,6 +39,8 @@ export const useEmployee = (): EmployeeContext => {
     queryKey: ["admin-os", "employee", user?.id],
     enabled: !!user?.id && !authLoading,
     staleTime: 60_000,
+    retry: 3, // Retry a few times in case Supabase is still syncing from bridge
+    retryDelay: 1000,
     queryFn: async () => {
       if (!user) return { employee: null, permissions: [] as string[] };
 
