@@ -1,7 +1,7 @@
-import { reliableInvoke } from "@/lib/reliableInvoke";
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
-import type { Session, User } from "@supabase/supabase-js";
-import { supabase } from "@/integrations/supabase/client";
+import { auth, db } from "@/lib/firebase";
+import { onAuthStateChanged, signOut as firebaseSignOut, User } from "firebase/auth";
+import { doc, getDoc, onSnapshot } from "firebase/firestore";
 
 type Profile = {
   id: string;
@@ -22,7 +22,7 @@ type Profile = {
 
 type Ctx = {
   user: User | null;
-  session: Session | null;
+  session: any | null; // Firebase handles session differently
   profile: Profile | null;
   loading: boolean;
   refreshProfile: () => Promise<void>;
@@ -32,48 +32,58 @@ type Ctx = {
 const AuthCtx = createContext<Ctx | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
 
   const loadProfile = async (uid: string) => {
-    const { data } = await supabase.from("profiles").select("*").eq("user_id", uid).maybeSingle();
-    setProfile(data as Profile | null);
-  };
-
-  useEffect(() => {
-    const { data: sub } = supabase.auth.onAuthStateChange((evt, sess) => {
-      setSession(sess);
-      setUser(sess?.user ?? null);
-      if (sess?.user) {
-        setTimeout(() => loadProfile(sess.user.id), 0);
-        if (evt === "SIGNED_IN") {
-          setTimeout(() => { void reliableInvoke("log-login", { label: "log-login" }); }, 0);
-        }
+    try {
+      const docRef = doc(db, "profiles", uid);
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        setProfile({ id: docSnap.id, ...docSnap.data() } as Profile);
       } else {
         setProfile(null);
       }
+    } catch (error) {
+      console.error("Error loading profile:", error);
+      setProfile(null);
+    }
+  };
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+      setUser(firebaseUser);
+      if (firebaseUser) {
+        // Setup real-time listener for profile
+        const profileUnsubscribe = onSnapshot(doc(db, "profiles", firebaseUser.uid), (doc) => {
+          if (doc.exists()) {
+            setProfile({ id: doc.id, ...doc.data() } as Profile);
+          } else {
+            setProfile(null);
+          }
+        });
+        setLoading(false);
+        return () => profileUnsubscribe();
+      } else {
+        setProfile(null);
+        setLoading(false);
+      }
     });
-    supabase.auth.getSession().then(({ data }) => {
-      setSession(data.session);
-      setUser(data.session?.user ?? null);
-      if (data.session?.user) loadProfile(data.session.user.id);
-      setLoading(false);
-    });
-    return () => sub.subscription.unsubscribe();
+
+    return () => unsubscribe();
   }, []);
 
   const refreshProfile = async () => {
-    if (user) await loadProfile(user.id);
+    if (user) await loadProfile(user.uid);
   };
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    await firebaseSignOut(auth);
   };
 
   return (
-    <AuthCtx.Provider value={{ user, session, profile, loading, refreshProfile, signOut }}>
+    <AuthCtx.Provider value={{ user, session: user, profile, loading, refreshProfile, signOut }}>
       {children}
     </AuthCtx.Provider>
   );
@@ -84,3 +94,4 @@ export const useAuth = () => {
   if (!c) throw new Error("useAuth outside AuthProvider");
   return c;
 };
+
