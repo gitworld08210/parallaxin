@@ -7,6 +7,7 @@ import { useAuth } from "@/contexts/AuthProvider";
 import { useAdInteraction } from "@/features/content-understanding/hooks/useAdIntelligence";
 import { useAdRanking } from "@/features/content-understanding/hooks/useAdRanking";
 import { WhyThisAd } from "@/features/content-understanding/components/WhyThisAd";
+import { useContentContext } from "@/features/content-understanding/hooks/useContentContext";
 import { CommentSheet } from "@/components/social/CommentSheet";
 import { ShareToDM } from "@/components/social/ShareToDM";
 import { fmt } from "@/lib/format";
