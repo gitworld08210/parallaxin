@@ -37,6 +37,23 @@ const Verification = () => {
   useEffect(() => {
     if (!user) return;
     (async () => {
+      try {
+        // 1. Check Firestore
+        const { collection, query, where, getDocs } = await import("firebase/firestore");
+        const { db } = await import("@/lib/firebase");
+        const q = query(collection(db, "verification_requests"), where("user_id", "==", user.id));
+        const snap = await getDocs(q);
+        if (!snap.empty) {
+          const doc = snap.docs[0];
+          setExisting({ id: doc.id, ...doc.data() } as VR);
+          setLoading(false);
+          return;
+        }
+      } catch (e) {
+        console.warn("Firestore verification fetch failed", e);
+      }
+
+      // 2. Supabase Fallback
       const { data } = await supabase.from("verification_requests").select("id, status, category, created_at").eq("user_id", user.id).maybeSingle();
       setExisting((data as VR) ?? null);
       setLoading(false);
@@ -60,7 +77,8 @@ const Verification = () => {
       const idPath = await uploadDoc(file);
       const supportPath = supportFile ? await uploadDoc(supportFile) : null;
       const linkArr = links.split(/[\n,]/).map((s) => s.trim()).filter(Boolean);
-      const { data: inserted, error } = await supabase.from("verification_requests").insert({
+      
+      const payload = {
         user_id: user.id,
         full_name: fullName.trim(),
         category,
@@ -73,9 +91,24 @@ const Verification = () => {
         dob: dob || null,
         reason: reason.trim() || null,
         supporting_doc_url: supportPath,
-      }).select("id").single();
+      };
+
+      try {
+        // 1. Dual-write to Firestore
+        const { collection, addDoc, serverTimestamp } = await import("firebase/firestore");
+        const { db: firestoreDb } = await import("@/lib/firebase");
+        await addDoc(collection(firestoreDb, "verification_requests"), {
+          ...payload,
+          created_at: serverTimestamp(),
+        });
+      } catch (e) {
+        console.warn("Firestore verification submission failed", e);
+      }
+
+      // 2. Supabase Insert (Legacy/Admin OS trigger)
+      const { data: inserted, error } = await supabase.from("verification_requests").insert(payload as any).select("id").single();
       if (error) throw error;
-      // Routing to ver_applications is handled by DB trigger (Phase 1).
+      
       toast.success("Submitted · review within 48h");
       setExisting({ id: inserted?.id ?? "tmp", status: "pending", category, created_at: new Date().toISOString() });
     } catch (e: any) { toast.error(e.message || "Failed"); } finally { setBusy(false); }
