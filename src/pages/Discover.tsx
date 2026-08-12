@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 import { Search, TrendingUp, Sparkles, Crown, BadgeCheck, Flame } from "lucide-react";
 import { AuraAvatar } from "@/components/vibe/AuraAvatar";
 import { VerificationBadge } from "@/components/vibe/VerificationBadge";
+import { collection, query, where, orderBy, limit, getDocs } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthProvider";
 import { fmt, gradientFor, initialsOf } from "@/lib/format";
@@ -46,20 +48,19 @@ const Discover = () => {
         .select("user_id, username, display_name, avatar_url, bio, verified, verification_kind, followers_count, is_founder")
         .order("followers_count", { ascending: false })
         .limit(60),
-      supabase
-        .from("posts")
-        .select("id, media_url, media_type, like_count, content")
-        .eq("is_reel", false)
-        .not("media_url", "is", null)
-        .order("like_count", { ascending: false })
-        .limit(12),
+      getDocs(query(
+        collection(db, "posts"),
+        where("is_reel", "==", false),
+        orderBy("like_count", "desc"),
+        limit(12)
+      )),
       user
         ? supabase.from("follows").select("following_id").eq("follower_id", user.id)
         : Promise.resolve({ data: [] as any[] }),
     ]).then(([pRes, tRes, fRes]) => {
       if (cancelled) return;
       setAllProfiles(((pRes.data ?? []) as Profile[]).filter((p) => p.user_id !== user?.id));
-      setTrending(((tRes.data ?? []) as TrendingPost[]));
+      setTrending((tRes.docs.map(doc => ({ id: doc.id, ...doc.data() })) as TrendingPost[]));
       setFollowing(new Set(((fRes.data ?? []) as any[]).map((f) => f.following_id)));
       setLoading(false);
     });
