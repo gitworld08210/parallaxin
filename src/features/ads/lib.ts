@@ -57,7 +57,7 @@ export type Targeting = {
   interests: string[];
 };
 
-export const TARGETING = DEFAULT_TARGETING;
+export const DEFAULT_TARGETING: Targeting = {
   locations: ["India"],
   age_min: 18,
   age_max: 55,
@@ -65,6 +65,8 @@ export const TARGETING = DEFAULT_TARGETING;
   languages: [],
   interests: [],
 };
+
+export const TARGETING = DEFAULT_TARGETING;
 
 const nf = new Intl.NumberFormat("en-IN");
 
