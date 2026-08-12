@@ -28,6 +28,7 @@ const Feed = () => {
   const load = async () => {
     setLoading(true);
 
+    // Mutes/Blocks/Follows still on Supabase for now (Step 2.C)
     const blocksOut = user ? (supabase.from("blocks" as any).select("blocked_id").eq("blocker_id", user.id) as any) : Promise.resolve({ data: [] });
     const blocksIn = user ? (supabase.from("blocks" as any).select("blocker_id").eq("blocked_id", user.id) as any) : Promise.resolve({ data: [] });
     const mutesP = user ? (supabase.from("mutes" as any).select("muted_id").eq("muter_id", user.id) as any) : Promise.resolve({ data: [] });

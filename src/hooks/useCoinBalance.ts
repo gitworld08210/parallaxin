@@ -9,6 +9,22 @@ export function useCoinBalance() {
 
   const refresh = useCallback(async () => {
     if (!user) { setBalance(0); setLoading(false); return; }
+    
+    try {
+      // 1. Check Firestore (Primary)
+      const { doc, getDoc } = await import("firebase/firestore");
+      const { db } = await import("@/lib/firebase");
+      const snap = await getDoc(doc(db, "wallets", user.id));
+      if (snap.exists()) {
+        setBalance(snap.data().total || 0);
+        setLoading(false);
+        return;
+      }
+    } catch (e) {
+      console.warn("Firestore wallet fetch failed, falling back to legacy", e);
+    }
+
+    // 2. Legacy Supabase Fallback
     const { data } = await supabase
       .from("profiles_private")
       .select("coin_balance")

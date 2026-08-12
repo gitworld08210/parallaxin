@@ -67,9 +67,28 @@ const EditProfile = () => {
   const save = async () => {
     if (!user) return;
     setBusy(true);
+    
+    try {
+      // 1. Dual-write Profile to Firestore
+      const { doc, setDoc, serverTimestamp } = await import("firebase/firestore");
+      const { db } = await import("@/lib/firebase");
+      await setDoc(doc(db, "profiles", user.id), {
+        display_name: displayName,
+        username,
+        bio,
+        avatar_url: avatar,
+        cover_url: cover,
+        updated_at: serverTimestamp(),
+      }, { merge: true });
+    } catch (e) {
+      console.warn("Firestore profile update failed", e);
+    }
+
+    // 2. Update Supabase (Legacy)
     const { error } = await supabase.from("profiles").update({
       display_name: displayName, username, bio, avatar_url: avatar, cover_url: cover,
     } as any).eq("user_id", user.id);
+    
     setBusy(false);
     if (error) return toast.error(error.message);
     await refreshProfile();

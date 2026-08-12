@@ -31,6 +31,20 @@ export const useEmployeesList = (filters: EmployeeFilters = {}) =>
   useQuery({
     queryKey: ["admin-os", "employees", filters],
     queryFn: async (): Promise<EmployeeListItem[]> => {
+      try {
+        // 1. Check Firestore
+        const { collection, getDocs, query, where, orderBy, limit } = await import("firebase/firestore");
+        const { db } = await import("@/lib/firebase");
+        const q = query(collection(db, "employees"), orderBy("created_at", "desc"), limit(500));
+        const snap = await getDocs(q);
+        if (!snap.empty) {
+          return snap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as unknown as EmployeeListItem[];
+        }
+      } catch (e) {
+        console.warn("Firestore employees fetch failed", e);
+      }
+
+      // 2. Supabase Fallback
       let q = supabase
         .from("employees")
         .select(
@@ -44,9 +58,6 @@ export const useEmployeesList = (filters: EmployeeFilters = {}) =>
 
       if (filters.status) q = q.eq("employment_status", filters.status as any);
       if (filters.departmentId) q = q.eq("department_id", filters.departmentId);
-      // Hide newly appointed executives who have not yet completed first-login
-      // (they still have a temp password). They reappear once they log in and
-      // change it. Callers can opt in with `includePending: true`.
       if (!filters.includePending) {
         q = q.eq("requires_password_change", false);
       }

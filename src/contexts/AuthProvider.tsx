@@ -56,7 +56,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [supabaseSession, setSupabaseSession] = useState<any>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
-  const [bridgeStatus, setBridgeStatus] = useState<'idle' | 'syncing' | 'synced' | 'failed'>('idle');
 
   const loadProfile = async (uid: string) => {
     try {
@@ -74,31 +73,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const syncSupabase = async (firebaseUser: any) => {
-    if (!firebaseUser || bridgeStatus === 'synced') return;
+    // Keeping this for backward compatibility during migration, 
+    // but moving towards full Firebase reliance.
+    if (!firebaseUser) return;
     
-    setBridgeStatus('syncing');
     try {
       const idToken = await firebaseUser.getIdToken(true);
-      const { data: bridge, error: bridgeErr } = await supabase.functions.invoke("firebase-bridge", {
+      // Optional: Background sync if backend is active, but don't block
+      supabase.functions.invoke("firebase-bridge", {
         body: { idToken }
-      });
-
-      if (bridgeErr) throw bridgeErr;
+      }).catch(err => console.warn("Supabase background sync skipped:", err));
       
-      if (bridge?.token_hash) {
-        const { data: { session }, error: sessionErr } = await supabase.auth.verifyOtp({
-          token_hash: bridge.token_hash,
-          type: 'magiclink'
-        });
-        if (sessionErr) throw sessionErr;
-        setSupabaseSession(session);
-        setBridgeStatus('synced');
-        console.log("Supabase bridge synced successfully");
-      }
     } catch (e) {
-      console.error("Supabase bridge failed:", e);
-      setBridgeStatus('failed');
-      // We don't throw here to avoid crashing the whole auth context
+      console.warn("Auth bridge background task skipped.");
     }
   };
 

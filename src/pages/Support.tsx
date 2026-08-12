@@ -65,6 +65,25 @@ const Support = () => {
     enabled: !!user?.id,
     queryKey: ["my-support-tickets", user?.id],
     queryFn: async () => {
+      try {
+        // 1. Check Firestore
+        const { collection, query, where, orderBy, limit, getDocs } = await import("firebase/firestore");
+        const { db } = await import("@/lib/firebase");
+        const q = query(
+          collection(db, "support_tickets"),
+          where("requester_id", "==", user!.id),
+          orderBy("created_at", "desc"),
+          limit(20)
+        );
+        const snap = await getDocs(q);
+        if (!snap.empty) {
+          return snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        }
+      } catch (e) {
+        console.warn("Firestore support tickets fetch failed", e);
+      }
+
+      // 2. Supabase Fallback
       const { data, error } = await supabase
         .from("sup_tickets")
         .select("id, ticket_number, subject, category, priority, status, created_at, owning_department_id")
@@ -81,7 +100,8 @@ const Support = () => {
       if (!user) throw new Error("Please sign in first.");
       if (!category) throw new Error("Pick a topic first.");
       if (!subject.trim()) throw new Error("Please add a short subject.");
-      const { data, error } = await (supabase.from("sup_tickets") as any).insert({
+      
+      const payload = {
         subject: subject.trim(),
         description: description.trim() || null,
         category: category.key,
@@ -89,7 +109,24 @@ const Support = () => {
         source: "user",
         requester_id: user.id,
         requester_display: user.email ?? null,
-      }).select("ticket_number").single();
+      };
+
+      try {
+        // 1. Dual-write to Firestore
+        const { collection, addDoc, serverTimestamp } = await import("firebase/firestore");
+        const { db } = await import("@/lib/firebase");
+        await addDoc(collection(db, "support_tickets"), {
+          ...payload,
+          created_at: serverTimestamp(),
+          status: "open",
+          ticket_number: `SUP-${Math.floor(1000 + Math.random() * 9000)}`
+        });
+      } catch (e) {
+        console.warn("Firestore ticket creation failed", e);
+      }
+
+      // 2. Supabase Insert (Legacy/Back-office)
+      const { data, error } = await (supabase.from("sup_tickets") as any).insert(payload).select("ticket_number").single();
       if (error) throw error;
       return data as { ticket_number: string };
     },
