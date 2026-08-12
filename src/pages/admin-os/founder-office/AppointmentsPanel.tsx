@@ -99,7 +99,7 @@ const AppointmentsPanel = () => {
           <span className="font-semibold text-primary">One-click appointment.</span> System
           auto-generates a unique <span className="font-mono">AURE###</span> employee ID and
           creates the account. A branded PDF joining letter — with the temporary password inside —
-          is generated for you to download and email to the appointee yourself.
+          is automatically generated and emailed to the appointee.
         </p>
       </div>
 
