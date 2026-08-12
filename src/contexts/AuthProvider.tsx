@@ -56,6 +56,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [supabaseSession, setSupabaseSession] = useState<any>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [bridgeStatus, setBridgeStatus] = useState<'idle' | 'syncing' | 'synced' | 'failed'>('idle');
 
   const loadProfile = async (uid: string) => {
     try {
@@ -69,6 +70,35 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     } catch (error) {
       console.error("Error loading profile:", error);
       setProfile(null);
+    }
+  };
+
+  const syncSupabase = async (firebaseUser: any) => {
+    if (!firebaseUser || bridgeStatus === 'synced') return;
+    
+    setBridgeStatus('syncing');
+    try {
+      const idToken = await firebaseUser.getIdToken(true);
+      const { data: bridge, error: bridgeErr } = await supabase.functions.invoke("firebase-bridge", {
+        body: { idToken }
+      });
+
+      if (bridgeErr) throw bridgeErr;
+      
+      if (bridge?.token_hash) {
+        const { data: { session }, error: sessionErr } = await supabase.auth.verifyOtp({
+          token_hash: bridge.token_hash,
+          type: 'magiclink'
+        });
+        if (sessionErr) throw sessionErr;
+        setSupabaseSession(session);
+        setBridgeStatus('synced');
+        console.log("Supabase bridge synced successfully");
+      }
+    } catch (e) {
+      console.error("Supabase bridge failed:", e);
+      setBridgeStatus('failed');
+      // We don't throw here to avoid crashing the whole auth context
     }
   };
 
@@ -90,23 +120,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         };
         setUser(mappedUser);
 
-        // Bridge to Supabase
-        try {
-          const idToken = await firebaseUser.getIdToken();
-          const { data: bridge, error: bridgeErr } = await supabase.functions.invoke("firebase-bridge", {
-            body: { idToken }
-          });
-
-          if (!bridgeErr && bridge?.token_hash) {
-            const { data: { session }, error: sessionErr } = await supabase.auth.verifyOtp({
-              token_hash: bridge.token_hash,
-              type: 'magiclink'
-            });
-            if (!sessionErr) setSupabaseSession(session);
-          }
-        } catch (e) {
-          console.error("Supabase bridge failed:", e);
-        }
+        // Bridge to Supabase in the background
+        syncSupabase(firebaseUser);
         
         const profileUnsubscribe = onSnapshot(doc(db, "profiles", firebaseUser.uid), (doc) => {
           if (doc.exists()) {
