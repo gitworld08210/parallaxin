@@ -34,12 +34,16 @@ export const StoriesRail = () => {
       .eq("follower_id", user.id);
     const ids = (f ?? []).map((r: any) => r.following_id);
     if (ids.length === 0) { setGroups([]); return; }
-    const { data } = await supabase
-      .from("stories")
-      .select("id, user_id, media_url, media_type, created_at, profile:profiles!stories_user_profile_fkey(username, display_name, avatar_url)")
-      .in("user_id", ids)
-      .gt("expires_at", new Date().toISOString())
-      .order("created_at", { ascending: true });
+    
+    // Fetch stories from Firestore
+    const q = query(
+      collection(db, "stories"),
+      where("user_id", "in", ids),
+      where("expires_at", ">", new Date().toISOString()),
+      orderBy("created_at", "asc")
+    );
+    const snap = await getDocs(q);
+    const data = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     const map = new Map<string, Group>();
     (data ?? []).forEach((s: any) => {
       const g = map.get(s.user_id) ?? { user_id: s.user_id, profile: s.profile, stories: [] };

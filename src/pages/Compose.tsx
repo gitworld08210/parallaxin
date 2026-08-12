@@ -138,15 +138,28 @@ const Compose = () => {
         }
       }
       const { media_url, media_type } = await uploadMedia();
-      const { data: inserted, error } = await supabase.from("posts").insert({
+      const docRef = await addDoc(collection(db, "posts"), {
         user_id: user.id,
         content: content.trim(),
-        media_url, media_type,
-        status: status as any,
+        media_url,
+        media_type,
+        status,
         scheduled_for,
-      } as any).select("id").single();
-      if (error) throw error;
-      const newId = (inserted as any)?.id;
+        is_reel: false,
+        like_count: 0,
+        comment_count: 0,
+        created_at: serverTimestamp(),
+        profile: {
+          username: profile?.username,
+          display_name: profile?.display_name,
+          avatar_url: profile?.avatar_url,
+          verified: !!profile?.verified,
+          verification_kind: profile?.verification_kind,
+          is_founder: !!(profile as any)?.is_founder,
+          join_era: (profile as any)?.join_era
+        }
+      });
+      const newId = docRef.id;
 
       // Invite collaborators
       if (newId && collabs.length) {

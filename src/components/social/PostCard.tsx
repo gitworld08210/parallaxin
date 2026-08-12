@@ -94,7 +94,7 @@ export const PostCard = ({ post, onOpenComments }: { post: FeedPost; onOpenComme
       const ids = (data ?? []).map((r: any) => r.user_id);
       if (!ids.length) { setCollabs([]); return; }
       const { data: profs } = await supabase.from("profiles")
-        .select("username, display_name, avatar_url").in("user_id", ids);
+        .select("user_id, username, display_name, avatar_url").in("user_id", ids);
       setCollabs((profs ?? []) as any);
     })();
   }, [post.id]);
