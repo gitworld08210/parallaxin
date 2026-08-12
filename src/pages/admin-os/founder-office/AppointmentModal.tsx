@@ -136,7 +136,7 @@ export const AppointmentModal = ({ slot, onClose, onSuccess }: Props) => {
             <ul className="space-y-0.5 list-disc list-inside">
               <li>System generates the next AURE### employee ID and company email.</li>
               <li>A branded PDF joining letter is generated with a one-time temporary password inside.</li>
-              <li>You download the PDF and email it to the appointee yourself.</li>
+              <li>The system automatically emails the PDF to the appointee's personal email.</li>
               <li>The appointee must change the password &amp; enable 2FA on first login.</li>
             </ul>
           </div>
@@ -162,7 +162,7 @@ export const AppointmentModal = ({ slot, onClose, onSuccess }: Props) => {
               ) : (
                 <>
                   <Send className="h-3.5 w-3.5" />
-                  Appoint &amp; email letter
+                  Appoint & Send Email
                 </>
               )}
             </button>

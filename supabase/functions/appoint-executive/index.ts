@@ -1101,10 +1101,67 @@ Deno.serve(async (req) => {
       .from("joining-letters")
       .createSignedUrl(pdfPath, 60 * 60 * 24 * 30);
 
-    // Auto-email disabled: appointer downloads the PDF and sends it manually
-    // (the PDF already contains the temp password and login instructions).
-    const gmailMessageId: string | null = null;
-    const emailError: string | null = null;
+    // Auto-email appointee using Gmail connector
+    let gmailMessageId: string | null = null;
+    let emailError: string | null = null;
+
+    if (!skipEmail && gmailKey && lovableKey) {
+      try {
+        const founderEmail = (callerEmp as any).company_email || "office@aurelix.com";
+        const founderName = (callerEmp as any).full_name || "Aurelix Founder Office";
+
+        const html = `
+          <div style="font-family: sans-serif; color: #111; max-width: 600px;">
+            <h2 style="color: #0b172f;">Official Appointment: ${slot.label}</h2>
+            <p>Dear ${fullName},</p>
+            <p>Congratulations. Following our recent discussions, the Founder Office is pleased to officially appoint you to the position of <strong>${slot.label}</strong> at Aurelix.</p>
+            <p>Your official letter of appointment is attached to this email. It contains your unique Employee ID, company email, and temporary login credentials for the Aurelix Admin OS.</p>
+            <p style="background: #fdf6e3; padding: 15px; border-radius: 8px; border: 1px solid #eee;">
+              <strong>Next Steps:</strong><br>
+              1. Download and read your appointment letter.<br>
+              2. Log in at <a href="${origin}/auth">${origin}/auth</a> using your company email.<br>
+              3. You will be prompted to change your temporary password on first login.
+            </p>
+            <p>Welcome to the leadership team.</p>
+            <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
+            <p style="font-size: 12px; color: #666;">
+              This is an automated official communication from the Aurelix Founder Office.
+            </p>
+          </div>
+        `;
+
+        const rfc2822 = buildRfc2822({
+          fromName: founderName,
+          fromEmail: founderEmail,
+          to: personalEmail,
+          subject: `Aurelix Appointment Letter — ${slot.label}`,
+          html,
+          pdfBytes,
+          pdfFilename: `Appointment-Letter-${employeeNumber}.pdf`,
+        });
+
+        const res = await fetch("https://connector-gateway.lovable.dev/google_mail/v1/users/me/messages/send", {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${lovableKey}`,
+            "X-Connection-Api-Key": gmailKey,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ raw: base64UrlEncode(new TextEncoder().encode(rfc2822)) }),
+        });
+
+        const mailData = await res.json();
+        if (res.ok) {
+          gmailMessageId = mailData.id;
+        } else {
+          emailError = JSON.stringify(mailData);
+          console.error("Gmail send failed:", emailError);
+        }
+      } catch (e) {
+        emailError = (e as Error).message;
+        console.error("Gmail send exception:", emailError);
+      }
+    }
 
     // Record appointment
     await admin.from("executive_appointments").insert({
