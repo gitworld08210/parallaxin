@@ -72,9 +72,10 @@ Deno.serve(async (req) => {
       });
       
       if (error) {
-        if (error.message.includes("already exists")) {
+        if (error.message.toLowerCase().includes("already exists")) {
            user = await findUserByEmail(email);
         } else {
+           console.error("Supabase user creation error:", error);
            throw error;
         }
       } else {
