@@ -40,38 +40,9 @@ export const useAdInteraction = () => {
 
       if (signalError) throw signalError;
 
-      // 2. Update user interests (simplified upsert for MVP)
-      // In production, this would be handled by a database trigger or background job for atomicity and decay
-      for (const topicId of input.topicIds) {
-        const { data: existing } = await (supabase as any)
-          .from('ads_user_interests')
-          .select('*')
-          .eq('user_id', user.id)
-          .eq('topic_id', topicId)
-          .maybeSingle();
-
-        if (existing) {
-          await (supabase as any)
-            .from('ads_user_interests')
-            .update({
-              interest_score: existing.interest_score + weight,
-              signal_count: existing.signal_count + 1,
-              last_signal_at: new Date().toISOString(),
-              updated_at: new Date().toISOString(),
-            })
-            .eq('id', existing.id);
-        } else {
-          await (supabase as any)
-            .from('ads_user_interests')
-            .insert({
-              user_id: user.id,
-              topic_id: topicId,
-              interest_score: weight,
-              signal_count: 1,
-              confidence: 0.1, // Initial confidence
-            });
-        }
-      }
+      // 2. Interest scores are now updated via database triggers on ads_interest_signals
+      // This client-side loop is removed to avoid race conditions and redundant calls.
+      return;
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['user-interests'] });

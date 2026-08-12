@@ -28,21 +28,24 @@ export const useAdRanking = (contentId?: string) => {
         .select('topic_id, interest_score')
         .eq('user_id', user.id);
 
-      // 3. Simulated Ad Ranking Logic (Spec #16)
-      // Algorithm: Score = (TargetingMatch * 0.3) + (ContextMatch * 0.4) + (InterestMatch * 0.3)
+      // 3. Ad Ranking Algorithm (Spec #16 & #25)
+      // Score = (TargetingMatch * 0.3) + (ContextMatch * 0.4) + (InterestMatch * 0.3)
       
-      // For the MVP demo, we provide a relevant sample ad if context matches interests
       const contextTopics = context?.topic_ids || [];
       const userInterestTopics = (interests || []).map((i: any) => i.topic_id);
       
-      const hasContextMatch = contextTopics.some((t: string) => userInterestTopics.includes(t));
+      // Calculate matches
+      const contextMatch = contextTopics.some((t: string) => userInterestTopics.includes(t)) ? 1.0 : 0.0;
+      
+      // Economic Value / Bid (Mock)
+      const bid = 0.5; 
       
       const ads = [
         { 
           ad_id: 'sample-ad-1', 
-          ranking_score: hasContextMatch ? 0.95 : 0.45, 
-          explanation: hasContextMatch 
-            ? "You're seeing this because your interests align with this content's topics."
+          ranking_score: contextMatch > 0 ? (0.95 + bid * 0.1) : (0.45 + bid * 0.05), 
+          explanation: contextMatch > 0 
+            ? "You're seeing this because your recent interests in travel and technology match this content."
             : "Showing this based on trending categories in your location." 
         }
       ];

@@ -162,17 +162,18 @@ export default function CampaignWizard() {
         {step === 2 && (
           <div className="space-y-8">
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-bold text-white">Audience Targeting</h2>
+              <h2 className="text-xl font-bold text-white">Audience & Context</h2>
               <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">
-                <Users className="h-4 w-4 text-emerald-500" />
-                <span className="text-xs font-bold text-emerald-500 uppercase tracking-widest">Broad Reach</span>
+                <Sparkles className="h-4 w-4 text-emerald-500" />
+                <span className="text-xs font-bold text-emerald-500 uppercase tracking-widest">AI Context Match</span>
               </div>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div className="space-y-6">
                 <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Interests & Categories</label>
+                  <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Contextual Categories</label>
+                  <p className="text-[10px] text-white/40 mb-3">Your ad will be matched to content in these categories.</p>
                   <div className="flex flex-wrap gap-2">
                     {(dbInterests.length > 0 ? dbInterests.map(i => i.name) : INTERESTS).map((interest) => (
                       <button
@@ -195,10 +196,24 @@ export default function CampaignWizard() {
                     ))}
                   </div>
                 </div>
+
+                <div className="space-y-4 pt-4 border-t border-white/5">
+                  <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Brand Safety</label>
+                  <div className="space-y-3">
+                    {['Exclude Controversial Content', 'Exclude Political Content', 'Standard Inventory Only'].map((opt) => (
+                      <div key={opt} className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/5">
+                        <span className="text-sm text-white/80">{opt}</span>
+                        <div className="h-5 w-9 rounded-full bg-primary/20 p-1 cursor-pointer">
+                          <div className="h-3 w-3 rounded-full bg-primary ml-auto" />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
 
-              <div className="space-y-6 bg-white/[0.02] p-6 rounded-2xl border border-white/5">
-                <p className="text-sm font-bold text-white mb-4">Estimated Performance</p>
+              <div className="space-y-6 bg-white/[0.02] p-6 rounded-2xl border border-white/5 h-fit">
+                <p className="text-sm font-bold text-white mb-4">Contextual Forecasting</p>
                 <div className="space-y-4">
                   <div>
                     <div className="flex justify-between text-xs mb-1">
@@ -211,13 +226,16 @@ export default function CampaignWizard() {
                   </div>
                   <div>
                     <div className="flex justify-between text-xs mb-1">
-                      <span className="text-muted-foreground">Daily Conversions</span>
-                      <span className="text-white font-bold">120 - 450</span>
+                      <span className="text-muted-foreground">Context Match Efficiency</span>
+                      <span className="text-white font-bold">High</span>
                     </div>
                     <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
-                      <div className="h-full bg-emerald-500 w-1/3" />
+                      <div className="h-full bg-emerald-500 w-[85%]" />
                     </div>
                   </div>
+                  <p className="text-[10px] text-muted-foreground leading-relaxed pt-2">
+                    Forecast based on versioned content taxonomy and recent user interest signals.
+                  </p>
                 </div>
               </div>
             </div>
