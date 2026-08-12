@@ -148,8 +148,9 @@ const Auth = () => {
           toast.error("Legacy account service is temporarily unavailable. Please try again shortly.");
           setBusy(false); return;
         }
-        if (!migrated) { toast.error("Incorrect email or password"); setBusy(false); return; }
+        if (!migrated || !("cred" in migrated)) { toast.error("Incorrect email or password"); setBusy(false); return; }
         userCredential = migrated.cred;
+
       }
 
 
