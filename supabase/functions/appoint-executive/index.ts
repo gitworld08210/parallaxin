@@ -1113,6 +1113,7 @@ Deno.serve(async (req) => {
         try {
           const founderEmail = (callerEmp as any).company_email || "office@aurelix.com";
           const founderName = (callerEmp as any).full_name || "Aurelix Founder Office";
+          const emailSubject = `Official Appointment: ${slot.label} — ${fullName}`;
 
           const html = `
             <div style="font-family: sans-serif; color: #111; max-width: 600px;">
@@ -1138,7 +1139,7 @@ Deno.serve(async (req) => {
             fromName: founderName,
             fromEmail: founderEmail,
             to: personalEmail,
-            subject: `Aurelix Appointment Letter — ${slot.label}`,
+            subject: emailSubject,
             html,
             pdfBytes,
             pdfFilename: `Appointment-Letter-${employeeNumber}.pdf`,
