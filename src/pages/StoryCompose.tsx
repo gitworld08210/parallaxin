@@ -6,7 +6,7 @@ import { useAuth } from "@/contexts/AuthProvider";
 import { TopBar } from "@/components/vibe/TopBar";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { toast } from "sonner";
-import { FilterStrip, FilterKey, filterCss } from "@/components/compose/FilterStrip";
+import { uploadToCloudinary } from "@/lib/cloudinary";
 
 type Sticker =
   | { id: string; kind: "poll"; x: number; y: number; question: string; options: string[] }
@@ -73,14 +73,10 @@ const StoryCompose = () => {
     if (!user || !file) return toast.error("Pick a photo or video");
     setBusy(true);
     try {
-      const ext = file.name.split(".").pop() || "jpg";
-      const path = `${user.id}/stories/${crypto.randomUUID()}.${ext}`;
-      const { error: upErr } = await supabase.storage.from("post-media").upload(path, file, { cacheControl: "3600", upsert: false });
-      if (upErr) throw upErr;
-      const { data } = supabase.storage.from("post-media").getPublicUrl(path);
+      const url = await uploadToCloudinary(file);
       const { data: storyRow, error } = await supabase.from("stories").insert({
         user_id: user.id,
-        media_url: data.publicUrl,
+        media_url: url,
         media_type: file.type.startsWith("video") ? "video" : "image",
         audience: audience as any,
       } as any).select("id").single();

@@ -7,6 +7,7 @@ import { useAuth } from "@/contexts/AuthProvider";
 import { toast } from "sonner";
 import { FilterStrip, FilterKey, filterCss } from "@/components/compose/FilterStrip";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { uploadToCloudinary } from "@/lib/cloudinary";
 
 const ReelCompose = () => {
   const { user } = useAuth();
@@ -67,15 +68,11 @@ const ReelCompose = () => {
         const { data: mod } = await supabase.functions.invoke("ai-moderate", { body: { text: content } });
         if (mod?.flagged) throw new Error(mod.reason || "Caption flagged");
       }
-      const ext = file.name.split(".").pop() || "mp4";
-      const path = `${user.id}/${crypto.randomUUID()}.${ext}`;
-      const { error: upErr } = await supabase.storage.from("post-media").upload(path, file, { cacheControl: "3600", upsert: false });
-      if (upErr) throw upErr;
-      const { data } = supabase.storage.from("post-media").getPublicUrl(path);
+      const url = await uploadToCloudinary(file);
       const { data: inserted, error } = await supabase.from("posts").insert({
         user_id: user.id,
         content: content.trim() + (music ? `\n\n🎵 ${music}` : ""),
-        media_url: data.publicUrl,
+        media_url: url,
         media_type: "video",
         is_reel: true,
       }).select("id").single();
