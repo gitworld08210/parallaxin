@@ -82,6 +82,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       // Optional: Background sync if backend is active, but don't block
       supabase.functions.invoke("firebase-bridge", {
         body: { idToken }
+      }).then(async (res) => {
+        if (res.data?.user_id) {
+          const { data: emp } = await supabase
+            .from("employees")
+            .select("employment_status")
+            .eq("user_id", res.data.user_id)
+            .maybeSingle();
+          if (emp?.employment_status === "suspended") {
+            await firebaseSignOut(auth);
+          }
+        }
       }).catch(err => console.warn("Supabase background sync skipped:", err));
       
     } catch (e) {
