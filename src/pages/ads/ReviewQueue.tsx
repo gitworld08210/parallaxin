@@ -55,7 +55,7 @@ export default function ReviewQueue() {
   const decide = async (ad: PendingAd, state: "approved" | "rejected") => {
     if (!user) return;
     if (state === "rejected" && !reason[ad.id]?.trim()) {
-      return toast.error("Reject karne ke liye reason likhna zaroori hai");
+      return toast.error("Please provide a rejection reason");
     }
     setBusy(ad.id);
     try {
