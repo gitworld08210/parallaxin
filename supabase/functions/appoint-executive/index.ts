@@ -1161,10 +1161,10 @@ Deno.serve(async (req) => {
           } else {
             emailError = `Gmail API error: ${res.status} ${res.statusText} - ${JSON.stringify(mailData)}`;
             console.error("Gmail send failed:", emailError);
-          }
-        } catch (e) {
-          emailError = (e as Error).message;
-          console.error("Gmail send exception:", emailError);
+        }
+      } catch (e) {
+        emailError = (e as Error).message;
+        console.error("Gmail send exception:", emailError);
       }
     }
   }
