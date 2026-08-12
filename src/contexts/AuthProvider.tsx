@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { auth, db } from "@/lib/firebase";
-import { onAuthStateChanged, signOut as firebaseSignOut, User } from "firebase/auth";
+import { onAuthStateChanged, signOut as firebaseSignOut, User as FirebaseUser } from "firebase/auth";
 import { doc, getDoc, onSnapshot } from "firebase/firestore";
 
 type Profile = {
@@ -20,8 +20,25 @@ type Profile = {
   interests?: string[] | null;
 };
 
+type SupabaseUser = {
+  id: string;
+  app_metadata: Record<string, any>;
+  user_metadata: Record<string, any>;
+  aud: string;
+  confirmation_sent_at?: string;
+  recovery_sent_at?: string;
+  email_confirmed_at?: string;
+  phone_confirmed_at?: string;
+  last_sign_in_at?: string;
+  role?: string;
+  updated_at?: string;
+  created_at: string;
+  email?: string;
+  phone?: string;
+};
+
 type Ctx = {
-  user: (User & { id: string }) | null;
+  user: SupabaseUser | null;
   session: any | null; 
   profile: Profile | null;
   loading: boolean;
@@ -30,10 +47,11 @@ type Ctx = {
 };
 
 
+
 const AuthCtx = createContext<Ctx | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<SupabaseUser | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -54,9 +72,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
-      setUser(firebaseUser);
       if (firebaseUser) {
-        // Setup real-time listener for profile
+        const mappedUser: SupabaseUser = {
+          id: firebaseUser.uid,
+          email: firebaseUser.email || undefined,
+          phone: firebaseUser.phoneNumber || undefined,
+          user_metadata: {
+            display_name: firebaseUser.displayName,
+            avatar_url: firebaseUser.photoURL,
+          },
+          app_metadata: {},
+          aud: "authenticated",
+          created_at: firebaseUser.metadata.creationTime || new Date().toISOString(),
+          last_sign_in_at: firebaseUser.metadata.lastSignInTime || new Date().toISOString(),
+        };
+        setUser(mappedUser);
+        
         const profileUnsubscribe = onSnapshot(doc(db, "profiles", firebaseUser.uid), (doc) => {
           if (doc.exists()) {
             setProfile({ id: doc.id, ...doc.data() } as Profile);
@@ -67,6 +98,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setLoading(false);
         return () => profileUnsubscribe();
       } else {
+        setUser(null);
         setProfile(null);
         setLoading(false);
       }
@@ -74,6 +106,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     return () => unsubscribe();
   }, []);
+
 
   const refreshProfile = async () => {
     if (user) await loadProfile(user.uid);
