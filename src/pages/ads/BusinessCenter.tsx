@@ -27,14 +27,14 @@ export default function BusinessCenter() {
 
   const submit = async () => {
     if (!name.trim()) {
-      toast.error("Ad account ka naam likhiye");
+      toast.error("Please enter an ad account name");
       return;
     }
     setSaving(true);
     try {
       const acc = await createAccount({ name: name.trim(), business_type: type, website: website.trim() });
       rememberAccount(acc.id);
-      toast.success("Ad account ready");
+      toast.success("Ad account created successfully");
       navigate(`/ads/${acc.id}`);
     } catch (e: any) {
       toast.error(e.message ?? "Could not create account");
@@ -44,7 +44,7 @@ export default function BusinessCenter() {
   };
 
   return (
-    <main className="min-h-[100dvh] bg-background text-foreground">
+    <main className="min-h-[100dvh] bg-[#0a0a0a] text-foreground">
       <Helmet>
         <title>Aurelix Ads — Business Center</title>
         <meta name="description" content="Create your Aurelix ad account and start running Reels, Stories, Feed and Explore ads." />
@@ -60,10 +60,10 @@ export default function BusinessCenter() {
             <div className="grid h-12 w-12 place-items-center rounded-xl bg-primary/15 text-primary">
               <Megaphone className="h-5 w-5" />
             </div>
-            <h1 className="mt-5 text-2xl font-semibold tracking-tight">Set up your ad account</h1>
+            <h1 className="mt-5 text-2xl font-semibold tracking-tight text-white">Set up your ad account</h1>
             <p className="mt-2 text-sm text-muted-foreground">
-              Ek ad account banaiye, phir Reels, Stories, Feed aur Explore par campaigns chalaiye. Spend aapke universal
-              Aurelix Coin wallet se katega.
+              Create an ad account to run campaigns across Reels, Stories, Feed, and Explore. 
+              Spending is deducted from your universal Aurelix Coin wallet.
             </p>
 
             <Card className="mt-6 space-y-4 p-5">
