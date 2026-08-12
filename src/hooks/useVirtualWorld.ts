@@ -1,6 +1,8 @@
 import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthProvider";
+import { uploadToCloudinary } from "@/lib/cloudinary";
+
 
 export type VwApplication = {
   id: string;
@@ -78,9 +80,6 @@ export const useVirtualWorld = () => {
 };
 
 export const uploadKycFile = async (userId: string, kind: string, file: File) => {
-  const ext = file.name.split(".").pop()?.toLowerCase() ?? "jpg";
-  const path = `${userId}/${kind}-${Date.now()}.${ext}`;
-  const { error } = await supabase.storage.from("virtual-world-kyc").upload(path, file, { upsert: false });
-  if (error) throw error;
-  return path;
+  return await uploadToCloudinary(file);
+
 };

@@ -177,17 +177,15 @@ export function useAdsStats(accountId?: string, from?: string, to?: string) {
   return { totals, series, byPlacement, loading, reload: load };
 }
 
-const urlCache = new Map<string, string>();
-
 export async function signedCreativeUrl(path: string): Promise<string | null> {
-  if (urlCache.has(path)) return urlCache.get(path)!;
+  // If it's a Cloudinary URL (starts with https://res.cloudinary.com), return as is
+  if (path.startsWith("https://res.cloudinary.com")) return path;
+  
+  // Otherwise, handle legacy Supabase signed URLs
   const { data } = await supabase.storage.from("ads-creatives").createSignedUrl(path, 3600);
-  if (data?.signedUrl) {
-    urlCache.set(path, data.signedUrl);
-    return data.signedUrl;
-  }
-  return null;
+  return data?.signedUrl ?? null;
 }
+
 
 export function useCreatives(accountId?: string) {
   const [creatives, setCreatives] = useState<Creative[]>([]);
