@@ -12,7 +12,7 @@ import { toast } from "sonner";
 import { BuyCoinsSheet } from "@/components/wallet/BuyCoinsSheet";
 import { useCoinBalance } from "@/hooks/useCoinBalance";
 import { useAdsStats } from "@/hooks/ads/useAdsEntities";
-import { dateStr, fmtCoins, rangeFor, statusTone } from "./lib";
+import { dateStr, fmtCoins, rangeFor, statusTone } from "@/features/ads/lib";
 
 type InvoiceRequest = {
   id: string;
@@ -123,7 +123,7 @@ export default function Billing() {
         {loading ? (
           <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
         ) : requests.length === 0 ? (
-          <p className="text-xs text-muted-foreground">Abhi tak koi invoice request nahi.</p>
+          <p className="text-xs text-muted-foreground">No invoice requests found.</p>
         ) : (
           <div className="space-y-2">
             {requests.map((r) => (

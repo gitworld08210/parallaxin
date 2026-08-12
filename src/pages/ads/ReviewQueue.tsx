@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { AdPreview } from "./components/AdPreview";
 import { signedCreativeUrl } from "@/hooks/ads/useAdsEntities";
-import { statusTone } from "./lib";
+import { statusTone } from "@/features/ads/lib";
 
 type PendingAd = {
   id: string;
@@ -55,7 +55,7 @@ export default function ReviewQueue() {
   const decide = async (ad: PendingAd, state: "approved" | "rejected") => {
     if (!user) return;
     if (state === "rejected" && !reason[ad.id]?.trim()) {
-      return toast.error("Reject karne ke liye reason likhna zaroori hai");
+      return toast.error("Please provide a rejection reason");
     }
     setBusy(ad.id);
     try {
@@ -96,21 +96,19 @@ export default function ReviewQueue() {
           <Loader2 className="h-5 w-5 animate-spin" />
         </div>
       ) : ads.length === 0 ? (
-        <Card className="p-10 text-center text-sm text-muted-foreground">Queue clear — koi ad pending nahi.</Card>
+        <Card className="p-10 text-center text-sm text-muted-foreground">Queue clear — no ads pending review.</Card>
       ) : (
         <div className="space-y-4">
           {ads.map((ad) => (
             <Card key={ad.id} className="grid gap-4 p-4 lg:grid-cols-[260px_minmax(0,1fr)]">
               <AdPreview
                 placement="reels"
-                data={{
-                  brand: ad.name,
-                  headline: ad.headline ?? "",
-                  primaryText: ad.primary_text ?? "",
-                  cta: ad.cta,
-                  mediaUrl: media[ad.id] || null,
-                  mediaType: (ad.creative?.media_type as "image" | "video") ?? undefined,
-                }}
+                accountName={ad.name}
+                headline={ad.headline ?? ""}
+                primaryText={ad.primary_text ?? ""}
+                cta={ad.cta}
+                mediaUrl={media[ad.id] || undefined}
+                mediaType={(ad.creative?.media_type as "image" | "video") ?? undefined}
               />
               <div className="space-y-3">
                 <div>

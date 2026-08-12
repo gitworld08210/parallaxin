@@ -1,166 +1,120 @@
-import { Heart, MessageCircle, Send, Bookmark, MoreHorizontal, Volume2, ChevronRight } from "lucide-react";
-import { CTAS, type Placement } from "../lib";
+import { Eye, Heart, MessageCircle, Send, Bookmark, MoreHorizontal } from "lucide-react";
+import { cn } from "@/lib/utils";
 
-export type PreviewData = {
-  brand: string;
+export type AdPreviewProps = {
+  mediaUrl?: string;
+  mediaType?: "image" | "video";
   headline?: string;
   primaryText?: string;
-  cta: string;
-  mediaUrl?: string | null;
-  mediaType?: "image" | "video";
+  cta?: string;
+  accountName?: string;
+  placement?: "feed" | "stories" | "reels" | "explore";
 };
 
-const ctaLabel = (id: string) => CTAS.find((c) => c.id === id)?.label ?? "Learn more";
-
-function Media({ data, className }: { data: PreviewData; className?: string }) {
-  if (!data.mediaUrl) {
+export function AdPreview({
+  mediaUrl,
+  mediaType = "image",
+  headline,
+  primaryText,
+  cta = "Learn More",
+  accountName = "Aurelix Ads",
+  placement = "feed"
+}: AdPreviewProps) {
+  
+  if (placement === "reels" || placement === "stories") {
     return (
-      <div className={`grid place-items-center bg-muted/40 text-[11px] text-muted-foreground ${className}`}>
-        Creative preview
+      <div className="relative aspect-[9/16] w-full max-w-[320px] mx-auto overflow-hidden rounded-[2.5rem] bg-black border-[6px] border-[#1f1f1f] shadow-2xl">
+        {mediaUrl ? (
+          mediaType === "video" ? (
+            <video src={mediaUrl} className="h-full w-full object-cover" autoPlay muted loop />
+          ) : (
+            <img src={mediaUrl} className="h-full w-full object-cover" alt="Preview" />
+          )
+        ) : (
+          <div className="h-full w-full bg-white/5 flex items-center justify-center">
+            <Sparkles className="h-12 w-12 text-white/10" />
+          </div>
+        )}
+        
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
+        
+        <div className="absolute bottom-16 left-4 right-12 text-white">
+          <div className="flex items-center gap-2 mb-3">
+             <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center text-[10px] font-bold">A</div>
+             <span className="text-sm font-bold">{accountName}</span>
+             <span className="text-[10px] bg-white/20 px-1.5 py-0.5 rounded uppercase tracking-widest font-bold">Sponsored</span>
+          </div>
+          <p className="text-sm line-clamp-2 mb-2">{primaryText || "Your primary ad text will appear here."}</p>
+          <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-lg py-2.5 px-4 flex items-center justify-between text-xs font-bold uppercase tracking-widest">
+            {cta}
+            <Send className="h-3 w-3" />
+          </div>
+        </div>
+        
+        <div className="absolute right-3 bottom-24 flex flex-col gap-6 text-white">
+          <div className="flex flex-col items-center gap-1">
+            <Heart className="h-7 w-7" />
+            <span className="text-[10px] font-bold">1.2K</span>
+          </div>
+          <div className="flex flex-col items-center gap-1">
+            <MessageCircle className="h-7 w-7" />
+            <span className="text-[10px] font-bold">48</span>
+          </div>
+          <Send className="h-7 w-7" />
+          <MoreHorizontal className="h-7 w-7" />
+        </div>
       </div>
     );
   }
-  if (data.mediaType === "video") {
-    return <video src={data.mediaUrl} className={`object-cover ${className}`} muted loop autoPlay playsInline />;
-  }
-  return <img src={data.mediaUrl} alt={`${data.brand} ad creative preview`} className={`object-cover ${className}`} />;
-}
 
-function Phone({ children }: { children: React.ReactNode }) {
   return (
-    <div className="mx-auto w-[248px] shrink-0 rounded-[2rem] border-[6px] border-foreground/85 bg-background shadow-xl">
-      <div className="relative h-[500px] overflow-hidden rounded-[1.55rem] bg-black">
-        <div className="absolute left-1/2 top-1.5 z-20 h-4 w-16 -translate-x-1/2 rounded-full bg-black/90" />
-        {children}
+    <div className="w-full max-w-[400px] mx-auto overflow-hidden rounded-2xl bg-[#0f0f0f] border border-white/5 shadow-xl">
+      <div className="flex items-center justify-between p-3">
+        <div className="flex items-center gap-2">
+           <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center text-[10px] font-bold text-white">A</div>
+           <div>
+             <p className="text-sm font-bold text-white">{accountName}</p>
+             <p className="text-[10px] text-muted-foreground uppercase tracking-widest">Sponsored</p>
+           </div>
+        </div>
+        <MoreHorizontal className="h-5 w-5 text-muted-foreground" />
+      </div>
+
+      <div className="aspect-square w-full bg-black flex items-center justify-center">
+        {mediaUrl ? (
+          mediaType === "video" ? (
+            <video src={mediaUrl} className="h-full w-full object-cover" autoPlay muted loop />
+          ) : (
+            <img src={mediaUrl} className="h-full w-full object-cover" alt="Preview" />
+          )
+        ) : (
+          <Sparkles className="h-12 w-12 text-white/10" />
+        )}
+      </div>
+
+      <div className="p-4">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-4 text-white">
+            <Heart className="h-6 w-6" />
+            <MessageCircle className="h-6 w-6" />
+            <Send className="h-6 w-6" />
+          </div>
+          <Bookmark className="h-6 w-6 text-white" />
+        </div>
+        
+        <div className="space-y-1.5">
+          <p className="text-sm text-white"><span className="font-bold mr-2">{accountName}</span>{primaryText || "Your primary ad text will appear here."}</p>
+          <p className="text-xs text-muted-foreground font-medium">{headline || "Ad Headline"}</p>
+        </div>
+
+        <button className="w-full mt-4 bg-primary text-white text-xs font-bold uppercase tracking-widest py-2.5 rounded-xl shadow-glow transition hover:brightness-110">
+          {cta}
+        </button>
       </div>
     </div>
   );
 }
 
-function SponsoredChip() {
-  return (
-    <span className="rounded-full bg-white/15 px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-wide text-white/90 backdrop-blur">
-      Sponsored
-    </span>
-  );
-}
-
-function ReelsPreview({ data }: { data: PreviewData }) {
-  return (
-    <Phone>
-      <Media data={data} className="absolute inset-0 h-full w-full" />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/40" />
-      <div className="absolute right-2 bottom-24 flex flex-col items-center gap-3.5 text-white">
-        {[Heart, MessageCircle, Send, Bookmark, MoreHorizontal].map((Icon, i) => (
-          <Icon key={i} className="h-5 w-5 drop-shadow" />
-        ))}
-      </div>
-      <div className="absolute inset-x-0 bottom-0 space-y-2 p-3 text-white">
-        <div className="flex items-center gap-2">
-          <div className="h-6 w-6 rounded-full bg-white/25" />
-          <span className="text-[11px] font-semibold">{data.brand}</span>
-          <SponsoredChip />
-        </div>
-        <p className="line-clamp-2 text-[11px] leading-snug text-white/90">
-          {data.primaryText || "Your primary text appears here."}
-        </p>
-        <button className="flex w-full items-center justify-between rounded-lg bg-white/95 px-3 py-2 text-[11px] font-semibold text-black">
-          {ctaLabel(data.cta)}
-          <ChevronRight className="h-3.5 w-3.5" />
-        </button>
-      </div>
-    </Phone>
-  );
-}
-
-function StoryPreview({ data }: { data: PreviewData }) {
-  return (
-    <Phone>
-      <Media data={data} className="absolute inset-0 h-full w-full" />
-      <div className="absolute inset-x-0 top-0 space-y-2 bg-gradient-to-b from-black/70 to-transparent p-3 pt-6">
-        <div className="flex gap-1">
-          {[0, 1, 2].map((i) => (
-            <div key={i} className="h-0.5 flex-1 rounded-full bg-white/30">
-              {i === 0 && <div className="h-full w-2/3 rounded-full bg-white" />}
-            </div>
-          ))}
-        </div>
-        <div className="flex items-center gap-2 text-white">
-          <div className="h-6 w-6 rounded-full bg-white/25" />
-          <span className="text-[11px] font-semibold">{data.brand}</span>
-          <SponsoredChip />
-          <Volume2 className="ml-auto h-4 w-4" />
-        </div>
-      </div>
-      <div className="absolute inset-x-0 bottom-0 flex flex-col items-center gap-2 bg-gradient-to-t from-black/80 to-transparent p-4 text-white">
-        <p className="line-clamp-2 text-center text-[11px] text-white/90">{data.headline || data.primaryText || "Headline"}</p>
-        <button className="rounded-full bg-white px-4 py-1.5 text-[11px] font-semibold text-black">
-          {ctaLabel(data.cta)}
-        </button>
-        <span className="text-[9px] text-white/60">Skip in 5s</span>
-      </div>
-    </Phone>
-  );
-}
-
-function FeedPreview({ data }: { data: PreviewData }) {
-  return (
-    <Phone>
-      <div className="flex h-full flex-col bg-background pt-7">
-        <div className="flex items-center gap-2 px-3 py-2">
-          <div className="h-7 w-7 rounded-full bg-muted" />
-          <div className="min-w-0">
-            <p className="truncate text-[11px] font-semibold text-foreground">{data.brand}</p>
-            <p className="text-[9px] text-muted-foreground">Sponsored</p>
-          </div>
-          <MoreHorizontal className="ml-auto h-4 w-4 text-muted-foreground" />
-        </div>
-        <Media data={data} className="aspect-square w-full" />
-        <button className="flex items-center justify-between border-y border-border bg-muted/40 px-3 py-2 text-[11px] font-semibold text-foreground">
-          {ctaLabel(data.cta)}
-          <ChevronRight className="h-3.5 w-3.5" />
-        </button>
-        <div className="flex items-center gap-3 px-3 py-2 text-foreground">
-          <Heart className="h-4 w-4" />
-          <MessageCircle className="h-4 w-4" />
-          <Send className="h-4 w-4" />
-          <Bookmark className="ml-auto h-4 w-4" />
-        </div>
-        <p className="line-clamp-2 px-3 text-[11px] text-foreground">
-          <span className="font-semibold">{data.brand}</span>{" "}
-          <span className="text-muted-foreground">{data.primaryText || "Your primary text appears here."}</span>
-        </p>
-      </div>
-    </Phone>
-  );
-}
-
-function ExplorePreview({ data }: { data: PreviewData }) {
-  return (
-    <Phone>
-      <div className="h-full bg-background pt-8">
-        <div className="grid grid-cols-3 gap-0.5 px-0.5">
-          {Array.from({ length: 9 }).map((_, i) =>
-            i === 4 ? (
-              <div key={i} className="relative col-span-2 row-span-2 aspect-square">
-                <Media data={data} className="h-full w-full" />
-                <span className="absolute bottom-1 left-1 rounded bg-black/60 px-1 py-0.5 text-[8px] font-medium text-white">
-                  Sponsored
-                </span>
-              </div>
-            ) : (
-              <div key={i} className="aspect-square bg-muted/60" />
-            ),
-          )}
-        </div>
-      </div>
-    </Phone>
-  );
-}
-
-export function AdPreview({ placement, data }: { placement: Placement; data: PreviewData }) {
-  if (placement === "reels") return <ReelsPreview data={data} />;
-  if (placement === "stories") return <StoryPreview data={data} />;
-  if (placement === "explore") return <ExplorePreview data={data} />;
-  return <FeedPreview data={data} />;
+function Sparkles(props: any) {
+  return <svg {...props} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-7.714 2.143L11 21l-2.286-6.857L1 12l7.714-2.143L11 3z" /></svg>
 }

@@ -1,123 +1,200 @@
-import { useRef, useState } from "react";
-import { useParams } from "react-router-dom";
-import { Image as ImageIcon, Loader2, Upload, Video } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthProvider";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { toast } from "sonner";
+import { useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { 
+  Plus, 
+  Search, 
+  Grid, 
+  List, 
+  MoreVertical, 
+  Play, 
+  Trash2, 
+  Upload,
+  Image as ImageIcon,
+  Video,
+  FileText
+} from "lucide-react";
 import { useCreatives } from "@/hooks/ads/useAdsEntities";
-
-const MAX_IMAGE = 10 * 1024 * 1024;
-const MAX_VIDEO = 100 * 1024 * 1024;
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function Creatives() {
   const { accountId } = useParams();
-  const { user } = useAuth();
   const { creatives, urls, loading, reload } = useCreatives(accountId);
+  const [view, setView] = useState<"grid" | "list">("grid");
   const [uploading, setUploading] = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
 
-  const onPick = async (files: FileList | null) => {
-    if (!files?.length || !accountId || !user) return;
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !accountId) return;
+
     setUploading(true);
     try {
-      for (const file of Array.from(files)) {
-        const isVideo = file.type.startsWith("video/");
-        const isImage = file.type.startsWith("image/");
-        if (!isVideo && !isImage) {
-          toast.error(`${file.name}: only images and videos`);
-          continue;
-        }
-        if (file.size > (isVideo ? MAX_VIDEO : MAX_IMAGE)) {
-          toast.error(`${file.name}: too large (max ${isVideo ? "100MB" : "10MB"})`);
-          continue;
-        }
-        const ext = file.name.split(".").pop() ?? (isVideo ? "mp4" : "jpg");
-        const path = `${accountId}/${crypto.randomUUID()}.${ext}`;
-        const { error: upErr } = await supabase.storage
-          .from("ads-creatives")
-          .upload(path, file, { contentType: file.type, upsert: false });
-        if (upErr) throw upErr;
+      const ext = file.name.split(".").pop();
+      const path = `${accountId}/${crypto.randomUUID()}.${ext}`;
+      
+      const { error: uploadError } = await supabase.storage
+        .from("ads-creatives")
+        .upload(path, file);
 
-        const { error } = await supabase.from("ads_creatives").insert({
-          account_id: accountId,
-          name: file.name.slice(0, 80),
-          media_type: isVideo ? "video" : "image",
-          storage_path: path,
-          file_size_bytes: file.size,
-          created_by: user.id,
-        });
-        if (error) throw error;
-      }
-      toast.success("Creative uploaded");
-      await reload();
-    } catch (e: any) {
-      toast.error(e.message ?? "Upload failed");
+      if (uploadError) throw uploadError;
+
+      const { error: dbError } = await supabase.from("ads_creatives").insert({
+        account_id: accountId,
+        name: file.name,
+        media_type: file.type.startsWith("video") ? "video" : "image",
+        storage_path: path,
+        aspect_ratio: "1:1", // We would ideally detect this
+      });
+
+      if (dbError) throw dbError;
+
+      toast.success("Creative uploaded successfully");
+      reload();
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to upload creative");
     } finally {
       setUploading(false);
-      if (inputRef.current) inputRef.current.value = "";
     }
   };
 
   return (
-    <div className="p-4 md:p-6">
-      <div className="mb-4 flex items-center justify-between gap-3">
+    <div className="mx-auto max-w-7xl animate-in fade-in duration-500">
+      <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-xl font-semibold tracking-tight">Creatives</h1>
-          <p className="text-xs text-muted-foreground">
-            Reels &amp; Stories: 9:16 video. Feed: 1:1 or 4:5. Explore: 1:1.
-          </p>
+          <h1 className="text-3xl font-black tracking-tight text-white mb-1">Creatives</h1>
+          <p className="text-sm text-muted-foreground">Manage your visual assets and ad media</p>
         </div>
-        <Button className="gap-1.5" disabled={uploading} onClick={() => inputRef.current?.click()}>
-          {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />} Upload
-        </Button>
-        <input
-          ref={inputRef}
-          type="file"
-          accept="image/*,video/*"
-          multiple
-          hidden
-          onChange={(e) => onPick(e.target.files)}
-        />
+        
+        <label className={cn(
+          "flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-bold text-white shadow-glow transition hover:brightness-110 cursor-pointer",
+          uploading && "opacity-50 pointer-events-none"
+        )}>
+          <Upload className="h-4.5 w-4.5" />
+          {uploading ? "Uploading..." : "Upload Asset"}
+          <input type="file" className="hidden" accept="image/*,video/*" onChange={handleUpload} />
+        </label>
+      </div>
+
+      <div className="mb-6 flex items-center justify-between">
+        <div className="flex items-center gap-2 rounded-xl bg-white/5 border border-white/5 px-3 py-1.5">
+          <Search className="h-4 w-4 text-muted-foreground" />
+          <input 
+            type="text" 
+            placeholder="Search assets..." 
+            className="bg-transparent border-none text-sm focus:ring-0 text-white w-60"
+          />
+        </div>
+
+        <div className="flex items-center gap-1 rounded-xl bg-white/5 p-1 border border-white/5">
+          <button 
+            onClick={() => setView("grid")}
+            className={cn("p-1.5 rounded-lg transition", view === "grid" ? "bg-white/10 text-white" : "text-muted-foreground hover:text-white")}
+          >
+            <Grid className="h-4 w-4" />
+          </button>
+          <button 
+            onClick={() => setView("list")}
+            className={cn("p-1.5 rounded-lg transition", view === "list" ? "bg-white/10 text-white" : "text-muted-foreground hover:text-white")}
+          >
+            <List className="h-4 w-4" />
+          </button>
+        </div>
       </div>
 
       {loading ? (
-        <div className="grid place-items-center py-16 text-muted-foreground">
-          <Loader2 className="h-5 w-5 animate-spin" />
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          {[1,2,3,4,5,6,7,8].map(i => (
+            <div key={i} className="aspect-square rounded-2xl bg-white/5 animate-pulse" />
+          ))}
         </div>
       ) : creatives.length === 0 ? (
-        <Card className="grid place-items-center gap-2 p-10 text-center">
-          <ImageIcon className="h-6 w-6 text-muted-foreground" />
-          <p className="text-sm font-medium">No creatives yet</p>
-          <p className="max-w-sm text-xs text-muted-foreground">
-            Apni ad ke liye image ya video upload kariye — wizard me yahi assets choose honge.
+        <div className="flex flex-col items-center justify-center py-20 text-center rounded-3xl border border-dashed border-white/10">
+          <div className="h-20 w-20 rounded-full bg-white/5 flex items-center justify-center mb-6">
+            <ImageIcon className="h-10 w-10 text-muted-foreground opacity-20" />
+          </div>
+          <h3 className="text-xl font-bold text-white mb-2">No assets yet</h3>
+          <p className="text-muted-foreground max-w-xs mx-auto mb-8">
+            Upload images or videos to start building your campaign creatives.
           </p>
-          <Button size="sm" className="mt-2" onClick={() => inputRef.current?.click()}>
-            Upload media
+          <Button variant="outline" className="rounded-xl border-white/10 text-white">
+            Learn about creative specs
           </Button>
-        </Card>
-      ) : (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-          {creatives.map((c) => (
-            <Card key={c.id} className="overflow-hidden">
-              <div className="aspect-square bg-muted">
-                {c.media_type === "video" ? (
-                  <video src={urls[c.id]} className="h-full w-full object-cover" muted playsInline />
-                ) : (
-                  <img src={urls[c.id]} alt={c.name} loading="lazy" className="h-full w-full object-cover" />
-                )}
+        </div>
+      ) : view === "grid" ? (
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          {creatives.map(c => (
+            <div key={c.id} className="group relative aspect-square overflow-hidden rounded-2xl border border-white/5 bg-[#0f0f0f] transition hover:border-primary/50">
+              {c.media_type === "image" ? (
+                <img src={urls[c.id]} alt={c.name} className="h-full w-full object-cover transition duration-500 group-hover:scale-110" />
+              ) : (
+                <div className="relative h-full w-full">
+                  <video src={urls[c.id]} className="h-full w-full object-cover" />
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/40">
+                    <Play className="h-10 w-10 text-white fill-current" />
+                  </div>
+                </div>
+              )}
+              
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="absolute bottom-0 left-0 right-0 p-4">
+                  <p className="text-sm font-bold text-white truncate mb-0.5">{c.name}</p>
+                  <p className="text-[10px] text-white/60 font-medium uppercase tracking-widest">{c.media_type} • {c.aspect_ratio}</p>
+                </div>
+                <button className="absolute top-3 right-3 h-8 w-8 flex items-center justify-center rounded-lg bg-black/50 text-white/80 hover:text-white hover:bg-rose-500 transition">
+                  <Trash2 className="h-4 w-4" />
+                </button>
               </div>
-              <div className="space-y-1 p-2">
-                <p className="truncate text-xs font-medium">{c.name}</p>
-                <Badge variant="outline" className="gap-1 text-[10px]">
-                  {c.media_type === "video" ? <Video className="h-3 w-3" /> : <ImageIcon className="h-3 w-3" />}
-                  {c.media_type}
-                </Badge>
-              </div>
-            </Card>
+            </div>
           ))}
+        </div>
+      ) : (
+        <div className="rounded-2xl border border-white/5 bg-[#0f0f0f] overflow-hidden">
+          <table className="w-full text-left text-sm border-collapse">
+            <thead className="bg-white/[0.02] border-b border-white/5">
+              <tr>
+                <th className="px-6 py-4 font-bold text-muted-foreground uppercase tracking-widest text-[10px]">Preview</th>
+                <th className="px-6 py-4 font-bold text-muted-foreground uppercase tracking-widest text-[10px]">Name</th>
+                <th className="px-6 py-4 font-bold text-muted-foreground uppercase tracking-widest text-[10px]">Type</th>
+                <th className="px-6 py-4 font-bold text-muted-foreground uppercase tracking-widest text-[10px]">Ratio</th>
+                <th className="px-6 py-4 font-bold text-muted-foreground uppercase tracking-widest text-[10px]">Date Added</th>
+                <th className="px-6 py-4"></th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-white/5">
+              {creatives.map(c => (
+                <tr key={c.id} className="group hover:bg-white/[0.02] transition-colors">
+                  <td className="px-6 py-3">
+                    <div className="h-12 w-12 rounded-lg overflow-hidden border border-white/5">
+                      {c.media_type === "image" ? (
+                        <img src={urls[c.id]} className="h-full w-full object-cover" />
+                      ) : (
+                        <div className="h-full w-full bg-primary/20 flex items-center justify-center">
+                          <Video className="h-6 w-6 text-primary" />
+                        </div>
+                      )}
+                    </div>
+                  </td>
+                  <td className="px-6 py-3 font-bold text-white">{c.name}</td>
+                  <td className="px-6 py-3">
+                    <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-white/5 text-[10px] font-bold uppercase tracking-widest text-muted-foreground border border-white/5">
+                      {c.media_type === "image" ? <ImageIcon className="h-3 w-3" /> : <Video className="h-3 w-3" />}
+                      {c.media_type}
+                    </span>
+                  </td>
+                  <td className="px-6 py-3 text-muted-foreground font-medium">{c.aspect_ratio}</td>
+                  <td className="px-6 py-3 text-muted-foreground font-medium">{new Date(c.created_at).toLocaleDateString()}</td>
+                  <td className="px-6 py-3 text-right">
+                    <button className="p-2 text-muted-foreground hover:text-rose-500 transition">
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
     </div>

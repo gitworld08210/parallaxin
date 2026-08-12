@@ -1,226 +1,232 @@
-import { useMemo, useState } from "react";
-import { Link, useParams } from "react-router-dom";
-import { Plus, Search, Filter, Loader2 } from "lucide-react";
-import { Card } from "@/components/ui/card";
+import { useState } from "react";
+import { useParams, Link } from "react-router-dom";
+import { 
+  Plus, 
+  Search, 
+  Filter, 
+  MoreHorizontal, 
+  Play, 
+  Pause, 
+  Trash2, 
+  ExternalLink,
+  ChevronRight,
+  TrendingUp,
+  BarChart2
+} from "lucide-react";
+import { useAdsEntities } from "@/hooks/ads/useAdsEntities";
+import { fmtCoins, fmtCompact, statusTone, OBJECTIVES } from "@/features/ads/lib";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Switch } from "@/components/ui/switch";
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuTrigger 
+} from "@/components/ui/dropdown-menu";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import { useAdsEntities, useAdsStats } from "@/hooks/ads/useAdsEntities";
-import { DATE_PRESETS, fmtCoins, fmtInt, rangeFor, statusTone } from "./lib";
-
-type Level = "campaign" | "adset" | "ad";
 
 export default function Manager() {
   const { accountId } = useParams();
-  const [level, setLevel] = useState<Level>("campaign");
-  const [q, setQ] = useState("");
-  const [preset, setPreset] = useState("30d");
-  const [parent, setParent] = useState<string | null>(null);
-  const range = useMemo(() => rangeFor(preset), [preset]);
-
   const { campaigns, adsets, ads, loading, setStatus } = useAdsEntities(accountId);
-  const { totals } = useAdsStats(accountId, range.from, range.to);
+  const [activeTab, setActiveTab] = useState("campaigns");
+  const [searchQuery, setSearchQuery] = useState("");
 
-  const rows = useMemo(() => {
-    const term = q.trim().toLowerCase();
-    if (level === "campaign") return campaigns.filter((c) => c.name.toLowerCase().includes(term));
-    if (level === "adset")
-      return adsets.filter((s) => (!parent || s.campaign_id === parent) && s.name.toLowerCase().includes(term));
-    return ads.filter((a) => (!parent || a.adset_id === parent) && a.name.toLowerCase().includes(term));
-  }, [level, q, parent, campaigns, adsets, ads]);
-
-  const toggle = async (id: string, on: boolean) => {
+  const handleToggleStatus = async (level: any, id: string, current: string) => {
+    const next = current === "active" ? "paused" : "active";
     try {
-      await setStatus(level, id, on ? "active" : "paused");
-      toast.success(on ? "Turned on" : "Paused");
-    } catch (e: any) {
-      toast.error(e.message ?? "Update failed");
+      await setStatus(level, id, next);
+      toast.success(`${level.charAt(0).toUpperCase() + level.slice(1)} ${next}`);
+    } catch (err) {
+      toast.error("Failed to update status");
     }
   };
 
+  const filteredData = () => {
+    const list = activeTab === "campaigns" ? campaigns : activeTab === "adsets" ? adsets : ads;
+    if (!searchQuery) return list;
+    return list.filter((item: any) => 
+      item.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  };
+
   return (
-    <div className="space-y-4 p-4 md:p-6">
-      <div className="flex flex-wrap items-center gap-3">
-        <h1 className="text-xl font-semibold tracking-tight">Ads manager</h1>
-        <div className="ml-auto flex flex-wrap items-center gap-2">
-          <Select value={preset} onValueChange={setPreset}>
-            <SelectTrigger className="h-9 w-36">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {DATE_PRESETS.map((p) => (
-                <SelectItem key={p.id} value={p.id}>
-                  {p.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Button asChild size="sm" className="gap-1.5">
-            <Link to={`/ads/${accountId}/create`}>
-              <Plus className="h-3.5 w-3.5" /> Create
-            </Link>
-          </Button>
+    <div className="mx-auto max-w-7xl animate-in fade-in duration-500">
+      <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+        <div>
+          <h1 className="text-3xl font-black tracking-tight text-white mb-1">Manage Ads</h1>
+          <p className="text-sm text-muted-foreground">Monitor and optimize your campaign delivery</p>
         </div>
+        
+        <Link 
+          to={`/ads/${accountId}/create`}
+          className="flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-bold text-white shadow-glow transition hover:brightness-110"
+        >
+          <Plus className="h-4.5 w-4.5" />
+          New Campaign
+        </Link>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-        <Card className="p-3">
-          <p className="text-[11px] text-muted-foreground">Spend</p>
-          <p className="text-lg font-semibold tabular-nums">{fmtCoins(totals?.spend_coins)}</p>
-        </Card>
-        <Card className="p-3">
-          <p className="text-[11px] text-muted-foreground">Impressions</p>
-          <p className="text-lg font-semibold tabular-nums">{fmtInt(totals?.impressions)}</p>
-        </Card>
-        <Card className="p-3">
-          <p className="text-[11px] text-muted-foreground">Clicks</p>
-          <p className="text-lg font-semibold tabular-nums">{fmtInt(totals?.clicks)}</p>
-        </Card>
-        <Card className="p-3">
-          <p className="text-[11px] text-muted-foreground">Conversions</p>
-          <p className="text-lg font-semibold tabular-nums">{fmtInt(totals?.conversions)}</p>
-        </Card>
-      </div>
-
-      <Card className="overflow-hidden">
-        <div className="flex flex-wrap items-center gap-2 border-b border-border p-3">
-          <Tabs
-            value={level}
-            onValueChange={(v) => {
-              setLevel(v as Level);
-              setParent(null);
-            }}
-          >
-            <TabsList>
-              <TabsTrigger value="campaign">Campaigns</TabsTrigger>
-              <TabsTrigger value="adset">Ad sets</TabsTrigger>
-              <TabsTrigger value="ad">Ads</TabsTrigger>
+      <div className="mb-6 overflow-hidden rounded-2xl border border-white/5 bg-[#0f0f0f]">
+        <div className="flex flex-wrap items-center justify-between border-b border-white/5 px-4 py-3 gap-4">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-auto">
+            <TabsList className="bg-white/5 h-9 p-1">
+              <TabsTrigger value="campaigns" className="data-[state=active]:bg-primary data-[state=active]:text-white text-xs px-4 rounded-lg">
+                Campaigns ({campaigns.length})
+              </TabsTrigger>
+              <TabsTrigger value="adsets" className="data-[state=active]:bg-primary data-[state=active]:text-white text-xs px-4 rounded-lg">
+                Ad Sets ({adsets.length})
+              </TabsTrigger>
+              <TabsTrigger value="ads" className="data-[state=active]:bg-primary data-[state=active]:text-white text-xs px-4 rounded-lg">
+                Ads ({ads.length})
+              </TabsTrigger>
             </TabsList>
           </Tabs>
 
-          {level !== "campaign" && (
-            <Select value={parent ?? "all"} onValueChange={(v) => setParent(v === "all" ? null : v)}>
-              <SelectTrigger className="h-9 w-48">
-                <Filter className="mr-1 h-3.5 w-3.5 opacity-60" />
-                <SelectValue placeholder="All" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All {level === "adset" ? "campaigns" : "ad sets"}</SelectItem>
-                {(level === "adset" ? campaigns : adsets).map((p) => (
-                  <SelectItem key={p.id} value={p.id}>
-                    {p.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          )}
-
-          <div className="relative ml-auto w-full sm:w-56">
-            <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
-            <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search by name" className="h-9 pl-8" />
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 rounded-xl bg-white/5 border border-white/5 px-3 py-1.5 focus-within:border-primary/50 transition">
+              <Search className="h-4 w-4 text-muted-foreground" />
+              <input 
+                type="text" 
+                placeholder="Search..." 
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="bg-transparent border-none text-sm focus:ring-0 text-white w-40 md:w-60"
+              />
+            </div>
+            <Button variant="outline" size="sm" className="bg-white/5 border-white/5 text-white hover:bg-white/10 rounded-xl">
+              <Filter className="h-4 w-4 mr-2" />
+              Filter
+            </Button>
           </div>
         </div>
 
-        {loading ? (
-          <div className="grid h-40 place-items-center text-muted-foreground">
-            <Loader2 className="h-5 w-5 animate-spin" />
-          </div>
-        ) : rows.length === 0 ? (
-          <div className="space-y-3 p-10 text-center">
-            <p className="text-sm text-muted-foreground">Is level par abhi kuch nahi hai.</p>
-            <Button asChild size="sm" variant="outline">
-              <Link to={`/ads/${accountId}/create`}>Create your first campaign</Link>
-            </Button>
-          </div>
-        ) : (
-          <>
-            <div className="hidden md:block">
-              <table className="w-full text-sm">
-                <thead className="border-b border-border bg-muted/40 text-left text-[11px] uppercase tracking-wide text-muted-foreground">
-                  <tr>
-                    <th className="w-16 px-3 py-2 font-medium">On</th>
-                    <th className="px-3 py-2 font-medium">Name</th>
-                    <th className="px-3 py-2 font-medium">Status</th>
-                    <th className="px-3 py-2 font-medium">
-                      {level === "ad" ? "Review" : level === "adset" ? "Placements" : "Objective"}
-                    </th>
-                    <th className="px-3 py-2 text-right font-medium">Budget</th>
+        <div className="overflow-x-auto">
+          <table className="w-full border-collapse text-left text-sm">
+            <thead>
+              <tr className="border-b border-white/5 bg-white/[0.02]">
+                <th className="px-6 py-4 font-bold text-muted-foreground uppercase tracking-widest text-[10px]">Name</th>
+                <th className="px-6 py-4 font-bold text-muted-foreground uppercase tracking-widest text-[10px]">Status</th>
+                <th className="px-6 py-4 font-bold text-muted-foreground uppercase tracking-widest text-[10px]">Objective / Goal</th>
+                <th className="px-6 py-4 font-bold text-muted-foreground uppercase tracking-widest text-[10px]">Budget</th>
+                <th className="px-6 py-4 font-bold text-muted-foreground uppercase tracking-widest text-[10px]">Performance</th>
+                <th className="px-6 py-4 font-bold text-muted-foreground uppercase tracking-widest text-[10px]"></th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-white/5">
+              {loading ? (
+                [1,2,3].map(i => (
+                  <tr key={i} className="animate-pulse">
+                    <td colSpan={6} className="px-6 py-8"><div className="h-4 bg-white/5 rounded w-1/2" /></td>
                   </tr>
-                </thead>
-                <tbody>
-                  {rows.map((r: any) => (
-                    <tr key={r.id} className="border-b border-border/60 last:border-0 hover:bg-muted/30">
-                      <td className="px-3 py-2.5">
-                        <Switch
-                          checked={r.status === "active"}
-                          onCheckedChange={(v) => toggle(r.id, v)}
-                          aria-label={`Toggle ${r.name}`}
-                        />
-                      </td>
-                      <td className="px-3 py-2.5">
-                        <button
-                          className="text-left font-medium hover:underline"
-                          onClick={() => {
-                            if (level === "campaign") {
-                              setLevel("adset");
-                              setParent(r.id);
-                            } else if (level === "adset") {
-                              setLevel("ad");
-                              setParent(r.id);
-                            }
-                          }}
+                ))
+              ) : filteredData().length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="px-6 py-12 text-center text-muted-foreground">
+                    No {activeTab} found
+                  </td>
+                </tr>
+              ) : (
+                filteredData().map((item: any) => (
+                  <tr key={item.id} className="group hover:bg-white/[0.02] transition-colors">
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <button 
+                          onClick={() => handleToggleStatus(
+                            activeTab.slice(0, -1),
+                            item.id,
+                            item.status
+                          )}
+                          className={cn(
+                            "flex h-8 w-8 items-center justify-center rounded-lg transition",
+                            item.status === "active" ? "bg-emerald-500/20 text-emerald-500 hover:bg-emerald-500/30" : "bg-white/5 text-muted-foreground hover:bg-white/10"
+                          )}
                         >
-                          {r.name}
+                          {item.status === "active" ? <Play className="h-3.5 w-3.5 fill-current" /> : <Pause className="h-3.5 w-3.5" />}
                         </button>
-                      </td>
-                      <td className="px-3 py-2.5">
-                        <Badge variant="outline" className={`capitalize ${statusTone(r.status)}`}>
-                          {r.status}
-                        </Badge>
-                      </td>
-                      <td className="px-3 py-2.5 text-xs capitalize text-muted-foreground">
-                        {level === "ad" ? (
-                          <Badge variant="outline" className={`capitalize ${statusTone(r.review_state)}`}>
-                            {r.review_state}
-                          </Badge>
-                        ) : level === "adset" ? (
-                          (r.placements ?? []).join(", ")
-                        ) : (
-                          String(r.objective).replace("_", " ")
-                        )}
-                      </td>
-                      <td className="px-3 py-2.5 text-right tabular-nums">
-                        {level === "ad" ? "—" : fmtCoins(level === "campaign" ? r.budget_coins : r.daily_budget_coins)}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            <div className="divide-y divide-border md:hidden">
-              {rows.map((r: any) => (
-                <div key={r.id} className="flex items-center gap-3 p-3">
-                  <Switch checked={r.status === "active"} onCheckedChange={(v) => toggle(r.id, v)} aria-label={`Toggle ${r.name}`} />
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium">{r.name}</p>
-                    <p className="text-[11px] capitalize text-muted-foreground">
-                      {level === "ad" ? r.review_state : level === "adset" ? (r.placements ?? []).join(", ") : r.objective}
-                    </p>
-                  </div>
-                  <span className="text-xs tabular-nums text-muted-foreground">
-                    {level === "ad" ? "" : fmtCoins(level === "campaign" ? r.budget_coins : r.daily_budget_coins)}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </>
-        )}
-      </Card>
+                        <div>
+                          <p className="font-bold text-white group-hover:text-primary transition-colors cursor-pointer">{item.name}</p>
+                          <p className="text-[10px] text-muted-foreground font-mono mt-0.5 uppercase tracking-tighter">ID: {item.id.slice(0, 8)}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className={cn(
+                        "inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest border",
+                        statusTone(item.status)
+                      )}>
+                        {item.status}
+                      </span>
+                      {activeTab === "ads" && item.review_state !== "approved" && (
+                         <div className="mt-1">
+                           <span className="text-[9px] text-amber-500/80 font-bold uppercase tracking-widest">Review: {item.review_state}</span>
+                         </div>
+                      )}
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex flex-col">
+                        <span className="text-white font-medium">
+                          {activeTab === "campaigns" 
+                            ? OBJECTIVES.find(o => o.id === item.objective)?.label 
+                            : activeTab === "adsets" 
+                              ? item.optimization_goal 
+                              : "Review: " + item.review_state
+                          }
+                        </span>
+                        <span className="text-[10px] text-muted-foreground uppercase tracking-widest">{activeTab}</span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex flex-col">
+                        <span className="text-white font-bold tabular-nums">
+                          {fmtCoins(activeTab === "campaigns" ? item.budget_coins : item.daily_budget_coins || 0)}
+                        </span>
+                        <span className="text-[10px] text-muted-foreground uppercase tracking-widest">
+                          {activeTab === "campaigns" ? item.budget_type : "Daily"}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                       <div className="flex items-center gap-4">
+                         <div className="flex flex-col">
+                           <span className="text-[10px] text-muted-foreground uppercase tracking-widest mb-0.5">Impressions</span>
+                           <span className="text-xs font-bold text-white tabular-nums">--</span>
+                         </div>
+                         <div className="flex flex-col">
+                           <span className="text-[10px] text-muted-foreground uppercase tracking-widest mb-0.5">CTR</span>
+                           <span className="text-xs font-bold text-white tabular-nums">--</span>
+                         </div>
+                         <TrendingUp className="h-4 w-4 text-emerald-500 opacity-20" />
+                       </div>
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-white hover:bg-white/5 rounded-lg h-8 w-8 p-0">
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="bg-[#141414] border-white/10 text-white w-48">
+                          <DropdownMenuItem className="focus:bg-primary focus:text-white gap-2 cursor-pointer">
+                            <BarChart2 className="h-4 w-4" /> View Insights
+                          </DropdownMenuItem>
+                          <DropdownMenuItem className="focus:bg-primary focus:text-white gap-2 cursor-pointer">
+                            <ExternalLink className="h-4 w-4" /> Edit Campaign
+                          </DropdownMenuItem>
+                          <div className="h-px bg-white/5 my-1" />
+                          <DropdownMenuItem className="focus:bg-destructive/20 focus:text-destructive text-destructive gap-2 cursor-pointer">
+                            <Trash2 className="h-4 w-4" /> Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   );
 }

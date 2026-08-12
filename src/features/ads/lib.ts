@@ -66,10 +66,11 @@ export const DEFAULT_TARGETING: Targeting = {
   interests: [],
 };
 
+export const TARGETING = DEFAULT_TARGETING;
+
 const nf = new Intl.NumberFormat("en-IN");
 
 export const fmtInt = (n: number | null | undefined) => nf.format(Math.round(Number(n ?? 0)));
-
 export const fmtCoins = (n: number | null | undefined) => `${nf.format(Math.round(Number(n ?? 0)))} AC`;
 
 export const fmtCompact = (n: number | null | undefined) => {

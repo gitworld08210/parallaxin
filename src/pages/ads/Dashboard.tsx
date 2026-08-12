@@ -1,160 +1,194 @@
 import { useMemo, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
+import { Eye, MousePointerClick, Target, Coins, TrendingUp, Plus, Calendar, ArrowUpRight, ArrowDownRight } from "lucide-react";
+import { useAdsEntities, useAdsStats } from "@/hooks/ads/useAdsEntities";
+import { DATE_PRESETS, fmtCoins, fmtCompact, fmtInt, fmtPct, rangeFor, PLACEMENTS } from "@/features/ads/lib";
 import {
   Area,
   AreaChart,
-  CartesianGrid,
   ResponsiveContainer,
-  Tooltip as RTooltip,
+  Tooltip,
   XAxis,
   YAxis,
+  BarChart,
+  Bar,
+  Cell,
 } from "recharts";
-import { Eye, MousePointerClick, Target, Coins, Plus } from "lucide-react";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useAdsEntities, useAdsStats } from "@/hooks/ads/useAdsEntities";
-import { DATE_PRESETS, fmtCoins, fmtCompact, fmtInt, fmtPct, rangeFor, statusTone, PLACEMENTS } from "./lib";
+import { cn } from "@/lib/utils";
 
 export default function Dashboard() {
   const { accountId } = useParams();
   const [preset, setPreset] = useState("30d");
   const range = useMemo(() => rangeFor(preset), [preset]);
-  const { totals, series, byPlacement } = useAdsStats(accountId, range.from, range.to);
+  const { totals, series, byPlacement, loading } = useAdsStats(accountId, range.from, range.to);
   const { campaigns } = useAdsEntities(accountId);
 
-  const tiles = [
-    { label: "Impressions", value: fmtCompact(totals?.impressions), icon: Eye },
-    { label: "Clicks", value: fmtCompact(totals?.clicks), icon: MousePointerClick },
-    { label: "CTR", value: fmtPct(totals?.ctr), icon: Target },
-    { label: "Spend", value: fmtCoins(totals?.spend_coins), icon: Coins },
+  const stats = [
+    { label: "Total Spend", value: fmtCoins(totals?.spend_coins), icon: Coins, color: "text-primary", trend: 12.4 },
+    { label: "Reach", value: fmtCompact(totals?.impressions), icon: Eye, color: "text-blue-400", trend: 8.2 },
+    { label: "Link Clicks", value: fmtCompact(totals?.clicks), icon: MousePointerClick, color: "text-emerald-400", trend: -2.1 },
+    { label: "CTR", value: fmtPct(totals?.ctr), icon: Target, color: "text-amber-400", trend: 4.5 },
   ];
 
   return (
-    <div className="space-y-5 p-4 md:p-6">
-      <div className="flex flex-wrap items-center gap-3">
+    <div className="mx-auto max-w-7xl animate-in fade-in duration-500">
+      <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-xl font-semibold tracking-tight">Performance</h1>
-          <p className="text-xs text-muted-foreground">
-            {range.from} → {range.to}
-          </p>
+          <h1 className="text-3xl font-black tracking-tight text-white mb-1">Overview</h1>
+          <p className="text-sm text-muted-foreground">Performance insights for your business</p>
         </div>
-        <div className="ml-auto flex items-center gap-2">
-          <Select value={preset} onValueChange={setPreset}>
-            <SelectTrigger className="h-9 w-40">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
+        
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 rounded-xl bg-white/5 border border-white/5 px-3 py-2">
+            <Calendar className="h-4 w-4 text-muted-foreground" />
+            <select 
+              value={preset} 
+              onChange={(e) => setPreset(e.target.value)}
+              className="bg-transparent border-none text-sm font-medium focus:ring-0 text-white cursor-pointer"
+            >
               {DATE_PRESETS.map((p) => (
-                <SelectItem key={p.id} value={p.id}>
-                  {p.label}
-                </SelectItem>
+                <option key={p.id} value={p.id} className="bg-[#141414]">{p.label}</option>
               ))}
-            </SelectContent>
-          </Select>
+            </select>
+          </div>
+          
+          <Link 
+            to={`/ads/${accountId}/create`}
+            className="flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-bold text-white shadow-glow transition hover:brightness-110"
+          >
+            <Plus className="h-4.5 w-4.5" />
+            Create Campaign
+          </Link>
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        {tiles.map((t) => (
-          <Card key={t.label} className="p-4">
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <t.icon className="h-3.5 w-3.5" />
-              {t.label}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        {stats.map((s) => (
+          <div key={s.label} className="group relative overflow-hidden rounded-2xl border border-white/5 bg-[#0f0f0f] p-5 transition hover:border-white/10">
+            <div className="flex items-center justify-between mb-4">
+              <div className={cn("p-2 rounded-lg bg-white/5", s.color)}>
+                <s.icon className="h-5 w-5" />
+              </div>
+              <div className={cn(
+                "flex items-center gap-0.5 text-xs font-bold",
+                s.trend > 0 ? "text-emerald-400" : "text-rose-400"
+              )}>
+                {s.trend > 0 ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownRight className="h-3 w-3" />}
+                {Math.abs(s.trend)}%
+              </div>
             </div>
-            <p className="mt-2 text-2xl font-semibold tabular-nums tracking-tight">{t.value}</p>
-          </Card>
+            <p className="text-sm font-medium text-muted-foreground">{s.label}</p>
+            <p className="text-2xl font-black text-white mt-1 tabular-nums tracking-tight">{s.value}</p>
+            
+            <div className="absolute bottom-0 left-0 h-1 w-full bg-gradient-to-r from-transparent via-primary/20 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
+          </div>
         ))}
       </div>
 
-      <Card className="p-4">
-        <h2 className="text-sm font-semibold">Delivery trend</h2>
-        <div className="mt-4 h-56">
-          {series.length ? (
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={series}>
-                <defs>
-                  <linearGradient id="imp" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.35} />
-                    <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
-                <XAxis dataKey="date" tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" tickLine={false} />
-                <YAxis tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" tickLine={false} axisLine={false} />
-                <RTooltip
-                  contentStyle={{
-                    background: "hsl(var(--popover))",
-                    border: "1px solid hsl(var(--border))",
-                    borderRadius: 8,
-                    fontSize: 12,
-                  }}
-                />
-                <Area type="monotone" dataKey="impressions" stroke="hsl(var(--primary))" fill="url(#imp)" strokeWidth={2} />
-              </AreaChart>
-            </ResponsiveContainer>
-          ) : (
-            <div className="grid h-full place-items-center text-sm text-muted-foreground">
-              Abhi koi delivery data nahi — campaign live hote hi yahan trend dikhega.
-            </div>
-          )}
-        </div>
-      </Card>
-
-      <div className="grid gap-4 lg:grid-cols-2">
-        <Card className="p-4">
-          <h2 className="text-sm font-semibold">Placement breakdown</h2>
-          <div className="mt-3 space-y-2.5">
-            {PLACEMENTS.map((p) => {
-              const row = byPlacement.find((b) => b.placement === p.id);
-              const max = Math.max(1, ...byPlacement.map((b) => b.impressions));
-              const pct = row ? (row.impressions / max) * 100 : 0;
-              return (
-                <div key={p.id}>
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-foreground">{p.label}</span>
-                    <span className="tabular-nums text-muted-foreground">{fmtInt(row?.impressions ?? 0)}</span>
-                  </div>
-                  <div className="mt-1 h-1.5 rounded-full bg-muted">
-                    <div className="h-full rounded-full bg-primary" style={{ width: `${pct}%` }} />
-                  </div>
-                </div>
-              );
-            })}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 rounded-2xl border border-white/5 bg-[#0f0f0f] p-6">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-lg font-bold text-white flex items-center gap-2">
+              Delivery Trend
+              <span className="text-[10px] uppercase tracking-widest text-muted-foreground/60 bg-white/5 px-2 py-0.5 rounded-full">Impressions</span>
+            </h2>
           </div>
-        </Card>
-
-        <Card className="p-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-sm font-semibold">Campaigns</h2>
-            <Button asChild size="sm" variant="outline" className="gap-1.5">
-              <Link to={`/ads/${accountId}/create`}>
-                <Plus className="h-3.5 w-3.5" /> New
-              </Link>
-            </Button>
-          </div>
-          <div className="mt-3 space-y-2">
-            {campaigns.slice(0, 6).map((c) => (
-              <Link
-                key={c.id}
-                to={`/ads/${accountId}/campaigns`}
-                className="flex items-center gap-3 rounded-lg border border-border px-3 py-2.5 transition hover:bg-muted/50"
-              >
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-medium">{c.name}</p>
-                  <p className="text-[11px] capitalize text-muted-foreground">{c.objective.replace("_", " ")}</p>
+          
+          <div className="h-[300px] w-full">
+            {series.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={series}>
+                  <defs>
+                    <linearGradient id="colorImp" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#4f46e5" stopOpacity={0.3}/>
+                      <stop offset="95%" stopColor="#4f46e5" stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <XAxis 
+                    dataKey="date" 
+                    axisLine={false} 
+                    tickLine={false} 
+                    tick={{ fill: '#666', fontSize: 10 }}
+                    dy={10}
+                  />
+                  <YAxis 
+                    axisLine={false} 
+                    tickLine={false} 
+                    tick={{ fill: '#666', fontSize: 10 }}
+                  />
+                  <Tooltip 
+                    contentStyle={{ backgroundColor: '#141414', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', fontSize: '12px', color: '#fff' }}
+                    itemStyle={{ color: '#4f46e5' }}
+                  />
+                  <Area 
+                    type="monotone" 
+                    dataKey="impressions" 
+                    stroke="#4f46e5" 
+                    strokeWidth={3}
+                    fillOpacity={1} 
+                    fill="url(#colorImp)" 
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="flex h-full flex-col items-center justify-center text-muted-foreground gap-2">
+                <div className="h-12 w-12 rounded-full bg-white/5 flex items-center justify-center">
+                  <TrendingUp className="h-6 w-6 opacity-20" />
                 </div>
-                <Badge variant="outline" className={`ml-auto capitalize ${statusTone(c.status)}`}>
-                  {c.status}
-                </Badge>
-              </Link>
-            ))}
-            {!campaigns.length && (
-              <p className="py-6 text-center text-sm text-muted-foreground">Abhi koi campaign nahi hai.</p>
+                <p className="text-sm font-medium">No trend data available yet</p>
+              </div>
             )}
           </div>
-        </Card>
+        </div>
+
+        <div className="rounded-2xl border border-white/5 bg-[#0f0f0f] p-6">
+          <h2 className="text-lg font-bold text-white mb-6">Placement Distribution</h2>
+          <div className="h-[300px] w-full">
+            {byPlacement.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={byPlacement} layout="vertical">
+                  <XAxis type="number" hide />
+                  <YAxis 
+                    dataKey="placement" 
+                    type="category" 
+                    axisLine={false} 
+                    tickLine={false} 
+                    tick={{ fill: '#fff', fontSize: 11, fontWeight: 500 }}
+                    width={80}
+                  />
+                  <Tooltip 
+                    cursor={{ fill: 'rgba(255,255,255,0.05)' }}
+                    contentStyle={{ backgroundColor: '#141414', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', fontSize: '12px', color: '#fff' }}
+                  />
+                  <Bar dataKey="impressions" radius={[0, 4, 4, 0]} barSize={20}>
+                    {byPlacement.map((_, index) => (
+                      <Cell key={`cell-${index}`} fill={index === 0 ? '#4f46e5' : 'rgba(255,255,255,0.1)'} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="flex h-full flex-col items-center justify-center text-muted-foreground gap-2">
+                 <div className="h-12 w-12 rounded-full bg-white/5 flex items-center justify-center">
+                  <Target className="h-6 w-6 opacity-20" />
+                </div>
+                <p className="text-sm font-medium">No placement data</p>
+              </div>
+            )}
+          </div>
+          
+          <div className="mt-4 space-y-3">
+             {PLACEMENTS.map(p => {
+               const data = byPlacement.find(b => b.placement === p.id);
+               return (
+                 <div key={p.id} className="flex items-center justify-between">
+                   <span className="text-xs text-muted-foreground">{p.label}</span>
+                   <span className="text-xs font-bold text-white tabular-nums">{fmtCompact(data?.impressions ?? 0)}</span>
+                 </div>
+               );
+             })}
+          </div>
+        </div>
       </div>
     </div>
   );

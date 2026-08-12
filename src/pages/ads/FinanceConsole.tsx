@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { statusTone } from "./lib";
+import { statusTone } from "@/features/ads/lib";
 
 type Settings = {
   upi_id: string | null;
@@ -141,7 +141,7 @@ export default function FinanceConsole() {
           <Card className="p-4">
             <h2 className="mb-3 text-sm font-semibold">Invoice requests</h2>
             {requests.length === 0 ? (
-              <p className="text-xs text-muted-foreground">Koi request pending nahi.</p>
+              <p className="text-xs text-muted-foreground">No pending invoice requests.</p>
             ) : (
               <div className="space-y-2">
                 {requests.map((r) => (
