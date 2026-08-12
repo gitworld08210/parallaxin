@@ -85,6 +85,8 @@ export const PostCard = ({ post, onOpenComments }: { post: FeedPost; onOpenComme
   }, [user?.id, post.id]);
 
   useEffect(() => {
+    // Collaborators list should be stored in Firestore 'posts' collection or a subcollection
+    // Keeping this for now, but in Phase 2 it moves to Firestore.
     if (post.collaborators) return;
     (async () => {
       const { data } = await supabase
