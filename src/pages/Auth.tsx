@@ -44,13 +44,20 @@ const Auth = () => {
     if (nextPath) { nav(nextPath, { replace: true }); return; }
 
     // Role routing (Phase 3.1) — active employees enter Admin OS.
-    // Note: We're still checking Supabase for legacy role data if needed, 
-    // but ultimately we want to move this to Firestore.
-    const { data: emp } = await supabase
-      .from("employees")
-      .select("id, employment_status, department:admin_departments!employees_department_id_fkey(key)")
-      .eq("user_id", uid)
-      .maybeSingle();
+    // Legacy staff data still lives in the old backend; never let an outage
+    // block routing after a successful Firebase sign-in.
+    let emp: any = null;
+    try {
+      const res = await supabase
+        .from("employees")
+        .select("id, employment_status, department:admin_departments!employees_department_id_fkey(key)")
+        .eq("user_id", uid)
+        .maybeSingle();
+      emp = res.data;
+    } catch (err) {
+      console.warn("Staff role lookup skipped (backend unreachable):", err);
+    }
+
       
     if (emp && ["active", "on_leave", "joining_today"].includes((emp as any).employment_status)) {
       const deptKey = (emp as any).department?.key;
@@ -88,10 +95,17 @@ const Auth = () => {
   // Legacy accounts live in the old auth system and have no Firebase user yet.
   // On first login we verify the old credentials and transparently create the
   // Firebase account with the same email + password.
-  const migrateLegacyAccount = async () => {
+  const migrateLegacyAccount = async (): Promise<{ cred: any } | { unavailable: true } | null> => {
     const mail = email.trim();
-    const { data, error } = await supabase.auth.signInWithPassword({ email: mail, password });
-    if (error || !data?.user) return null;
+    let data: any = null;
+    try {
+      const res = await supabase.auth.signInWithPassword({ email: mail, password });
+      if (res.error || !res.data?.user) return null;
+      data = res.data;
+    } catch (err) {
+      console.warn("Legacy auth unreachable:", err);
+      return { unavailable: true };
+    }
 
     let cred;
     try {
@@ -115,8 +129,8 @@ const Auth = () => {
         created_at: new Date().toISOString(),
       }, { merge: true });
     }
-    await supabase.auth.signOut();
-    return cred;
+    await supabase.auth.signOut().catch(() => {});
+    return { cred };
   };
 
   const signIn = async () => {
@@ -130,9 +144,15 @@ const Auth = () => {
         const migratable = ["auth/invalid-credential", "auth/user-not-found", "auth/wrong-password", "auth/invalid-login-credentials"];
         if (!migratable.includes(err?.code)) throw err;
         const migrated = await migrateLegacyAccount();
-        if (!migrated) { toast.error("Incorrect email or password"); setBusy(false); return; }
-        userCredential = migrated;
+        if (migrated && "unavailable" in migrated) {
+          toast.error("Legacy account service is temporarily unavailable. Please try again shortly.");
+          setBusy(false); return;
+        }
+        if (!migrated || !("cred" in migrated)) { toast.error("Incorrect email or password"); setBusy(false); return; }
+        userCredential = migrated.cred;
+
       }
+
 
       const idToken = await userCredential.user.getIdToken();
       
