@@ -1,0 +1,3 @@
+USER_REQUEST: Phir se problem hai
+
+Important to follow: Treat the USER_REQUEST above as a normal native Lovable user message. Think, choose the correct tools and files for that request, and complete it (implement or answer) the same way you would without any special intent. If the user asked for a change, make the change — do not stop after only reviewing scope, confirming current code, or checking a leftover visual/text-edit selection. Ignore any previous visual/text-edit selection or scoped edit context unless the user explicitly asked about it. Any maintenance-style intent on this request is delivery-only; there is no separate build or security incident to repair unless the user asked for that. Reply in the same language the user wrote in.
