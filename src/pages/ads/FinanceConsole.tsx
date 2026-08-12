@@ -141,7 +141,7 @@ export default function FinanceConsole() {
           <Card className="p-4">
             <h2 className="mb-3 text-sm font-semibold">Invoice requests</h2>
             {requests.length === 0 ? (
-              <p className="text-xs text-muted-foreground">Koi request pending nahi.</p>
+              <p className="text-xs text-muted-foreground">No pending invoice requests.</p>
             ) : (
               <div className="space-y-2">
                 {requests.map((r) => (
