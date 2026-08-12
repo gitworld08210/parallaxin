@@ -92,9 +92,20 @@ const Auth = () => {
     setBusy(true);
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email.trim(), password);
+      
+      // Sync with Supabase for Admin OS functionality
+      await supabase.functions.invoke("firebase-bridge", {
+        body: { 
+          firebaseUid: userCredential.user.uid,
+          email: userCredential.user.email,
+          displayName: userCredential.user.displayName
+        }
+      });
+
       toast.success("Welcome back");
       if (userCredential.user) await routeForUser(userCredential.user.uid);
     } catch (e: any) {
+      console.error("Login error:", e);
       toast.error(e?.message || "Sign-in failed");
     } finally { setBusy(false); }
   };
@@ -128,6 +139,15 @@ const Auth = () => {
       if (tab === "signup" && kind === "organization") localStorage.setItem(ORG_INTENT_KEY, "organization");
       const userCredential = await signInWithPopup(auth, googleProvider);
       
+      // Sync with Supabase
+      await supabase.functions.invoke("firebase-bridge", {
+        body: { 
+          firebaseUid: userCredential.user.uid,
+          email: userCredential.user.email,
+          displayName: userCredential.user.displayName
+        }
+      });
+
       // Check if profile exists, if not create it
       const profSnap = await getDoc(doc(db, "profiles", userCredential.user.uid));
       if (!profSnap.exists()) {
@@ -143,6 +163,7 @@ const Auth = () => {
       toast.success("Signed in with Google");
       await routeForUser(userCredential.user.uid);
     } catch (e: any) {
+      console.error("Google error:", e);
       toast.error("Google sign-in failed");
     } finally { setBusy(false); }
   };
