@@ -94,22 +94,9 @@ const Auth = () => {
       const userCredential = await signInWithEmailAndPassword(auth, email.trim(), password);
       const idToken = await userCredential.user.getIdToken();
       
-      // Sync with Supabase for Admin OS functionality using the bridge
-      try {
-        const { data: bridge, error: bridgeErr } = await supabase.functions.invoke("firebase-bridge", {
-          body: { idToken }
-        });
-        
-        if (!bridgeErr && bridge?.token_hash) {
-          await supabase.auth.verifyOtp({
-            token_hash: bridge.token_hash,
-            type: 'magiclink'
-          });
-        }
-      } catch (e) {
-        console.warn("Supabase bridge failed during login, will retry in background", e);
-        toast.error("Cloud sync failed. Staff features might be limited until next refresh.");
-      }
+      // Background sync with Supabase for legacy staff features
+      supabase.functions.invoke("firebase-bridge", { body: { idToken } })
+        .catch(err => console.warn("Background bridge sync skipped", err));
 
       toast.success("Welcome back");
       if (userCredential.user) await routeForUser(userCredential.user.uid);
@@ -128,21 +115,9 @@ const Auth = () => {
       const userCredential = await createUserWithEmailAndPassword(auth, email.trim(), password);
       const idToken = await userCredential.user.getIdToken();
 
-      // Bridge to Supabase
-      try {
-        const { data: bridge, error: bridgeErr } = await supabase.functions.invoke("firebase-bridge", {
-          body: { idToken }
-        });
-        if (!bridgeErr && bridge?.token_hash) {
-          await supabase.auth.verifyOtp({
-            token_hash: bridge.token_hash,
-            type: 'magiclink'
-          });
-        }
-      } catch (e) {
-        console.warn("Supabase bridge failed during signup", e);
-        toast.error("Cloud sync failed. Please try logging in again if you are staff.");
-      }
+      // Background sync with Supabase
+      supabase.functions.invoke("firebase-bridge", { body: { idToken } })
+        .catch(err => console.warn("Background bridge sync skipped", err));
       
       // Create initial profile in Firestore
       await setDoc(doc(db, "profiles", userCredential.user.uid), {
@@ -167,22 +142,9 @@ const Auth = () => {
       const userCredential = await signInWithPopup(auth, googleProvider);
       const idToken = await userCredential.user.getIdToken();
       
-      // Sync with Supabase
-      try {
-        const { data: bridge, error: bridgeErr } = await supabase.functions.invoke("firebase-bridge", {
-          body: { idToken }
-        });
-
-        if (!bridgeErr && bridge?.token_hash) {
-          await supabase.auth.verifyOtp({
-            token_hash: bridge.token_hash,
-            type: 'magiclink'
-          });
-        }
-      } catch (e) {
-        console.warn("Supabase bridge failed during Google auth", e);
-        toast.error("Cloud sync failed. Staff features might be limited.");
-      }
+      // Background sync with Supabase
+      supabase.functions.invoke("firebase-bridge", { body: { idToken } })
+        .catch(err => console.warn("Background bridge sync skipped", err));
 
       // Check if profile exists, if not create it
       const profSnap = await getDoc(doc(db, "profiles", userCredential.user.uid));
