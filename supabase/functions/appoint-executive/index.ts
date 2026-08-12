@@ -1166,7 +1166,7 @@ Deno.serve(async (req) => {
         emailError = (e as Error).message;
         console.error("Gmail send exception:", emailError);
         }
-    }
+      }
   }
 
     // Record appointment
