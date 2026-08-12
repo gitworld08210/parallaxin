@@ -84,7 +84,6 @@ const Auth = () => {
   useEffect(() => { if (!loading && user) routeForUser(user.id); /* eslint-disable-next-line */ }, [user, loading]);
 
   const validEmail = () => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
-  const validPhone = () => /^\+[1-9]\d{6,14}$/.test(phone.trim());
 
   const signIn = async () => {
     if (!validEmail() || password.length < 6) { toast.error("Enter a valid email and password"); return; }
