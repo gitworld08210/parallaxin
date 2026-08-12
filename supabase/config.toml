@@ -21,3 +21,5 @@ project_id = "xmztbdaupkvezhhokmwx"
     verify_jwt = true
   [functions.aap-generate-invoices]
     verify_jwt = false
+  [functions.virtual-world-send]
+    verify_jwt = true
