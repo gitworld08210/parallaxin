@@ -43,11 +43,11 @@ const Discover = () => {
     let cancelled = false;
     setLoading(true);
     Promise.all([
-      supabase
-        .from("profiles")
-        .select("user_id, username, display_name, avatar_url, bio, verified, verification_kind, followers_count, is_founder")
-        .order("followers_count", { ascending: false })
-        .limit(60),
+      getDocs(query(
+        collection(db, "profiles"),
+        orderBy("followers_count", "desc"),
+        limit(60)
+      )),
       getDocs(query(
         collection(db, "posts"),
         where("is_reel", "==", false),
@@ -57,9 +57,10 @@ const Discover = () => {
       user
         ? supabase.from("follows").select("following_id").eq("follower_id", user.id)
         : Promise.resolve({ data: [] as any[] }),
-    ]).then(([pRes, tRes, fRes]) => {
+    ]).then(([pSnap, tRes, fRes]) => {
       if (cancelled) return;
-      setAllProfiles(((pRes.data ?? []) as Profile[]).filter((p) => p.user_id !== user?.id));
+      const profs = pSnap.docs.map(doc => ({ user_id: doc.id, ...doc.data() })) as Profile[];
+      setAllProfiles(profs.filter((p) => p.user_id !== user?.id));
       setTrending((tRes.docs.map(doc => ({ id: doc.id, ...doc.data() })) as TrendingPost[]));
       setFollowing(new Set(((fRes.data ?? []) as any[]).map((f) => f.following_id)));
       setLoading(false);
