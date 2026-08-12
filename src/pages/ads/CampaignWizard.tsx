@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowRight, Check, X, Target, Settings2, Image as ImageIcon, Sparkles, Wallet, Users, Layout } from "lucide-react";
+import { ArrowRight, Check, X, Target, Settings2, Image as ImageIcon, Sparkles, Wallet, Users, Layout, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { uploadToCloudinary } from "@/lib/cloudinary";
+
 import { cn } from "@/lib/utils";
 import { OBJECTIVES, PLACEMENTS, CTAS, DEFAULT_TARGETING, INTERESTS, LANGUAGES, OPTIMIZATION_GOALS } from "@/features/ads/lib";
 import { supabase } from "@/integrations/supabase/client";
@@ -25,8 +27,10 @@ export default function CampaignWizard() {
     headline: "",
     primaryText: "",
     cta: "learn_more",
-    mediaPath: ""
+    mediaPath: "",
+    mediaType: "image" as "image" | "video"
   });
+
 
   const [dbInterests, setDbInterests] = useState<{id: string, name: string}[]>([]);
 
@@ -65,6 +69,26 @@ export default function CampaignWizard() {
       setLoading(false);
     }
   };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setLoading(true);
+    try {
+      const url = await uploadToCloudinary(file);
+      setAdData({ 
+        ...adData, 
+        mediaPath: url, 
+        mediaType: file.type.startsWith("video") ? "video" : "image" 
+      });
+      toast.success("Media uploaded successfully");
+    } catch (err: any) {
+      toast.error(err.message || "Upload failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
 
   return (
     <div className="mx-auto max-w-5xl animate-in fade-in duration-500 pb-20">
@@ -326,18 +350,44 @@ export default function CampaignWizard() {
                    >
                      {CTAS.map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
                    </select>
-                 </div>
-               </div>
-             </div>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Media Asset</label>
+                    <label className="flex flex-col items-center justify-center w-full h-32 bg-white/5 border-2 border-dashed border-white/10 rounded-xl cursor-pointer hover:bg-white/10 transition group">
+                      <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                        {adData.mediaPath ? (
+                          <p className="text-xs text-emerald-500 font-bold">Media Selected ✓</p>
+                        ) : (
+                          <>
+                            <Upload className="w-8 h-8 mb-2 text-white/40 group-hover:text-primary transition" />
+                            <p className="text-[10px] text-white/40 uppercase font-bold">Upload Image or Video</p>
+                          </>
+                        )}
+                      </div>
+                      <input type="file" className="hidden" accept="image/*,video/*" onChange={handleFileUpload} disabled={loading} />
+                    </label>
+                  </div>
+                </div>
+              </div>
+
              
              <div className="bg-[#0a0a0a] rounded-3xl p-8 border border-white/5 relative overflow-hidden">
                 <div className="absolute top-0 right-0 p-4">
                   <span className="px-2 py-1 rounded bg-white/10 text-[10px] font-bold text-white/40 uppercase tracking-widest">Preview</span>
                 </div>
                 <div className="aspect-[9/16] w-full max-w-[260px] mx-auto rounded-[2rem] border-8 border-white/10 bg-black overflow-hidden flex flex-col relative shadow-2xl">
-                  <div className="flex-1 flex items-center justify-center bg-zinc-900">
-                    <ImageIcon className="h-12 w-12 text-white/10" />
+                  <div className="flex-1 flex items-center justify-center bg-zinc-900 overflow-hidden">
+                    {adData.mediaPath ? (
+                      adData.mediaType === "video" ? (
+                        <video src={adData.mediaPath} className="w-full h-full object-cover" autoPlay muted loop />
+                      ) : (
+                        <img src={adData.mediaPath} className="w-full h-full object-cover" alt="Preview" />
+                      )
+                    ) : (
+                      <ImageIcon className="h-12 w-12 text-white/10" />
+                    )}
                   </div>
+
                   <div className="p-4 bg-gradient-to-t from-black to-transparent space-y-2">
                     <div className="h-2 w-2/3 bg-white/20 rounded" />
                     <div className="h-2 w-full bg-white/10 rounded" />
