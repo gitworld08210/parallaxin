@@ -76,6 +76,30 @@ export function useAdsEntities(accountId?: string) {
   const load = useCallback(async () => {
     if (!accountId) return;
     setLoading(true);
+    
+    try {
+      // 1. Check Firestore for campaigns
+      const { collection, getDocs, query, where } = await import("firebase/firestore");
+      const { db } = await import("@/lib/firebase");
+      
+      const [cSnap, sSnap, aSnap] = await Promise.all([
+        getDocs(query(collection(db, "campaigns"), where("account_id", "==", accountId))),
+        getDocs(query(collection(db, "adsets"), where("account_id", "==", accountId))),
+        getDocs(query(collection(db, "ads"), where("account_id", "==", accountId))),
+      ]);
+
+      if (!cSnap.empty || !sSnap.empty || !aSnap.empty) {
+        setCampaigns(cSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Campaign[]);
+        setAdsets(sSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as AdSet[]);
+        setAds(aSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as AdRow[]);
+        setLoading(false);
+        return;
+      }
+    } catch (e) {
+      console.warn("Firestore ads fetch failed", e);
+    }
+
+    // 2. Supabase Fallback
     const [c, s, a] = await Promise.all([
       supabase.from("ads_campaigns").select("*").eq("account_id", accountId).order("created_at", { ascending: false }),
       supabase.from("ads_adsets").select("*").eq("account_id", accountId).order("created_at", { ascending: false }),
