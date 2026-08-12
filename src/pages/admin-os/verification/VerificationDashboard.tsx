@@ -1,6 +1,7 @@
 import { useVerApplications, useVerBadges, useVerAppeals } from "@/hooks/admin-os/useVerification";
+import { useContentQueue } from "@/features/content-understanding/hooks/useContentQueue";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Inbox, ShieldCheck, Gavel, Clock, CheckCircle2, XCircle } from "lucide-react";
+import { Inbox, ShieldCheck, Gavel, Clock, CheckCircle2, XCircle, BrainCircuit } from "lucide-react";
 
 const Stat = ({ icon: Icon, label, value, tone = "" }: { icon: any; label: string; value: number | string; tone?: string }) => (
   <Card><CardContent className="pt-6 flex items-center gap-4">
@@ -13,6 +14,7 @@ const VerificationDashboard = () => {
   const { data: apps = [] } = useVerApplications();
   const { data: badges = [] } = useVerBadges();
   const { data: appeals = [] } = useVerAppeals();
+  const { data: contentQueue = [] } = useContentQueue();
 
   const pending = apps.filter(a => ["pending","under_review","info_required"].includes(a.status)).length;
   const approved = apps.filter(a => a.status === "approved").length;
@@ -27,6 +29,7 @@ const VerificationDashboard = () => {
         <Stat icon={CheckCircle2} label="Approved" value={approved} tone="bg-emerald-500/10 text-emerald-600" />
         <Stat icon={XCircle} label="Rejected" value={rejected} tone="bg-rose-500/10 text-rose-600" />
         <Stat icon={ShieldCheck} label="Active badges" value={active} />
+        <Stat icon={BrainCircuit} label="Content review" value={contentQueue.length} tone="bg-indigo-500/10 text-indigo-600" />
       </div>
       <div className="grid gap-4 md:grid-cols-2">
         <Card>
