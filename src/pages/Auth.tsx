@@ -154,15 +154,12 @@ const Auth = () => {
         body: { idToken }
       });
 
-      if (bridgeErr || !bridge?.token_hash) {
-        throw new Error(bridgeErr?.message || "Auth bridge failed");
+      if (!bridgeErr && bridge?.token_hash) {
+        await supabase.auth.verifyOtp({
+          token_hash: bridge.token_hash,
+          type: 'magiclink'
+        });
       }
-
-      const { error: sessionErr } = await supabase.auth.verifyOtp({
-        token_hash: bridge.token_hash,
-        type: 'magiclink'
-      });
-      if (sessionErr) throw sessionErr;
 
       // Check if profile exists, if not create it
       const profSnap = await getDoc(doc(db, "profiles", userCredential.user.uid));
