@@ -1105,8 +1105,12 @@ Deno.serve(async (req) => {
     let gmailMessageId: string | null = null;
     let emailError: string | null = null;
 
-    if (!skipEmail && gmailKey && lovableKey) {
-      try {
+    if (!skipEmail) {
+      if (!gmailKey || !lovableKey) {
+        emailError = "Email connector keys missing (GOOGLE_MAIL_API_KEY / LOVABLE_API_KEY)";
+        console.error(emailError);
+      } else {
+        try {
         const founderEmail = (callerEmp as any).company_email || "office@aurelix.com";
         const founderName = (callerEmp as any).full_name || "Aurelix Founder Office";
 
@@ -1160,6 +1164,7 @@ Deno.serve(async (req) => {
       } catch (e) {
         emailError = (e as Error).message;
         console.error("Gmail send exception:", emailError);
+      }
       }
     }
 
