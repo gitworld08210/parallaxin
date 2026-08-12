@@ -5,6 +5,7 @@ export interface AdRankingResult {
   ad_id: string;
   ranking_score: number;
   explanation: string;
+  ad_details?: any;
 }
 
 export const useAdRanking = (contentId?: string) => {
@@ -27,17 +28,26 @@ export const useAdRanking = (contentId?: string) => {
         .select('topic_id, interest_score')
         .eq('user_id', user.id);
 
-      // 3. Get active campaigns (simplified)
-      // In a real system, this would be an RPC call to the ranking engine
-      // Here we simulate the ranking logic defined in spec #16
+      // 3. Simulated Ad Ranking Logic (Spec #16)
+      // Algorithm: Score = (TargetingMatch * 0.3) + (ContextMatch * 0.4) + (InterestMatch * 0.3)
       
-      return [
+      // For the MVP demo, we provide a relevant sample ad if context matches interests
+      const contextTopics = context?.topic_ids || [];
+      const userInterestTopics = (interests || []).map((i: any) => i.topic_id);
+      
+      const hasContextMatch = contextTopics.some((t: string) => userInterestTopics.includes(t));
+      
+      const ads = [
         { 
           ad_id: 'sample-ad-1', 
-          ranking_score: 0.95, 
-          explanation: "You're seeing this because you recently interacted with travel content." 
+          ranking_score: hasContextMatch ? 0.95 : 0.45, 
+          explanation: hasContextMatch 
+            ? "You're seeing this because your interests align with this content's topics."
+            : "Showing this based on trending categories in your location." 
         }
-      ] as AdRankingResult[];
+      ];
+
+      return ads.sort((a, b) => b.ranking_score - a.ranking_score) as AdRankingResult[];
     },
     enabled: !!contentId,
   });
