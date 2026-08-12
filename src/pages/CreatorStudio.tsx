@@ -209,7 +209,15 @@ const CreatorStudio = () => {
                     <span className="inline-flex items-center gap-1"><Heart className="h-3 w-3" /> {fmt(stats.topPost.like_count)}</span>
                     <span className="inline-flex items-center gap-1"><MessageCircle className="h-3 w-3" /> {fmt(stats.topPost.comment_count)}</span>
                   </div>
-                  <Link to={`/post/${stats.topPost.id}/insights`} className="text-[12px] text-primary font-semibold mt-1 inline-block">Insights →</Link>
+                  <div className="flex items-center gap-3 mt-1">
+                    <Link to={`/post/${stats.topPost.id}/insights`} className="text-[12px] text-primary font-semibold">Insights →</Link>
+                    <button 
+                      onClick={() => toast.info("Promote flow coming soon")}
+                      className="text-[12px] text-emerald-500 font-semibold flex items-center gap-1"
+                    >
+                      <Sparkles className="h-3 w-3" /> Promote
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -239,6 +247,17 @@ const CreatorStudio = () => {
                   <div className="absolute inset-x-0 bottom-0 p-1.5 bg-gradient-to-t from-black/80 to-transparent text-white text-[10px] font-semibold flex items-center gap-2">
                     <span className="inline-flex items-center gap-0.5"><Heart className="h-3 w-3" /> {fmt(p.like_count)}</span>
                     <span className="inline-flex items-center gap-0.5"><MessageCircle className="h-3 w-3" /> {fmt(p.comment_count)}</span>
+                  </div>
+                  <div className="absolute top-1 left-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button 
+                      onClick={(e) => {
+                        e.preventDefault();
+                        toast.info("Promote flow coming soon");
+                      }}
+                      className="p-1 rounded-full bg-emerald-500 text-white shadow-lg"
+                    >
+                      <Sparkles className="h-3 w-3" />
+                    </button>
                   </div>
                   {p.is_reel && <span className="absolute top-1 right-1"><Play className="h-3.5 w-3.5 text-white drop-shadow" fill="white" /></span>}
                 </Link>

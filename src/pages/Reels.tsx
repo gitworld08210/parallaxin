@@ -7,6 +7,7 @@ import { useAuth } from "@/contexts/AuthProvider";
 import { useAdInteraction } from "@/features/content-understanding/hooks/useAdIntelligence";
 import { useAdRanking } from "@/features/content-understanding/hooks/useAdRanking";
 import { WhyThisAd } from "@/features/content-understanding/components/WhyThisAd";
+import { useContentContext } from "@/features/content-understanding/hooks/useContentContext";
 import { CommentSheet } from "@/components/social/CommentSheet";
 import { ShareToDM } from "@/components/social/ShareToDM";
 import { fmt } from "@/lib/format";
@@ -216,6 +217,7 @@ const ReelItem = ({
   const [captionExpanded, setCaptionExpanded] = useState(false);
 
   const { mutate: recordInteraction } = useAdInteraction();
+  const { data: context } = useContentContext(isActive ? r.id : undefined);
   const { data: ads = [] } = useAdRanking(isActive ? r.id : undefined);
   const ad = ads[0];
 
@@ -234,7 +236,7 @@ const ReelItem = ({
           if (p >= cp) {
             recordInteraction({ 
               contentId: r.id, 
-              topicIds: [], // In production, these come from content_context query
+              topicIds: context ? [context.primary_category_id, ...context.secondary_category_ids].filter(Boolean) as string[] : [], 
               signalType: `watch_${cp}` as any 
             });
             checkpoints.delete(cp);

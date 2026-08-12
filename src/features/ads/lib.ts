@@ -35,8 +35,8 @@ export const OPTIMIZATION_GOALS = [
 ];
 
 export const INTERESTS = [
-  "Fashion", "Beauty", "Fitness", "Food & drink", "Travel", "Technology",
-  "Gaming", "Music", "Movies", "Education", "Business", "Finance",
+  "Fashion", "Beauty", "Fitness", "Food", "Travel", "Technology",
+  "Gaming", "Finance", "Music", "Movies", "Education", "Business",
   "Sports", "Automotive", "Home & decor", "Parenting", "Photography", "Comedy",
 ];
 
