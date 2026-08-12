@@ -210,7 +210,7 @@ const Conversation = () => {
   };
   const cancelLongPress = () => { if (longPressRef.current) { clearTimeout(longPressRef.current); longPressRef.current = null; } };
 
-  const onType = (v: string) => {
+  const onType = async (v: string) => {
     setText(v);
     if (!user || !id) return;
     const now = Date.now();
