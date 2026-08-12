@@ -7,6 +7,7 @@ import { TopBar } from "@/components/vibe/TopBar";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { toast } from "sonner";
 import { uploadToCloudinary } from "@/lib/cloudinary";
+import { FilterStrip, FilterKey, filterCss } from "@/components/compose/FilterStrip";
 
 type Sticker =
   | { id: string; kind: "poll"; x: number; y: number; question: string; options: string[] }
