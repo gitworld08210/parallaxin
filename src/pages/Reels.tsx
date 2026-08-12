@@ -1,9 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { Heart, MessageCircle, Send, Plus, Volume2, VolumeX, Pause, Camera, Search, Music2, Bookmark, MoreHorizontal } from "lucide-react";
+import { Heart, MessageCircle, Send, Plus, Volume2, VolumeX, Pause, Camera, Search, Music2, Bookmark, MoreHorizontal, AlertCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthProvider";
+import { useAdInteraction } from "@/features/content-understanding/hooks/useAdIntelligence";
+import { useAdRanking } from "@/features/content-understanding/hooks/useAdRanking";
+import { WhyThisAd } from "@/features/content-understanding/components/WhyThisAd";
 import { CommentSheet } from "@/components/social/CommentSheet";
 import { ShareToDM } from "@/components/social/ShareToDM";
 import { fmt } from "@/lib/format";
@@ -205,9 +208,47 @@ const ReelItem = ({
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const lastTap = useRef(0);
+  const watchTimer = useRef<number | null>(null);
+  const lastActiveId = useRef<string | null>(null);
+  
   const [progress, setProgress] = useState(0);
   const [heartBurst, setHeartBurst] = useState(0);
   const [captionExpanded, setCaptionExpanded] = useState(false);
+
+  const { mutate: recordInteraction } = useAdInteraction();
+  const { data: ads = [] } = useAdRanking(isActive ? r.id : undefined);
+  const ad = ads[0];
+
+  useEffect(() => {
+    if (isActive && isActive !== lastActiveId.current) {
+      lastActiveId.current = isActive ? r.id : null;
+      // Start tracking watch time for interest engine
+      if (watchTimer.current) window.clearInterval(watchTimer.current);
+      
+      const checkpoints = new Set([25, 50, 90]);
+      watchTimer.current = window.setInterval(() => {
+        if (!videoRef.current || isPaused) return;
+        const p = (videoRef.current.currentTime / videoRef.current.duration) * 100;
+        
+        checkpoints.forEach(cp => {
+          if (p >= cp) {
+            recordInteraction({ 
+              contentId: r.id, 
+              topicIds: [], // In production, these come from content_context query
+              signalType: `watch_${cp}` as any 
+            });
+            checkpoints.delete(cp);
+          }
+        });
+        
+        if (p >= 99) window.clearInterval(watchTimer.current!);
+      }, 1000);
+    }
+    
+    return () => {
+      if (watchTimer.current) window.clearInterval(watchTimer.current);
+    };
+  }, [isActive, isPaused, r.id]);
 
   const onTap = (e: React.MouseEvent) => {
     const now = Date.now();
@@ -365,9 +406,12 @@ const ReelItem = ({
           chromeDim ? "opacity-50" : "opacity-100"
         )}
       >
-        <Link to={r.profile ? `/u/${r.profile.username}` : "#"} className="font-semibold text-[15px] tracking-tight">
-          @{r.profile?.username ?? "unknown"}
-        </Link>
+        <div className="flex items-center gap-2 mb-2">
+          <Link to={r.profile ? `/u/${r.profile.username}` : "#"} className="font-semibold text-[15px] tracking-tight">
+            @{r.profile?.username ?? "unknown"}
+          </Link>
+          {ad && <WhyThisAd explanation={ad.explanation} />}
+        </div>
         {r.content && (
           <p
             onClick={() => setCaptionExpanded((v) => !v)}
