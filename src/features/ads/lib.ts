@@ -57,7 +57,7 @@ export type Targeting = {
   interests: string[];
 };
 
-export const DEFAULT_TARGETING: Targeting = {
+export const TARGETING = DEFAULT_TARGETING;
   locations: ["India"],
   age_min: 18,
   age_max: 55,
