@@ -1,7 +1,10 @@
+const CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || "dxoqepdck";
+const UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || "ml_default";
+
 export const CLOUDINARY_CONFIG = {
-  cloudName: "dxoqepdck",
-  uploadPreset: "ml_default", // Default preset, user can provide specific one later
-  apiBase: "https://api.cloudinary.com/v1_1/dxoqepdck"
+  cloudName: CLOUD_NAME,
+  uploadPreset: UPLOAD_PRESET,
+  apiBase: `https://api.cloudinary.com/v1_1/${CLOUD_NAME}`
 };
 
 export const uploadToCloudinary = async (file: File | Blob): Promise<string> => {

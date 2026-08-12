@@ -1154,7 +1154,7 @@ Deno.serve(async (req) => {
         if (res.ok) {
           gmailMessageId = mailData.id;
         } else {
-          emailError = JSON.stringify(mailData);
+          emailError = `Gmail API error: ${res.status} ${res.statusText} - ${JSON.stringify(mailData)}`;
           console.error("Gmail send failed:", emailError);
         }
       } catch (e) {
@@ -1206,8 +1206,9 @@ Deno.serve(async (req) => {
       email_error: emailError,
     });
   } catch (e) {
-    console.error("appoint-executive error:", e);
-    return json({ error: (e as Error).message }, 500);
+    const errorMsg = (e as Error).stack || (e as Error).message || String(e);
+    console.error("appoint-executive fatal error:", errorMsg);
+    return json({ error: errorMsg }, 500);
   }
 });
 
