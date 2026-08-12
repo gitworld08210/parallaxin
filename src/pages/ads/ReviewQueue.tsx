@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { AdPreview } from "./components/AdPreview";
 import { signedCreativeUrl } from "@/hooks/ads/useAdsEntities";
-import { statusTone } from "./lib";
+import { statusTone } from "@/features/ads/lib";
 
 type PendingAd = {
   id: string;
