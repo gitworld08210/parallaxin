@@ -1167,7 +1167,7 @@ Deno.serve(async (req) => {
         console.error("Gmail send exception:", emailError);
         }
       }
-  }
+    }
 
     // Record appointment
     await admin.from("executive_appointments").insert({
