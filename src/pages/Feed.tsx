@@ -11,6 +11,8 @@ import { FeedSkeleton } from "@/components/social/FeedSkeleton";
 import { EmptyState } from "@/components/empty/EmptyState";
 import { SideMenu } from "@/components/layout/SideMenu";
 import { AuraAvatar } from "@/components/vibe/AuraAvatar";
+import { collection, query, where, orderBy, limit, getDocs } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthProvider";
 import { gradientFor, initialsOf } from "@/lib/format";
@@ -26,26 +28,33 @@ const Feed = () => {
   const load = async () => {
     setLoading(true);
 
-    const sel = "id, user_id, content, media_url, media_type, like_count, comment_count, created_at, has_certificate, profile:profiles!posts_user_profile_fkey(username, display_name, avatar_url, verified, verification_kind)";
-
     const blocksOut = user ? (supabase.from("blocks" as any).select("blocked_id").eq("blocker_id", user.id) as any) : Promise.resolve({ data: [] });
     const blocksIn = user ? (supabase.from("blocks" as any).select("blocker_id").eq("blocked_id", user.id) as any) : Promise.resolve({ data: [] });
     const mutesP = user ? (supabase.from("mutes" as any).select("muted_id").eq("muter_id", user.id) as any) : Promise.resolve({ data: [] });
     const followsP = (tab === "following" && user)
       ? supabase.from("follows").select("following_id").eq("follower_id", user.id)
       : Promise.resolve({ data: null as any });
-    const postsP = supabase.from("posts").select(sel).eq("is_reel", false).order("created_at", { ascending: false }).limit(30);
 
-    const [{ data: bOut }, { data: bIn }, { data: mu }, followsRes, postsRes] = await Promise.all([
+    const qFirestore = query(
+      collection(db, "posts"),
+      where("is_reel", "==", false),
+      orderBy("created_at", "desc"),
+      limit(30)
+    );
+    const postsP = getDocs(qFirestore);
+
+    const [{ data: bOut }, { data: bIn }, { data: mu }, followsRes, postsSnap] = await Promise.all([
       blocksOut, blocksIn, mutesP, followsP, postsP,
     ]);
+
+    const postsData = postsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
     const excluded = new Set<string>();
     (bOut ?? []).forEach((x: any) => excluded.add(x.blocked_id));
     (bIn ?? []).forEach((x: any) => excluded.add(x.blocker_id));
     (mu ?? []).forEach((x: any) => excluded.add(x.muted_id));
 
-    let visible = (postsRes.data ?? []).filter((d: any) => !excluded.has(d.user_id));
+    let visible = (postsData ?? []).filter((d: any) => !excluded.has(d.user_id));
 
     if (tab === "following" && user) {
       const followIds = new Set(((followsRes as any).data ?? []).map((f: any) => f.following_id));

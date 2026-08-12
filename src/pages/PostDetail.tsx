@@ -3,6 +3,8 @@ import { useNavigate, useParams } from "react-router-dom";
 import { ChevronLeft, MoreHorizontal } from "lucide-react";
 import { PostCard, FeedPost } from "@/components/social/PostCard";
 import { CommentSheet } from "@/components/social/CommentSheet";
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthProvider";
 
@@ -16,11 +18,10 @@ const PostDetail = () => {
   useEffect(() => {
     if (!postId) return;
     (async () => {
-      const { data } = await supabase
-        .from("posts")
-        .select("id, user_id, content, media_url, media_type, like_count, comment_count, created_at, has_certificate, profile:profiles!posts_user_profile_fkey(username, display_name, avatar_url, verified, verification_kind)")
-        .eq("id", postId).maybeSingle();
-      if (!data) return;
+      const docRef = doc(db, "posts", postId);
+      const snap = await getDoc(docRef);
+      if (!snap.exists()) return;
+      const data = { id: snap.id, ...snap.data() };
       let liked = false;
       if (user) {
         const { data: l } = await supabase.from("likes").select("post_id").eq("user_id", user.id).eq("post_id", postId).maybeSingle();

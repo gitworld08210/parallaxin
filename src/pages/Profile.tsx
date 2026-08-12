@@ -41,6 +41,8 @@ import { OrgLogoCard } from "@/components/profile/OrgLogoCard";
 import { StickyTabs } from "@/components/profile/StickyTabs";
 import { VerificationSheet } from "@/components/profile/VerificationSheet";
 
+import { collection, query, where, orderBy, getDocs, limit, getDoc, doc } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthProvider";
 import { useUserOrganizations } from "@/hooks/organization/useUserOrganizations";
@@ -112,29 +114,41 @@ const Profile = () => {
         setLoading(false);
         return;
       }
-      const { data: p } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("username", target)
-        .maybeSingle();
+      
+      // Fetch profile from Firestore
+      // Note: We'll search by username in Firestore 'profiles' collection
+      const qProf = query(
+        collection(db, "profiles"),
+        where("username", "==", target),
+        limit(1)
+      );
+      const snapProf = await getDocs(qProf);
+      const p = snapProf.docs.length > 0 ? ({ id: snapProf.docs[0].id, ...snapProf.docs[0].data() } as any) : null;
+      
       setProfile(p as ProfileRow | null);
       setLoading(false);
 
       if (p) {
-        const sel =
-          "id, user_id, content, media_url, media_type, like_count, comment_count, created_at, has_certificate, is_pinned, pinned_at, profile:profiles!posts_user_profile_fkey(username, display_name, avatar_url, verified, verification_kind)";
-        const { data: pdata } = await supabase
-          .from("posts")
-          .select(sel)
-          .eq("user_id", p.user_id)
-          .eq("is_reel", false)
-          .order("created_at", { ascending: false });
-        const { data: rdata } = await supabase
-          .from("posts")
-          .select(sel)
-          .eq("user_id", p.user_id)
-          .eq("is_reel", true)
-          .order("created_at", { ascending: false });
+        const qPosts = query(
+          collection(db, "posts"),
+          where("user_id", "==", p.user_id),
+          where("is_reel", "==", false),
+          orderBy("created_at", "desc")
+        );
+        const qReels = query(
+          collection(db, "posts"),
+          where("user_id", "==", p.user_id),
+          where("is_reel", "==", true),
+          orderBy("created_at", "desc")
+        );
+
+        const [snapPosts, snapReels] = await Promise.all([
+          getDocs(qPosts),
+          getDocs(qReels)
+        ]);
+
+        const pdata = snapPosts.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        const rdata = snapReels.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
         let liked = new Set<string>();
         const allIds = [...(pdata ?? []), ...(rdata ?? [])].map((d: any) => d.id);

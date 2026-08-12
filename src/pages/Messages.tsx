@@ -6,6 +6,8 @@ import { motion } from "framer-motion";
 import { AuraAvatar } from "@/components/vibe/AuraAvatar";
 import { VerificationBadge } from "@/components/vibe/VerificationBadge";
 import { EmptyState } from "@/components/empty/EmptyState";
+import { collection, query as firestoreQuery, where, orderBy, limit, onSnapshot, getDocs, addDoc, serverTimestamp, Timestamp } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthProvider";
 import { gradientFor, initialsOf } from "@/lib/format";
@@ -65,53 +67,41 @@ const Messages = () => {
   const load = async () => {
     if (!user) return;
     setLoading(true);
-    const { data: parts } = await supabase
-      .from("conversation_participants")
-      .select("conversation_id")
-      .eq("user_id", user.id);
-    const ids = (parts ?? []).map((p) => p.conversation_id);
-    if (ids.length === 0) { setConvs([]); setLoading(false); return; }
+    
+    // In Firestore, we should have a 'conversations' collection where each doc has a 'member_ids' array.
+    const q = firestoreQuery(
+      collection(db, "conversations"),
+      where("member_ids", "array-contains", user.id),
+      orderBy("last_message_at", "desc")
+    );
 
-    const [{ data: conversations }, { data: others }, { data: lastMsgs }] = await Promise.all([
-      supabase.from("conversations").select("id, last_message_at, is_group, title, avatar_url").in("id", ids).order("last_message_at", { ascending: false }),
-      supabase.from("conversation_participants").select("conversation_id, user_id, profile:profiles!conv_participants_user_profile_fkey(user_id, username, display_name, avatar_url, verification_kind)").in("conversation_id", ids).neq("user_id", user.id),
-      supabase.from("messages").select("conversation_id, content, created_at, sender_id, read_at").in("conversation_id", ids).order("created_at", { ascending: false }),
-    ]);
-
-    const membersByConv = new Map<string, any[]>();
-    (others ?? []).forEach((o: any) => {
-      const arr = membersByConv.get(o.conversation_id) ?? [];
-      if (o.profile) arr.push(o.profile);
-      membersByConv.set(o.conversation_id, arr);
+    const unsubscribe = onSnapshot(q, (snap) => {
+      setConvs(snap.docs.map(doc => {
+        const d = doc.data();
+        return {
+          id: doc.id,
+          last_message_at: d.last_message_at?.toDate()?.toISOString() || new Date().toISOString(),
+          is_group: !!d.is_group,
+          title: d.title || null,
+          avatar_url: d.avatar_url || null,
+          members: d.members || [], // Hydrated members list or fetch separately if needed
+          last: d.last_message_text || null,
+          last_sender_id: d.last_sender_id || null,
+          last_read: !!d.last_read,
+          unread: d.unread_counts?.[user.id] || 0,
+        };
+      }));
+      setLoading(false);
     });
-    const lastByConv = new Map<string, { content: string; sender_id: string; read_at: string | null }>();
-    const unreadByConv = new Map<string, number>();
-    (lastMsgs ?? []).forEach((m: any) => {
-      if (!lastByConv.has(m.conversation_id)) lastByConv.set(m.conversation_id, { content: m.content, sender_id: m.sender_id, read_at: m.read_at });
-      if (m.sender_id !== user.id && !m.read_at) {
-        unreadByConv.set(m.conversation_id, (unreadByConv.get(m.conversation_id) ?? 0) + 1);
-      }
-    });
 
-    setConvs((conversations ?? []).map((c: any) => {
-      const last = lastByConv.get(c.id);
-      return {
-        id: c.id,
-        last_message_at: c.last_message_at,
-        is_group: !!c.is_group,
-        title: c.title ?? null,
-        avatar_url: c.avatar_url ?? null,
-        members: membersByConv.get(c.id) ?? [],
-        last: last?.content ?? null,
-        last_sender_id: last?.sender_id ?? null,
-        last_read: !!last?.read_at,
-        unread: unreadByConv.get(c.id) ?? 0,
-      };
-    }));
-    setLoading(false);
+    return () => unsubscribe();
   };
 
-  useEffect(() => { load(); /* eslint-disable-next-line */ }, [user?.id]);
+  useEffect(() => {
+    let unsub: (() => void) | undefined;
+    load().then(u => unsub = u);
+    return () => unsub?.();
+  }, [user?.id]);
 
   useEffect(() => {
     const q = composerQuery.trim();
@@ -130,16 +120,16 @@ const Messages = () => {
   }, [composerQuery, user?.id]);
 
   const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
+    const qStr = query.trim().toLowerCase();
     let base = convs;
     if (tab === "unread") base = base.filter((c) => c.unread > 0);
     else if (tab === "groups") base = base.filter((c) => c.is_group);
     else if (tab === "requests") base = base.filter((c) => !c.last);
-    if (!q) return base;
+    if (!qStr) return base;
     return base.filter((c) => {
       const other = c.members[0];
       const name = c.is_group ? (c.title || "Group") : (other?.display_name || other?.username || "");
-      return name.toLowerCase().includes(q) || (c.last || "").toLowerCase().includes(q);
+      return name.toLowerCase().includes(qStr) || (c.last || "").toLowerCase().includes(qStr);
     });
   }, [convs, query, tab]);
 
@@ -152,11 +142,34 @@ const Messages = () => {
     if (!user) return;
     setStarting(true);
     try {
-      const { data, error } = await supabase.rpc("start_dm", { other_user_id: otherId });
-      if (error) throw error;
+      // Check if conversation already exists in Firestore
+      const q = firestoreQuery(
+        collection(db, "conversations"),
+        where("is_group", "==", false),
+        where("member_ids", "array-contains", user.id)
+      );
+      const snap = await getDocs(q);
+      const existing = snap.docs.find(doc => (doc.data() as any).member_ids.includes(otherId));
+      
+      if (existing) {
+        setComposerOpen(false);
+        setComposerQuery("");
+        nav(`/messages/${existing.id}`);
+        return;
+      }
+
+      // Create new DM
+      const docRef = await addDoc(collection(db, "conversations"), {
+        member_ids: [user.id, otherId],
+        is_group: false,
+        created_at: serverTimestamp(),
+        last_message_at: serverTimestamp(),
+        members: [] // You'd typically include minimal profile data here for fast listing
+      });
+      
       setComposerOpen(false);
       setComposerQuery("");
-      nav(`/messages/${data}`);
+      nav(`/messages/${docRef.id}`);
     } catch (e: any) {
       toast.error(e.message || "Could not start chat");
     } finally {

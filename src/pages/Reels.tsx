@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { Heart, MessageCircle, Send, Plus, Volume2, VolumeX, Pause, Camera, Search, Music2, Bookmark, MoreHorizontal, AlertCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { collection, query, where, orderBy, limit, getDocs } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthProvider";
 import { useAdInteraction } from "@/features/content-understanding/hooks/useAdIntelligence";
@@ -43,19 +45,21 @@ const Reels = () => {
 
   useEffect(() => {
     (async () => {
-      const { data } = await supabase
-        .from("posts")
-        .select("id, user_id, content, media_url, like_count, comment_count, profile:profiles!posts_user_profile_fkey(username, display_name, avatar_url)")
-        .eq("is_reel", true)
-        .not("media_url", "is", null)
-        .order("created_at", { ascending: false })
-        .limit(50);
+      const q = query(
+        collection(db, "posts"),
+        where("is_reel", "==", true),
+        orderBy("created_at", "desc"),
+        limit(50)
+      );
+      const snap = await getDocs(q);
+      const data = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
       let liked = new Set<string>();
-      if (user && data?.length) {
+      if (user && data.length) {
         const { data: l } = await supabase.from("likes").select("post_id").eq("user_id", user.id).in("post_id", data.map((d: any) => d.id));
         liked = new Set((l ?? []).map((x) => x.post_id));
       }
-      setReels((data ?? []).map((d: any) => ({ ...d, liked: liked.has(d.id) })));
+      setReels((data as any[]).map((d: any) => ({ ...d, liked: liked.has(d.id) })));
     })();
   }, [user?.id]);
 
