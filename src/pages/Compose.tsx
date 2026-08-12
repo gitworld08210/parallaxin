@@ -4,6 +4,8 @@ import { Link, useNavigate } from "react-router-dom";
 import { ImagePlus, Sparkles, X, FileText, Calendar, Users, Hash, Clock, ShieldCheck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthProvider";
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 import { TopBar } from "@/components/vibe/TopBar";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { toast } from "sonner";
@@ -14,7 +16,7 @@ import { uploadToCloudinary } from "@/lib/cloudinary";
 type CollabPick = { user_id: string; username: string; display_name: string; avatar_url: string | null };
 
 const Compose = () => {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const nav = useNavigate();
   const [content, setContent] = useState("");
   const [file, setFile] = useState<File | null>(null);
