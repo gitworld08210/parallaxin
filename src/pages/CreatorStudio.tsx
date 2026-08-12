@@ -248,6 +248,17 @@ const CreatorStudio = () => {
                     <span className="inline-flex items-center gap-0.5"><Heart className="h-3 w-3" /> {fmt(p.like_count)}</span>
                     <span className="inline-flex items-center gap-0.5"><MessageCircle className="h-3 w-3" /> {fmt(p.comment_count)}</span>
                   </div>
+                  <div className="absolute top-1 left-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button 
+                      onClick={(e) => {
+                        e.preventDefault();
+                        toast.info("Promote flow coming soon");
+                      }}
+                      className="p-1 rounded-full bg-emerald-500 text-white shadow-lg"
+                    >
+                      <Sparkles className="h-3 w-3" />
+                    </button>
+                  </div>
                   {p.is_reel && <span className="absolute top-1 right-1"><Play className="h-3.5 w-3.5 text-white drop-shadow" fill="white" /></span>}
                 </Link>
               ))}
