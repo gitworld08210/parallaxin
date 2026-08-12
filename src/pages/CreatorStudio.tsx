@@ -209,7 +209,15 @@ const CreatorStudio = () => {
                     <span className="inline-flex items-center gap-1"><Heart className="h-3 w-3" /> {fmt(stats.topPost.like_count)}</span>
                     <span className="inline-flex items-center gap-1"><MessageCircle className="h-3 w-3" /> {fmt(stats.topPost.comment_count)}</span>
                   </div>
-                  <Link to={`/post/${stats.topPost.id}/insights`} className="text-[12px] text-primary font-semibold mt-1 inline-block">Insights →</Link>
+                  <div className="flex items-center gap-3 mt-1">
+                    <Link to={`/post/${stats.topPost.id}/insights`} className="text-[12px] text-primary font-semibold">Insights →</Link>
+                    <button 
+                      onClick={() => toast.info("Promote flow coming soon")}
+                      className="text-[12px] text-emerald-500 font-semibold flex items-center gap-1"
+                    >
+                      <Sparkles className="h-3 w-3" /> Promote
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
