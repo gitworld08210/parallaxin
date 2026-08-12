@@ -12,7 +12,7 @@ import { toast } from "sonner";
 import { BuyCoinsSheet } from "@/components/wallet/BuyCoinsSheet";
 import { useCoinBalance } from "@/hooks/useCoinBalance";
 import { useAdsStats } from "@/hooks/ads/useAdsEntities";
-import { dateStr, fmtCoins, rangeFor, statusTone } from "./lib";
+import { dateStr, fmtCoins, rangeFor, statusTone } from "@/features/ads/lib";
 
 type InvoiceRequest = {
   id: string;
