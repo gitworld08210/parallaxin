@@ -236,7 +236,7 @@ const ReelItem = ({
           if (p >= cp) {
             recordInteraction({ 
               contentId: r.id, 
-              topicIds: [], // In production, these come from content_context query
+              topicIds: context?.topic_ids || [], 
               signalType: `watch_${cp}` as any 
             });
             checkpoints.delete(cp);
