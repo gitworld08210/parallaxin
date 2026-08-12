@@ -73,26 +73,38 @@ const Onboarding = () => {
       }, { merge: true });
 
       // 2. Update Supabase (Secondary/Admin OS)
-      await supabase
-        .from("profiles")
-        .update({
-          interests,
-          onboarded_at: new Date().toISOString(),
-        } as any)
-        .eq("user_id", user.id);
+      try {
+        await supabase
+          .from("profiles")
+          .update({
+            interests,
+            onboarded_at: new Date().toISOString(),
+          } as any)
+          .eq("user_id", user.id);
+      } catch (e) {
+        console.warn("Supabase profile sync failed, non-critical for social", e);
+      }
 
       if (dob || gender) {
-        await supabase.rpc("upsert_profile_private" as any, {
-          _dob: dob || null,
-          _gender: gender || null,
-        });
+        try {
+          await supabase.rpc("upsert_profile_private" as any, {
+            _dob: dob || null,
+            _gender: gender || null,
+          });
+        } catch (e) {
+          console.warn("Supabase private profile sync failed", e);
+        }
         
         // Also save to Firestore private if needed (implementation varies)
       }
 
       if (followed.size > 0) {
-        const rows = Array.from(followed).map((following_id) => ({ follower_id: user.id, following_id }));
-        await supabase.from("follows").insert(rows);
+        try {
+          const rows = Array.from(followed).map((following_id) => ({ follower_id: user.id, following_id }));
+          await supabase.from("follows").insert(rows);
+        } catch (e) {
+          console.warn("Supabase follow sync failed", e);
+        }
       }
 
       if ("Notification" in window && Notification.permission === "default") {
