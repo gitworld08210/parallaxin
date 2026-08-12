@@ -99,11 +99,17 @@ const Auth = () => {
         supabase.functions.invoke("firebase-bridge", { body: { idToken } })
           .then(async (res) => {
             if (res.data?.user_id) {
-              const { data: emp } = await supabase
+              const { data: emp, error: empErr } = await supabase
                 .from("employees")
                 .select("employment_status")
                 .eq("user_id", res.data.user_id)
                 .maybeSingle();
+              
+              if (empErr) {
+                console.warn("Suspension check failed:", empErr);
+                return;
+              }
+
               if (emp?.employment_status === "suspended") {
                 await auth.signOut();
                 toast.error("Your account has been suspended. Please contact the Founder Office.");
@@ -165,11 +171,17 @@ const Auth = () => {
         supabase.functions.invoke("firebase-bridge", { body: { idToken } })
           .then(async (res) => {
             if (res.data?.user_id) {
-              const { data: emp } = await supabase
+              const { data: emp, error: empErr } = await supabase
                 .from("employees")
                 .select("employment_status")
                 .eq("user_id", res.data.user_id)
                 .maybeSingle();
+              
+              if (empErr) {
+                console.warn("Suspension check failed:", empErr);
+                return;
+              }
+
               if (emp?.employment_status === "suspended") {
                 await auth.signOut();
                 toast.error("Your account has been suspended. Please contact the Founder Office.");
