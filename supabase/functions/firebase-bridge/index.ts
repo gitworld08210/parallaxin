@@ -1,9 +1,5 @@
-// Verifies a Firebase ID token (phone-auth users) and mints a Supabase session
-// for a matching Supabase auth user. New users are created on the fly so the
-// existing `handle_new_user` trigger seeds their profile row.
-//
-// Returns { token_hash, email } — the client calls
-// supabase.auth.verifyOtp({ type: "magiclink", token_hash }) to install the session.
+// Verifies a Firebase ID token and mints a Supabase session
+// for a matching Supabase auth user.
 import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { createRemoteJWKSet, jwtVerify } from "npm:jose@5";
@@ -12,8 +8,6 @@ const PROJECT_ID = Deno.env.get("FIREBASE_PROJECT_ID")!;
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
-// Firebase publishes its public keys as a JWKS-compatible endpoint at:
-// https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com
 const JWKS = createRemoteJWKSet(
   new URL("https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com"),
 );
@@ -27,8 +21,6 @@ function syntheticEmail(uid: string) {
 }
 
 async function findUserByEmail(email: string) {
-  // listUsers is paginated; for a fresh signup the synthetic email is unique,
-  // so we use the lower-level admin REST endpoint to query by email directly.
   const r = await fetch(
     `${SUPABASE_URL}/auth/v1/admin/users?email=${encodeURIComponent(email)}`,
     { headers: { Authorization: `Bearer ${SERVICE_ROLE}`, apikey: SERVICE_ROLE } },
@@ -44,47 +36,53 @@ Deno.serve(async (req) => {
 
   try {
     if (!PROJECT_ID) {
-      return new Response(JSON.stringify({ error: "FIREBASE_PROJECT_ID not configured" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      throw new Error("FIREBASE_PROJECT_ID not configured");
     }
 
     const { idToken } = await req.json().catch(() => ({ idToken: null }));
     if (!idToken || typeof idToken !== "string") {
-      return new Response(JSON.stringify({ error: "idToken required" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      throw new Error("idToken required");
     }
 
-    // 1) Verify the Firebase ID token (signature + claims)
+    // 1) Verify the Firebase ID token
     const { payload } = await jwtVerify(idToken, JWKS, {
       issuer: `https://securetoken.google.com/${PROJECT_ID}`,
       audience: PROJECT_ID,
     });
     const uid = String(payload.sub ?? payload.user_id ?? "");
     const phone = typeof payload.phone_number === "string" ? payload.phone_number : null;
+    const email = payload.email ? String(payload.email) : syntheticEmail(uid);
     if (!uid) throw new Error("token missing subject");
 
     // 2) Find or create the matching Supabase user.
-    // Phone auth signups have no real email, so we use a deterministic synthetic
-    // address keyed on the Firebase UID. This stays stable across re-logins.
-    const email = syntheticEmail(uid);
     let user = await findUserByEmail(email);
     if (!user) {
       const { data, error } = await admin.auth.admin.createUser({
+        id: uid, // Sync UIDs
         email,
         email_confirm: true,
         phone: phone ?? undefined,
         phone_confirm: !!phone,
         user_metadata: {
           firebase_uid: uid,
+          full_name: typeof payload.name === 'string' ? payload.name : null,
           phone_number: phone,
-          provider: "firebase_phone",
+          provider: (payload.firebase as any)?.sign_in_provider || "firebase",
         },
       });
-      if (error) throw error;
-      user = data.user;
+      
+      if (error) {
+        if (error.message.includes("already exists")) {
+           user = await findUserByEmail(email);
+        } else {
+           throw error;
+        }
+      } else {
+        user = data.user;
+      }
     }
 
-    // 3) Mint a one-shot magiclink token the client can exchange for a session.
+    // 3) Mint a session token
     const { data: linkData, error: linkErr } = await admin.auth.admin.generateLink({
       type: "magiclink",
       email,
@@ -99,7 +97,7 @@ Deno.serve(async (req) => {
     });
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
-    console.error("firebase-bridge error:", msg);
+    console.error("bridge error:", msg);
     return new Response(JSON.stringify({ error: msg }), {
       status: 401,
       headers: { ...corsHeaders, "Content-Type": "application/json" },

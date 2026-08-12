@@ -92,11 +92,31 @@ const Auth = () => {
     setBusy(true);
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email.trim(), password);
+      const idToken = await userCredential.user.getIdToken();
+      
+      // Sync with Supabase for Admin OS functionality using the bridge
+      const { data: bridge, error: bridgeErr } = await supabase.functions.invoke("firebase-bridge", {
+        body: { idToken }
+      });
+      
+      if (bridgeErr || !bridge?.token_hash) {
+        throw new Error(bridgeErr?.message || "Auth bridge failed. Contact support.");
+      }
+
+      // Finalize Supabase session so hooks like useEmployee work
+      const { error: sessionErr } = await supabase.auth.verifyOtp({
+        token_hash: bridge.token_hash,
+        type: 'magiclink'
+      });
+      if (sessionErr) throw sessionErr;
+
       toast.success("Welcome back");
       if (userCredential.user) await routeForUser(userCredential.user.uid);
     } catch (e: any) {
+      console.error("Login error:", e);
       toast.error(e?.message || "Sign-in failed");
     } finally { setBusy(false); }
+
   };
 
   const signUp = async () => {
@@ -127,7 +147,23 @@ const Auth = () => {
     try {
       if (tab === "signup" && kind === "organization") localStorage.setItem(ORG_INTENT_KEY, "organization");
       const userCredential = await signInWithPopup(auth, googleProvider);
+      const idToken = await userCredential.user.getIdToken();
       
+      // Sync with Supabase
+      const { data: bridge, error: bridgeErr } = await supabase.functions.invoke("firebase-bridge", {
+        body: { idToken }
+      });
+
+      if (bridgeErr || !bridge?.token_hash) {
+        throw new Error(bridgeErr?.message || "Auth bridge failed");
+      }
+
+      const { error: sessionErr } = await supabase.auth.verifyOtp({
+        token_hash: bridge.token_hash,
+        type: 'magiclink'
+      });
+      if (sessionErr) throw sessionErr;
+
       // Check if profile exists, if not create it
       const profSnap = await getDoc(doc(db, "profiles", userCredential.user.uid));
       if (!profSnap.exists()) {
@@ -143,8 +179,10 @@ const Auth = () => {
       toast.success("Signed in with Google");
       await routeForUser(userCredential.user.uid);
     } catch (e: any) {
+      console.error("Google error:", e);
       toast.error("Google sign-in failed");
     } finally { setBusy(false); }
+
   };
 
   const apple = async () => {
