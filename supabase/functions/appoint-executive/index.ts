@@ -1165,7 +1165,7 @@ Deno.serve(async (req) => {
         } catch (e) {
         emailError = (e as Error).message;
         console.error("Gmail send exception:", emailError);
-      }
+        }
     }
   }
 
