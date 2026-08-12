@@ -37,7 +37,6 @@ const Auth = () => {
   const [tab, setTab] = useState<Tab>("signin");
   const [kind, setKind] = useState<AccountKind>("personal");
   const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
 
