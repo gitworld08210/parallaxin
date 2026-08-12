@@ -88,17 +88,38 @@ export const ReviewerWorkspace = () => {
                   </div>
                 </div>
               </TabsContent>
-              <TabsContent value="signals" className="p-4 space-y-3 m-0">
-                {Object.entries(signals).map(([name, contribution]: [string, any]) => (
-                  <div key={name} className="flex items-center justify-between text-sm border-b pb-2 border-border/40">
-                    <span className="capitalize">{name} Contribution</span>
-                    <Badge variant="outline">{(contribution * 100).toFixed(0)}%</Badge>
+              <TabsContent value="signals" className="p-4 space-y-4 m-0">
+                <div className="grid grid-cols-2 gap-4">
+                  {Object.entries(signals).map(([name, contribution]: [string, any]) => (
+                    <div key={name} className="space-y-2 p-3 bg-white/5 rounded-xl border border-white/5">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="capitalize text-muted-foreground">{name}</span>
+                        <span className="font-bold">{(contribution * 100).toFixed(0)}%</span>
+                      </div>
+                      <Progress value={contribution * 100} className="h-1 bg-white/10" />
+                    </div>
+                  ))}
+                </div>
+                <div className="pt-2">
+                  <div className="text-[10px] text-muted-foreground uppercase tracking-widest mb-2">Signal Fusion Outcome</div>
+                  <div className="flex items-center gap-2 p-2 bg-primary/10 border border-primary/20 rounded-lg text-primary text-xs">
+                    <Sparkles className="h-3 w-3" />
+                    Multi-signal agreement: {item.signal_agreement.toUpperCase()}
                   </div>
-                ))}
+                </div>
               </TabsContent>
-              <TabsContent value="ocr" className="p-4 m-0">
-                <div className="bg-muted/30 rounded p-3 text-sm italic text-muted-foreground">
-                  No visible text or speech transcripts detected for this segment.
+              <TabsContent value="ocr" className="p-4 m-0 space-y-4">
+                <div className="space-y-3">
+                  <div className="text-[10px] text-muted-foreground uppercase tracking-widest">Extracted OCR Text</div>
+                  <div className="bg-muted/30 rounded-xl p-3 text-sm italic text-muted-foreground border border-white/5">
+                    {item.ocr_reference || "No visible text detected in sampled frames."}
+                  </div>
+                </div>
+                <div className="space-y-3">
+                  <div className="text-[10px] text-muted-foreground uppercase tracking-widest">ASR Transcript (Whisper)</div>
+                  <div className="bg-muted/30 rounded-xl p-3 text-sm text-white/70 border border-white/5">
+                    {item.transcript_reference || "No speech signals identified in this content."}
+                  </div>
                 </div>
               </TabsContent>
             </ScrollArea>

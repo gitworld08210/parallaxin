@@ -35,6 +35,8 @@ export const useReviewContent = () => {
         primary_category_id: input.categoryId || null,
         classified_by: u.user?.id,
         classified_at: new Date().toISOString(),
+        notes: input.notes,
+        updated_at: new Date().toISOString()
       }).eq('id', input.id);
       
       if (error) throw error;
