@@ -106,9 +106,8 @@ const Compose = () => {
     try {
       const url = await uploadToCloudinary(file);
       const { data, error } = await supabase.functions.invoke("suggest-alt-text", { body: { imageUrl: url } });
-
-      const { data, error } = await supabase.functions.invoke("suggest-alt-text", { body: { imageUrl: pub.publicUrl } });
       if (error) throw error;
+
       if (data?.altText) setAltText(data.altText);
       else toast.error("No suggestion returned");
     } catch (e: any) { toast.error(e.message || "Alt text failed"); }
