@@ -96,7 +96,7 @@ export default function ReviewQueue() {
           <Loader2 className="h-5 w-5 animate-spin" />
         </div>
       ) : ads.length === 0 ? (
-        <Card className="p-10 text-center text-sm text-muted-foreground">Queue clear — koi ad pending nahi.</Card>
+        <Card className="p-10 text-center text-sm text-muted-foreground">Queue clear — no ads pending review.</Card>
       ) : (
         <div className="space-y-4">
           {ads.map((ad) => (
