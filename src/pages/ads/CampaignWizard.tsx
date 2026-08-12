@@ -32,8 +32,9 @@ export default function CampaignWizard() {
 
   useEffect(() => {
     const fetchTaxonomy = async () => {
-      const { data } = await supabase.from('content_taxonomy').select('id, name').eq('level', 1);
-      if (data) setDbInterests(data);
+      // Use any to bypass TS error on new table while migration is pending
+      const { data } = await (supabase as any).from('content_taxonomy').select('id, name').eq('level', 1);
+      if (data) setDbInterests(data as any[]);
     };
     fetchTaxonomy();
   }, []);
