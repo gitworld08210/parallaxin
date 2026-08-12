@@ -44,13 +44,20 @@ const Auth = () => {
     if (nextPath) { nav(nextPath, { replace: true }); return; }
 
     // Role routing (Phase 3.1) — active employees enter Admin OS.
-    // Note: We're still checking Supabase for legacy role data if needed, 
-    // but ultimately we want to move this to Firestore.
-    const { data: emp } = await supabase
-      .from("employees")
-      .select("id, employment_status, department:admin_departments!employees_department_id_fkey(key)")
-      .eq("user_id", uid)
-      .maybeSingle();
+    // Legacy staff data still lives in the old backend; never let an outage
+    // block routing after a successful Firebase sign-in.
+    let emp: any = null;
+    try {
+      const res = await supabase
+        .from("employees")
+        .select("id, employment_status, department:admin_departments!employees_department_id_fkey(key)")
+        .eq("user_id", uid)
+        .maybeSingle();
+      emp = res.data;
+    } catch (err) {
+      console.warn("Staff role lookup skipped (backend unreachable):", err);
+    }
+
       
     if (emp && ["active", "on_leave", "joining_today"].includes((emp as any).employment_status)) {
       const deptKey = (emp as any).department?.key;
