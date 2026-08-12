@@ -8,6 +8,8 @@ import { TopBar } from "@/components/vibe/TopBar";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { toast } from "sonner";
 import { FilterStrip, FilterKey, filterCss } from "@/components/compose/FilterStrip";
+import { uploadToCloudinary } from "@/lib/cloudinary";
+
 
 type CollabPick = { user_id: string; username: string; display_name: string; avatar_url: string | null };
 
@@ -102,11 +104,9 @@ const Compose = () => {
     if (file.type.startsWith("video")) return toast.error("Alt text is for images");
     setAltBusy(true);
     try {
-      const ext = file.name.split(".").pop() || "jpg";
-      const path = `alt-tmp/${user.id}/${crypto.randomUUID()}.${ext}`;
-      const { error: upErr } = await supabase.storage.from("post-media").upload(path, file, { upsert: false });
-      if (upErr) throw upErr;
-      const { data: pub } = supabase.storage.from("post-media").getPublicUrl(path);
+      const url = await uploadToCloudinary(file);
+      const { data, error } = await supabase.functions.invoke("suggest-alt-text", { body: { imageUrl: url } });
+
       const { data, error } = await supabase.functions.invoke("suggest-alt-text", { body: { imageUrl: pub.publicUrl } });
       if (error) throw error;
       if (data?.altText) setAltText(data.altText);
@@ -117,12 +117,9 @@ const Compose = () => {
 
   const uploadMedia = async () => {
     if (!file || !user) return { media_url: null, media_type: null };
-    const ext = file.name.split(".").pop() || "bin";
-    const path = `${user.id}/${crypto.randomUUID()}.${ext}`;
-    const { error: upErr } = await supabase.storage.from("post-media").upload(path, file, { cacheControl: "3600", upsert: false });
-    if (upErr) throw upErr;
-    const { data } = supabase.storage.from("post-media").getPublicUrl(path);
-    return { media_url: data.publicUrl, media_type: file.type.startsWith("video") ? "video" : "image" };
+    const url = await uploadToCloudinary(file);
+    return { media_url: url, media_type: file.type.startsWith("video") ? "video" : "image" };
+
   };
 
   const insertPost = async (status: "draft" | "scheduled" | "published", scheduled_for: string | null) => {

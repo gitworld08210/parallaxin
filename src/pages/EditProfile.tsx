@@ -7,6 +7,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthProvider";
 import { gradientFor, initialsOf } from "@/lib/format";
 import { toast } from "sonner";
+import { uploadToCloudinary } from "@/lib/cloudinary";
+
 
 
 const EditProfile = () => {
@@ -54,13 +56,10 @@ const EditProfile = () => {
     if (!user) return;
     setBusy(true);
     try {
-      const ext = file.name.split(".").pop() || "png";
-      const path = `${user.id}/${kind}-${Date.now()}.${ext}`;
-      const { error } = await supabase.storage.from("avatars").upload(path, file, { upsert: true });
-      if (error) throw error;
-      const { data } = supabase.storage.from("avatars").getPublicUrl(path);
-      if (kind === "avatar") setAvatar(data.publicUrl);
-      else setCover(data.publicUrl);
+      const url = await uploadToCloudinary(file);
+      if (kind === "avatar") setAvatar(url);
+      else setCover(url);
+
     } catch (e: any) { toast.error(e.message); }
     finally { setBusy(false); }
   };
