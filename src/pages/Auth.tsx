@@ -97,6 +97,26 @@ const Auth = () => {
       // Background sync with Supabase for legacy staff features
       if (idToken) {
         supabase.functions.invoke("firebase-bridge", { body: { idToken } })
+          .then(async (res) => {
+            if (res.data?.user_id) {
+              const { data: emp, error: empErr } = await supabase
+                .from("employees")
+                .select("employment_status")
+                .eq("user_id", res.data.user_id)
+                .maybeSingle();
+              
+              if (empErr) {
+                console.warn("Suspension check failed:", empErr);
+                return;
+              }
+
+              if (emp?.employment_status === "suspended") {
+                await auth.signOut();
+                toast.error("Your account has been suspended. Please contact the Founder Office.");
+                setBusy(false);
+              }
+            }
+          })
           .catch(err => console.warn("Background bridge sync skipped", err));
       }
 
@@ -149,6 +169,26 @@ const Auth = () => {
       // Background sync with Supabase
       if (idToken) {
         supabase.functions.invoke("firebase-bridge", { body: { idToken } })
+          .then(async (res) => {
+            if (res.data?.user_id) {
+              const { data: emp, error: empErr } = await supabase
+                .from("employees")
+                .select("employment_status")
+                .eq("user_id", res.data.user_id)
+                .maybeSingle();
+              
+              if (empErr) {
+                console.warn("Suspension check failed:", empErr);
+                return;
+              }
+
+              if (emp?.employment_status === "suspended") {
+                await auth.signOut();
+                toast.error("Your account has been suspended. Please contact the Founder Office.");
+                setBusy(false);
+              }
+            }
+          })
           .catch(err => console.warn("Background bridge sync skipped", err));
       }
 
