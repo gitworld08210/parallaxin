@@ -217,6 +217,7 @@ const ReelItem = ({
   const [captionExpanded, setCaptionExpanded] = useState(false);
 
   const { mutate: recordInteraction } = useAdInteraction();
+  const { data: context } = useContentContext(isActive ? r.id : undefined);
   const { data: ads = [] } = useAdRanking(isActive ? r.id : undefined);
   const ad = ads[0];
 
