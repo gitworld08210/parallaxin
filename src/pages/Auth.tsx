@@ -99,16 +99,12 @@ const Auth = () => {
         body: { idToken }
       });
       
-      if (bridgeErr || !bridge?.token_hash) {
-        throw new Error(bridgeErr?.message || "Auth bridge failed. Contact support.");
+      if (!bridgeErr && bridge?.token_hash) {
+        await supabase.auth.verifyOtp({
+          token_hash: bridge.token_hash,
+          type: 'magiclink'
+        });
       }
-
-      // Finalize Supabase session so hooks like useEmployee work
-      const { error: sessionErr } = await supabase.auth.verifyOtp({
-        token_hash: bridge.token_hash,
-        type: 'magiclink'
-      });
-      if (sessionErr) throw sessionErr;
 
       toast.success("Welcome back");
       if (userCredential.user) await routeForUser(userCredential.user.uid);
@@ -125,6 +121,18 @@ const Auth = () => {
     try {
       if (kind === "organization") localStorage.setItem(ORG_INTENT_KEY, "organization");
       const userCredential = await createUserWithEmailAndPassword(auth, email.trim(), password);
+      const idToken = await userCredential.user.getIdToken();
+
+      // Bridge to Supabase
+      const { data: bridge, error: bridgeErr } = await supabase.functions.invoke("firebase-bridge", {
+        body: { idToken }
+      });
+      if (!bridgeErr && bridge?.token_hash) {
+        await supabase.auth.verifyOtp({
+          token_hash: bridge.token_hash,
+          type: 'magiclink'
+        });
+      }
       
       // Create initial profile in Firestore
       await setDoc(doc(db, "profiles", userCredential.user.uid), {
