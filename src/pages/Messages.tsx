@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import { AuraAvatar } from "@/components/vibe/AuraAvatar";
 import { VerificationBadge } from "@/components/vibe/VerificationBadge";
 import { EmptyState } from "@/components/empty/EmptyState";
-import { collection, query, where, orderBy, limit, onSnapshot, getDocs, addDoc, serverTimestamp, Timestamp } from "firebase/firestore";
+import { collection, query as firestoreQuery, where, orderBy, limit, onSnapshot, getDocs, addDoc, serverTimestamp, Timestamp } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthProvider";
@@ -69,7 +69,7 @@ const Messages = () => {
     setLoading(true);
     
     // In Firestore, we should have a 'conversations' collection where each doc has a 'member_ids' array.
-    const q = query(
+    const q = firestoreQuery(
       collection(db, "conversations"),
       where("member_ids", "array-contains", user.id),
       orderBy("last_message_at", "desc")
@@ -120,16 +120,16 @@ const Messages = () => {
   }, [composerQuery, user?.id]);
 
   const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
+    const qStr = query.trim().toLowerCase();
     let base = convs;
     if (tab === "unread") base = base.filter((c) => c.unread > 0);
     else if (tab === "groups") base = base.filter((c) => c.is_group);
     else if (tab === "requests") base = base.filter((c) => !c.last);
-    if (!q) return base;
+    if (!qStr) return base;
     return base.filter((c) => {
       const other = c.members[0];
       const name = c.is_group ? (c.title || "Group") : (other?.display_name || other?.username || "");
-      return name.toLowerCase().includes(q) || (c.last || "").toLowerCase().includes(q);
+      return name.toLowerCase().includes(qStr) || (c.last || "").toLowerCase().includes(qStr);
     });
   }, [convs, query, tab]);
 
@@ -143,13 +143,13 @@ const Messages = () => {
     setStarting(true);
     try {
       // Check if conversation already exists in Firestore
-      const q = query(
+      const q = firestoreQuery(
         collection(db, "conversations"),
         where("is_group", "==", false),
         where("member_ids", "array-contains", user.id)
       );
       const snap = await getDocs(q);
-      const existing = snap.docs.find(doc => doc.data().member_ids.includes(otherId));
+      const existing = snap.docs.find(doc => (doc.data() as any).member_ids.includes(otherId));
       
       if (existing) {
         setComposerOpen(false);
