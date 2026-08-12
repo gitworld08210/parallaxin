@@ -184,6 +184,7 @@ export default function OnboardingQueue() {
           onRowClick={(r) => {
             window.location.href = `/admin-os/people-ops/onboarding/${r.employee_id}`;
           }}
+          className="cursor-pointer"
         />
       </SectionCard>
     </div>

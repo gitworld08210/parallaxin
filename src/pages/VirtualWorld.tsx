@@ -116,8 +116,16 @@ const VirtualWorld = () => {
           callerPhone: application?.contact_phone ?? undefined,
         },
       });
-      if (error) throw error;
-      if ((data as any)?.error) throw new Error((data as any).error);
+
+      if (error) {
+        console.error("Virtual World invocation error:", error);
+        throw error;
+      }
+
+      if ((data as any)?.error) {
+        const details = (data as any).details ? ` (${(data as any).details})` : "";
+        throw new Error(`${(data as any).error}${details}`);
+      }
       toast.success(channel === "voice" ? "Calling your phone, then connecting…" : "Sent");
       setMessage("");
       await refresh();
