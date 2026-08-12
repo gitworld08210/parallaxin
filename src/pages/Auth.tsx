@@ -85,11 +85,55 @@ const Auth = () => {
 
   const validEmail = () => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
 
+  // Legacy accounts live in the old auth system and have no Firebase user yet.
+  // On first login we verify the old credentials and transparently create the
+  // Firebase account with the same email + password.
+  const migrateLegacyAccount = async () => {
+    const mail = email.trim();
+    const { data, error } = await supabase.auth.signInWithPassword({ email: mail, password });
+    if (error || !data?.user) return null;
+
+    let cred;
+    try {
+      cred = await createUserWithEmailAndPassword(auth, mail, password);
+    } catch (err: any) {
+      if (err?.code === "auth/email-already-in-use") return null; // password really is wrong
+      throw err;
+    }
+
+    const legacyProfile = data.user.user_metadata || {};
+    const existing = await getDoc(doc(db, "profiles", cred.user.uid));
+    if (!existing.exists()) {
+      await setDoc(doc(db, "profiles", cred.user.uid), {
+        user_id: cred.user.uid,
+        email: mail,
+        legacy_user_id: data.user.id,
+        display_name: legacyProfile.display_name ?? legacyProfile.full_name ?? null,
+        username: legacyProfile.username ?? null,
+        account_type: legacyProfile.account_type ?? "personal",
+        onboarded_at: null,
+        created_at: new Date().toISOString(),
+      }, { merge: true });
+    }
+    await supabase.auth.signOut();
+    return cred;
+  };
+
   const signIn = async () => {
     if (!validEmail() || password.length < 6) { toast.error("Enter a valid email and password"); return; }
     setBusy(true);
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, email.trim(), password);
+      let userCredential;
+      try {
+        userCredential = await signInWithEmailAndPassword(auth, email.trim(), password);
+      } catch (err: any) {
+        const migratable = ["auth/invalid-credential", "auth/user-not-found", "auth/wrong-password", "auth/invalid-login-credentials"];
+        if (!migratable.includes(err?.code)) throw err;
+        const migrated = await migrateLegacyAccount();
+        if (!migrated) { toast.error("Incorrect email or password"); setBusy(false); return; }
+        userCredential = migrated;
+      }
+
       const idToken = await userCredential.user.getIdToken();
       
       // Background sync with Supabase for legacy staff features
