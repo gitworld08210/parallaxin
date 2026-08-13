@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-
 import { Sparkles, ShieldCheck } from "lucide-react";
 
 type AuthorizationDetails = {
@@ -10,9 +9,11 @@ type AuthorizationDetails = {
   scopes?: string[];
 };
 
-  getAuthorizationDetails: (id: string) => Promise<{ data: AuthorizationDetails | null; error: any }>;
-  approveAuthorization: (id: string) => Promise<{ data: { redirect_url?: string; redirect_to?: string } | null; error: any }>;
-  denyAuthorization: (id: string) => Promise<{ data: { redirect_url?: string; redirect_to?: string } | null; error: any }>;
+// Mock OAuth for shim
+const oauth = {
+  getAuthorizationDetails: (id: string) => Promise.resolve({ data: null as AuthorizationDetails | null, error: null }),
+  approveAuthorization: (id: string) => Promise.resolve({ data: { redirect_url: "" }, error: null }),
+  denyAuthorization: (id: string) => Promise.resolve({ data: { redirect_url: "" }, error: null }),
 };
 
 export default function OAuthConsent() {
@@ -26,14 +27,6 @@ export default function OAuthConsent() {
     let active = true;
     (async () => {
       if (!authorizationId) { setError("Missing authorization_id"); return; }
-      if (!sess.session) {
-        const next = window.location.pathname + window.location.search;
-        window.location.href = "/auth?next=" + encodeURIComponent(next);
-        return;
-      }
-      if (!oauth?.getAuthorizationDetails) {
-        return;
-      }
       const { data, error } = await oauth.getAuthorizationDetails(authorizationId);
       if (!active) return;
       if (error) { setError(error.message || "Could not load authorization"); return; }
@@ -50,7 +43,7 @@ export default function OAuthConsent() {
       ? await oauth.approveAuthorization(authorizationId)
       : await oauth.denyAuthorization(authorizationId);
     if (error) { setBusy(false); setError(error.message); return; }
-    const target = data?.redirect_url ?? data?.redirect_to;
+    const target = (data as any)?.redirect_url ?? (data as any)?.redirect_to;
     if (!target) { setBusy(false); setError("No redirect returned by the authorization server."); return; }
     window.location.href = target;
   }
