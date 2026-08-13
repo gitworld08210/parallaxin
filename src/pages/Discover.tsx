@@ -1,7 +1,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { Search, TrendingUp, Sparkles, Crown, BadgeCheck, Flame } from "lucide-react";
+import { Search, TrendingUp, Sparkles, Crown, BadgeCheck, Flame, PenSquare } from "lucide-react";
 import { AuraAvatar } from "@/components/vibe/AuraAvatar";
 import { VerificationBadge } from "@/components/vibe/VerificationBadge";
 import { collection, query, where, orderBy, limit, getDocs } from "firebase/firestore";
