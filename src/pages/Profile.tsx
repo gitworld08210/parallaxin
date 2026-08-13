@@ -440,6 +440,17 @@ const Profile = () => {
           </div>
         </div>
         <div className="flex items-center gap-3">
+          <SideMenu 
+            trigger={
+              <button className="h-8 w-8 rounded-full overflow-hidden ring-1 ring-white/10">
+                {profile.avatar_url ? (
+                  <img src={profile.avatar_url} alt="" className="h-full w-full object-cover" />
+                ) : (
+                  <AuraAvatar gradient={gradientFor(profile.username)} initials={initialsOf(displayName)} />
+                )}
+              </button>
+            }
+          />
           <IconBtn label="Share" onClick={shareProfile}>
             <Share2 className="h-6 w-6" />
           </IconBtn>
