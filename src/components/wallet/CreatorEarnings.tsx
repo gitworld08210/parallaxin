@@ -111,7 +111,7 @@ function KycModal({ onClose }: { onClose: () => void }) {
     if (!/^[A-Z]{4}0[A-Z0-9]{6}$/.test(ifsc.trim().toUpperCase())) return toast.error("Invalid IFSC");
     if (!idFile || !pbFile) return toast.error("Upload both ID and passbook photos");
     setSaving(true);
-    try { /* shimmed */ } = await Promise.resolve({ data: null, error: null });
+    try { /* shimmed */ }
       const upload = async (f: File, label: string) => {
         const ext = f.name.split(".").pop() || "jpg";
         const path = `${user.id}/${label}-${Date.now()}.${ext}`;

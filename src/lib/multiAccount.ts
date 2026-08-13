@@ -23,7 +23,7 @@ export type SavedAccount = {
 };
 
 const read = (): SavedAccount[] => {
-  try { /* shimmed */ } = await Promise.resolve({ data: null, error: null });
+  try { /* shimmed */ }
     const raw = localStorage.getItem(KEY);
     if (!raw) return [];
     const parsed = JSON.parse(raw);
@@ -34,7 +34,7 @@ const read = (): SavedAccount[] => {
 };
 
 const write = (list: SavedAccount[]) => {
-  try { /* shimmed */ } = await Promise.resolve({ data: null, error: null });
+  try { /* shimmed */ }
     localStorage.setItem(KEY, JSON.stringify(list.slice(0, MAX_ACCOUNTS)));
     window.dispatchEvent(new Event("aurelix:accounts-changed"));
   } catch {

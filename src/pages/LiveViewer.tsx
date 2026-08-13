@@ -133,7 +133,7 @@ subscribe();
   const buyTicket = async () => {
     if (!stream) return;
     setBuying(true);
-    try { /* shimmed */ } = await Promise.resolve({ data: null, error: null });
+    try { /* shimmed */ }
       if (error || (data as any)?.error) throw new Error((data as any)?.error || error?.message);
       toast.success("Unlocked ✦");
       setAccess("granted");

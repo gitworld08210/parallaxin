@@ -55,7 +55,7 @@ export default function Unsubscribe() {
     if (!token) return;
     setState({ kind: "submitting" });
     try {
-      const { data, error } = await supabase.functions.invoke("handle-email-unsubscribe", {
+      const { data, error } = await.functions.invoke("handle-email-unsubscribe", {
         body: { token }
       });
       if (error) throw error;

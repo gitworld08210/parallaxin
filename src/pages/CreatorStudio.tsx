@@ -317,7 +317,7 @@ const CoachTab = () => {
   const run = async () => {
     setBusy(true);
     setCoach(null);
-    try { /* shimmed */ } = await Promise.resolve({ data: null, error: null });
+    try { /* shimmed */ }
       if (error) throw error;
       setCoach(data as Coach);
     } catch (e: any) { toast.error(e.message || "Action failed"); } finally {

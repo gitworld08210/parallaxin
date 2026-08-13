@@ -170,7 +170,7 @@ const Conversation = () => {
     const last = messages[messages.length - 1];
     if (!last || last.sender_id === user?.id) { setAiSuggestions([]); return; }
     setAiBusy(true);
-    try { /* shimmed */ } = await Promise.resolve({ data: null, error: null });
+    try { /* shimmed */ }
       setAiSuggestions(Array.isArray(data?.suggestions) ? data.suggestions : []);
     } catch { /* silent */ }
     finally { setAiBusy(false); }

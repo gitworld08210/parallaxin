@@ -11,7 +11,7 @@ export function useCoinBalance() {
   const refresh = useCallback(async () => {
     if (!user) { setBalance(0); setLoading(false); return; }
     
-    try { /* shimmed */ } = await Promise.resolve({ data: null, error: null });
+    try { /* shimmed */ }
       // 1. Check Firestore (Primary)
       const { doc, getDoc } = await import("firebase/firestore");
       const { db } = await import("@/lib/firebase");

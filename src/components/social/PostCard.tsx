@@ -82,7 +82,7 @@ export const PostCard = ({ post, onOpenComments }: { post: FeedPost; onOpenComme
   useEffect(() => {
     if (!user) return;
     (async () => {
-      try { /* shimmed */ } = await Promise.resolve({ data: null, error: null });
+      try { /* shimmed */ }
         const saveRef = doc(db, "saves", `${user.id}_${post.id}`);
         const snap = await getDoc(saveRef);
         setSaved(snap.exists());
@@ -118,7 +118,7 @@ export const PostCard = ({ post, onOpenComments }: { post: FeedPost; onOpenComme
     if (!user) return toast.error("Sign in to like");
     const next = !liked;
     setLiked(next); setLikes((c) => c + (next ? 1 : -1));
-    try { /* shimmed */ } = await Promise.resolve({ data: null, error: null });
+    try { /* shimmed */ }
       const likeId = `${user.id}_${post.id}`;
       const likeRef = doc(db, "likes", likeId);
       const postRef = doc(db, "posts", post.id);
@@ -138,7 +138,7 @@ export const PostCard = ({ post, onOpenComments }: { post: FeedPost; onOpenComme
     if (!user) return toast.error("Sign in to save");
     const next = !saved;
     setSaved(next);
-    try { /* shimmed */ } = await Promise.resolve({ data: null, error: null });
+    try { /* shimmed */ }
       const saveId = `${user.id}_${post.id}`;
       const saveRef = doc(db, "saves", saveId);
       if (next) {
@@ -164,7 +164,7 @@ export const PostCard = ({ post, onOpenComments }: { post: FeedPost; onOpenComme
 
   const remove = async () => {
     if (!confirm("Delete this post?")) return;
-    try { /* shimmed */ } = await Promise.resolve({ data: null, error: null });
+    try { /* shimmed */ }
       await deleteDoc(doc(db, "posts", post.id));
       toast.success("Deleted");
     } catch (error: any) {

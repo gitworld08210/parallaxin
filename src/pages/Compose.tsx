@@ -62,7 +62,7 @@ const Compose = () => {
 
   const aiCaption = async () => {
     setAiBusy(true);
-    try { /* shimmed */ } = await Promise.resolve({ data: null, error: null });
+    try { /* shimmed */ }
       if (error) throw error;
       if (data?.caption) setContent(data.caption);
     } catch (e: any) { toast.error(e.message || "Action failed"); }
@@ -72,7 +72,7 @@ const Compose = () => {
   const aiSuggest = async () => {
     setSuggestBusy(true);
     setSuggestOpen(true);
-    try { /* shimmed */ } = await Promise.resolve({ data: null, error: null });
+    try { /* shimmed */ }
       const { data, error } = await.functions.invoke("suggest-post-tags", {
       if (error) throw error;
       setSuggestedTags(data?.hashtags ?? []);
@@ -99,7 +99,7 @@ const Compose = () => {
     if (!file || !user) return toast.error("Add an image first");
     if (file.type.startsWith("video")) return toast.error("Alt text is for images");
     setAltBusy(true);
-    try { /* shimmed */ } = await Promise.resolve({ data: null, error: null });
+    try { /* shimmed */ }
       const url = await uploadToCloudinary(file);
       if (error) throw error;
 
@@ -120,9 +120,9 @@ const Compose = () => {
     if (!user) return;
     if (!content.trim() && !file) return toast.error("Add a thought or media");
     setBusy(true);
-    try { /* shimmed */ } = await Promise.resolve({ data: null, error: null });
+    try { /* shimmed */ }
       if (status === "published" && content.trim()) {
-        try { /* shimmed */ } = await Promise.resolve({ data: null, error: null });
+        try { /* shimmed */ }
           if (mod?.flagged) throw new Error(mod.reason || "Content flagged by moderation");
         } catch (modErr: any) {
           // Only block if moderation actually flagged content; ignore transport/AI errors.

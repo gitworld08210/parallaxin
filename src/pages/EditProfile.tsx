@@ -26,7 +26,7 @@ const EditProfile = () => {
   const rewriteBio = async () => {
     setBioAiBusy(true);
     setBioVariants([]);
-    try { /* shimmed */ } = await Promise.resolve({ data: null, error: null });
+    try { /* shimmed */ }
       const { data, error } = await.functions.invoke("rewrite-bio", {
       if (error) throw error;
       const variants = data?.variants ?? [];
@@ -51,7 +51,7 @@ const EditProfile = () => {
   const uploadImage = async (file: File, kind: "avatar" | "cover") => {
     if (!user) return;
     setBusy(true);
-    try { /* shimmed */ } = await Promise.resolve({ data: null, error: null });
+    try { /* shimmed */ }
       const url = await uploadToCloudinary(file);
       if (kind === "avatar") setAvatar(url);
       else setCover(url);
@@ -64,7 +64,7 @@ const EditProfile = () => {
     if (!user) return;
     setBusy(true);
     
-    try { /* shimmed */ } = await Promise.resolve({ data: null, error: null });
+    try { /* shimmed */ }
       // 1. Dual-write Profile to Firestore
       const { doc, setDoc, serverTimestamp } = await import("firebase/firestore");
       const { db } = await import("@/lib/firebase");

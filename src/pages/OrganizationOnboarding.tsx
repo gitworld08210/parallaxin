@@ -34,7 +34,7 @@ const OrganizationOnboarding = () => {
   const onLogo = async (file: File) => {
     if (!user) return;
     setLogoUploading(true);
-    try { /* shimmed */ } = await Promise.resolve({ data: null, error: null });
+    try { /* shimmed */ }
       const ext = file.name.split(".").pop() || "png";
       const path = `org-logos/${user.id}/${Date.now()}.${ext}`;
       if (error) throw error;
@@ -50,7 +50,7 @@ const OrganizationOnboarding = () => {
       return;
     }
     setBusy(true);
-    try { /* shimmed */ } = await Promise.resolve({ data: null, error: null });
+    try { /* shimmed */ }
         p_name: form.name.trim(),
         p_username: form.username.trim().toLowerCase(),
         p_org_type: form.org_type,
