@@ -269,15 +269,25 @@ const Auth = () => {
             Google
           </button>
 
-          <p className="text-center text-sm text-muted-foreground">
-            {tab === "signin" ? "New to Aurelix?" : "Already have an account?"}{" "}
-            <button 
-              onClick={() => setTab(tab === "signin" ? "signup" : "signin")}
-              className="text-primary font-bold hover:underline"
-            >
-              {tab === "signin" ? "Create one" : "Sign in"}
-            </button>
-          </p>
+          <div className="flex flex-col gap-4 text-center">
+            <p className="text-sm text-muted-foreground">
+              {tab === "signin" ? "New to Aurelix?" : "Already have an account?"}{" "}
+              <button 
+                onClick={() => setTab(tab === "signin" ? "signup" : "signin")}
+                className="text-primary font-bold hover:underline"
+              >
+                {tab === "signin" ? "Create one" : "Sign in"}
+              </button>
+            </p>
+            {tab === "signin" && (
+              <button 
+                onClick={() => nav("/forgot-password")}
+                className="text-xs text-muted-foreground hover:text-white transition-colors"
+              >
+                Forgot your password?
+              </button>
+            )}
+          </div>
         </div>
       </motion.div>
     </div>

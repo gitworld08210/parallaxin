@@ -19,6 +19,7 @@ const OAuthConsent = lazy(() => import("./pages/OAuthConsent"));
 
 // Lazy: everything else streams in on demand
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
+const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
 const Unsubscribe = lazy(() => import("./pages/Unsubscribe"));
 const Reels = lazy(() => import("./pages/Reels"));
 const Discover = lazy(() => import("./pages/Discover"));
@@ -422,7 +423,8 @@ const App = () => (
           <CallProvider>
           <Suspense fallback={<RouteFallback />}>
             <Routes>
-              <Route path="/auth" element={<Auth />} />
+                <Route path="/auth" element={<Auth />} />
+                <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/unsubscribe" element={<Unsubscribe />} />
