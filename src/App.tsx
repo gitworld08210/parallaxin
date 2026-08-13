@@ -19,6 +19,7 @@ const OAuthConsent = lazy(() => import("./pages/OAuthConsent"));
 
 // Lazy: everything else streams in on demand
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
+const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
 const Unsubscribe = lazy(() => import("./pages/Unsubscribe"));
 const Reels = lazy(() => import("./pages/Reels"));
 const Discover = lazy(() => import("./pages/Discover"));
@@ -71,6 +72,7 @@ const ChangePasswordScreen = lazy(() => import("./pages/security/ChangePasswordS
 const ChangeEmailScreen = lazy(() => import("./pages/security/ChangeEmailScreen"));
 const ChangePhoneScreen = lazy(() => import("./pages/security/ChangePhoneScreen"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
+const ProfileCreation = lazy(() => import("./pages/ProfileCreation"));
 const OrganizationOnboarding = lazy(() => import("./pages/OrganizationOnboarding"));
 
 // Aurelix Ads Manager
@@ -423,12 +425,14 @@ const App = () => (
           <Suspense fallback={<RouteFallback />}>
             <Routes>
               <Route path="/auth" element={<Auth />} />
-              <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/reset-password" element={<ResetPassword />} />
+              <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
               <Route path="/unsubscribe" element={<Unsubscribe />} />
               <Route path="/certificate/:postId" element={<Certificate />} />
               <Route element={<ProtectedRoute />}>
                 <Route path="/onboarding" element={<Onboarding />} />
+                <Route path="/profile-creation" element={<ProfileCreation />} />
                 <Route path="/onboarding/organization" element={<OrganizationOnboarding />} />
                 
                 <Route element={<AppShell />}>
