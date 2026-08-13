@@ -208,7 +208,7 @@ const ReelCompose = () => {
           placeholder="Write a caption…"
           rows={5}
           maxLength={500}
-          className="flex-1 bg-card border border-border rounded-xl p-3 text-sm outline-none resize-none"
+          className="flex-1 bg-zinc-900 border border-white/5 rounded-2xl p-4 text-[15px] outline-none resize-none focus:border-primary/50 transition-colors"
         />
       </div>
 
@@ -224,20 +224,20 @@ const ReelCompose = () => {
         )}
       </div>
 
-      <label className="mx-4 mt-4 flex items-start gap-3 p-3 rounded-xl border border-border bg-card cursor-pointer">
-        <input type="checkbox" checked={certify} onChange={(e) => setCertify(e.target.checked)} className="mt-0.5 h-4 w-4 accent-primary" />
+      <label className="mx-4 mt-4 flex items-start gap-3 p-4 rounded-2xl border border-white/5 bg-zinc-900 cursor-pointer hover:bg-zinc-800 transition-colors">
+        <input type="checkbox" checked={certify} onChange={(e) => setCertify(e.target.checked)} className="mt-1 h-4 w-4 rounded border-white/20 bg-black text-primary focus:ring-primary" />
         <div className="flex-1">
-          <p className="text-sm font-semibold flex items-center gap-1.5">
+          <p className="text-[14px] font-bold flex items-center gap-1.5">
             <ShieldCheck className="h-4 w-4 text-primary" /> Ownership certificate
           </p>
-          <p className="text-[11px] text-muted-foreground mt-0.5">SHA-256 + OpenTimestamps proof.</p>
+          <p className="text-[11px] text-muted-foreground mt-0.5 leading-relaxed">SHA-256 + OpenTimestamps proof.</p>
         </div>
       </label>
 
       <div className="px-4 mt-6">
         <button onClick={submit} disabled={busy}
-          className="w-full py-3.5 rounded-2xl bg-primary text-primary-foreground font-semibold text-sm disabled:opacity-60">
-          {busy ? "Posting…" : "Share reel"}
+          className="w-full h-14 rounded-2xl bg-primary text-white font-bold text-[15px] shadow-lg hover:brightness-110 active:scale-[0.98] transition-all disabled:opacity-50">
+          {busy ? "Sharing Reel..." : "Share Reel"}
         </button>
       </div>
     </div>
