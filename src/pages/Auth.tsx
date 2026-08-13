@@ -80,6 +80,8 @@ const Auth = () => {
           id: res.user.uid,
           user_id: res.user.uid,
           email: email.trim(),
+          display_name: email.trim().split('@')[0],
+          username: email.trim().split('@')[0],
           account_type: kind,
           onboarded_at: null,
           created_at: serverTimestamp()
