@@ -29,7 +29,8 @@ export const useAdInteraction = () => {
       const weight = SIGNAL_WEIGHTS[input.signalType];
 
       // 1. Record the raw signal
-        user_id: user.id,
+      const { error: signalError } = await supabase.from("ads_interest_signals").insert({
+        user_id: user.uid,
         content_id: input.contentId,
         topic_ids: input.topicIds,
         signal_type: input.signalType,

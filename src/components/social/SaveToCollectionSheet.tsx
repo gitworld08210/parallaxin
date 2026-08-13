@@ -20,9 +20,9 @@ export const SaveToCollectionSheet = ({
   useEffect(() => {
     if (!open || !user) return;
     (async () => {
-        supabase.select("id, name").eq("user_id", user.id).order("created_at", { ascending: false }) as any);
+        await supabase.from("collections").select("id, name").eq("user_id", user.uid).order("created_at", { ascending: false }) as any);
       setCollections((cs ?? []) as Collection[]);
-        supabase.select("collection_id").eq("post_id", postId) as any);
+        await supabase.from("collections").select("collection_id").eq("post_id", postId) as any);
       setInSet(new Set((items ?? []).map((i: any) => i.collection_id)));
     })();
   }, [open, user?.id, postId]);

@@ -53,14 +53,14 @@ export const StoryViewer = ({ stories, startIdx, onClose }: { stories: Story[]; 
 
   const react = async (emoji: string) => {
     if (!user) return toast.error("Sign in");
-      story_id: current.id, user_id: user.id, emoji,
+      story_id: current.id, user_id: user.uid, emoji,
     } as any) as any);
     if (error) toast.error(error.message); else toast.success(`Reacted ${emoji}`);
   };
 
   const sendReply = async () => {
     if (!user || !reply.trim() || !current.profile) return;
-    if (current.user_id === user.id) { toast.error("Can't reply to yourself"); return; }
+    if (current.user_id === user.uid) { toast.error("Can't reply to yourself"); return; }
     if (rpcErr || !convId) { toast.error("Couldn't start chat"); return; }
     const content = `↩️ Replied to story: ${reply.trim().slice(0, 500)}`;
     setReply("");
