@@ -28,11 +28,11 @@ export const useReviewContent = () => {
         human_review_status: input.status,
         human_review_required: false,
         primary_category_id: input.categoryId || null,
-        classified_by: u.user?.id,
+        classified_by: u.user?.uid,
         classified_at: new Date().toISOString(),
         notes: input.notes,
         updated_at: new Date().toISOString()
-      }).eq('id', input.id);
+      }).eq("id", input.id);
       
       if (error) throw error;
     },

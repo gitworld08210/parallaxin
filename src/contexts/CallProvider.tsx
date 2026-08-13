@@ -103,8 +103,7 @@ export const CallProvider = ({ children }: { children: React.ReactNode }) => {
     else if (finalStatus === "declined") label = `🚫 ${kind === "video" ? "Video" : "Voice"} call declined`;
     else if (finalStatus === "cancelled") label = `📵 ${kind === "video" ? "Video" : "Voice"} call cancelled`;
     if (!label) return;
-      conversation_id: conversationId, sender_id: user.id, content: label,
-    } as any);
+      await supabase.from("messages").insert({ conversation_id: conversationId, sender_id: user.uid, content: label });
   }, [user]);
 
   const finishCall = useCallback(async (finalStatus: "ended" | "missed" | "declined" | "cancelled" | "busy") => {
@@ -113,10 +112,10 @@ export const CallProvider = ({ children }: { children: React.ReactNode }) => {
     if (a) {
       try {
           status: finalStatus,
+          status: finalStatus,
           ended_at: new Date().toISOString(),
-          duration_sec: finalStatus === "ended" ? dur : 0,
-        } as any).eq("id", a.call_id);
-        // Insert a system-style summary message (only caller does it to avoid dupes)
+          duration_sec: finalStatus === "ended" ? dur : 0
+        }).eq("id", a.call_id);
         if (a.isCaller) await insertSummaryMessage(a.conversation_id, a.kind, finalStatus, dur);
       } catch {}
     }
@@ -128,8 +127,7 @@ export const CallProvider = ({ children }: { children: React.ReactNode }) => {
   const sendSignal = useCallback(async (callId: string, toUser: string, kind: "offer" | "answer" | "ice" | "bye", payload: any) => {
     if (!user) return;
       call_id: callId, from_user: user.id, to_user: toUser, kind, payload,
-    } as any);
-  }, [user]);
+      await supabase.from("call_signals").insert({ call_id: callId, from_user: user.uid, to_user: toUser, kind, payload });
 
   const subscribeSignals = useCallback((callId: string, peerId: string, onSignal: (k: string, payload: any) => void) => {
       supabase.channel(`call-signals:${callId}`).

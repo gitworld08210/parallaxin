@@ -53,8 +53,9 @@ export const StoryViewer = ({ stories, startIdx, onClose }: { stories: Story[]; 
 
   const react = async (emoji: string) => {
     if (!user) return toast.error("Sign in");
-      story_id: current.id, user_id: user.uid, emoji,
-    } as any) as any);
+    const { error } = await supabase.from("story_reactions").insert({
+      story_id: current.id, user_id: user.uid, emoji
+    });
     if (error) toast.error(error.message); else toast.success(`Reacted ${emoji}`);
   };
 

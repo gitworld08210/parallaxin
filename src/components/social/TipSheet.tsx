@@ -66,11 +66,12 @@ export function TipSheet({ open, onOpenChange, recipientId, recipientName, postI
     if (!pay?.upi && !pay?.qr) return toast.error("Payments are not configured yet. Try again later.");
     setLoading(true);
     try {
+      const { data, error } = await supabase.rpc("init_tip_payment", {
         _recipient_id: recipientId,
         _amount_cents: cents,
         _post_id: postId ?? null,
-        _message: message.trim() || null,
-      if (error || !data) throw new Error(error?.message || "Failed");
+        _message: message.trim() || null
+      });
       setTipId(String(data));
       setStep("pay");
     } catch (e: any) { toast.error(e.message || "Action failed"); } finally {

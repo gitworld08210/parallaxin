@@ -45,8 +45,8 @@ const Assistant = () => {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${session.access_token}`,
-        },
-      if (resp.status === 429) { toast.error("Rate limit hit. Try again shortly."); setStreaming(false); return; }
+        body: JSON.stringify({ messages: next, model: "gpt-4o" }),
+      });
       if (resp.status === 402) { toast.error("AI credits exhausted. Add credits in Settings."); setStreaming(false); return; }
       if (!resp.ok || !resp.body) {
         const t = await resp.text().catch(() => "");

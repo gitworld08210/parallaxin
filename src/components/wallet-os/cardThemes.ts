@@ -104,7 +104,8 @@ export const CARD_THEMES: Record<CardTheme, ThemeSkin> = {
     sheen: "linear-gradient(115deg, transparent 30%, rgba(254,215,170,0.26) 46%, transparent 62%)",
     edge: "rgba(251,146,60,0.48)",
     accent: "#fdba74",
-    finish: "metal" });
+    finish: "metal"
+  },
 
 export const CARD_TYPE_LABEL: Record<CardType, string> = {
   standard: "Standard Wallet",

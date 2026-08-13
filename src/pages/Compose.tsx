@@ -159,8 +159,8 @@ const Compose = () => {
 
       // Invite collaborators
       if (newId && collabs.length) {
-          collabs.map((c) => ({ post_id: newId, user_id: c.user_id })) as any
-        );
+        await supabase.from("post_collaborators").insert(collabs.map((c) => ({ post_id: newId, user_id: c.user_id })));
+      }
       }
 
       // Enrichment — awaited via reliableInvoke, failures logged (Phase 0).
