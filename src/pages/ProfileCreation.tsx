@@ -73,12 +73,16 @@ const ProfileCreation = () => {
       };
 
       await setDoc(doc(db, "profiles", user.uid), profileData, { merge: true });
-      await setDoc(doc(db, "usernames", cleanUsername), { uid: user.uid, updated_at: serverTimestamp() });
+      await setDoc(doc(db, "usernames", cleanUsername), { 
+        user_id: user.uid, 
+        updated_at: serverTimestamp() 
+      });
 
       if (refreshProfile) await refreshProfile();
       toast.success("Profile created!");
       nav("/", { replace: true });
     } catch (error: any) {
+      console.error("Profile creation error:", error);
       toast.error(error.message || "Failed to create profile");
     } finally {
       setBusy(false);

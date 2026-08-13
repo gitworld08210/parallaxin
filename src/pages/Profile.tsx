@@ -15,6 +15,7 @@ import {
   MoreHorizontal,
   Share2,
   Sparkles,
+  User,
   UserPlus,
   VolumeX,
   Bookmark,
@@ -109,7 +110,7 @@ const Profile = () => {
   useEffect(() => {
     (async () => {
       setLoading(true);
-      const target = username || me?.username;
+      const target = username || me?.username || user?.uid;
       if (!target) {
         setLoading(false);
         return;
@@ -145,7 +146,7 @@ const Profile = () => {
         try {
           const nameDoc = await getDoc(doc(db, "usernames", target.toLowerCase()));
           if (nameDoc.exists()) {
-            const resolvedUid = nameDoc.data().user_id;
+            const resolvedUid = nameDoc.data().user_id || nameDoc.data().uid;
             const profDoc = await getDoc(doc(db, "profiles", resolvedUid));
             if (profDoc.exists()) {
               p = { id: profDoc.id, ...profDoc.data() };
@@ -201,16 +202,17 @@ const Profile = () => {
       setLoading(false);
 
       if (p) {
+        const userId = p.user_id || p.id;
         const qPosts = query(
           collection(db, "posts"),
-          where("user_id", "==", p.user_id),
+          where("user_id", "==", userId),
           where("is_reel", "==", false),
           orderBy("created_at", "desc"),
           limit(10)
         );
         const qReels = query(
           collection(db, "posts"),
-          where("user_id", "==", p.user_id),
+          where("user_id", "==", userId),
           where("is_reel", "==", true),
           orderBy("created_at", "desc"),
           limit(8)
@@ -241,14 +243,14 @@ const Profile = () => {
             .map((d: any) => ({ ...d, liked: liked.has(d.id) })));
         setReels((rdata ?? []).map((d: any) => ({ ...d, liked: liked.has(d.id) })));
 
-        if (user && p.user_id !== user.uid) {
-          const followSnap = await getDocs(query(collection(db, "follows"), where("follower_id", "==", user.uid), where("following_id", "==", p.user_id), limit(1)));
+        if (user && userId !== user.uid) {
+          const followSnap = await getDocs(query(collection(db, "follows"), where("follower_id", "==", user.uid), where("following_id", "==", userId), limit(1)));
           setIsFollowing(!followSnap.empty);
           
-          const blockSnap = await getDocs(query(collection(db, "blocks"), where("blocker_id", "==", user.uid), where("blocked_id", "==", p.user_id), limit(1)));
+          const blockSnap = await getDocs(query(collection(db, "blocks"), where("blocker_id", "==", user.uid), where("blocked_id", "==", userId), limit(1)));
           setIsBlocked(!blockSnap.empty);
 
-          const muteSnap = await getDocs(query(collection(db, "mutes"), where("muter_id", "==", user.uid), where("muted_id", "==", p.user_id), limit(1)));
+          const muteSnap = await getDocs(query(collection(db, "mutes"), where("muter_id", "==", user.uid), where("muted_id", "==", userId), limit(1)));
           setIsMuted(!muteSnap.empty);
         }
       }
@@ -362,6 +364,26 @@ const Profile = () => {
     );
   }
   if (!profile && !loading) {
+    if (isMe) {
+      return (
+        <div className="pb-24 flex flex-col items-center justify-center min-h-[60vh] px-6 text-center">
+          <div className="h-20 w-20 rounded-full bg-primary/10 flex items-center justify-center mb-6">
+            <User className="h-10 w-10 text-primary" />
+          </div>
+          <h2 className="text-2xl font-black mb-2">Complete your profile</h2>
+          <p className="text-zinc-500 text-sm mb-8 max-w-[280px]">
+            You haven't finished setting up your profile yet. Let others know who you are!
+          </p>
+          <Link
+            to="/profile-creation"
+            className="h-12 px-8 rounded-full bg-primary text-white font-bold flex items-center justify-center hover:brightness-110 active:scale-95 transition-all shadow-lg shadow-primary/20"
+          >
+            Setup Profile
+          </Link>
+        </div>
+      );
+    }
+
     return (
       <div className="pb-24">
         <header className="sticky top-0 z-30 h-14 px-3 flex items-center gap-3 bg-background/85 backdrop-blur-xl supports-[backdrop-filter]:bg-background/70 border-b border-border">
@@ -379,9 +401,8 @@ const Profile = () => {
         <EmptyState
           icon={Info}
           title="Profile not found"
-          subtitle={`The user "@${username || (me?.username || 'user')}" could not be found. They may have changed their username or deleted their account.`}
+          subtitle={`The user "@${username || 'user'}" could not be found. They may have changed their username or deleted their account.`}
           size="lg"
-          cta={isMe ? { label: "Go to Onboarding", to: "/onboarding" } : undefined}
         />
       </div>
     );
