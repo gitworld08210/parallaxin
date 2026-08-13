@@ -145,7 +145,7 @@ const Profile = () => {
         try {
           const nameDoc = await getDoc(doc(db, "usernames", target.toLowerCase()));
           if (nameDoc.exists()) {
-            const resolvedUid = nameDoc.data().user_id;
+            const resolvedUid = nameDoc.data().user_id || nameDoc.data().uid;
             const profDoc = await getDoc(doc(db, "profiles", resolvedUid));
             if (profDoc.exists()) {
               p = { id: profDoc.id, ...profDoc.data() };
