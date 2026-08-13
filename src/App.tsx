@@ -113,7 +113,8 @@ const ReviewerWorkspace = lazy(() => import("./pages/NotFound"));
 // Admin OS workspace (Phase 1 foundation)
 const AdminOSGate = lazy(() => import("./pages/NotFound"));
 const AdminOSLayout = lazy(() => import("./pages/NotFound"));
-const AdminOSDashboard = lazy(() => import("./pages/NotFound"));
+const AdminOSDashboard = lazy(() => import("./pages/admin-os/AdminOSDashboard"));
+const AppointmentsPanel = lazy(() => import("./pages/admin-os/AppointmentsPanel"));
 const RoutingOverview = lazy(() => import("./pages/NotFound"));
 const ApprovalsInbox = lazy(() => import("./pages/NotFound"));
 const AdminOSModulePlaceholder = lazy(() => import("./pages/NotFound"));
@@ -438,6 +439,8 @@ const App = () => (
                 
                 <Route element={<AppShell />}>
                   <Route path="/admin-os/verification" element={<AdminOSVerificationQueue />} />
+                  <Route path="/admin-os/appointments" element={<AppointmentsPanel />} />
+                  <Route path="/admin-os/dashboard" element={<AdminOSDashboard />} />
                   <Route path="/" element={<Feed />} />
                   <Route path="/reels" element={<Reels />} />
                   <Route path="/discover" element={<Discover />} />
