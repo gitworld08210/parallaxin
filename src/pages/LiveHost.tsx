@@ -63,11 +63,7 @@ export default function LiveHost() {
 
   const stopLocalTracks = () => {
     try { videoTrackRef.current?.detach(); videoTrackRef.current?.stop(); } catch { /* noop */ }
-      /* Reconstructed shim */
-      const { data, error } = await Promise.resolve({ data: null, error: null });
     try { audioTrackRef.current?.stop(); } catch { /* noop */ }
-      /* Reconstructed shim */
-      const { data, error } = await Promise.resolve({ data: null, error: null });
     videoTrackRef.current = null;
     audioTrackRef.current = null;
   };

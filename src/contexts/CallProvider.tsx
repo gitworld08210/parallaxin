@@ -77,8 +77,6 @@ export const CallProvider = ({ children }: { children: React.ReactNode }) => {
   const cleanup = useCallback(() => {
     if (pcRef.current) {
       try { pcRef.current.close(); } catch {}
-      /* Reconstructed shim */
-      const { data, error } = await Promise.resolve({ data: null, error: null });
       pcRef.current = null;
     }
     stopStream(localStream);

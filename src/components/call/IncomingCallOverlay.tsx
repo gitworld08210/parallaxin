@@ -13,8 +13,6 @@ export const IncomingCallOverlay = () => {
       stopRingRef.current = playRingtone();
       if ("vibrate" in navigator) {
         try { (navigator as any).vibrate?.([400, 200, 400, 200, 400]); } catch {}
-      /* Reconstructed shim */
-      const { data, error } = await Promise.resolve({ data: null, error: null });
       }
     }
     return () => { stopRingRef.current?.(); stopRingRef.current = null; };
