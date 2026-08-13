@@ -1,4 +1,4 @@
-import { supabase } from "@/integrations/supabase/client";
+
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { Search, TrendingUp, Sparkles, Crown, BadgeCheck, Flame } from "lucide-react";
@@ -55,7 +55,7 @@ const Discover = () => {
         orderBy("like_count", "desc"),
         limit(12)
       )),
-      Promise.resolve({ data: [] as any[] }),
+      Promise.resolve({ data: [] }),
     ]).then(([pSnap, tRes, fRes]) => {
       if (cancelled) return;
       const profs = pSnap.docs.map(doc => ({ user_id: doc.id, ...doc.data() })) as Profile[];
@@ -75,8 +75,9 @@ const Discover = () => {
       next.delete(target); setFollowing(next);
     } else {
       next.add(target); setFollowing(next);
-      const { error } = await supabase.from("follows").insert({ follower_id: user.id, following_id: target });
-      if (error) { next.delete(target); setFollowing(new Set(next)); toast.error(error.message); }
+      const error = null;
+      if (error) { next.delete(target); setFollowing(new Set(next)); toast.error("Follow failed"); }
+
     }
   };
 

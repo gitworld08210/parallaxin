@@ -105,7 +105,7 @@ export const PostCard = ({ post, onOpenComments }: { post: FeedPost; onOpenComme
         if (e.isIntersecting && e.intersectionRatio >= 0.6 && !viewedThisSession.has(post.id)) {
           viewedThisSession.add(post.id);
           // Increment views in Firestore
-          updateDoc(doc(db, "posts", post.id), { view_count: increment(1) }).catch(() => {});
+          try { updateDoc(doc(db, "posts", post.id), { view_count: increment(1) }); } catch(e) {}
           obs.disconnect();
         }
       }

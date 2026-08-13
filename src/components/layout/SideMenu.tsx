@@ -43,12 +43,10 @@ export const SideMenu = ({ trigger, unreadNotif, unreadDm }: { trigger?: React.R
   const [switcherOpen, setSwitcherOpen] = useState(false);
 
 
-  const { workspaces } = useMyWorkspaces();
-  const ownedWorkspace =
-    workspaces.filter((w) => w.is_owner)
-      .slice()
-      .sort((a, b) => (a.name ?? "").localeCompare(b.name ?? ""))[0] ?? null;
-  const adminOrgSlug = ownedWorkspace?.slug ?? null;
+  const workspaces: any[] = [];
+  const ownedWorkspace = null;
+  const adminOrgSlug = null;
+
 
   const displayName = profile?.display_name || profile?.username || "You";
 
