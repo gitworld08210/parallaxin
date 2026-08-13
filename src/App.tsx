@@ -575,7 +575,7 @@ const App = () => (
 
               {/* Founder Office Executive Workspace (Phase 3.1) */}
               <Route element={<ExecutiveGate />}>
-                <Route path="/admin-os/executive" element={<AdminOSGate><ExecutiveLayout /></AdminOSGate>}>
+                <Route path="/admin-os/executive" element={<ExecutiveLayout />}>
                   <Route index element={<ExecutiveDashboard />} />
                   <Route path="inbox" element={<ExecutiveInbox />} />
                   <Route path="inbox/:id" element={<ExecutiveApprovalDetail />} />

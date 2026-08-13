@@ -44,7 +44,7 @@ export const SideMenu = ({ trigger, unreadNotif, unreadDm }: { trigger?: React.R
 
 
   const { workspaces } = useMyWorkspaces();
-  const ownedWorkspace = workspaces?.find(w => w.owner_id === profile?.uid);
+  const ownedWorkspace = workspaces?.find((w: any) => w.owner_id === profile?.id);
   const adminOrgSlug = ownedWorkspace?.slug;
 
 
