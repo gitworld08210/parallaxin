@@ -6,7 +6,7 @@ import {
 } from "lucide-react";
 import { TipSheet } from "@/components/social/TipSheet";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { doc, getDoc, setDoc, deleteDoc, updateDoc, increment, arrayUnion, arrayRemove, collection, addDoc, query, where, getDocs } from "firebase/firestore";
+import { doc, getDoc, setDoc, deleteDoc, updateDoc, increment, arrayUnion, arrayRemove, collection, addDoc, query, where, getDocs, serverTimestamp } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/contexts/AuthProvider";
 import { AuraAvatar } from "@/components/vibe/AuraAvatar";
