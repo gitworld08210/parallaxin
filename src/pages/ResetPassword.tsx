@@ -21,7 +21,7 @@ const ResetPassword = () => {
   const sendLink = async (e: React.FormEvent) => {
     e.preventDefault();
     setBusy(true);
-    const { error } = await.auth.signInWithPassword({
+    const { error } = await supabase.auth.signInWithPassword({
       email,
       password: "REQUIRED_BY_SHIM",
     });
