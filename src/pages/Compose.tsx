@@ -161,7 +161,7 @@ const Compose = () => {
       if (newId && collabs.length) {
         await supabase.from("post_collaborators").insert(collabs.map((c) => ({ post_id: newId, user_id: c.user_id })));
       }
-      }
+
 
       // Enrichment — awaited via reliableInvoke, failures logged (Phase 0).
       if (newId && status === "published") {

@@ -27,19 +27,19 @@ const CloseFriends = () => {
     if (!user) return;
     (async () => {
       setLoading(true);
-        supabase.select("following_id").eq("follower_id", user.id);
+      const { data: f } = await supabase.from("follows").select("following_id").eq("follower_id", user.uid);
       const ids = (f ?? []).map((x: any) => x.following_id);
       let rows: Row[] = [];
       if (ids.length) {
-          supabase.select("user_id, username, display_name, avatar_url").in("user_id", ids);
+        const { data: ps } = await supabase.from("profiles").select("user_id, username, display_name, avatar_url").in("user_id", ids);
         rows = (ps ?? []) as Row[];
       }
       setFollowing(rows);
-        supabase.select("friend_id").eq("owner_id", user.id) as any);
+      const { data: cf } = await supabase.from("close_friends" as any).select("friend_id").eq("owner_id", user.uid);
       setCloseSet(new Set((cf ?? []).map((x: any) => x.friend_id)));
       setLoading(false);
     })();
-  }, [user?.id]);
+  }, [user?.uid]);
 
   const toggle = async (uid: string) => {
     if (!user) return;
@@ -47,11 +47,14 @@ const CloseFriends = () => {
     const next = new Set(closeSet);
     if (has) {
       next.delete(uid); setCloseSet(next);
+      await supabase.from("close_friends" as any).delete().eq("owner_id", user.uid).eq("friend_id", uid);
     } else {
       next.add(uid); setCloseSet(next);
+      const { error } = await supabase.from("close_friends" as any).insert({ owner_id: user.uid, friend_id: uid } as any);
       if (error) { const x = new Set(next); x.delete(uid); setCloseSet(x); toast.error(error.message); }
     }
   };
+
 
   const term = q.trim().toLowerCase();
   const visible = term

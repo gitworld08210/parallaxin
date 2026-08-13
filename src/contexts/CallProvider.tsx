@@ -171,8 +171,19 @@ subscribe();
     if (!user) return;
     if (status !== "idle") { toast("You're already in a call"); return; }
 
-    try /* shimmed */
+    try {
+      const stream = await getUserMedia(kind === "video");
+      setLocalStream(stream);
+
+      const { data: callRow, error } = await supabase.from("calls").insert({
+        conversation_id: conversationId,
+        caller_id: user.uid,
+        callee_id: peer.user_id,
+        kind,
+        status: "ringing",
+      } as any).select("id").single();
       if (error || !callRow) throw error || new Error("Failed to create call");
+
 
       const callId = (callRow as any).id as string;
       const startedAt = Date.now();
@@ -263,7 +274,9 @@ subscribe();
         isCaller: false,
         peer: inc.peer,
         startedAt: Date.now(),
+      });
       setIncoming(null);
+
       setStatus("connecting");
 
       const pc = createPeer();
