@@ -93,6 +93,7 @@ const Auth = () => {
         account_type: kind,
         onboarded_at: null,
         created_at: new Date().toISOString()
+      });
 
       toast.success("Account created successfully");
       await routeForUser(userCredential.user.uid);
