@@ -72,6 +72,7 @@ const Compose = () => {
     setSuggestBusy(true);
     setSuggestOpen(true);
     try {
+      const { data, error } = await supabase.functions.invoke("suggest-post-tags", {
         body: { content, media_type: file ? (file.type.startsWith("video") ? "video" : "image") : null },
       });
       if (error) throw error;
