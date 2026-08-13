@@ -163,6 +163,14 @@ const ProfileCreation = () => {
           >
             {busy ? "Finalizing..." : "Enter Parallax"}
           </button>
+          
+          <button 
+            type="button"
+            onClick={handleCreate}
+            className="w-full py-2 text-xs font-bold text-zinc-500 hover:text-white transition-colors uppercase tracking-widest mt-2"
+          >
+            Skip for now
+          </button>
         </form>
       </motion.div>
     </div>
