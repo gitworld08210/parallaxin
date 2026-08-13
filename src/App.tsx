@@ -440,9 +440,9 @@ const App = () => (
                   <Route path="/notifications" element={<Notifications />} />
                   <Route path="/invite/:token" element={<InviteAccept />} />
                   <Route path="/collab/:postId" element={<CollabInviteAccept />} />
-                  <Route path="/compose" element={<CreatorGate><Compose /></CreatorGate>} />
-                  <Route path="/compose/reel" element={<CreatorGate><ReelCompose /></CreatorGate>} />
-                  <Route path="/compose/story" element={<CreatorGate><StoryCompose /></CreatorGate>} />
+                  <Route path="/compose" element={<Compose />} />
+                  <Route path="/compose/reel" element={<ReelCompose />} />
+                  <Route path="/compose/story" element={<StoryCompose />} />
                   <Route path="/creator/terms" element={<CreatorTerms />} />
                   <Route path="/p/:postId" element={<PostDetail />} />
                   <Route path="/tag/:tag" element={<Tag />} />
@@ -468,8 +468,8 @@ const App = () => (
                   <Route path="/support" element={<Support />} />
                   <Route path="/help" element={<Navigate to="/support" replace />} />
                   <Route path="/assistant" element={<Assistant />} />
-                  <Route path="/drafts" element={<CreatorGate><Drafts /></CreatorGate>} />
-                  <Route path="/p/:postId/insights" element={<CreatorGate><PostInsights /></CreatorGate>} />
+                  <Route path="/drafts" element={<Drafts />} />
+                  <Route path="/p/:postId/insights" element={<PostInsights />} />
                   <Route path="/close-friends" element={<CloseFriends />} />
                   <Route path="/founders" element={<Navigate to="/hall-of-founders" replace />} />
                   <Route path="/hall-of-founders" element={<HallOfFoundersScreen />} />
@@ -485,17 +485,17 @@ const App = () => (
                   <Route path="/settings/password" element={<ChangePasswordScreen />} />
                   <Route path="/settings/email" element={<ChangeEmailScreen />} />
                   <Route path="/settings/phone" element={<ChangePhoneScreen />} />
-                  <Route path="/creator-hub" element={<CreatorGate><CreatorHub /></CreatorGate>} />
-                  <Route path="/creator/studio" element={<CreatorGate><CreatorStudio /></CreatorGate>} />
+                  <Route path="/creator-hub" element={<CreatorHub />} />
+                  <Route path="/creator/studio" element={<CreatorStudio />} />
                   <Route path="/news" element={<CreatorNews />} />
-                  <Route path="/analytics" element={<CreatorGate><Analytics /></CreatorGate>} />
+                  <Route path="/analytics" element={<Analytics />} />
                   <Route path="/achievements" element={<Achievements />} />
                   <Route path="/aura-level" element={<AuraLevel />} />
-                  <Route path="/monetization" element={<CreatorGate><Monetization /></CreatorGate>} />
+                  <Route path="/monetization" element={<Monetization />} />
                   <Route path="/verification-center" element={<VerificationCenter />} />
                   <Route path="/virtual-world" element={<VirtualWorld />} />
                   <Route path="/live" element={<LiveList />} />
-                  <Route path="/live/host" element={<CreatorGate><LiveHost /></CreatorGate>} />
+                  <Route path="/live/host" element={<LiveHost />} />
                   <Route path="/live/:id" element={<LiveViewer />} />
                   <Route path="/organization/create" element={<OrgCreateOrganization />} />
                   {/* Slug-based routing (Phase 1). Legacy /organization/* still works below. */}

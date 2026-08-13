@@ -14,7 +14,7 @@ export const ProtectedRoute = () => {
     );
   }
 
-  if (!user) {
+  if (!user && !loading) {
     return <Navigate to={`/auth?next=${encodeURIComponent(location.pathname)}`} replace />;
   }
 

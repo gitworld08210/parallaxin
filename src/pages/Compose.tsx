@@ -153,13 +153,13 @@ const Compose = () => {
         comment_count: 0,
         created_at: serverTimestamp(),
         profile: {
-          username: profile?.username,
-          display_name: profile?.display_name,
-          avatar_url: profile?.avatar_url,
+          username: profile?.username || "",
+          display_name: profile?.display_name || "User",
+          avatar_url: profile?.avatar_url || null,
           verified: !!profile?.verified,
-          verification_kind: profile?.verification_kind,
+          verification_kind: profile?.verification_kind || null,
           is_founder: !!(profile as any)?.is_founder,
-          join_era: (profile as any)?.join_era
+          join_era: (profile as any)?.join_era || null
         }
       });
       const newId = docRef.id;
