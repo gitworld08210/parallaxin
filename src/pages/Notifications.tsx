@@ -5,13 +5,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Bell, Heart, MessageCircle, UserPlus, Info, CheckCircle2, ChevronRight, X, UserCheck, Briefcase } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
-import { useIncomingInvites } from "@/hooks/useIncomingInvites";
+import { useIncomingInvites } from "@/hooks/organization/useOrganizationInvites";
 import { OrganizationInviteBanner } from "@/components/organization/invites/OrganizationInviteBanner";
 
 const Notifications = () => {
   const { user } = useAuth();
   const [items, setItems] = useState<any[]>([]);
-  const { pendingInvites } = useIncomingInvites();
+  const { invites: pendingInvites } = useIncomingInvites();
 
   useEffect(() => {
     if (!user) return;
