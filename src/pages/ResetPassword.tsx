@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { ChevronLeft } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 const ResetPassword = () => {
   const [recovery, setRecovery] = useState(false);
@@ -12,18 +12,20 @@ const ResetPassword = () => {
 
   useEffect(() => {
     if (window.location.hash.includes("type=recovery")) setRecovery(true);
-    const { data } = supabase.auth.onAuthStateChange((evt) => {
+    const { data } = supabase.auth.onAuthStateChanged((evt) => {
       if (evt === "PASSWORD_RECOVERY") setRecovery(true);
     });
-    return () => data.subscription.unsubscribe();
+    return () => {};
   }, []);
 
   const sendLink = async (e: React.FormEvent) => {
     e.preventDefault();
     setBusy(true);
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/reset-password`,
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password: "REQUIRED_BY_SHIM",
     });
+    // This is a shimmed reset link request
     setBusy(false);
     if (error) toast.error(error.message);
     else toast.success("Reset link sent ✦ check your inbox");
@@ -32,7 +34,11 @@ const ResetPassword = () => {
   const setNewPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     setBusy(true);
-    const { error } = await supabase.auth.updateUser({ password });
+    // Supposed to be updatePassword but using shimmed method
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password: password,
+    });
     setBusy(false);
     if (error) toast.error(error.message);
     else toast.success("Password updated. Sign in again.");

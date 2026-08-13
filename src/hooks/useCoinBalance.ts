@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useCallback, useEffect, useState } from "react";
+
 import { useAuth } from "@/contexts/AuthProvider";
 
 export function useCoinBalance() {
@@ -24,12 +25,8 @@ export function useCoinBalance() {
       console.warn("Firestore wallet fetch failed, falling back to legacy", e);
     }
 
-    // 2. Legacy Supabase Fallback
-    const { data } = await supabase
-      .from("profiles_private")
-      .select("coin_balance")
-      .eq("user_id", user.id)
-      .maybeSingle();
+    // 2. Legacy Supabase Fallback.
+from("profiles_private").select("coin_balance").eq("user_id", user.id).maybeSingle();
     setBalance((data as any)?.coin_balance ?? 0);
     setLoading(false);
   }, [user?.id]);
@@ -38,11 +35,9 @@ export function useCoinBalance() {
 
   useEffect(() => {
     if (!user) return;
-    const ch = supabase
-      .channel(`coin-balance:${user.id}`)
-      .on("postgres_changes", { event: "*", schema: "public", table: "profiles_private", filter: `user_id=eq.${user.id}` }, refresh)
-      .subscribe();
-    return () => { supabase.removeChannel(ch); };
+      supabase.channel(`coin-balance:${user.id}`).
+on("postgres_changes", { event: "*", schema: "public", table: "profiles_private", filter: `user_id=eq.${user.id}` }, refresh).
+subscribe();
   }, [user?.id, refresh]);
 
   return { balance, loading, refresh };

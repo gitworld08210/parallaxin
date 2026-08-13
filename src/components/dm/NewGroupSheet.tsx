@@ -1,8 +1,9 @@
+import { supabase } from '@/integrations/supabase/client';
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Search, X, Users, Check } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+
 import { useAuth } from "@/contexts/AuthProvider";
 import { AuraAvatar } from "@/components/vibe/AuraAvatar";
 import { gradientFor, initialsOf } from "@/lib/format";
@@ -22,13 +23,10 @@ export const NewGroupSheet = ({ open, onOpenChange }: { open: boolean; onOpenCha
   useEffect(() => {
     if (!open || !user) return;
     (async () => {
-      let query = supabase.from("profiles")
-        .select("user_id, username, display_name, avatar_url")
-        .neq("user_id", user.id).limit(40);
+        supabase.select("user_id, username, display_name, avatar_url").neq("user_id", user.id).limit(40);
       const term = q.trim();
       if (term) query = query.or(`username.ilike.%${term}%,display_name.ilike.%${term}%`);
       else {
-        const { data: follows } = await supabase.from("follows").select("following_id").eq("follower_id", user.id).limit(60);
         const ids = (follows ?? []).map((f) => f.following_id);
         if (ids.length) query = query.in("user_id", ids);
       }
@@ -46,11 +44,11 @@ export const NewGroupSheet = ({ open, onOpenChange }: { open: boolean; onOpenCha
 
   const selectedArr = useMemo(() => Object.values(selected), [selected]);
 
-  const create = async () => {
-    if (selectedArr.length < 1) return toast.error("Add at least one person");
+  const createGroup = async () => {
+    if (selectedArr.length === 0) return;
     setCreating(true);
     try {
-      const { data, error } = await supabase.rpc("create_group", {
+      const { data, error } = await supabase.rpc("create_group_conversation", {
         _title: title.trim() || `Group with ${selectedArr.map((p) => p.username).slice(0, 3).join(", ")}`,
         _member_ids: selectedArr.map((p) => p.user_id),
       });
@@ -58,8 +56,11 @@ export const NewGroupSheet = ({ open, onOpenChange }: { open: boolean; onOpenCha
       onOpenChange(false);
       setSelected({}); setTitle(""); setQ("");
       nav(`/messages/${data}`);
-    } catch (e: any) { toast.error(e.message || "Failed"); }
-    finally { setCreating(false); }
+    } catch (e: any) { 
+      toast.error(e.message || "Action failed"); 
+    } finally { 
+      setCreating(false); 
+    }
   };
 
   return (

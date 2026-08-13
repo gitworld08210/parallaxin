@@ -1,36 +1,29 @@
-import { useEffect, useState } from "react";
-import { Sheet, SheetContent } from "@/components/ui/sheet";
-import { Checkbox } from "@/components/ui/checkbox";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { useState, useEffect } from "react";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter } from "@/components/ui/common/sheet";
+import { Button } from "@/components/ui/common/button";
+import { useAuth } from "@/contexts/AuthProvider";
 import { doc, updateDoc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { useAuth } from "@/contexts/AuthProvider";
 import { toast } from "sonner";
-import { Sparkles, DollarSign, BarChart3, ShieldCheck, Loader2, ChevronRight } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Loader2, ShieldCheck, Zap, Sparkles } from "lucide-react";
 
-type Props = { open: boolean; onOpenChange: (b: boolean) => void };
+interface BecomeCreatorSheetProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}
 
-const FALLBACK_VERSION = "2026-06-13";
-const FALLBACK_SPLIT = { creator: 85, platform: 15 };
-
-export const BecomeCreatorSheet = ({ open, onOpenChange }: Props) => {
+export function BecomeCreatorSheet({ open, onOpenChange }: BecomeCreatorSheetProps) {
   const { user, refreshProfile } = useAuth();
-  const [agreed, setAgreed] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [split, setSplit] = useState(FALLBACK_SPLIT);
-  const [version, setVersion] = useState(FALLBACK_VERSION);
+  const [version, setVersion] = useState("1.0.0");
 
   useEffect(() => {
-    if (!open) return;
     (async () => {
+      if (!open) return;
       try {
-        const configRef = doc(db, "app_config", "creator_settings");
-        const docSnap = await getDoc(configRef);
-        if (docSnap.exists()) {
-          const data = docSnap.data();
-          if (data.revenue_split) setSplit(data.revenue_split);
-          if (data.terms_version) setVersion(data.terms_version);
+        const configDoc = await getDoc(doc(db, "config", "creator_terms"));
+        if (configDoc.exists()) {
+          setVersion(configDoc.data().version || "1.0.0");
         }
       } catch (err) {
         console.error("Error fetching creator config:", err);
@@ -38,11 +31,11 @@ export const BecomeCreatorSheet = ({ open, onOpenChange }: Props) => {
     })();
   }, [open]);
 
-  const submit = async () => {
-    if (!agreed || !user) return;
+  const handleBecomeCreator = async () => {
+    if (!user) return;
     setSubmitting(true);
     try {
-      const profileRef = doc(db, "profiles", user.id);
+      const profileRef = doc(db, "profiles", user.uid);
       await updateDoc(profileRef, {
         is_creator: true,
         creator_terms_version: version,
@@ -60,67 +53,67 @@ export const BecomeCreatorSheet = ({ open, onOpenChange }: Props) => {
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="bottom" className="rounded-t-3xl bg-background border-t border-border px-5 pt-5 pb-6 max-h-[90vh]">
-        <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-border" />
-        <div className="flex items-center gap-2 mb-1">
-          <Sparkles className="h-5 w-5 text-primary" />
-          <h2 className="text-xl font-bold tracking-tight">Become a Creator</h2>
-        </div>
-        <p className="text-sm text-muted-foreground">Unlock publishing, monetization and analytics.</p>
+      <SheetContent side="bottom" className="h-[90vh] sm:h-[80vh] bg-black border-zinc-800 rounded-t-3xl p-0 overflow-hidden flex flex-col">
+        <div className="flex-1 overflow-y-auto p-6 space-y-8">
+          <SheetHeader className="text-center pt-4">
+            <div className="mx-auto w-16 h-16 bg-blue-500/10 rounded-2xl flex items-center justify-center mb-4">
+              <Sparkles className="w-8 h-8 text-blue-500" />
+            </div>
+            <SheetTitle className="text-3xl font-bold bg-gradient-to-br from-white to-zinc-500 bg-clip-text text-transparent">
+              Become a Creator
+            </SheetTitle>
+            <SheetDescription className="text-zinc-400 text-lg">
+              Unlock monetization and exclusive tools.
+            </SheetDescription>
+          </SheetHeader>
 
-        <div className="mt-4 grid grid-cols-2 gap-2">
-          <Feature icon={Sparkles} label="Post, Reels & Stories" />
-          <Feature icon={DollarSign} label="Tips & payouts" />
-          <Feature icon={BarChart3} label="Analytics & insights" />
-          <Feature icon={ShieldCheck} label="Ownership certificates" />
-        </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="p-6 rounded-2xl bg-zinc-900/50 border border-zinc-800 space-y-3">
+              <Zap className="w-6 h-6 text-yellow-500" />
+              <h3 className="font-semibold text-white">Monetization</h3>
+              <p className="text-sm text-zinc-500">Earn from subscriptions, tips, and exclusive content.</p>
+            </div>
+            <div className="p-6 rounded-2xl bg-zinc-900/50 border border-zinc-800 space-y-3">
+              <ShieldCheck className="w-6 h-6 text-green-500" />
+              <h3 className="font-semibold text-white">Verification</h3>
+              <p className="text-sm text-zinc-500">Get a creator badge and improved visibility.</p>
+            </div>
+            <div className="p-6 rounded-2xl bg-zinc-900/50 border border-zinc-800 space-y-3">
+              <Sparkles className="w-6 h-6 text-blue-500" />
+              <h3 className="font-semibold text-white">Advanced Tools</h3>
+              <p className="text-sm text-zinc-500">Access Creator Studio and analytics dashboard.</p>
+            </div>
+          </div>
 
-        <div className="mt-4 rounded-2xl p-4 bg-gradient-to-r from-primary/15 to-aura/10 border border-primary/30">
-          <p className="text-xs uppercase tracking-wider text-muted-foreground">Revenue split</p>
-          <div className="mt-1 flex items-baseline gap-2">
-            <span className="text-3xl font-extrabold text-primary">{split.creator}%</span>
-            <span className="text-sm text-muted-foreground">to you</span>
-            <span className="ml-auto text-sm font-semibold text-muted-foreground">{split.platform}% platform</span>
+          <div className="p-6 rounded-2xl bg-zinc-900/30 border border-zinc-800/50">
+            <p className="text-xs text-zinc-500 leading-relaxed">
+              By clicking "Agree & Join", you agree to the Aurelix Creator Terms (v{version}). 
+              Monetization is subject to verification and adherence to our Community Guidelines.
+            </p>
           </div>
         </div>
 
-        <ScrollArea className="mt-4 h-40 rounded-xl border border-border p-3 text-xs leading-relaxed text-muted-foreground">
-          <p className="font-semibold text-foreground mb-1">Creator Agreement (v{version})</p>
-          <p>By becoming a Creator you agree that:</p>
-          <ul className="list-disc pl-4 space-y-1 mt-1">
-            <li>Aurelix retains {split.platform}% of gross revenue from tips, paid unlocks and other monetization; you receive {split.creator}%.</li>
-            <li>Payouts require approved KYC and a valid UPI or bank destination. Minimum payout thresholds and processing times apply.</li>
-            <li>You own the content you upload and grant Aurelix a license to host, display and distribute it within the app.</li>
-            <li>You will not upload illegal, infringing, or sexually explicit content involving minors. Violations result in removal and possible account termination.</li>
-            <li>Tips and unlock revenue are final and non-refundable once verified.</li>
-            <li>You are responsible for any taxes on your earnings in your jurisdiction.</li>
-            <li>You must be 18+ to enable monetization.</li>
-            <li>Aurelix may update this Agreement; continued use after notice constitutes acceptance.</li>
-          </ul>
-          <p className="mt-2">Full terms: <Link to="/creator/terms" className="text-primary underline">/creator/terms</Link></p>
-        </ScrollArea>
-
-        <label className="mt-4 flex items-start gap-3 text-sm">
-          <Checkbox checked={agreed} onCheckedChange={(v) => setAgreed(!!v)} className="mt-0.5" />
-          <span>I agree to the Creator Agreement and the {split.creator}/{split.platform} revenue split.</span>
-        </label>
-
-        <button
-          onClick={submit}
-          disabled={!agreed || submitting}
-          className="mt-4 w-full py-3 rounded-2xl bg-gradient-to-r from-primary to-aura text-primary-foreground font-semibold text-sm shadow-glow disabled:opacity-50 disabled:shadow-none flex items-center justify-center gap-2"
-        >
-          {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
-          {submitting ? "Activating…" : "Activate Creator Mode"}
-        </button>
+        <SheetFooter className="p-6 border-t border-zinc-900 bg-black/80 backdrop-blur-xl flex flex-col sm:flex-row gap-3">
+          <Button 
+            variant="ghost" 
+            className="w-full sm:flex-1 text-zinc-400 hover:text-white"
+            onClick={() => onOpenChange(false)}
+          >
+            Cancel
+          </Button>
+          <Button 
+            className="w-full sm:flex-2 bg-blue-600 hover:bg-blue-500 text-white font-bold h-12 rounded-xl transition-all active:scale-95"
+            onClick={handleBecomeCreator}
+            disabled={submitting}
+          >
+            {submitting ? (
+              <Loader2 className="w-5 h-5 animate-spin" />
+            ) : (
+              "Agree & Join"
+            )}
+          </Button>
+        </SheetFooter>
       </SheetContent>
     </Sheet>
   );
-};
-
-const Feature = ({ icon: Icon, label }: { icon: any; label: string }) => (
-  <div className="flex items-center gap-2 rounded-xl border border-border bg-muted/30 px-3 py-2">
-    <Icon className="h-4 w-4 text-primary" />
-    <span className="text-xs font-medium">{label}</span>
-  </div>
-);
+}

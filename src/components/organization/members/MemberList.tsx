@@ -1,3 +1,4 @@
+import { supabase } from "@/integrations/supabase/client";
 // MemberList — paginated, real-data members list with search, loading,
 // empty, and error states. All data flows through useOrganizationMembers.
 import { useMemo, useState } from "react";

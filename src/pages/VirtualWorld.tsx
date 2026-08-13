@@ -13,7 +13,7 @@ import {
   Clock, CheckCircle2, XCircle, Loader2, Lock,
 } from "lucide-react";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
+
 import { useAuth } from "@/contexts/AuthProvider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -82,7 +82,6 @@ const VirtualWorld = () => {
         uploadKycFile(user.id, "selfie", selfie),
       ]);
 
-      const { error } = await supabase.from("virtual_world_applications").insert({
         user_id: user.id,
         full_name: fullName.trim(),
         aadhaar_number: digits,
@@ -92,13 +91,10 @@ const VirtualWorld = () => {
         contact_phone: phone.trim(),
         purpose: purpose.trim(),
         status: "pending",
-      });
       if (error) throw error;
       toast.success("Request sent to the Verification department");
       await refresh();
-    } catch (e: any) {
-      toast.error(e?.message ?? "Could not submit request");
-    } finally {
+    } catch (e: any) { toast.error(e.message || "Action failed"); } finally {
       setSubmitting(false);
     }
   };
@@ -108,14 +104,11 @@ const VirtualWorld = () => {
     if (channel !== "voice" && message.trim().length < 1) return toast.error("Write a message first");
     setSending(true);
     try {
-      const { data, error } = await supabase.functions.invoke("virtual-world-send", {
-        body: {
           channel,
           to: to.trim(),
           message: message.trim(),
           callerPhone: application?.contact_phone ?? undefined,
         },
-      });
 
       if (error) {
         console.error("Virtual World invocation error:", error);
@@ -129,9 +122,7 @@ const VirtualWorld = () => {
       toast.success(channel === "voice" ? "Calling your phone, then connecting…" : "Sent");
       setMessage("");
       await refresh();
-    } catch (e: any) {
-      toast.error(e?.message ?? "Could not send");
-    } finally {
+    } catch (e: any) { toast.error(e.message || "Action failed"); } finally {
       setSending(false);
     }
   };

@@ -5,7 +5,7 @@ import { PostCard, FeedPost } from "@/components/social/PostCard";
 import { CommentSheet } from "@/components/social/CommentSheet";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { supabase } from "@/integrations/supabase/client";
+
 import { useAuth } from "@/contexts/AuthProvider";
 
 const PostDetail = () => {
@@ -24,7 +24,6 @@ const PostDetail = () => {
       const data = { id: snap.id, ...snap.data() };
       let liked = false;
       if (user) {
-        const { data: l } = await supabase.from("likes").select("post_id").eq("user_id", user.id).eq("post_id", postId).maybeSingle();
         liked = !!l;
       }
       setPost({ ...(data as any), liked });

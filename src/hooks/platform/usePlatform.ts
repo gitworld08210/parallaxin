@@ -1,9 +1,10 @@
+import { supabase } from '@/integrations/supabase/client';
 /**
  * Platform engine hooks. Thin React-Query wrappers around the service layer.
  */
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+
 import {
   approvals,
   workflows,
@@ -99,16 +100,14 @@ export const useActivity = (filter?: {
 
 export const useActivityRealtime = (onChange: () => void) => {
   useEffect(() => {
-    const channel = supabase
-      .channel("platform-activity")
-      .on(
+      supabase.channel("platform-activity").
+on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "platform_activity_events" },
         () => onChange(),
-      )
-      .subscribe();
+      ).
+subscribe();
     return () => {
-      supabase.removeChannel(channel);
     };
   }, [onChange]);
 };

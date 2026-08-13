@@ -1,5 +1,6 @@
-import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
+
 import { useAuth } from "@/contexts/AuthProvider";
 import { createPeer, getUserMedia, stopStream } from "@/lib/webrtc";
 import { toast } from "sonner";
@@ -69,8 +70,6 @@ export const CallProvider = ({ children }: { children: React.ReactNode }) => {
   const [connected, setConnected] = useState(false);
 
   const pcRef = useRef<RTCPeerConnection | null>(null);
-  const signalChRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
-  const callRowChRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
   const pendingIceRef = useRef<RTCIceCandidateInit[]>([]);
   const remoteDescSetRef = useRef(false);
   const ringTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -78,10 +77,10 @@ export const CallProvider = ({ children }: { children: React.ReactNode }) => {
   const cleanup = useCallback(() => {
     if (pcRef.current) {
       try { pcRef.current.close(); } catch {}
+      /* Reconstructed shim */
+      const { data, error } = await Promise.resolve({ data: null, error: null });
       pcRef.current = null;
     }
-    if (signalChRef.current) { supabase.removeChannel(signalChRef.current); signalChRef.current = null; }
-    if (callRowChRef.current) { supabase.removeChannel(callRowChRef.current); callRowChRef.current = null; }
     stopStream(localStream);
     stopStream(remoteStream);
     setLocalStream(null);
@@ -104,9 +103,7 @@ export const CallProvider = ({ children }: { children: React.ReactNode }) => {
     else if (finalStatus === "declined") label = `🚫 ${kind === "video" ? "Video" : "Voice"} call declined`;
     else if (finalStatus === "cancelled") label = `📵 ${kind === "video" ? "Video" : "Voice"} call cancelled`;
     if (!label) return;
-    await supabase.from("messages").insert({
-      conversation_id: conversationId, sender_id: user.id, content: label,
-    } as any);
+      await supabase.from("messages").insert({ conversation_id: conversationId, sender_id: user.uid, content: label });
   }, [user]);
 
   const finishCall = useCallback(async (finalStatus: "ended" | "missed" | "declined" | "cancelled" | "busy") => {
@@ -114,12 +111,11 @@ export const CallProvider = ({ children }: { children: React.ReactNode }) => {
     const dur = a ? Math.floor((Date.now() - a.startedAt) / 1000) : 0;
     if (a) {
       try {
-        await supabase.from("calls").update({
+          status: finalStatus,
           status: finalStatus,
           ended_at: new Date().toISOString(),
-          duration_sec: finalStatus === "ended" ? dur : 0,
-        } as any).eq("id", a.call_id);
-        // Insert a system-style summary message (only caller does it to avoid dupes)
+          duration_sec: finalStatus === "ended" ? dur : 0
+        }).eq("id", a.call_id);
         if (a.isCaller) await insertSummaryMessage(a.conversation_id, a.kind, finalStatus, dur);
       } catch {}
     }
@@ -130,30 +126,26 @@ export const CallProvider = ({ children }: { children: React.ReactNode }) => {
 
   const sendSignal = useCallback(async (callId: string, toUser: string, kind: "offer" | "answer" | "ice" | "bye", payload: any) => {
     if (!user) return;
-    await supabase.from("call_signals").insert({
       call_id: callId, from_user: user.id, to_user: toUser, kind, payload,
-    } as any);
-  }, [user]);
+      await supabase.from("call_signals").insert({ call_id: callId, from_user: user.uid, to_user: toUser, kind, payload });
 
   const subscribeSignals = useCallback((callId: string, peerId: string, onSignal: (k: string, payload: any) => void) => {
-    const ch = supabase
-      .channel(`call-signals:${callId}`)
-      .on(
+      supabase.channel(`call-signals:${callId}`).
+on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "call_signals", filter: `call_id=eq.${callId}` },
         (p: any) => {
           const row = p.new;
           if (row.from_user === peerId) onSignal(row.kind, row.payload);
         },
-      )
-      .subscribe();
+      ).
+subscribe();
     signalChRef.current = ch;
   }, []);
 
   const subscribeCallRow = useCallback((callId: string) => {
-    const ch = supabase
-      .channel(`call-row:${callId}`)
-      .on(
+      supabase.channel(`call-row:${callId}`).
+on(
         "postgres_changes",
         { event: "UPDATE", schema: "public", table: "calls", filter: `id=eq.${callId}` },
         (p: any) => {
@@ -167,8 +159,8 @@ export const CallProvider = ({ children }: { children: React.ReactNode }) => {
             else if (row.status === "busy") toast("User is busy");
           }
         },
-      )
-      .subscribe();
+      ).
+subscribe();
     callRowChRef.current = ch;
   }, [cleanup]);
 
@@ -177,19 +169,7 @@ export const CallProvider = ({ children }: { children: React.ReactNode }) => {
     if (!user) return;
     if (status !== "idle") { toast("You're already in a call"); return; }
 
-    try {
-      // 1. Get media
-      const stream = await getUserMedia(kind === "video");
-      setLocalStream(stream);
-
-      // 2. Insert call row
-      const { data: callRow, error } = await supabase.from("calls").insert({
-        conversation_id: conversationId,
-        caller_id: user.id,
-        callee_id: peer.user_id,
-        kind,
-        status: "ringing",
-      } as any).select("id").single();
+    try /* shimmed */
       if (error || !callRow) throw error || new Error("Failed to create call");
 
       const callId = (callRow as any).id as string;
@@ -249,7 +229,6 @@ export const CallProvider = ({ children }: { children: React.ReactNode }) => {
       ringTimerRef.current = setTimeout(async () => {
         const pcNow = pcRef.current;
         if (!pcNow || pcNow.connectionState !== "connected") {
-          await supabase.from("calls").update({ status: "missed", ended_at: new Date().toISOString() } as any).eq("id", callId);
           await sendSignal(callId, peer.user_id, "bye", { reason: "timeout" });
           await insertSummaryMessage(conversationId, kind, "missed", 0);
           cleanup();
@@ -282,7 +261,6 @@ export const CallProvider = ({ children }: { children: React.ReactNode }) => {
         isCaller: false,
         peer: inc.peer,
         startedAt: Date.now(),
-      });
       setIncoming(null);
       setStatus("connecting");
 
@@ -329,15 +307,9 @@ export const CallProvider = ({ children }: { children: React.ReactNode }) => {
       });
 
       // Mark accepted (the caller may have inserted offer before we marked accepted, that's fine)
-      await supabase.from("calls").update({ status: "accepted", accepted_at: new Date().toISOString() } as any).eq("id", inc.call_id);
 
-      // Fetch any offer that arrived before subscribe
-      const { data: signals } = await supabase
-        .from("call_signals")
-        .select("kind, payload, from_user")
-        .eq("call_id", inc.call_id)
-        .eq("from_user", inc.caller_id)
-        .order("created_at", { ascending: true });
+      // Fetch any offer that arrived before subscribe.
+from("call_signals").select("kind, payload, from_user").eq("call_id", inc.call_id).eq("from_user", inc.caller_id).order("created_at", { ascending: true });
       if (signals) {
         for (const s of signals as any[]) {
           if (s.kind === "offer" && !pc.currentRemoteDescription) {
@@ -364,7 +336,6 @@ export const CallProvider = ({ children }: { children: React.ReactNode }) => {
     if (!incoming) return;
     const inc = incoming;
     setIncoming(null);
-    await supabase.from("calls").update({ status: "declined", ended_at: new Date().toISOString() } as any).eq("id", inc.call_id);
     await sendSignal(inc.call_id, inc.caller_id, "bye", { reason: "declined" });
   }, [incoming, sendSignal]);
 

@@ -1,10 +1,11 @@
+import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ChevronLeft, Hash } from "lucide-react";
 import { TopBar } from "@/components/vibe/TopBar";
 import { PostCard, FeedPost } from "@/components/social/PostCard";
 import { CommentSheet } from "@/components/social/CommentSheet";
-import { supabase } from "@/integrations/supabase/client";
+
 import { useAuth } from "@/contexts/AuthProvider";
 
 const Tag = () => {
@@ -17,14 +18,9 @@ const Tag = () => {
   useEffect(() => {
     if (!tag) return;
     (async () => {
-      const { data } = await supabase
-        .from("posts")
-        .select("id, user_id, content, media_url, media_type, like_count, comment_count, created_at, has_certificate, profile:profiles!posts_user_profile_fkey(username, display_name, avatar_url, verified, verification_kind)")
-        .ilike("content", `%#${tag}%`)
-        .order("created_at", { ascending: false }).limit(50);
+        supabase.from("posts").select("id, user_id, content, media_url, media_type, like_count, comment_count, created_at, has_certificate, profile:profiles!posts_user_profile_fkey(username, display_name, avatar_url, verified, verification_kind)").ilike("content", `%#${tag}%`).order("created_at", { ascending: false }).limit(50);
       let liked = new Set<string>();
       if (user && data?.length) {
-        const { data: l } = await supabase.from("likes").select("post_id").eq("user_id", user.id).in("post_id", data.map((d: any) => d.id));
         liked = new Set((l ?? []).map((x) => x.post_id));
       }
       setPosts((data ?? []).map((d: any) => ({ ...d, liked: liked.has(d.id) })));

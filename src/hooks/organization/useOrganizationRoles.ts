@@ -65,8 +65,7 @@ export const useRoleMutations = () => {
                   priority: patch.priority ?? r.priority,
                 }
               : r,
-          ),
-        );
+          ));
       }
       return { prev, key };
     },

@@ -2,7 +2,7 @@ import { reliableInvoke } from "@/lib/reliableInvoke";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Film, Sparkles, X, ShieldCheck, Music, Wand2, Camera, ImagePlus } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+
 import { useAuth } from "@/contexts/AuthProvider";
 import { toast } from "sonner";
 import { FilterStrip, FilterKey, filterCss } from "@/components/compose/FilterStrip";
@@ -53,10 +53,9 @@ const ReelCompose = () => {
   const aiCaption = async () => {
     setAiBusy(true);
     try {
-      const { data, error } = await supabase.functions.invoke("ai-caption", { body: { hint: content || "short reel video" } });
       if (error) throw error;
       if (data?.caption) setContent(data.caption);
-    } catch (e: any) { toast.error(e.message || "AI failed"); } finally { setAiBusy(false); }
+    } catch (e: any) { toast.error(e.message || "Action failed"); } finally { setAiBusy(false); }
   };
 
   const submit = async () => {
@@ -65,7 +64,6 @@ const ReelCompose = () => {
     setBusy(true);
     try {
       if (content.trim()) {
-        const { data: mod } = await supabase.functions.invoke("ai-moderate", { body: { text: content } });
         if (mod?.flagged) throw new Error(mod.reason || "Caption flagged");
       }
       const url = await uploadToCloudinary(file);
@@ -85,7 +83,7 @@ const ReelCompose = () => {
       }
       toast.success("Reel posted ✦");
       nav("/reels");
-    } catch (e: any) { toast.error(e.message || "Failed"); } finally { setBusy(false); }
+    } catch (e: any) { toast.error(e.message || "Action failed"); } finally { setBusy(false); }
   };
 
   // ---------- CAPTURE (TikTok style empty state) ----------

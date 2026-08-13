@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ChevronLeft } from "lucide-react";
 import { TopBar } from "@/components/vibe/TopBar";
-import { supabase } from "@/integrations/supabase/client";
+
 import { useAuth } from "@/contexts/AuthProvider";
 import { toast } from "sonner";
 
@@ -17,9 +17,7 @@ export default function ChangePasswordScreen() {
     if (!user?.email) return;
     if (next.length < 8) return toast.error("Password must be at least 8 characters");
     setBusy(true);
-    const { error: reauth } = await supabase.auth.signInWithPassword({ email: user.email, password: current });
     if (reauth) { setBusy(false); return toast.error("Current password is incorrect"); }
-    const { error } = await supabase.auth.updateUser({ password: next });
     setBusy(false);
     if (error) return toast.error(error.message);
     toast.success("Password updated");

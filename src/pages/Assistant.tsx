@@ -5,7 +5,7 @@ import remarkGfm from "remark-gfm";
 import { TopBar } from "@/components/vibe/TopBar";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { supabase } from "@/integrations/supabase/client";
+
 
 type Msg = { role: "user" | "assistant"; content: string };
 
@@ -35,8 +35,6 @@ const Assistant = () => {
     setStreaming(true);
 
     try {
-      const url = `https://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.supabase.co/functions/v1/ai-assistant`;
-      const { data: { session } } = await supabase.auth.getSession();
       if (!session?.access_token) {
         toast.error("Please sign in to use the assistant.");
         setStreaming(false);
@@ -47,10 +45,8 @@ const Assistant = () => {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${session.access_token}`,
-        },
-        body: JSON.stringify({ messages: next.slice(0, -1) }),
+        body: JSON.stringify({ messages: next, model: "gpt-4o" }),
       });
-      if (resp.status === 429) { toast.error("Rate limit hit. Try again shortly."); setStreaming(false); return; }
       if (resp.status === 402) { toast.error("AI credits exhausted. Add credits in Settings."); setStreaming(false); return; }
       if (!resp.ok || !resp.body) {
         const t = await resp.text().catch(() => "");
@@ -81,14 +77,11 @@ const Assistant = () => {
                 const copy = [...m];
                 copy[copy.length - 1] = { role: "assistant", content: assistant };
                 return copy;
-              });
             }
           } catch {}
         }
       }
-    } catch (e: any) {
-      toast.error(e?.message || "Network error");
-    } finally {
+    } catch (e: any) { toast.error(e.message || "Action failed"); } finally {
       setStreaming(false);
     }
   };

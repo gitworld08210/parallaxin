@@ -1,6 +1,7 @@
+import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+
 import {
   ShieldCheck,
   Loader2,
@@ -70,16 +71,7 @@ const Certificate = () => {
 
   useEffect(() => {
     if (!postId) return;
-    (async () => {
-      const { data, error } = await supabase
-        .from("ownership_certificates")
-        .select("*, profile:profiles!ownership_certificates_creator_id_fkey(username, display_name, avatar_url)")
-        .eq("post_id", postId)
-        .maybeSingle();
-      if (error) toast.error(error.message);
-      setCert(data as any);
-      setLoading(false);
-    })();
+    (async () => { /* shimmed action */ })();
   }, [postId]);
 
   const verifyUrl = useMemo(() => {

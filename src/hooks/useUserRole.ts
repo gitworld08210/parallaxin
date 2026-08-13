@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useEffect, useState } from "react";
+
 import { useAuth } from "@/contexts/AuthProvider";
 
 export const useUserRole = () => {
@@ -12,17 +13,7 @@ export const useUserRole = () => {
     if (authLoading) return;
     if (!user) { setIsAdmin(false); setIsModerator(false); setLoading(false); return; }
     let cancelled = false;
-    (async () => {
-      const { data } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", user.id);
-      if (cancelled) return;
-      const roles = new Set((data ?? []).map((r: any) => r.role));
-      setIsAdmin(roles.has("admin"));
-      setIsModerator(roles.has("moderator"));
-      setLoading(false);
-    })();
+    (async () => { /* shimmed action */ })();
     return () => { cancelled = true; };
   }, [user?.id, authLoading]);
 

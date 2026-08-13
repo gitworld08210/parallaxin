@@ -1,7 +1,8 @@
+import { supabase } from '@/integrations/supabase/client';
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { ChevronLeft } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+
 import { AuraFrame } from "@/components/founders/AuraFrame";
 import { initialsOf } from "@/lib/format";
 
@@ -27,10 +28,7 @@ export const FounderCouncilScreen = () => {
 
   useEffect(() => {
     (async () => {
-      const { data } = await (supabase.from("profiles") as any)
-        .select("user_id, username, display_name, avatar_url, council_role, founder_title")
-        .not("council_role", "is", null)
-        .order("created_at", { ascending: true });
+        supabase.select("user_id, username, display_name, avatar_url, council_role, founder_title").not("council_role", "is", null).order("created_at", { ascending: true });
       setMembers((data ?? []) as Member[]);
       setLoading(false);
     })();

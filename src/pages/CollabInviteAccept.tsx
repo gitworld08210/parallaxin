@@ -1,3 +1,4 @@
+import { supabase } from "@/integrations/supabase/client";
 // CollabInviteAccept — celebratory page shown when a user taps a collab invite
 // notification. Displays a 🎉 congratulations header, the inviter's identity
 // and description, a preview of the post, and premium Accept / Decline CTAs.
@@ -13,7 +14,7 @@ import {
   Sparkles,
   X,
 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+
 import { useAuth } from "@/contexts/AuthProvider";
 import { toast } from "sonner";
 
@@ -57,17 +58,8 @@ const CollabInviteAccept = () => {
       if (!user) return;
       setLoading(true);
       const [{ data: postData }, { data: rowData }] = await Promise.all([
-        supabase
-          .from("posts")
-          .select("id, content, media_url, user_id, created_at")
-          .eq("id", postId)
-          .maybeSingle(),
-        supabase
-          .from("post_collaborators" as any)
-          .select("status, invited_at, responded_at")
-          .eq("post_id", postId)
-          .eq("user_id", user.id)
-          .maybeSingle(),
+          supabase.from("posts").select("id, content, media_url, user_id, created_at").eq("id", postId).maybeSingle(),
+          supabase.from("post_collaborators" as any).select("status, invited_at, responded_at").eq("post_id", postId).eq("user_id", user.id).maybeSingle(),
       ]);
       if (cancelled) return;
       if (!postData) {
@@ -77,11 +69,7 @@ const CollabInviteAccept = () => {
       }
       setPost(postData as any);
       setRow((rowData as any) ?? null);
-      const { data: authorData } = await supabase
-        .from("profiles")
-        .select("user_id, username, display_name, avatar_url, bio, verified, verification_kind")
-        .eq("user_id", (postData as any).user_id)
-        .maybeSingle();
+        supabase.from("profiles").select("user_id, username, display_name, avatar_url, bio, verified, verification_kind").eq("user_id", (postData as any).user_id).maybeSingle();
       if (!cancelled) setAuthor((authorData as any) ?? null);
       setLoading(false);
     })();
@@ -93,11 +81,7 @@ const CollabInviteAccept = () => {
   const respond = async (status: "accepted" | "declined") => {
     if (!user) return;
     setBusy(status === "accepted" ? "accept" : "decline");
-    const { error } = await supabase
-      .from("post_collaborators" as any)
-      .update({ status, responded_at: new Date().toISOString() } as any)
-      .eq("post_id", postId)
-      .eq("user_id", user.id);
+      supabase.from("post_collaborators" as any).update({ status, responded_at: new Date().toISOString() } as any).eq("post_id", postId).eq("user_id", user.id);
     setBusy(null);
     if (error) return toast.error(error.message);
     if (status === "accepted") {

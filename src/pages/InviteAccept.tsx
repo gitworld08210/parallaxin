@@ -17,7 +17,7 @@ import {
   Users,
   X,
 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+
 import { useAuth } from "@/contexts/AuthProvider";
 import { useIncomingInviteActions } from "@/hooks/organization/useOrganizationInvites";
 import { toast } from "sonner";
@@ -68,10 +68,7 @@ const InviteAccept = () => {
       setLoading(true);
       // Uses a SECURITY DEFINER RPC so invitees (who aren't yet org members)
       // can still read their invitation despite table-level RLS.
-      const { data, error } = await supabase.rpc(
-        "get_organization_invite_by_token" as any,
-        { _token: token },
-      );
+      const { data, error } = await supabase.rpc("get_organization_invite_by_token", { _token: token });
       if (cancelled) return;
       const row = Array.isArray(data) ? data[0] : (data as any);
       if (error || !row) {
@@ -129,7 +126,6 @@ const InviteAccept = () => {
   const onAccept = async () => {
     if (!inv) return;
     try {
-      await accept.mutateAsync({ token: inv.invite_token });
       toast.success(`Joined ${inv.organization?.name ?? "organization"} ✦`);
       if (inv.organization?.slug) nav(`/organization/${inv.organization.slug}`);
       else nav("/notifications");
@@ -141,7 +137,6 @@ const InviteAccept = () => {
   const onDecline = async () => {
     if (!inv) return;
     try {
-      await decline.mutateAsync({ token: inv.invite_token });
       toast.success("Invitation declined");
       nav("/notifications");
     } catch (e) {

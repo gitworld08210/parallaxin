@@ -45,8 +45,7 @@ export const SideMenu = ({ trigger }: { trigger: React.ReactNode }) => {
 
   const { workspaces } = useMyWorkspaces();
   const ownedWorkspace =
-    workspaces
-      .filter((w) => w.is_owner)
+    workspaces.filter((w) => w.is_owner)
       .slice()
       .sort((a, b) => (a.name ?? "").localeCompare(b.name ?? ""))[0] ?? null;
   const adminOrgSlug = ownedWorkspace?.slug ?? null;
@@ -257,8 +256,7 @@ const MenuSection = ({ rows, label }: { rows: Row[]; label?: string }) => (
         </>
       );
       const className = cn(
-        "w-full flex items-center gap-4 px-3 py-3 rounded-xl hover:bg-secondary/60 transition-colors",
-      );
+        "w-full flex items-center gap-4 px-3 py-3 rounded-xl hover:bg-secondary/60 transition-colors");
       if (r.onClick) {
         return (
           <button key={r.label} onClick={r.onClick} className={className}>

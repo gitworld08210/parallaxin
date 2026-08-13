@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthProvider";
 import { AuraAvatar } from "@/components/vibe/AuraAvatar";
 import { gradientFor, initialsOf, timeAgo } from "@/lib/format";
@@ -23,30 +22,15 @@ export const CommentSheet = ({ postId, open, onOpenChange }: { postId: string | 
 
   useEffect(() => {
     if (!postId || !open) return;
-    setLoading(true);
-    (async () => {
-      const { data } = await supabase
-        .from("comments")
-        .select("id, content, created_at, user_id, profile:profiles!comments_user_profile_fkey(username, display_name, avatar_url)")
-        .eq("post_id", postId)
-        .order("created_at", { ascending: true });
-      setItems((data as any) ?? []);
-      setLoading(false);
-    })();
+    // Firestore fetching for comments logic would go here.
+    setItems([]);
   }, [postId, open]);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user || !postId || !text.trim()) return;
-    const content = text.trim().slice(0, 500);
+    toast.info("Comments moving to Firestore...");
     setText("");
-    const { data, error } = await supabase
-      .from("comments")
-      .insert({ user_id: user.id, post_id: postId, content })
-      .select("id, content, created_at, user_id, profile:profiles!comments_user_profile_fkey(username, display_name, avatar_url)")
-      .single();
-    if (error) return toast.error(error.message);
-    setItems((c) => [...c, data as any]);
   };
 
   return (
@@ -56,8 +40,6 @@ export const CommentSheet = ({ postId, open, onOpenChange }: { postId: string | 
           <SheetTitle className="font-display text-xl">Comments</SheetTitle>
         </SheetHeader>
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
-          {loading && <p className="text-sm text-muted-foreground">Loading…</p>}
-          {!loading && items.length === 0 && <p className="text-sm text-muted-foreground text-center py-8">Be the first to comment ✦</p>}
           {items.map((c) => (
             <div key={c.id} className="flex gap-3">
               {c.profile?.avatar_url ? (

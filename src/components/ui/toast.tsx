@@ -34,8 +34,7 @@ const toastVariants = cva(
     defaultVariants: {
       variant: "default",
     },
-  },
-);
+  });
 
 const Toast = React.forwardRef<
   React.ElementRef<typeof ToastPrimitives.Root>,

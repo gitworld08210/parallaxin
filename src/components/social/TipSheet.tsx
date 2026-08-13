@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Sparkles, QrCode, Copy, Check, ExternalLink, ShieldCheck, Loader2, Clock } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+
 import { useAuth } from "@/contexts/AuthProvider";
 import { toast } from "sonner";
 
@@ -45,7 +45,6 @@ export function TipSheet({ open, onOpenChange, recipientId, recipientName, postI
     if (!open) return;
     let cancelled = false;
     (async () => {
-      const { data, error } = await supabase.rpc("get_platform_pay_config" as any);
       if (cancelled || error || !data) return;
       const row: any = Array.isArray(data) ? data[0] : data;
       setPay({
@@ -67,18 +66,15 @@ export function TipSheet({ open, onOpenChange, recipientId, recipientName, postI
     if (!pay?.upi && !pay?.qr) return toast.error("Payments are not configured yet. Try again later.");
     setLoading(true);
     try {
-      const { data, error } = await supabase.rpc("create_tip" as any, {
+      const { data, error } = await supabase.rpc("init_tip_payment", {
         _recipient_id: recipientId,
         _amount_cents: cents,
         _post_id: postId ?? null,
-        _message: message.trim() || null,
+        _message: message.trim() || null
       });
-      if (error || !data) throw new Error(error?.message || "Failed");
       setTipId(String(data));
       setStep("pay");
-    } catch (e: any) {
-      toast.error(e.message);
-    } finally {
+    } catch (e: any) { toast.error(e.message || "Action failed"); } finally {
       setLoading(false);
     }
   };
@@ -88,7 +84,6 @@ export function TipSheet({ open, onOpenChange, recipientId, recipientName, postI
     const cleaned = utr.trim().replace(/\s+/g, "");
     if (!/^[0-9]{12}$/.test(cleaned)) return toast.error("Enter your 12-digit UPI UTR");
     setLoading(true);
-    const { data, error } = await supabase.rpc("verify_tip_with_utr", { _tip_id: tipId, _utr: cleaned });
     setLoading(false);
     if (error) return toast.error(error.message);
     const s = (data as any)?.status;

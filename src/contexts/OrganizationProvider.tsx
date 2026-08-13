@@ -98,20 +98,17 @@ export const OrganizationProvider = ({ children }: { children: ReactNode }) => {
   const membership = contextQuery.data?.membership ?? null;
   const permissions = useMemo(
     () => new Set<string>(contextQuery.data?.permissions ?? []),
-    [contextQuery.data?.permissions],
-  );
+    [contextQuery.data?.permissions]);
   const roleNames = useMemo(
     () => workspaces.find((w) => w.id === organizationId)?.role_names ?? [],
-    [workspaces, organizationId],
-  );
+    [workspaces, organizationId]);
 
   const hasPermission = useCallback(
     (key: OrgPermissionKey | string) => {
       if (membership?.is_owner) return true;
       return permissions.has(key);
     },
-    [membership?.is_owner, permissions],
-  );
+    [membership?.is_owner, permissions]);
 
   const switchOrganization = useCallback(
     (slugOrId: string) => {
@@ -119,8 +116,7 @@ export const OrganizationProvider = ({ children }: { children: ReactNode }) => {
       const targetSlug = match?.slug ?? slugOrId;
       navigate(`/organization/${targetSlug}/dashboard`);
     },
-    [navigate, workspaces],
-  );
+    [navigate, workspaces]);
 
   const refreshOrganization = useCallback(async () => {
     await Promise.all([

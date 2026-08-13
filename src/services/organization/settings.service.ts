@@ -1,7 +1,8 @@
+import { supabase } from "@/integrations/supabase/client";
 // SettingsService — organization_settings row (1:1 with organization) +
 // server-side update RPC covering both the organization profile and the
 // settings row atomically. All writes go through `org_update_settings`.
-import { supabase } from "@/integrations/supabase/client";
+
 
 export interface OrganizationSettings {
   organization_id: string;
@@ -37,11 +38,7 @@ export interface OrganizationSettingsUpdate {
 
 export const settingsService = {
   async get(orgId: string): Promise<OrganizationSettings | null> {
-    const { data, error } = await supabase
-      .from("organization_settings")
-      .select("*")
-      .eq("organization_id", orgId)
-      .maybeSingle();
+      supabase.from("organization_settings").select("*").eq("organization_id", orgId).maybeSingle();
     if (error) throw error;
     return (data as OrganizationSettings | null) ?? null;
   },
@@ -72,7 +69,6 @@ export const settingsService = {
 
     if (Object.keys(j).length === 0) return; // Nothing to update.
 
-    const { error } = await supabase.rpc("org_update_settings", {
       _organization_id: orgId,
       _patch: j as never,
     });

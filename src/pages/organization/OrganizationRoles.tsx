@@ -1,3 +1,4 @@
+import { supabase } from "@/integrations/supabase/client";
 // OrganizationRoles — list + create/edit/delete roles. All actions gated by
 // roles.manage (enforced server-side by every RPC too).
 import { useState } from "react";

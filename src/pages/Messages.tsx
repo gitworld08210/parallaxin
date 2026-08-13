@@ -1,3 +1,4 @@
+import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
@@ -8,7 +9,7 @@ import { VerificationBadge } from "@/components/vibe/VerificationBadge";
 import { EmptyState } from "@/components/empty/EmptyState";
 import { collection, query as firestoreQuery, where, orderBy, limit, onSnapshot, getDocs, addDoc, serverTimestamp, Timestamp } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { supabase } from "@/integrations/supabase/client";
+
 import { useAuth } from "@/contexts/AuthProvider";
 import { gradientFor, initialsOf } from "@/lib/format";
 import { toast } from "sonner";
@@ -108,12 +109,7 @@ const Messages = () => {
     if (!q) { setResults([]); return; }
     let cancelled = false;
     const t = setTimeout(async () => {
-      const { data } = await supabase
-        .from("profiles")
-        .select("user_id, username, display_name, avatar_url, verification_kind")
-        .or(`username.ilike.%${q}%,display_name.ilike.%${q}%`)
-        .neq("user_id", user?.id ?? "")
-        .limit(12);
+        supabase.from("profiles").select("user_id, username, display_name, avatar_url, verification_kind").or(`username.ilike.%${q}%,display_name.ilike.%${q}%`).neq("user_id", user?.id ?? "").limit(12);
       if (!cancelled) setResults((data as any) ?? []);
     }, 220);
     return () => { cancelled = true; clearTimeout(t); };
@@ -160,19 +156,17 @@ const Messages = () => {
 
       // Create new DM
       const docRef = await addDoc(collection(db, "conversations"), {
-        member_ids: [user.id, otherId],
+        member_ids: [user.uid, otherId],
         is_group: false,
         created_at: serverTimestamp(),
         last_message_at: serverTimestamp(),
-        members: [] // You'd typically include minimal profile data here for fast listing
+        members: [] 
       });
       
       setComposerOpen(false);
       setComposerQuery("");
       nav(`/messages/${docRef.id}`);
-    } catch (e: any) {
-      toast.error(e.message || "Could not start chat");
-    } finally {
+    } catch (e: any) { toast.error(e.message || "Action failed"); } finally {
       setStarting(false);
     }
   };

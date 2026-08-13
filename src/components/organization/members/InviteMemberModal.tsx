@@ -64,8 +64,7 @@ export const InviteMemberModal = ({ open, onOpenChange }: InviteMemberModalProps
           onOpenChange(false);
         },
         onError: (err: Error) => toast.error(err.message ?? "Failed to send invitation"),
-      },
-    );
+      });
   };
 
   return (
@@ -127,8 +126,7 @@ export const InviteMemberModal = ({ open, onOpenChange }: InviteMemberModalProps
             </SelectTrigger>
             <SelectContent>
               <SelectItem value={DEFAULT_ROLE_VALUE}>Default (Member)</SelectItem>
-              {roles
-                .filter((r) => !isOwnerRole(r))
+              {roles.filter((r) => !isOwnerRole(r))
                 .map((r) => (
                   <SelectItem key={r.id} value={r.id}>
                     {r.name}

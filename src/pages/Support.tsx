@@ -1,3 +1,4 @@
+import { supabase } from "@/integrations/supabase/client";
 /**
  * Support — user-facing help & request center.
  *
@@ -14,7 +15,7 @@ import {
   ChevronRight, ArrowLeft,
 } from "lucide-react";
 import { Link } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+
 import { useAuth } from "@/contexts/AuthProvider";
 import { toast } from "sonner";
 
@@ -83,13 +84,8 @@ const Support = () => {
         console.warn("Firestore support tickets fetch failed", e);
       }
 
-      // 2. Supabase Fallback
-      const { data, error } = await supabase
-        .from("sup_tickets")
-        .select("id, ticket_number, subject, category, priority, status, created_at, owning_department_id")
-        .eq("requester_id", user!.id)
-        .order("created_at", { ascending: false })
-        .limit(20);
+      // 2. Supabase Fallback.
+from("sup_tickets").select("id, ticket_number, subject, category, priority, status, created_at, owning_department_id").eq("requester_id", user!.id).order("created_at", { ascending: false }).limit(20);
       if (error) throw error;
       return data ?? [];
     },
@@ -120,13 +116,11 @@ const Support = () => {
           created_at: serverTimestamp(),
           status: "open",
           ticket_number: `SUP-${Math.floor(1000 + Math.random() * 9000)}`
-        });
       } catch (e) {
         console.warn("Firestore ticket creation failed", e);
       }
 
       // 2. Supabase Insert (Legacy/Back-office)
-      const { data, error } = await (supabase.from("sup_tickets") as any).insert(payload).select("ticket_number").single();
       if (error) throw error;
       return data as { ticket_number: string };
     },

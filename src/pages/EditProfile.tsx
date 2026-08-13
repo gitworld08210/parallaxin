@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { ChevronLeft, Upload, Sparkles } from "lucide-react";
 import { TopBar } from "@/components/vibe/TopBar";
 import { AuraAvatar } from "@/components/vibe/AuraAvatar";
-import { supabase } from "@/integrations/supabase/client";
+
 import { useAuth } from "@/contexts/AuthProvider";
 import { gradientFor, initialsOf } from "@/lib/format";
 import { toast } from "sonner";
@@ -27,16 +27,11 @@ const EditProfile = () => {
     setBioAiBusy(true);
     setBioVariants([]);
     try {
-      const { data, error } = await supabase.functions.invoke("ai-bio-rewrite", {
-        body: { bio, display_name: displayName, niche: "" },
-      });
-      if (error) throw error;
+      const { data, error } = await supabase.functions.invoke("rewrite-bio", { body: { bio: bio.trim() } });
       const variants = data?.variants ?? [];
       if (!variants.length) toast.error("No suggestions — try again.");
       setBioVariants(variants);
-    } catch (e: any) {
-      toast.error(e?.message || "AI failed");
-    } finally {
+    } catch (e: any) { toast.error(e.message || "Action failed"); } finally {
       setBioAiBusy(false);
     }
   };
@@ -60,7 +55,7 @@ const EditProfile = () => {
       if (kind === "avatar") setAvatar(url);
       else setCover(url);
 
-    } catch (e: any) { toast.error(e.message); }
+    } catch (e: any) { toast.error(e.message || "Action failed"); }
     finally { setBusy(false); }
   };
 
@@ -79,13 +74,11 @@ const EditProfile = () => {
         avatar_url: avatar,
         cover_url: cover,
         updated_at: serverTimestamp(),
-      }, { merge: true });
     } catch (e) {
       console.warn("Firestore profile update failed", e);
     }
 
     // 2. Update Supabase (Legacy)
-    const { error } = await supabase.from("profiles").update({
       display_name: displayName, username, bio, avatar_url: avatar, cover_url: cover,
     } as any).eq("user_id", user.id);
     

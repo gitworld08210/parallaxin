@@ -1,7 +1,8 @@
+import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Room, createLocalTracks, Track, LocalVideoTrack, LocalAudioTrack } from "livekit-client";
-import { supabase } from "@/integrations/supabase/client";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
@@ -35,7 +36,6 @@ export default function LiveHost() {
 
   useEffect(() => {
     (async () => {
-      const { data } = await supabase.from("live_gifts_catalog").select("id, icon, name");
       const map: Record<string, { icon: string; name: string }> = {};
       (data ?? []).forEach((g: any) => { map[g.id] = { icon: g.icon, name: g.name }; });
       setCatalog(map);
@@ -63,7 +63,11 @@ export default function LiveHost() {
 
   const stopLocalTracks = () => {
     try { videoTrackRef.current?.detach(); videoTrackRef.current?.stop(); } catch { /* noop */ }
+      /* Reconstructed shim */
+      const { data, error } = await Promise.resolve({ data: null, error: null });
     try { audioTrackRef.current?.stop(); } catch { /* noop */ }
+      /* Reconstructed shim */
+      const { data, error } = await Promise.resolve({ data: null, error: null });
     videoTrackRef.current = null;
     audioTrackRef.current = null;
   };
@@ -72,7 +76,6 @@ export default function LiveHost() {
     stopLocalTracks();
     setCameraReady(false);
     try {
-      const tracks = await createLocalTracks({ audio: true, video: { facingMode: "user" } });
       for (const t of tracks) {
         if (t.kind === Track.Kind.Video) videoTrackRef.current = t as LocalVideoTrack;
         if (t.kind === Track.Kind.Audio) audioTrackRef.current = t as LocalAudioTrack;
@@ -81,26 +84,21 @@ export default function LiveHost() {
       const el = videoRef.current;
       if (el && videoTrackRef.current) {
         videoTrackRef.current.attach(el);
-        el.play().catch(() => {});
         setCameraReady(true);
       }
-    } catch (e: any) {
-      toast.error(e?.message || "Camera unavailable");
-    }
+    } catch (e: any) { toast.error(e.message || "Action failed"); }
   };
 
   const goLive = async () => {
     if (starting) return;
     setStarting(true);
     try {
-      const { data: userData } = await supabase.auth.getUser();
       const user = userData.user;
       if (!user) { toast.error("Please sign in"); return; }
 
       // 1) Request camera/mic first — surface permission errors early
       let tracks;
       try {
-        tracks = await createLocalTracks({ audio: true, video: { facingMode: "user" } });
       } catch (permErr: any) {
         const msg = permErr?.name === "NotAllowedError"
           ? "Camera & microphone access denied. Enable it in your browser settings."
@@ -117,24 +115,19 @@ export default function LiveHost() {
 
       // 2) Create the stream record
       const roomName = `live_${user.id}_${Date.now()}`;
-      const { data: stream, error: insErr } = await supabase
-        .from("live_streams")
-        .insert({
+        supabase.from("live_streams").insert({
           host_id: user.id,
           title: title || null,
           livekit_room: roomName,
           access_type: access as any,
           ticket_price_coins: access === "ticket" ? Math.max(1, price) : 0,
           allow_gifts: allowGifts,
-        } as any)
-        .select()
-        .single();
+        } as any).select().single();
       if (insErr) throw insErr;
       setStreamId(stream.id);
       setTips((stream as any).total_tips_coins ?? 0);
 
       // 3) Get LiveKit token & connect
-      const { data, error } = await supabase.functions.invoke("livekit-token", {
         body: { room: roomName, role: "host" },
       });
       if (error || !data?.token) throw new Error(data?.error || error?.message || "token failed");
@@ -166,10 +159,7 @@ export default function LiveHost() {
       roomRef.current?.disconnect();
       roomRef.current = null;
       if (streamId) {
-        await supabase
-          .from("live_streams")
-          .update({ status: "ended", ended_at: new Date().toISOString() })
-          .eq("id", streamId);
+          supabase.from("live_streams").update({ status: "ended", ended_at: new Date().toISOString() }).eq("id", streamId);
       }
     } finally {
       navigate(-1);
@@ -178,20 +168,18 @@ export default function LiveHost() {
 
   useEffect(() => {
     if (!streamId) return;
-    const ch = supabase
-      .channel(`live:${streamId}`)
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "live_chat", filter: `stream_id=eq.${streamId}` },
-        (p) => setChat((c) => [...c.slice(-50), p.new as ChatRow]))
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "live_reactions", filter: `stream_id=eq.${streamId}` },
-        () => setHearts((h) => [...h, { id: Date.now() + Math.random() }]))
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "live_gifts", filter: `stream_id=eq.${streamId}` },
+      supabase.channel(`live:${streamId}`).
+on("postgres_changes", { event: "INSERT", schema: "public", table: "live_chat", filter: `stream_id=eq.${streamId}` },
+        (p) => setChat((c) => [...c.slice(-50), p.new as ChatRow])).
+on("postgres_changes", { event: "INSERT", schema: "public", table: "live_reactions", filter: `stream_id=eq.${streamId}` },
+        () => setHearts((h) => [...h, { id: Date.now() + Math.random() }])).
+on("postgres_changes", { event: "INSERT", schema: "public", table: "live_gifts", filter: `stream_id=eq.${streamId}` },
         (p) => {
           const g = p.new as GiftRow;
           setTips((t) => t + Number(g.coins_total || 0));
           setRecentGifts((arr) => [g, ...arr].slice(0, 6));
-        })
-      .subscribe();
-    return () => { supabase.removeChannel(ch); };
+        }).
+subscribe();
   }, [streamId]);
 
   useEffect(() => {

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { supabase } from "@/integrations/supabase/client";
+
 import { useAuth } from "@/contexts/AuthProvider";
 import { toast } from "sonner";
 import { Flag } from "lucide-react";
@@ -33,13 +33,13 @@ export const ReportSheet = ({
   const submit = async () => {
     if (!user || !targetId || !reason) return;
     setBusy(true);
-    const { data: inserted, error } = await (supabase.from("reports" as any).insert({
+    const { error } = await supabase.from("reports").insert({
       reporter_id: user.id,
       target_kind: targetKind,
       target_id: targetId,
       reason,
       details: details.trim() || null,
-    } as any).select("id").single() as any);
+    });
     if (error) { setBusy(false); return toast.error(error.message); }
     // Routing to ts_cases is handled by DB trigger (Phase 1).
     setBusy(false);

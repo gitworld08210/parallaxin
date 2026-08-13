@@ -1,6 +1,7 @@
+import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { supabase } from "@/integrations/supabase/client";
+
 import { useAuth } from "@/contexts/AuthProvider";
 import { toast } from "sonner";
 import { Check, Sparkles } from "lucide-react";
@@ -19,10 +20,8 @@ export const NewHighlightSheet = ({
   useEffect(() => {
     if (!open || !user) return;
     (async () => {
-      // Show ALL user's stories (active + expired) — IG-style
-      const { data } = await supabase.from("stories")
-        .select("id, media_url, media_type, created_at")
-        .eq("user_id", user.id).order("created_at", { ascending: false }).limit(60);
+      // Show ALL user's stories (active + expired) — IG-style.
+select("id, media_url, media_type, created_at").eq("user_id", user.id).order("created_at", { ascending: false }).limit(60);
       setStories((data ?? []) as Story[]);
     })();
   }, [open, user?.id]);
@@ -41,12 +40,9 @@ export const NewHighlightSheet = ({
     if (picked.size === 0) return toast.error("Pick at least one story");
     setBusy(true);
     const cover = stories.find((s) => picked.has(s.id))?.media_url ?? null;
-    const { data: hl, error } = await (supabase.from("story_highlights" as any)
-      .insert({ user_id: user.id, title: title.trim().slice(0, 30), cover_url: cover } as any)
-      .select("id").single() as any);
+    const { data: hl, error } = await supabase.from("highlights").insert({ user_id: user.id, title: title.trim().slice(0, 30), cover_url: cover }).select("id").single();
     if (error || !hl) { setBusy(false); toast.error(error?.message || "Failed"); return; }
-    const rows = Array.from(picked).map((sid, i) => ({ highlight_id: (hl as any).id, story_id: sid, position: i }));
-    const { error: iErr } = await (supabase.from("highlight_items" as any).insert(rows as any) as any);
+    const { error: iErr } = await supabase.from("highlight_stories").insert(rows);
     setBusy(false);
     if (iErr) return toast.error(iErr.message);
     toast.success("Highlight saved");

@@ -1,7 +1,8 @@
+import { supabase } from '@/integrations/supabase/client';
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ChevronLeft, Eye, Heart, MessageCircle, Bookmark, Users, Sparkles } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+
 import { useAuth } from "@/contexts/AuthProvider";
 import { fmt, timeAgo } from "@/lib/format";
 import { AuthenticityMeter } from "@/components/social/AuthenticityMeter";
@@ -23,14 +24,10 @@ const PostInsights = () => {
     if (!postId || !user) return;
     (async () => {
       setLoading(true);
-      const { data: p } = await supabase.from("posts")
-        .select("content, media_url, media_type, like_count, comment_count, created_at, user_id, authenticity_score, authenticity_breakdown")
-        .eq("id", postId).maybeSingle();
+        supabase.select("content, media_url, media_type, like_count, comment_count, created_at, user_id, authenticity_score, authenticity_breakdown").eq("id", postId).maybeSingle();
       if (!p || p.user_id !== user.id) { setDenied(true); setLoading(false); return; }
       setPost(p as any);
       const [{ data: views }, { count: saves }] = await Promise.all([
-        (supabase.from("post_views" as any).select("viewer_id").eq("post_id", postId) as any),
-        supabase.from("saves").select("*", { count: "exact", head: true }).eq("post_id", postId),
       ]);
       const viewers = views ?? [];
       const reach = new Set(viewers.map((v: any) => v.viewer_id || "anon")).size;
@@ -91,7 +88,6 @@ const PostInsights = () => {
             disabled={scoring}
             onClick={async () => {
               setScoring(true);
-              const { data, error } = await supabase.functions.invoke("authenticity-score", { body: { post_id: postId } });
               setScoring(false);
               if (error) { toast.error("Couldn't score: " + error.message); return; }
               setPost((prev) => prev ? { ...prev, authenticity_score: data?.score ?? null, authenticity_breakdown: data?.breakdown ?? null } : prev);

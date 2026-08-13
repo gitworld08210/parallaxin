@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { X, Send } from "lucide-react";
 import { timeAgo } from "@/lib/format";
-import { supabase } from "@/integrations/supabase/client";
+
 import { useAuth } from "@/contexts/AuthProvider";
 import { StoryStickersLayer } from "@/components/social/StoryStickersLayer";
 import { toast } from "sonner";
@@ -53,19 +53,17 @@ export const StoryViewer = ({ stories, startIdx, onClose }: { stories: Story[]; 
 
   const react = async (emoji: string) => {
     if (!user) return toast.error("Sign in");
-    const { error } = await (supabase.from("story_reactions" as any).insert({
-      story_id: current.id, user_id: user.id, emoji,
-    } as any) as any);
+    const { error } = await supabase.from("story_reactions").insert({
+      story_id: current.id, user_id: user.uid, emoji
+    });
     if (error) toast.error(error.message); else toast.success(`Reacted ${emoji}`);
   };
 
   const sendReply = async () => {
     if (!user || !reply.trim() || !current.profile) return;
-    if (current.user_id === user.id) { toast.error("Can't reply to yourself"); return; }
-    const { data: convId, error: rpcErr } = await supabase.rpc("start_dm", { other_user_id: current.user_id });
+    if (current.user_id === user.uid) { toast.error("Can't reply to yourself"); return; }
     if (rpcErr || !convId) { toast.error("Couldn't start chat"); return; }
     const content = `↩️ Replied to story: ${reply.trim().slice(0, 500)}`;
-    await supabase.from("messages").insert({ conversation_id: convId, sender_id: user.id, content });
     setReply("");
     toast.success("Reply sent");
   };

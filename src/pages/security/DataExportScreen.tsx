@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ChevronLeft, Download, Sparkles } from "lucide-react";
 import { TopBar } from "@/components/vibe/TopBar";
-import { supabase } from "@/integrations/supabase/client";
+
 import { toast } from "sonner";
 
 export default function DataExportScreen() {
@@ -12,7 +12,6 @@ export default function DataExportScreen() {
   const exportNow = async () => {
     setBusy(true);
     try {
-      const { data, error } = await supabase.functions.invoke("export-user-data");
       if (error) throw error;
       const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
       const a = document.createElement("a");
@@ -20,9 +19,7 @@ export default function DataExportScreen() {
       a.download = `aurelix-archive-${new Date().toISOString().slice(0,10)}.json`;
       a.click();
       toast.success("Archive prepared");
-    } catch (e: any) {
-      toast.error(e.message || "Could not prepare archive");
-    } finally { setBusy(false); }
+    } catch (e: any) { toast.error(e.message || "Action failed"); } finally { setBusy(false); }
   };
 
   return (

@@ -30,11 +30,8 @@ export default function OrganizationDepartments() {
     if (!search.trim()) return tree;
     const q = search.trim().toLowerCase();
     const filterNodes = (nodes: typeof tree): typeof tree =>
-      nodes
-        .map((n) => ({ ...n, children: filterNodes(n.children) }))
-        .filter(
-          (n) => n.name.toLowerCase().includes(q) || n.children.length > 0,
-        );
+      nodes.map((n) => ({ ...n, children: filterNodes(n.children) })).filter(
+          (n) => n.name.toLowerCase().includes(q) || n.children.length > 0);
     return filterNodes(tree);
   }, [tree, search]);
 

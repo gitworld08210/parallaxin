@@ -1,6 +1,7 @@
+import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+
 import { Button } from "@/components/ui/button";
 import { Radio } from "lucide-react";
 
@@ -12,17 +13,10 @@ export default function LiveList() {
 
   useEffect(() => {
     (async () => {
-      const { data } = await supabase
-        .from("live_streams")
-        .select("id,title,host_id,started_at")
-        .eq("status", "live")
-        .order("started_at", { ascending: false });
+        supabase.from("live_streams").select("id,title,host_id,started_at").eq("status", "live").order("started_at", { ascending: false });
       if (!data) return;
       const ids = data.map((s) => s.host_id);
-      const { data: profs } = await supabase
-        .from("profiles")
-        .select("id,username,avatar_url")
-        .in("id", ids);
+        supabase.from("profiles").select("id,username,avatar_url").in("id", ids);
       const map = new Map(profs?.map((p: any) => [p.id, p]) ?? []);
       setStreams(data.map((s) => ({ ...s, ...(map.get(s.host_id) as any) })));
     })();

@@ -1,3 +1,4 @@
+import { supabase } from "@/integrations/supabase/client";
 // OrganizationService — high-level reads used by the OrganizationProvider.
 import { organizationApi } from "./organization.api";
 import { permissionService } from "./permission.service";
@@ -6,7 +7,7 @@ import type {
   OrganizationMembership,
   OrganizationVerificationKind,
 } from "@/types/organization/organization";
-import { supabase } from "@/integrations/supabase/client";
+
 
 /**
  * Map an organization to its canonical verification "kind" for
@@ -46,19 +47,10 @@ export const organizationService = {
 
   /** Load the signed-in user's membership for a given org. Null if not a member. */
   async getMembership(orgId: string, userId: string): Promise<OrganizationMembership | null> {
-    const { data: memberRow, error } = await supabase
-      .from("organization_members")
-      .select("id, organization_id, user_id, department_id, status, joined_at, invited_by")
-      .eq("organization_id", orgId)
-      .eq("user_id", userId)
-      .maybeSingle();
+      supabase.from("organization_members").select("id, organization_id, user_id, department_id, status, joined_at, invited_by").eq("organization_id", orgId).eq("user_id", userId).maybeSingle();
     if (error) throw error;
     if (!memberRow) {
-      const { data: ownerCheck } = await supabase
-        .from("organizations")
-        .select("owner_user_id")
-        .eq("id", orgId)
-        .maybeSingle();
+        supabase.from("organizations").select("owner_user_id").eq("id", orgId).maybeSingle();
       if (ownerCheck?.owner_user_id === userId) {
         return {
           id: `owner:${orgId}`,
@@ -73,11 +65,7 @@ export const organizationService = {
       }
       return null;
     }
-    const { data: org } = await supabase
-      .from("organizations")
-      .select("owner_user_id")
-      .eq("id", orgId)
-      .maybeSingle();
+      supabase.from("organizations").select("owner_user_id").eq("id", orgId).maybeSingle();
     return {
       ...(memberRow as Omit<OrganizationMembership, "is_owner">),
       is_owner: org?.owner_user_id === userId,

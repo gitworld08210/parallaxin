@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ChevronLeft } from "lucide-react";
 import { TopBar } from "@/components/vibe/TopBar";
-import { supabase } from "@/integrations/supabase/client";
+
 import { useAuth } from "@/contexts/AuthProvider";
 import { gradientFor, initialsOf } from "@/lib/format";
 import { AuraAvatar } from "@/components/vibe/AuraAvatar";
@@ -15,10 +15,8 @@ export default function BlockedListScreen() {
 
   const load = async () => {
     if (!user) return;
-    const { data: bs } = await supabase.from("blocks").select("blocked_id").eq("blocker_id", user.id);
     const ids = (bs || []).map((b: any) => b.blocked_id);
     if (!ids.length) return setRows([]);
-    const { data: profs } = await supabase.from("profiles").select("user_id, username, display_name, avatar_url").in("user_id", ids);
     setRows(profs || []);
   };
 
@@ -26,7 +24,6 @@ export default function BlockedListScreen() {
 
   const unblock = async (id: string) => {
     if (!user) return;
-    const { error } = await supabase.from("blocks").delete().eq("blocker_id", user.id).eq("blocked_id", id);
     if (error) return toast.error(error.message);
     toast.success("Unblocked");
     setRows((r) => r.filter((x) => x.user_id !== id));

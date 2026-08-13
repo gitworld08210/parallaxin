@@ -1,41 +1,31 @@
-const mockData = { data: [], error: null };
-const mockSingle = { data: {}, error: null };
-const mockMaybeSingle = { data: null, error: null };
-
-const chain = () => ({
-  select: chain,
-  from: chain,
-  eq: chain,
-  in: chain,
-  order: chain,
-  limit: chain,
-  insert: chain,
-  update: chain,
-  single: () => Promise.resolve(mockSingle),
-  maybeSingle: () => Promise.resolve(mockMaybeSingle),
-  then: (resolve: any) => resolve(mockData),
-  catch: () => {}
-});
-
-export const supabase: any = {
-  from: chain,
+import { supabase } from '@/integrations/supabase/client';
+const mock = {
+  from: () => mock,
+  select: () => mock,
+  eq: () => mock,
+  order: () => mock,
+  limit: () => mock,
+  insert: () => mock,
+  update: () => mock,
+  delete: () => mock,
+  upsert: () => mock,
+  neq: () => mock,
+  in: () => mock,
+  or: () => mock,
+  maybeSingle: () => Promise.resolve({ data: null, error: null }),
+  single: () => Promise.resolve({ data: null, error: null }),
+  rpc: () => Promise.resolve({ data: null, error: null }),
+  channel: () => mock,
+  on: () => mock,
+  subscribe: () => mock,
+  removeChannel: () => mock,
   auth: {
-    getUser: () => Promise.resolve({ data: { user: null }, error: null }),
-    getSession: () => Promise.resolve({ data: { session: null }, error: null }),
-    signInWithPassword: () => Promise.resolve({ data: { session: null, user: null }, error: null }),
+    signInWithPassword: () => Promise.resolve({ data: {}, error: null }),
     signOut: () => Promise.resolve({ error: null }),
-    onAuthStateChanged: () => (() => {}),
-    updateUser: () => Promise.resolve({ data: { user: null }, error: null }),
-    refreshSession: () => Promise.resolve({ data: { session: null, user: null }, error: null }),
-    resend: () => Promise.resolve({ data: null, error: null }),
+    onAuthStateChanged: () => () => {},
   },
   functions: {
     invoke: () => Promise.resolve({ data: null, error: null }),
-  },
-  storage: {
-    from: chain,
-  },
-  rpc: () => Promise.resolve({ data: null, error: null }),
+  }
 };
-
-export const createClient = () => supabase;
+export const supabase = mock as any;

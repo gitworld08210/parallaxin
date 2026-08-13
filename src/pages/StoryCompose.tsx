@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { ImagePlus, X, Globe, Star, BarChart3, MessageSquare, Plus, Trash2, Music, Wand2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { ImagePlus, X, Globe, Star, BarChart3, MessageSquare, Plus, Trash2, Music, Wand2 } from "lucide-react";
+
 import { useAuth } from "@/contexts/AuthProvider";
 import { TopBar } from "@/components/vibe/TopBar";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
@@ -80,7 +81,8 @@ const StoryCompose = () => {
         media_url: url,
         media_type: file.type.startsWith("video") ? "video" : "image",
         audience: audience as any,
-      } as any).select("id").single();
+      }).select("id").single();
+      
       if (error) throw error;
       if (stickers.length && storyRow?.id) {
         const rows = stickers.map((s) => ({
@@ -89,11 +91,11 @@ const StoryCompose = () => {
           position: { x: s.x, y: s.y },
           payload: s.kind === "poll" ? { question: s.question, options: s.options } : s.kind === "qa" ? { prompt: s.prompt } : { title: s.title },
         }));
-        await supabase.from("story_stickers" as any).insert(rows as any);
+        await supabase.from("story_stickers").insert(rows);
       }
       toast.success("Story added ✦ · expires in 24h");
       nav("/");
-    } catch (e: any) { toast.error(e.message || "Failed"); } finally { setBusy(false); }
+    } catch (e: any) { toast.error(e.message || "Action failed"); } finally { setBusy(false); }
   };
 
   return (

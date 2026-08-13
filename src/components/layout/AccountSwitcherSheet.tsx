@@ -96,10 +96,6 @@ export const AccountSwitcherSheet = ({
   };
 
   const handleLogin = async () => {
-    if (!email || !pw) {
-      toast.error("Enter email and password");
-      return;
-    }
     if (!canAdd) {
       toast.error(`Maximum ${MAX_ACCOUNTS} accounts. Remove one first.`);
       return;

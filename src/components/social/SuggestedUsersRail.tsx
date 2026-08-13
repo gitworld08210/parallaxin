@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { X } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+
 import { useAuth } from "@/contexts/AuthProvider";
 import { AuraAvatar } from "@/components/vibe/AuraAvatar";
 import { VerificationBadge } from "@/components/vibe/VerificationBadge";
@@ -28,7 +28,6 @@ export const SuggestedUsersRail = () => {
     if (!user) return;
     (async () => {
       setLoading(true);
-      const { data, error } = await supabase.functions.invoke("suggest-users");
       if (!error && data?.users) setUsers(data.users as SuggestedUser[]);
       setLoading(false);
     })();
@@ -40,10 +39,8 @@ export const SuggestedUsersRail = () => {
     const next = new Set(following);
     if (isF) {
       next.delete(target); setFollowing(next);
-      await supabase.from("follows").delete().eq("follower_id", user.id).eq("following_id", target);
     } else {
       next.add(target); setFollowing(next);
-      const { error } = await supabase.from("follows").insert({ follower_id: user.id, following_id: target });
       if (error) { const x = new Set(next); x.delete(target); setFollowing(x); toast.error(error.message); }
     }
   };

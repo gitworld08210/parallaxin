@@ -1,8 +1,9 @@
+import { supabase } from '@/integrations/supabase/client';
 import { reliableInvoke } from "@/lib/reliableInvoke";
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ImagePlus, Sparkles, X, FileText, Calendar, Users, Hash, Clock, ShieldCheck } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+
 import { useAuth } from "@/contexts/AuthProvider";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "@/lib/firebase";
@@ -53,11 +54,7 @@ const Compose = () => {
     if (!collabQuery.trim() || !user) { setCollabResults([]); return; }
     let cancelled = false;
     (async () => {
-      const { data } = await supabase.from("profiles")
-        .select("user_id, username, display_name, avatar_url")
-        .ilike("username", `%${collabQuery.trim()}%`)
-        .neq("user_id", user.id)
-        .limit(8);
+        supabase.select("user_id, username, display_name, avatar_url").ilike("username", `%${collabQuery.trim()}%`).neq("user_id", user.id).limit(8);
       if (!cancelled) setCollabResults((data ?? []) as any);
     })();
     return () => { cancelled = true; };
@@ -66,10 +63,9 @@ const Compose = () => {
   const aiCaption = async () => {
     setAiBusy(true);
     try {
-      const { data, error } = await supabase.functions.invoke("ai-caption", { body: { hint: content || "creator post" } });
       if (error) throw error;
       if (data?.caption) setContent(data.caption);
-    } catch (e: any) { toast.error(e.message || "AI failed"); }
+    } catch (e: any) { toast.error(e.message || "Action failed"); }
     finally { setAiBusy(false); }
   };
 
@@ -77,13 +73,13 @@ const Compose = () => {
     setSuggestBusy(true);
     setSuggestOpen(true);
     try {
-      const { data, error } = await supabase.functions.invoke("ai-post-suggestions", {
+      const { data, error } = await supabase.functions.invoke("suggest-post-tags", {
         body: { content, media_type: file ? (file.type.startsWith("video") ? "video" : "image") : null },
       });
       if (error) throw error;
       setSuggestedTags(data?.hashtags ?? []);
       setBestTimeIso(data?.best_time_iso ?? "");
-    } catch (e: any) { toast.error(e.message || "Suggest failed"); setSuggestOpen(false); }
+    } catch (e: any) { toast.error(e.message || "Action failed"); }
     finally { setSuggestBusy(false); }
   };
 
@@ -107,12 +103,11 @@ const Compose = () => {
     setAltBusy(true);
     try {
       const url = await uploadToCloudinary(file);
-      const { data, error } = await supabase.functions.invoke("suggest-alt-text", { body: { imageUrl: url } });
       if (error) throw error;
 
       if (data?.altText) setAltText(data.altText);
       else toast.error("No suggestion returned");
-    } catch (e: any) { toast.error(e.message || "Alt text failed"); }
+    } catch (e: any) { toast.error(e.message || "Action failed"); }
     finally { setAltBusy(false); }
   };
 
@@ -130,7 +125,6 @@ const Compose = () => {
     try {
       if (status === "published" && content.trim()) {
         try {
-          const { data: mod } = await supabase.functions.invoke("ai-moderate", { body: { text: content } });
           if (mod?.flagged) throw new Error(mod.reason || "Content flagged by moderation");
         } catch (modErr: any) {
           // Only block if moderation actually flagged content; ignore transport/AI errors.
@@ -165,9 +159,8 @@ const Compose = () => {
 
       // Invite collaborators
       if (newId && collabs.length) {
-        await supabase.from("post_collaborators" as any).insert(
-          collabs.map((c) => ({ post_id: newId, user_id: c.user_id })) as any
-        );
+        await supabase.from("post_collaborators").insert(collabs.map((c) => ({ post_id: newId, user_id: c.user_id })));
+      }
       }
 
       // Enrichment — awaited via reliableInvoke, failures logged (Phase 0).
@@ -185,7 +178,7 @@ const Compose = () => {
       if (status === "published") { toast.success("Posted ✦"); nav("/"); }
       else if (status === "draft") { toast.success("Draft saved"); nav("/drafts"); }
       else { toast.success(`Scheduled for ${new Date(scheduled_for!).toLocaleString()}`); nav("/drafts"); }
-    } catch (e: any) { toast.error(e.message || "Failed"); }
+    } catch (e: any) { toast.error(e.message || "Action failed"); }
     finally { setBusy(false); }
   };
 

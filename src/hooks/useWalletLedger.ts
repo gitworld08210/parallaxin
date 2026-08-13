@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+
 import { useAuth } from "@/contexts/AuthProvider";
 
 export type LedgerRow = {
@@ -23,13 +23,6 @@ export function useWalletLedger(limit = 40) {
     const uid = user.id;
 
     const [coinTxns, tipsSent, tipsRecv, giftsSent, unlocks, payouts, topups] = await Promise.all([
-      supabase.from("coin_transactions").select("id, amount, kind, created_at").eq("user_id", uid).order("created_at", { ascending: false }).limit(limit),
-      supabase.from("tips").select("id, amount_cents, status, created_at, recipient_id").eq("sender_id", uid).order("created_at", { ascending: false }).limit(limit),
-      supabase.from("tips").select("id, net_cents, status, created_at, sender_id").eq("recipient_id", uid).order("created_at", { ascending: false }).limit(limit),
-      supabase.from("live_gifts").select("id, coins_total, created_at, host_id").eq("sender_id", uid).order("created_at", { ascending: false }).limit(limit),
-      supabase.from("post_unlocks").select("id, amount_cents, status, created_at").eq("user_id", uid).order("created_at", { ascending: false }).limit(limit),
-      supabase.from("payout_requests").select("id, amount_cents, status, created_at").eq("user_id", uid).order("created_at", { ascending: false }).limit(limit),
-      supabase.from("coin_topup_requests" as any).select("id, coins, amount_inr_cents, status, created_at").eq("user_id", uid).order("created_at", { ascending: false }).limit(limit),
     ]);
 
     const out: LedgerRow[] = [];

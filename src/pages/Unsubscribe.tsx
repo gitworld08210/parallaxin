@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Loader2, CheckCircle2, AlertCircle } from "lucide-react";
@@ -31,20 +32,16 @@ export default function Unsubscribe() {
       }
       try {
         const res = await fetch(
-          `${SUPABASE_URL}/functions/v1/handle-email-unsubscribe?token=${encodeURIComponent(token)}`,
-          { headers: { apikey: SUPABASE_ANON } },
+          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/handle-email-unsubscribe?token=${encodeURIComponent(token)}`
         );
         const data = await res.json();
         if (cancelled) return;
         if (!res.ok) {
-          setState({ kind: "invalid" });
           return;
         }
         if (data.valid === false && data.reason === "already_unsubscribed") {
-          setState({ kind: "already" });
           return;
         }
-        setState({ kind: "ready" });
       } catch {
         if (!cancelled) setState({ kind: "invalid" });
       }
@@ -58,10 +55,9 @@ export default function Unsubscribe() {
     if (!token) return;
     setState({ kind: "submitting" });
     try {
-      const { data, error } = await supabase.functions.invoke(
-        "handle-email-unsubscribe",
-        { body: { token } },
-      );
+      const { data, error } = await supabase.functions.invoke("handle-email-unsubscribe", {
+        body: { token }
+      });
       if (error) throw error;
       if (data?.success) setState({ kind: "done" });
       else if (data?.reason === "already_unsubscribed") setState({ kind: "already" });

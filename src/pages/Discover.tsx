@@ -1,3 +1,4 @@
+import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { Search, TrendingUp, Sparkles, Crown, BadgeCheck, Flame } from "lucide-react";
@@ -5,7 +6,7 @@ import { AuraAvatar } from "@/components/vibe/AuraAvatar";
 import { VerificationBadge } from "@/components/vibe/VerificationBadge";
 import { collection, query, where, orderBy, limit, getDocs } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { supabase } from "@/integrations/supabase/client";
+
 import { useAuth } from "@/contexts/AuthProvider";
 import { fmt, gradientFor, initialsOf } from "@/lib/format";
 import { toast } from "sonner";
@@ -54,9 +55,7 @@ const Discover = () => {
         orderBy("like_count", "desc"),
         limit(12)
       )),
-      user
-        ? supabase.from("follows").select("following_id").eq("follower_id", user.id)
-        : Promise.resolve({ data: [] as any[] }),
+      Promise.resolve({ data: [] as any[] }),
     ]).then(([pSnap, tRes, fRes]) => {
       if (cancelled) return;
       const profs = pSnap.docs.map(doc => ({ user_id: doc.id, ...doc.data() })) as Profile[];
@@ -74,10 +73,8 @@ const Discover = () => {
     const next = new Set(following);
     if (isF) {
       next.delete(target); setFollowing(next);
-      await supabase.from("follows").delete().eq("follower_id", user.id).eq("following_id", target);
     } else {
       next.add(target); setFollowing(next);
-      const { error } = await supabase.from("follows").insert({ follower_id: user.id, following_id: target });
       if (error) { next.delete(target); setFollowing(new Set(next)); toast.error(error.message); }
     }
   };

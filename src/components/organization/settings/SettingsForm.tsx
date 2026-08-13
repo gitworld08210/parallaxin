@@ -89,8 +89,7 @@ export const SettingsForm = () => {
       timezone: settings?.timezone ?? "UTC",
       visibility: settings?.visibility ?? "public",
     }),
-    [organization, settings],
-  );
+    [organization, settings]);
 
   const dirty = JSON.stringify(form) !== JSON.stringify(initial);
 
@@ -98,31 +97,31 @@ export const SettingsForm = () => {
     // Client-side validation — RPC is still the source of truth, this is UX.
     const schema = z.object({
       name: z.string().trim().min(1, "Name is required").max(100),
-      slug: z
-        .string()
-        .trim()
-        .toLowerCase()
-        .min(3, "Slug must be at least 3 characters")
-        .max(32, "Slug must be at most 32 characters")
-        .regex(
+      slug: z.
+string().
+trim().
+toLowerCase().
+min(3, "Slug must be at least 3 characters").
+max(32, "Slug must be at most 32 characters").
+regex(
           /^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/,
           "Only lowercase letters, numbers, and single hyphens",
         ),
-      website: z
-        .string()
-        .trim()
-        .max(255)
-        .optional()
-        .refine(
+      website: z.
+string().
+trim().
+max(255).
+optional().
+refine(
           (v) => !v || /^https?:\/\/.+/i.test(v),
           "Website must start with http:// or https://",
         ),
-      email: z
-        .string()
-        .trim()
-        .max(255)
-        .optional()
-        .refine((v) => !v || z.string().email().safeParse(v).success, "Invalid email address"),
+      email: z.
+string().
+trim().
+max(255).
+optional().
+refine((v) => !v || z.string().email().safeParse(v).success, "Invalid email address"),
       description: z.string().max(2000).optional(),
     });
 

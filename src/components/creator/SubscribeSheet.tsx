@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { supabase } from "@/integrations/supabase/client";
+
 import { toast } from "sonner";
 import { Coins, Check, Sparkles, Loader2 } from "lucide-react";
 import { useCoinBalance } from "@/hooks/useCoinBalance";
@@ -26,7 +26,6 @@ export function SubscribeSheet({ open, onOpenChange, creatorId, creatorName, set
 
   const subscribe = async () => {
     setLoading(true);
-    const { error } = await supabase.rpc("subscribe_creator" as any, { _creator_id: creatorId });
     setLoading(false);
     if (error) {
       if (error.message.includes("insufficient")) return toast.error("Not enough coins — top up first");

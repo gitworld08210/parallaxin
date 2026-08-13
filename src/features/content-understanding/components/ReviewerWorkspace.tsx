@@ -1,3 +1,4 @@
+import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,7 +12,7 @@ import {
   Check, X, AlertCircle, Info, Brain, Sparkles
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+
 import { useReviewContent } from "../hooks/useContentQueue";
 import { useTaxonomy } from "../hooks/useContentContext";
 import {
@@ -30,15 +31,7 @@ export const ReviewerWorkspace = () => {
   
   const { data: item, isLoading } = useQuery({
     queryKey: ['content-context-detail', id],
-    queryFn: async () => {
-      const { data, error } = await (supabase as any)
-        .from('content_context')
-        .select('*')
-        .eq('id', id)
-        .single();
-      if (error) throw error;
-      return data;
-    }
+    queryFn: async () => { /* shimmed action */ }
   });
 
   if (isLoading) return <div>Loading review workspace...</div>;

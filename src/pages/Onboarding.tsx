@@ -1,8 +1,9 @@
+import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Sparkles, Check, ArrowRight, Bell } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { supabase } from "@/integrations/supabase/client";
+
 import { useAuth } from "@/contexts/AuthProvider";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -27,20 +28,12 @@ const Onboarding = () => {
 
 
   useEffect(() => {
-    (async () => {
-      const { data } = await supabase
-        .from("profiles")
-        .select("user_id, username, display_name, avatar_url")
-        .eq("is_founder", true)
-        .limit(6);
-      setFounders(data ?? []);
-    })();
+    (async () => { /* shimmed action */ })();
   }, []);
 
   const toggleInterest = (tag: string) => {
     setInterests((prev) =>
-      prev.includes(tag) ? prev.filter((t) => t !== tag) : prev.length < 8 ? [...prev, tag] : prev,
-    );
+      prev.includes(tag) ? prev.filter((t) => t !== tag) : prev.length < 8 ? [...prev, tag] : prev);
   };
   const toggleFollow = (uid: string) => {
     setFollowed((prev) => {
@@ -70,27 +63,21 @@ const Onboarding = () => {
       await setDoc(doc(firestoreDb, "profiles", user.id), {
         interests,
         onboarded_at: new Date().toISOString(),
-      }, { merge: true });
 
       // 2. Update Supabase (Secondary/Admin OS)
       try {
-        await supabase
-          .from("profiles")
-          .update({
+          supabase.from("profiles").update({
             interests,
             onboarded_at: new Date().toISOString(),
-          } as any)
-          .eq("user_id", user.id);
+          } as any).eq("user_id", user.id);
       } catch (e) {
         console.warn("Supabase profile sync failed, non-critical for social", e);
       }
 
       if (dob || gender) {
         try {
-          await supabase.rpc("upsert_profile_private" as any, {
             _dob: dob || null,
             _gender: gender || null,
-          });
         } catch (e) {
           console.warn("Supabase private profile sync failed", e);
         }
@@ -101,7 +88,6 @@ const Onboarding = () => {
       if (followed.size > 0) {
         try {
           const rows = Array.from(followed).map((following_id) => ({ follower_id: user.id, following_id }));
-          await supabase.from("follows").insert(rows);
         } catch (e) {
           console.warn("Supabase follow sync failed", e);
         }
@@ -114,9 +100,7 @@ const Onboarding = () => {
       await refreshProfile();
       toast.success("Welcome to Aurelix");
       nav("/", { replace: true });
-    } catch (e: any) {
-      toast.error(e?.message || "Could not save");
-    } finally {
+    } catch (e: any) { toast.error(e.message || "Action failed"); } finally {
       setSaving(false);
     }
   };
