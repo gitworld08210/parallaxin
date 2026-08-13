@@ -28,10 +28,7 @@ const Onboarding = () => {
 
 
   useEffect(() => {
-    (async () => {
-        supabase.from("profiles").select("user_id, username, display_name, avatar_url").eq("is_founder", true).limit(6);
-      setFounders(data ?? []);
-    })();
+    (async () => { /* shimmed action */ })();
   }, []);
 
   const toggleInterest = (tag: string) => {
@@ -58,9 +55,7 @@ const Onboarding = () => {
   const finish = async () => {
     if (!user) return;
     setSaving(true);
-    try {
-      /* Reconstructed shim */
-      const { data, error } = await Promise.resolve({ data: null, error: null });
+    try { /* shimmed */ } = await Promise.resolve({ data: null, error: null });
       // 1. Update Firestore (Primary)
       const { doc, setDoc } = await import("firebase/firestore");
       const { db: firestoreDb } = await import("@/lib/firebase");
@@ -70,9 +65,7 @@ const Onboarding = () => {
         onboarded_at: new Date().toISOString(),
 
       // 2. Update Supabase (Secondary/Admin OS)
-      try {
-      /* Reconstructed shim */
-      const { data, error } = await Promise.resolve({ data: null, error: null });
+      try { /* shimmed */ } = await Promise.resolve({ data: null, error: null });
           supabase.from("profiles").update({
             interests,
             onboarded_at: new Date().toISOString(),
@@ -82,9 +75,7 @@ const Onboarding = () => {
       }
 
       if (dob || gender) {
-        try {
-      /* Reconstructed shim */
-      const { data, error } = await Promise.resolve({ data: null, error: null });
+        try { /* shimmed */ } = await Promise.resolve({ data: null, error: null });
             _dob: dob || null,
             _gender: gender || null,
         } catch (e) {
@@ -95,9 +86,7 @@ const Onboarding = () => {
       }
 
       if (followed.size > 0) {
-        try {
-      /* Reconstructed shim */
-      const { data, error } = await Promise.resolve({ data: null, error: null });
+        try { /* shimmed */ } = await Promise.resolve({ data: null, error: null });
           const rows = Array.from(followed).map((following_id) => ({ follower_id: user.id, following_id }));
         } catch (e) {
           console.warn("Supabase follow sync failed", e);

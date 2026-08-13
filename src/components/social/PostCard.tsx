@@ -82,9 +82,7 @@ export const PostCard = ({ post, onOpenComments }: { post: FeedPost; onOpenComme
   useEffect(() => {
     if (!user) return;
     (async () => {
-      try {
-      /* Reconstructed shim */
-      const { data, error } = await Promise.resolve({ data: null, error: null });
+      try { /* shimmed */ } = await Promise.resolve({ data: null, error: null });
         const saveRef = doc(db, "saves", `${user.id}_${post.id}`);
         const snap = await getDoc(saveRef);
         setSaved(snap.exists());
@@ -120,9 +118,7 @@ export const PostCard = ({ post, onOpenComments }: { post: FeedPost; onOpenComme
     if (!user) return toast.error("Sign in to like");
     const next = !liked;
     setLiked(next); setLikes((c) => c + (next ? 1 : -1));
-    try {
-      /* Reconstructed shim */
-      const { data, error } = await Promise.resolve({ data: null, error: null });
+    try { /* shimmed */ } = await Promise.resolve({ data: null, error: null });
       const likeId = `${user.id}_${post.id}`;
       const likeRef = doc(db, "likes", likeId);
       const postRef = doc(db, "posts", post.id);
@@ -142,9 +138,7 @@ export const PostCard = ({ post, onOpenComments }: { post: FeedPost; onOpenComme
     if (!user) return toast.error("Sign in to save");
     const next = !saved;
     setSaved(next);
-    try {
-      /* Reconstructed shim */
-      const { data, error } = await Promise.resolve({ data: null, error: null });
+    try { /* shimmed */ } = await Promise.resolve({ data: null, error: null });
       const saveId = `${user.id}_${post.id}`;
       const saveRef = doc(db, "saves", saveId);
       if (next) {
@@ -170,9 +164,7 @@ export const PostCard = ({ post, onOpenComments }: { post: FeedPost; onOpenComme
 
   const remove = async () => {
     if (!confirm("Delete this post?")) return;
-    try {
-      /* Reconstructed shim */
-      const { data, error } = await Promise.resolve({ data: null, error: null });
+    try { /* shimmed */ } = await Promise.resolve({ data: null, error: null });
       await deleteDoc(doc(db, "posts", post.id));
       toast.success("Deleted");
     } catch (error: any) {

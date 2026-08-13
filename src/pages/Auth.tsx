@@ -65,9 +65,7 @@ const Auth = () => {
   const signIn = async () => {
     if (!validEmail() || password.length < 6) { toast.error("Enter a valid email and password"); return; }
     setBusy(true);
-    try {
-      /* Reconstructed shim */
-      const { data, error } = await Promise.resolve({ data: null, error: null });
+    try { /* shimmed */ } = await Promise.resolve({ data: null, error: null });
       const userCredential = await signInWithEmailAndPassword(auth, email.trim(), password);
       toast.success("Welcome back");
       if (userCredential.user) await routeForUser(userCredential.user.uid);
@@ -80,9 +78,7 @@ const Auth = () => {
   const signUp = async () => {
     if (!validEmail() || password.length < 6) { toast.error("Enter a valid email and a password (6+ chars)"); return; }
     setBusy(true);
-    try {
-      /* Reconstructed shim */
-      const { data, error } = await Promise.resolve({ data: null, error: null });
+    try { /* shimmed */ } = await Promise.resolve({ data: null, error: null });
       if (kind === "organization") localStorage.setItem(ORG_INTENT_KEY, "organization");
       const userCredential = await createUserWithEmailAndPassword(auth, email.trim(), password);
       
@@ -102,9 +98,7 @@ const Auth = () => {
 
   const google = async () => {
     setBusy(true);
-    try {
-      /* Reconstructed shim */
-      const { data, error } = await Promise.resolve({ data: null, error: null });
+    try { /* shimmed */ } = await Promise.resolve({ data: null, error: null });
       if (tab === "signup" && kind === "organization") localStorage.setItem(ORG_INTENT_KEY, "organization");
       const userCredential = await signInWithPopup(auth, googleProvider);
       

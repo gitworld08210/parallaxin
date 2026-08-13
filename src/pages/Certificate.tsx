@@ -71,12 +71,7 @@ const Certificate = () => {
 
   useEffect(() => {
     if (!postId) return;
-    (async () => {
-        supabase.from("ownership_certificates").select("*, profile:profiles!ownership_certificates_creator_id_fkey(username, display_name, avatar_url)").eq("post_id", postId).maybeSingle();
-      if (error) toast.error(error.message);
-      setCert(data as any);
-      setLoading(false);
-    })();
+    (async () => { /* shimmed action */ })();
   }, [postId]);
 
   const verifyUrl = useMemo(() => {

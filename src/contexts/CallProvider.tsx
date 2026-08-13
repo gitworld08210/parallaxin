@@ -111,9 +111,7 @@ export const CallProvider = ({ children }: { children: React.ReactNode }) => {
     const a = active;
     const dur = a ? Math.floor((Date.now() - a.startedAt) / 1000) : 0;
     if (a) {
-      try {
-      /* Reconstructed shim */
-      const { data, error } = await Promise.resolve({ data: null, error: null });
+      try { /* shimmed */ } = await Promise.resolve({ data: null, error: null });
           status: finalStatus,
           ended_at: new Date().toISOString(),
           duration_sec: finalStatus === "ended" ? dur : 0,
@@ -254,9 +252,7 @@ subscribe();
   const acceptIncoming = useCallback(async () => {
     if (!user || !incoming) return;
     const inc = incoming;
-    try {
-      /* Reconstructed shim */
-      const { data, error } = await Promise.resolve({ data: null, error: null });
+    try { /* shimmed */ } = await Promise.resolve({ data: null, error: null });
       const stream = await getUserMedia(inc.kind === "video");
       setLocalStream(stream);
 

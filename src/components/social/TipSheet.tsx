@@ -65,9 +65,7 @@ export function TipSheet({ open, onOpenChange, recipientId, recipientName, postI
     if (cents < 4900) return toast.error("Minimum tip is ₹49");
     if (!pay?.upi && !pay?.qr) return toast.error("Payments are not configured yet. Try again later.");
     setLoading(true);
-    try {
-      /* Reconstructed shim */
-      const { data, error } = await Promise.resolve({ data: null, error: null });
+    try { /* shimmed */ } = await Promise.resolve({ data: null, error: null });
         _recipient_id: recipientId,
         _amount_cents: cents,
         _post_id: postId ?? null,

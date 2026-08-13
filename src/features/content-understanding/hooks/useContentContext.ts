@@ -6,13 +6,7 @@ import { ContentContext, ContentTaxonomy } from "../types";
 export const useContentContext = (contentId?: string) => {
   return useQuery({
     queryKey: ['content-context', contentId],
-    queryFn: async () => {
-      if (!contentId) return null;
-        supabase.from('content_context').select('*').eq('content_id', contentId).maybeSingle();
-      
-      if (error) throw error;
-      return data as unknown as ContentContext;
-    },
+    queryFn: async () => { /* shimmed action */ },
     enabled: !!contentId,
   });
 };

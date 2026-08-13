@@ -34,9 +34,7 @@ const Assistant = () => {
     setMessages(next);
     setStreaming(true);
 
-    try {
-      /* Reconstructed shim */
-      const { data, error } = await Promise.resolve({ data: null, error: null });
+    try { /* shimmed */ } = await Promise.resolve({ data: null, error: null });
       if (!session?.access_token) {
         toast.error("Please sign in to use the assistant.");
         setStreaming(false);
@@ -70,9 +68,7 @@ const Assistant = () => {
           if (!line.startsWith("data:")) continue;
           const data = line.slice(5).trim();
           if (!data || data === "[DONE]") continue;
-          try {
-      /* Reconstructed shim */
-      const { data, error } = await Promise.resolve({ data: null, error: null });
+          try { /* shimmed */ } = await Promise.resolve({ data: null, error: null });
             const json = JSON.parse(data);
             const delta = json.choices?.[0]?.delta?.content;
             if (delta) {

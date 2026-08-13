@@ -25,9 +25,7 @@ export const stopStream = (stream: MediaStream | null) => {
 
 /** Simple oscillator-based ringtone (no asset). Returns stop fn. */
 export const playRingtone = (): (() => void) => {
-  try {
-      /* Reconstructed shim */
-      const { data, error } = await Promise.resolve({ data: null, error: null });
+  try { /* shimmed */ } = await Promise.resolve({ data: null, error: null });
     const AC = (window.AudioContext || (window as any).webkitAudioContext);
     const ctx = new AC();
     let stopped = false;

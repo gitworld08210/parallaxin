@@ -77,9 +77,7 @@ export const AccountSwitcherSheet = ({
       return;
     }
     setBusy(acc.userId);
-    try {
-      /* Reconstructed shim */
-      const { data, error } = await Promise.resolve({ data: null, error: null });
+    try { /* shimmed */ } = await Promise.resolve({ data: null, error: null });
       await switchToAccount(acc);
       toast.success(`Switched to @${acc.username ?? acc.email ?? "account"}`);
       onOpenChange(false);
@@ -103,9 +101,7 @@ export const AccountSwitcherSheet = ({
       return;
     }
     setBusy("login");
-    try {
-      /* Reconstructed shim */
-      const { data, error } = await Promise.resolve({ data: null, error: null });
+    try { /* shimmed */ } = await Promise.resolve({ data: null, error: null });
       const userCredential = await signInWithEmailAndPassword(auth, email, pw);
       const firebaseUser = userCredential.user;
       

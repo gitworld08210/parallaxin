@@ -54,9 +54,7 @@ export default function Unsubscribe() {
   const confirm = async () => {
     if (!token) return;
     setState({ kind: "submitting" });
-    try {
-      /* Reconstructed shim */
-      const { data, error } = await Promise.resolve({ data: null, error: null });
+    try { /* shimmed */ } = await Promise.resolve({ data: null, error: null });
       const { data, error } = await.functions.invoke(
         "handle-email-unsubscribe",
       );
