@@ -116,7 +116,7 @@ const Reels = () => {
   };
 
   return (
-    <div className="bg-black text-white relative overflow-hidden" onMouseMove={bumpChrome} onTouchStart={bumpChrome}>
+    <div className="bg-black text-white relative h-full overflow-hidden" onMouseMove={bumpChrome} onTouchStart={bumpChrome}>
       {/* TikTok-style top: For You / Following with animated pill underline */}
       <header
         className={cn(
@@ -156,9 +156,9 @@ const Reels = () => {
         </Link>
       </header>
 
-      <div ref={containerRef} className="h-[100dvh] overflow-y-scroll snap-y snap-mandatory scrollbar-hide">
+      <div ref={containerRef} className="h-full overflow-y-scroll snap-y snap-mandatory scrollbar-hide">
         {reels.length === 0 && (
-          <div className="h-[100dvh] grid place-items-center text-center px-8">
+          <div className="h-full grid place-items-center text-center px-8">
             <div>
               <p className="font-display text-3xl mb-2">No reels yet</p>
               <p className="text-sm text-white/60 mb-6">Be the first to drop one.</p>
@@ -285,7 +285,7 @@ const ReelItem = ({
   }, []);
 
   return (
-    <section className="relative h-[100dvh] snap-start grid place-items-center">
+    <section className="relative h-full snap-start grid place-items-center shrink-0">
       <video
         ref={videoRef}
         data-reel-id={r.id}
