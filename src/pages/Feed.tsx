@@ -57,16 +57,17 @@ const Feed = () => {
   const [chromeHidden, setChromeHidden] = useState(false);
   const lastY = useRef(0);
   useEffect(() => {
-    const onScroll = () => {
-      const y = window.scrollY;
+    const onScroll = (e: any) => {
+      const y = e.target.scrollTop;
       if (y < 32) { setChromeHidden(false); lastY.current = y; return; }
       const dy = y - lastY.current;
       if (dy > 6) setChromeHidden(true);
       else if (dy < -6) setChromeHidden(false);
       lastY.current = y;
     };
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    const main = document.querySelector('main');
+    main?.addEventListener("scroll", onScroll, { passive: true });
+    return () => main?.removeEventListener("scroll", onScroll);
   }, []);
 
   const displayName = profile?.display_name || profile?.username || "";
@@ -110,8 +111,8 @@ const Feed = () => {
             }
           />
           <div className="flex items-center justify-center">
-            <span className="font-display text-xl font-black tracking-[0.2em] text-primary">
-              AURELIX
+            <span className="font-serif italic text-2xl tracking-tighter">
+              Parallax
             </span>
           </div>
           <div className="flex items-center gap-1">
@@ -203,7 +204,7 @@ const Feed = () => {
       <Link
         to="/compose"
         aria-label="Compose"
-        className="fixed z-40 bottom-24 right-4 h-14 w-14 rounded-full bg-primary text-primary-foreground grid place-items-center shadow-glow hover:brightness-110 active:scale-95 transition-all"
+        className="absolute z-40 bottom-24 right-4 h-14 w-14 rounded-full bg-primary text-primary-foreground grid place-items-center shadow-glow hover:brightness-110 active:scale-95 transition-all"
       >
         <PenSquare className="h-6 w-6" strokeWidth={2.2} />
       </Link>
