@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-
 import { useAuth } from "@/contexts/AuthProvider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,44 +6,28 @@ import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { Sparkles, Loader2, Plus, X } from "lucide-react";
 
+/** CreatorSubscriptionSettings - Supabase removed, uses Mock logic. */
 export function CreatorSubscriptionSettings() {
   const { user } = useAuth();
   const [enabled, setEnabled] = useState(false);
   const [coins, setCoins] = useState<number>(500);
   const [inr, setInr] = useState<number>(199);
   const [perks, setPerks] = useState<string[]>(["Exclusive posts", "Subscriber-only lives", "Priority DMs"]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (!user) return;
-    (async () => {
-        .select("*").eq("creator_id", user.id).maybeSingle();
-      const r: any = data;
-      if (r) {
-        setEnabled(r.enabled);
-        setCoins(r.monthly_price_coins);
-        setInr(Math.round(r.monthly_price_inr_cents / 100));
-        setPerks(Array.isArray(r.perks) ? r.perks : []);
-      }
-      setLoading(false);
-    })();
+    // Data fetching removed.
   }, [user?.id]);
 
   const save = async () => {
     if (!user) return;
-    if (coins < 50 || coins > 100000) return toast.error("Price must be between 50 and 100,000 coins");
-    if (inr < 49) return toast.error("INR fallback must be at least ₹49");
     setSaving(true);
-      creator_id: user.id,
-      enabled,
-      monthly_price_coins: coins,
-      monthly_price_inr_cents: inr * 100,
-      perks: perks.filter((p) => p.trim()),
-    });
-    setSaving(false);
-    if (error) return toast.error(error.message);
-    toast.success("Subscription settings saved");
+    setTimeout(() => {
+      setSaving(false);
+      toast.success("Subscription settings saved (Mock)");
+    }, 500);
   };
 
   if (loading) return <div className="py-8 grid place-items-center"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>;
