@@ -1,8 +1,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { auth, db } from "@/lib/firebase";
 import { onAuthStateChanged, signOut as firebaseSignOut } from "firebase/auth";
-import { doc, getDoc, onSnapshot } from "firebase/firestore";
-import { supabase } from "@/integrations/supabase/client";
+import { doc, onSnapshot } from "firebase/firestore";
 
 type Profile = {
   id: string;
@@ -21,96 +20,35 @@ type Profile = {
   interests?: string[] | null;
 };
 
-type SupabaseUser = {
+type User = {
   id: string;
   app_metadata: Record<string, any>;
   user_metadata: Record<string, any>;
   aud: string;
-  confirmation_sent_at?: string;
-  recovery_sent_at?: string;
-  email_confirmed_at?: string;
-  phone_confirmed_at?: string;
-  last_sign_in_at?: string;
-  role?: string;
-  updated_at?: string;
   created_at: string;
+  last_sign_in_at?: string;
   email?: string;
   phone?: string;
 };
 
 type Ctx = {
-  user: SupabaseUser | null;
-  session: any | null; 
+  user: User | null;
   profile: Profile | null;
   loading: boolean;
-  refreshProfile: () => Promise<void>;
   signOut: () => Promise<void>;
 };
-
-
 
 const AuthCtx = createContext<Ctx | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<SupabaseUser | null>(null);
-  const [supabaseSession, setSupabaseSession] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
-
-  const loadProfile = async (uid: string) => {
-    try {
-      const docRef = doc(db, "profiles", uid);
-      const docSnap = await getDoc(docRef);
-      if (docSnap.exists()) {
-        setProfile({ id: docSnap.id, ...docSnap.data() } as Profile);
-      } else {
-        setProfile(null);
-      }
-    } catch (error) {
-      console.error("Error loading profile:", error);
-      setProfile(null);
-    }
-  };
-
-  const syncSupabase = async (firebaseUser: any) => {
-    // Keeping this for backward compatibility during migration, 
-    // but moving towards full Firebase reliance.
-    if (!firebaseUser) return;
-    
-    try {
-      const idToken = await firebaseUser.getIdToken(true);
-      // Optional: Background sync if backend is active, but don't block
-      supabase.functions.invoke("firebase-bridge", {
-        body: { idToken }
-      }).then(async (res) => {
-        if (res.data?.user_id) {
-          const { data: emp, error: empErr } = await supabase
-            .from("employees")
-            .select("employment_status")
-            .eq("user_id", res.data.user_id)
-            .maybeSingle();
-          
-          if (empErr) {
-            console.warn("Suspension check background failed:", empErr);
-            return;
-          }
-
-          if (emp?.employment_status === "suspended") {
-            await firebaseSignOut(auth);
-            // On hard refresh, this will kick them back to /auth if they are suspended
-          }
-        }
-      }).catch(err => console.warn("Supabase background sync skipped:", err));
-      
-    } catch (e) {
-      console.warn("Auth bridge background task skipped.");
-    }
-  };
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
-        const mappedUser: SupabaseUser = {
+        const mappedUser: User = {
           id: firebaseUser.uid,
           email: firebaseUser.email || undefined,
           phone: firebaseUser.phoneNumber || undefined,
@@ -124,9 +62,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           last_sign_in_at: firebaseUser.metadata.lastSignInTime || new Date().toISOString(),
         };
         setUser(mappedUser);
-
-        // Bridge to Supabase in the background
-        await syncSupabase(firebaseUser);
         
         const profileUnsubscribe = onSnapshot(doc(db, "profiles", firebaseUser.uid), (doc) => {
           if (doc.exists()) {
@@ -139,28 +74,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return () => profileUnsubscribe();
       } else {
         setUser(null);
-        setSupabaseSession(null);
         setProfile(null);
         setLoading(false);
-        // Clear Supabase session on logout
-        await supabase.auth.signOut();
       }
     });
 
     return () => unsubscribe();
   }, []);
 
-
-  const refreshProfile = async () => {
-    if (user) await loadProfile(user.id);
-  };
-
   const signOut = async () => {
     await firebaseSignOut(auth);
   };
 
   return (
-    <AuthCtx.Provider value={{ user, session: supabaseSession, profile, loading, refreshProfile, signOut }}>
+    <AuthCtx.Provider value={{ user, profile, loading, signOut }}>
       {children}
     </AuthCtx.Provider>
   );
