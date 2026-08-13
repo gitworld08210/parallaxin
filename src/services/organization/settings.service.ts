@@ -38,7 +38,7 @@ export interface OrganizationSettingsUpdate {
 
 export const settingsService = {
   async get(orgId: string): Promise<OrganizationSettings | null> {
-      supabase.from("organization_settings").select("*").eq("organization_id", orgId).maybeSingle();
+    const { data, error } = await supabase.from("organization_settings" as any).select("*").eq("organization_id", orgId).maybeSingle();
     if (error) throw error;
     return (data as OrganizationSettings | null) ?? null;
   },

@@ -5,6 +5,7 @@ import remarkGfm from "remark-gfm";
 import { TopBar } from "@/components/vibe/TopBar";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/contexts/AuthProvider";
 
 
 type Msg = { role: "user" | "assistant"; content: string };
@@ -17,6 +18,7 @@ const SUGGESTIONS = [
 ];
 
 const Assistant = () => {
+  const { user } = useAuth();
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
   const [streaming, setStreaming] = useState(false);
@@ -35,16 +37,18 @@ const Assistant = () => {
     setStreaming(true);
 
     try {
-      if (!session?.access_token) {
+      if (!user) {
         toast.error("Please sign in to use the assistant.");
         setStreaming(false);
         return;
       }
+      const token = await user.getIdToken();
+      const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-assistant`;
       const resp = await fetch(url, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${session.access_token}`,
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ messages: next, model: "gpt-4o" }),
       });

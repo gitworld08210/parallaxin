@@ -5,6 +5,7 @@ import { TopBar } from "@/components/vibe/TopBar";
 
 import { useAuth } from "@/contexts/AuthProvider";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function ChangePasswordScreen() {
   const nav = useNavigate();
@@ -17,7 +18,9 @@ export default function ChangePasswordScreen() {
     if (!user?.email) return;
     if (next.length < 8) return toast.error("Password must be at least 8 characters");
     setBusy(true);
-    if (reauth) { setBusy(false); return toast.error("Current password is incorrect"); }
+    const { error: reauthError } = await supabase.auth.signInWithPassword({ email: user.email, password: current });
+    if (reauthError) { setBusy(false); return toast.error("Current password is incorrect"); }
+    const { error } = await supabase.auth.updateUser({ password: next });
     setBusy(false);
     if (error) return toast.error(error.message);
     toast.success("Password updated");
