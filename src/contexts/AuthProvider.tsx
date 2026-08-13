@@ -22,6 +22,8 @@ type Profile = {
 
 type User = {
   id: string;
+  /** Firebase-native alias of `id`, always populated. */
+  uid: string;
   app_metadata: Record<string, any>;
   user_metadata: Record<string, any>;
   aud: string;
@@ -67,6 +69,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (firebaseUser) {
         const mappedUser: User = {
           id: firebaseUser.uid,
+          uid: firebaseUser.uid,
           email: firebaseUser.email || undefined,
           phone: firebaseUser.phoneNumber || undefined,
           user_metadata: {
