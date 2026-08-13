@@ -254,6 +254,25 @@ const Auth = () => {
                   placeholder="Password"
                   className="w-full bg-zinc-900 border border-white/10 rounded-xl px-4 py-3 text-sm outline-none focus:border-primary/50 transition-all placeholder:text-zinc-600"
                 />
+                {tab === "signup" && (
+                  <>
+                    <input 
+                      value={name}
+                      onChange={e => setName(e.target.value)}
+                      placeholder="Full name"
+                      className="w-full bg-zinc-900 border border-white/10 rounded-xl px-4 py-3 text-sm outline-none focus:border-primary/50 transition-all placeholder:text-zinc-600"
+                    />
+                    <input 
+                      value={handle}
+                      onChange={e => setHandle(e.target.value.toLowerCase().replace(/[^a-z0-9._]/g, ""))}
+                      placeholder="Username (optional)"
+                      className="w-full bg-zinc-900 border border-white/10 rounded-xl px-4 py-3 text-sm outline-none focus:border-primary/50 transition-all placeholder:text-zinc-600"
+                    />
+                    <p className="text-[10px] text-zinc-600 px-1">
+                      Only your name is required. Photo and bio can be added later.
+                    </p>
+                  </>
+                )}
               </div>
 
               <button 
