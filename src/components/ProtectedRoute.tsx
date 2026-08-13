@@ -21,7 +21,7 @@ export const ProtectedRoute = () => {
   return <Outlet />;
 };
 
-export const AdminOSGate = () => {
+export const AdminOSGate = ({ children }: { children?: React.ReactNode }) => {
   const { profile, loading } = useAuth();
   const location = useLocation();
 
@@ -36,10 +36,10 @@ export const AdminOSGate = () => {
     return <Navigate to="/admin-os/no-access" replace />;
   }
 
-  return <Outlet />;
+  return children ? <>{children}</> : <Outlet />;
 };
 
-export const ExecutiveGate = () => {
+export const ExecutiveGate = ({ children }: { children?: React.ReactNode }) => {
   const { profile, loading } = useAuth();
 
   if (loading) return null;
@@ -50,6 +50,6 @@ export const ExecutiveGate = () => {
     return <Navigate to="/admin-os/no-access" replace />;
   }
 
-  return <Outlet />;
+  return children ? <>{children}</> : <Outlet />;
 };
 
