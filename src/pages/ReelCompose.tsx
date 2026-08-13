@@ -11,7 +11,7 @@ import { uploadToCloudinary } from "@/lib/cloudinary";
 import { supabase } from "@/integrations/supabase/client";
 
 const ReelCompose = () => {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const nav = useNavigate();
   const inputRef = useRef<HTMLInputElement>(null);
   const cameraRef = useRef<HTMLInputElement>(null);
@@ -76,7 +76,15 @@ const ReelCompose = () => {
         media_url: url,
         media_type: "video",
         is_reel: true,
-      }).select("id").single();
+        like_count: 0,
+        comment_count: 0,
+        profile: {
+          username: (profile as any)?.username || "",
+          display_name: (profile as any)?.display_name || "User",
+          avatar_url: (profile as any)?.avatar_url || null,
+          verified: !!(profile as any)?.verified,
+        }
+      } as any).select("id").single();
       if (error) throw error;
       if (certify && inserted?.id) {
         void reliableInvoke("ownership-certify", { body: { post_id: inserted.id }, retries: 1 });
