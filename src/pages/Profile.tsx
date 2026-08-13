@@ -435,7 +435,7 @@ const Profile = () => {
               />
             ) : (
               <div
-                className="h-28 w-28 sm:h-32 sm:w-32 rounded-full grid place-items-center text-2xl font-display font-semibold text-foreground"
+                className="h-24 w-24 rounded-full grid place-items-center text-xl font-display font-semibold text-foreground"
                 style={{ backgroundImage: gradientFor(profile.username) }}
               >
                 {initialsOf(displayName)}
@@ -446,7 +446,7 @@ const Profile = () => {
             )}
           </motion.div>
 
-          <div className="flex items-center gap-2 pt-14 sm:pt-16">
+          <div className="flex items-center gap-2 mt-2">
             {isMe ? (
               <>
                 <IconBtn label="Share profile" onClick={shareProfile}>
