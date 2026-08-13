@@ -18,7 +18,10 @@ import Assistant from "../pages/Assistant";
 import { AppShell } from "../components/layout/AppShell";
 import { ProtectedRoute } from "../components/ProtectedRoute";
 
+import { useScrollReset } from "../hooks/use-scroll-reset";
+
 export default function AppRoutes() {
+  useScrollReset();
   return (
     <Routes>
       <Route path="/auth" element={<Auth />} />

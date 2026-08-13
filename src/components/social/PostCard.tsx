@@ -186,7 +186,7 @@ export const PostCard = ({ post, onOpenComments }: { post: FeedPost; onOpenComme
   const shortCaption = longCaption && !expanded ? caption.slice(0, 240) : caption;
 
   return (
-    <article ref={articleRef} className="bg-background px-4 pt-3 pb-2 border-b border-white/5 hover:bg-white/[0.02] transition-colors">
+    <article ref={articleRef} className="bg-background px-4 pt-3 pb-3 border-b border-white/5 hover:bg-white/[0.01] transition-colors">
       {/* X-style: avatar left, content right */}
       <div className="flex gap-3">
         {/* Avatar column */}
@@ -304,7 +304,7 @@ export const PostCard = ({ post, onOpenComments }: { post: FeedPost; onOpenComme
           {post.media_url && (
             <div
               onClick={onMediaTap}
-              className="relative mt-2 rounded-2xl overflow-hidden border border-white/10 bg-muted select-none"
+              className="relative mt-2 rounded-xl overflow-hidden border border-white/5 bg-muted select-none"
             >
               {post.media_type === "video" ? (
                 <video src={post.media_url} controls playsInline className="w-full max-h-[560px] object-cover" />

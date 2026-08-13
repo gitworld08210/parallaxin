@@ -116,7 +116,7 @@ const Reels = () => {
   };
 
   return (
-    <div className="bg-black text-white relative h-full overflow-hidden" onMouseMove={bumpChrome} onTouchStart={bumpChrome}>
+    <div className="bg-black text-white relative h-full w-full overflow-hidden" onMouseMove={bumpChrome} onTouchStart={bumpChrome}>
       {/* TikTok-style top: For You / Following with animated pill underline */}
       <header
         className={cn(
@@ -156,7 +156,7 @@ const Reels = () => {
         </Link>
       </header>
 
-      <div ref={containerRef} className="h-full overflow-y-scroll snap-y snap-mandatory scrollbar-hide">
+      <div ref={containerRef} className="h-full w-full overflow-y-scroll snap-y snap-mandatory scrollbar-hide">
         {reels.length === 0 && (
           <div className="h-full grid place-items-center text-center px-8">
             <div>
@@ -285,7 +285,7 @@ const ReelItem = ({
   }, []);
 
   return (
-    <section className="relative h-full snap-start grid place-items-center shrink-0">
+    <section className="relative h-full w-full snap-start grid place-items-center shrink-0">
       <video
         ref={videoRef}
         data-reel-id={r.id}

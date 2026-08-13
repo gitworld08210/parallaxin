@@ -166,18 +166,13 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white flex items-center justify-center p-6 relative overflow-hidden">
-      {/* Background Decor */}
-      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary/20 blur-[120px] rounded-full pointer-events-none" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-accent/10 blur-[120px] rounded-full pointer-events-none" />
+    <div className="min-h-screen bg-black text-white flex items-center justify-center sm:p-6 relative overflow-hidden">
+      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary/10 blur-[120px] rounded-full pointer-events-none" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-accent/5 blur-[120px] rounded-full pointer-events-none" />
       
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-[440px] relative z-10"
-      >
-        <div className="text-center mb-8 border border-white/10 p-8 rounded-none bg-black/40 backdrop-blur-md shadow-2xl">
-          <div className="flex justify-center mb-8">
+      <div className="w-full max-w-[390px] min-h-screen sm:min-h-0 sm:aspect-[9/19.5] relative z-10 bg-black sm:border sm:border-white/10 sm:rounded-[3rem] sm:shadow-2xl flex flex-col items-center pt-20 px-8 pb-10">
+        <div className="text-center mb-12 w-full">
+          <div className="flex justify-center mb-10">
             <span className="text-5xl font-serif italic tracking-tighter">Parallax</span>
           </div>
           <h1 className="sr-only">
@@ -185,7 +180,7 @@ const Auth = () => {
           </h1>
         </div>
 
-        <div className="space-y-4 border border-white/10 p-8 rounded-none bg-black/40 backdrop-blur-md shadow-2xl">
+        <div className="space-y-6 w-full flex-1">
           {tab === "signup" && (
             <div className="grid grid-cols-2 gap-3 p-1 bg-[#111] border border-white/5 rounded-2xl">
               <button 
@@ -210,7 +205,7 @@ const Auth = () => {
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 placeholder="Phone number, username, or email"
-                className="w-full bg-[#111] border border-white/5 rounded-lg pl-4 pr-4 py-3 text-[14px] outline-none focus:ring-1 focus:ring-primary/50 transition-all"
+                className="w-full bg-[#111] border border-white/5 rounded-lg pl-4 pr-4 py-3.5 text-[14px] outline-none focus:ring-1 focus:ring-primary/50 transition-all placeholder:text-zinc-600"
               />
             </div>
             <div className="relative">
@@ -219,7 +214,7 @@ const Auth = () => {
                 value={password}
                 onChange={e => setPassword(e.target.value)}
                 placeholder="Password"
-                className="w-full bg-[#111] border border-white/5 rounded-lg pl-4 pr-4 py-3 text-[14px] outline-none focus:ring-1 focus:ring-primary/50 transition-all"
+                className="w-full bg-[#111] border border-white/5 rounded-lg pl-4 pr-4 py-3.5 text-[14px] outline-none focus:ring-1 focus:ring-primary/50 transition-all placeholder:text-zinc-600"
               />
             </div>
           </div>
@@ -227,66 +222,51 @@ const Auth = () => {
           <button 
             onClick={handleAuth}
             disabled={busy}
-            className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-2.5 rounded-lg transition-all active:scale-[0.98] disabled:opacity-50 text-sm"
+            className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-3.5 rounded-lg transition-all active:scale-[0.98] disabled:opacity-50 text-sm shadow-lg shadow-primary/20"
           >
             {busy ? "Please wait..." : tab === "signin" ? "Log in" : "Sign up"}
           </button>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 py-2">
             <div className="h-px flex-1 bg-white/5" />
-            <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest">or continue with</span>
+            <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest">or</span>
             <div className="h-px flex-1 bg-white/5" />
           </div>
 
           <button 
             onClick={handleGoogle}
             disabled={busy}
-            className="w-full flex items-center justify-center gap-2 text-[#385185] font-semibold text-sm hover:underline"
+            className="w-full flex items-center justify-center gap-2 text-[#385185] font-bold text-sm hover:underline"
           >
             <svg className="h-4 w-4 fill-current" viewBox="0 0 24 24">
               <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
             </svg>
-            Log in with Google
+            Continue with Google
           </button>
 
-          <div className="flex flex-col gap-4 text-center">
-            <p className="text-sm text-muted-foreground">
-              {tab === "signin" ? "New to Aurelix?" : "Already have an account?"}{" "}
-              <button 
-                onClick={() => setTab(tab === "signin" ? "signup" : "signin")}
-                className="text-primary font-bold hover:underline"
-              >
-                {tab === "signin" ? "Create one" : "Sign in"}
-              </button>
-            </p>
+          <div className="text-center pt-4">
             {tab === "signin" && (
               <button 
                 onClick={() => nav("/forgot-password")}
                 className="text-xs text-muted-foreground hover:text-white transition-colors"
               >
-                Forgot your password?
+                Forgot password?
               </button>
             )}
           </div>
         </div>
-      </motion.div>
-      <div className="mt-8 text-center text-xs text-muted-foreground/60 w-full max-w-[440px]">
-        <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 mb-6 uppercase tracking-tight">
-          <span>Meta</span>
-          <span>About</span>
-          <span>Blog</span>
-          <span>Jobs</span>
-          <span>Help</span>
-          <span>API</span>
-          <span>Privacy</span>
-          <span>Terms</span>
-          <span>Locations</span>
-          <span>Instagram Lite</span>
-          <span>Threads</span>
-          <span>Contact Uploading & Non-Users</span>
-          <span>Meta Verified</span>
+
+        <div className="w-full mt-auto pt-10 border-t border-white/5">
+          <p className="text-sm text-center text-muted-foreground">
+            {tab === "signin" ? "Don't have an account?" : "Already have an account?"}{" "}
+            <button 
+              onClick={() => setTab(tab === "signin" ? "signup" : "signin")}
+              className="text-primary font-bold hover:underline"
+            >
+              {tab === "signin" ? "Sign up" : "Log in"}
+            </button>
+          </p>
         </div>
-        <p>© 2026 Parallax from Aurelix</p>
       </div>
     </div>
   );
