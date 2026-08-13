@@ -1,3 +1,4 @@
+import { supabase } from '@/integrations/supabase/client';
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { Room, RoomEvent, RemoteTrack, Track } from "livekit-client";

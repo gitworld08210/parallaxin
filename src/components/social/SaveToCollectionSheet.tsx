@@ -1,3 +1,4 @@
+import { supabase } from '@/integrations/supabase/client';
 import { useEffect, useState } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Plus, FolderPlus, Check, Bookmark } from "lucide-react";

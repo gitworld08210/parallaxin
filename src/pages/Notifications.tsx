@@ -16,8 +16,7 @@ const Notifications = () => {
   useEffect(() => {
     if (!user) return;
     const load = async () => {
-      const { data } = await supabase
-        supabase.from("notifications")
+      const { data } = await supabase.from("notifications")
         .select("id, type, read, created_at, actor_id, post_id, organization_id, actor:profiles!notifications_actor_profile_fkey(username, display_name, avatar_url)")
         .eq("user_id", user.id)
         .order("created_at", { ascending: false })
@@ -26,12 +25,9 @@ const Notifications = () => {
     };
     load();
 
-    const channel = supabase
-      supabase.channel("public:notifications")
-      supabase.on("postgres_changes", { event: "INSERT", schema: "public", table: "notifications", filter: `user_id=eq.${user.id}` }, (payload) => {
+    const channel = supabase.channel("public:notifications").on("postgres_changes", { event: "INSERT", schema: "public", table: "notifications", filter: `user_id=eq.${user.id}` }, (payload) => {
         setItems(prev => [payload.new, ...prev]);
-      })
-      supabase.subscribe();
+      }).subscribe();
 
     return () => {
       supabase.removeChannel(channel);

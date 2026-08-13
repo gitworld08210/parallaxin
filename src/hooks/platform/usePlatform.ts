@@ -1,3 +1,4 @@
+import { supabase } from '@/integrations/supabase/client';
 /**
  * Platform engine hooks. Thin React-Query wrappers around the service layer.
  */

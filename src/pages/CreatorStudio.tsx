@@ -1,3 +1,4 @@
+import { supabase } from '@/integrations/supabase/client';
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft, TrendingUp, Users, Eye, DollarSign, Sparkles, Play, Heart, MessageCircle, Wallet, Crown, Video, Loader2, Lightbulb } from "lucide-react";
