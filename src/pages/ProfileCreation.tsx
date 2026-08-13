@@ -25,7 +25,7 @@ const ProfileCreation = () => {
     const checkProfile = async () => {
       if (!user) return;
       const snap = await getDoc(doc(db, "profiles", user.uid));
-      if (snap.exists() && snap.data().username) {
+      if (snap.exists() && (snap.data().display_name || snap.data().username)) {
         nav("/", { replace: true });
       }
     };
@@ -58,9 +58,11 @@ const ProfileCreation = () => {
       }
 
       // Generate a default username if not provided
+      const rawUsername = username.trim() || displayName.trim();
+      const baseUsername = rawUsername.toLowerCase().replace(/[^a-z0-9._]/g, "");
       const finalUsername = username.trim() 
-        ? username.trim().toLowerCase().replace(/[^a-z0-9._]/g, "")
-        : `${displayName.trim().toLowerCase().replace(/[^a-z0-9._]/g, "")}${Math.floor(1000 + Math.random() * 9000)}`;
+        ? baseUsername 
+        : `${baseUsername}${Math.floor(1000 + Math.random() * 9000)}`;
       
       const profileData = {
         id: user.uid,
@@ -160,6 +162,14 @@ const ProfileCreation = () => {
             className="w-full bg-primary text-white font-black py-4 rounded-xl hover:brightness-110 active:scale-[0.98] transition-all shadow-lg shadow-primary/20 mt-4"
           >
             {busy ? "Finalizing..." : "Enter Parallax"}
+          </button>
+          
+          <button 
+            type="button"
+            onClick={handleCreate}
+            className="w-full py-2 text-xs font-bold text-zinc-500 hover:text-white transition-colors uppercase tracking-widest mt-2"
+          >
+            Skip for now
           </button>
         </form>
       </motion.div>
