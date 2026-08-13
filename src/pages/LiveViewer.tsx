@@ -91,22 +91,22 @@ export default function LiveViewer() {
   // Realtime: chat, reactions, gifts, stream status
   useEffect(() => {
     if (!id) return;
-      supabase.channel(`live:${id}`)
-      supabase.on("postgres_changes", { event: "INSERT", schema: "public", table: "live_chat", filter: `stream_id=eq.${id}` },
-        (p) => setChat((c) => [...c.slice(-50), p.new as ChatRow]))
-      supabase.on("postgres_changes", { event: "INSERT", schema: "public", table: "live_reactions", filter: `stream_id=eq.${id}` },
-        () => setHearts((h) => [...h, { id: Date.now() + Math.random() }]))
-      supabase.on("postgres_changes", { event: "INSERT", schema: "public", table: "live_gifts", filter: `stream_id=eq.${id}` },
+      supabase.channel(`live:${id}`).
+on("postgres_changes", { event: "INSERT", schema: "public", table: "live_chat", filter: `stream_id=eq.${id}` },
+        (p) => setChat((c) => [...c.slice(-50), p.new as ChatRow])).
+on("postgres_changes", { event: "INSERT", schema: "public", table: "live_reactions", filter: `stream_id=eq.${id}` },
+        () => setHearts((h) => [...h, { id: Date.now() + Math.random() }])).
+on("postgres_changes", { event: "INSERT", schema: "public", table: "live_gifts", filter: `stream_id=eq.${id}` },
         (p) => {
           const g = p.new as GiftEvent;
           setGifts((arr) => [g, ...arr].slice(0, 8));
           setTips((t) => t + Number(g.coins_total || 0));
           const def = catalog.find((c) => c.id === g.gift_id);
           if (def) setFlying((f) => [...f, { key: Date.now() + Math.random(), icon: def.icon }]);
-        })
-      supabase.on("postgres_changes", { event: "UPDATE", schema: "public", table: "live_streams", filter: `id=eq.${id}` },
-        (p) => { if ((p.new as any).status === "ended") setEnded(true); })
-      supabase.subscribe();
+        }).
+on("postgres_changes", { event: "UPDATE", schema: "public", table: "live_streams", filter: `id=eq.${id}` },
+        (p) => { if ((p.new as any).status === "ended") setEnded(true); }).
+subscribe();
   }, [id, catalog]);
 
   useEffect(() => {

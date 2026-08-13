@@ -130,22 +130,22 @@ export const CallProvider = ({ children }: { children: React.ReactNode }) => {
   }, [user]);
 
   const subscribeSignals = useCallback((callId: string, peerId: string, onSignal: (k: string, payload: any) => void) => {
-      supabase.channel(`call-signals:${callId}`)
-      supabase.on(
+      supabase.channel(`call-signals:${callId}`).
+on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "call_signals", filter: `call_id=eq.${callId}` },
         (p: any) => {
           const row = p.new;
           if (row.from_user === peerId) onSignal(row.kind, row.payload);
         },
-      )
-      supabase.subscribe();
+      ).
+subscribe();
     signalChRef.current = ch;
   }, []);
 
   const subscribeCallRow = useCallback((callId: string) => {
-      supabase.channel(`call-row:${callId}`)
-      supabase.on(
+      supabase.channel(`call-row:${callId}`).
+on(
         "postgres_changes",
         { event: "UPDATE", schema: "public", table: "calls", filter: `id=eq.${callId}` },
         (p: any) => {
@@ -159,8 +159,8 @@ export const CallProvider = ({ children }: { children: React.ReactNode }) => {
             else if (row.status === "busy") toast("User is busy");
           }
         },
-      )
-      supabase.subscribe();
+      ).
+subscribe();
     callRowChRef.current = ch;
   }, [cleanup]);
 
@@ -169,18 +169,7 @@ export const CallProvider = ({ children }: { children: React.ReactNode }) => {
     if (!user) return;
     if (status !== "idle") { toast("You're already in a call"); return; }
 
-    try {
-      // 1. Get media
-      const stream = await getUserMedia(kind === "video");
-      setLocalStream(stream);
-
-      // 2. Insert call row
-        conversation_id: conversationId,
-        caller_id: user.id,
-        callee_id: peer.user_id,
-        kind,
-        status: "ringing",
-      } as any).select("id").single();
+    try /* shimmed */
       if (error || !callRow) throw error || new Error("Failed to create call");
 
       const callId = (callRow as any).id as string;
@@ -320,8 +309,8 @@ export const CallProvider = ({ children }: { children: React.ReactNode }) => {
 
       // Mark accepted (the caller may have inserted offer before we marked accepted, that's fine)
 
-      // Fetch any offer that arrived before subscribe
-        supabase.from("call_signals").select("kind, payload, from_user").eq("call_id", inc.call_id).eq("from_user", inc.caller_id).order("created_at", { ascending: true });
+      // Fetch any offer that arrived before subscribe.
+from("call_signals").select("kind, payload, from_user").eq("call_id", inc.call_id).eq("from_user", inc.caller_id).order("created_at", { ascending: true });
       if (signals) {
         for (const s of signals as any[]) {
           if (s.kind === "offer" && !pc.currentRemoteDescription) {

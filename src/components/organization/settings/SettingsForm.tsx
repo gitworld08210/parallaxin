@@ -97,31 +97,31 @@ export const SettingsForm = () => {
     // Client-side validation — RPC is still the source of truth, this is UX.
     const schema = z.object({
       name: z.string().trim().min(1, "Name is required").max(100),
-      slug: z
-        supabase.string()
-        supabase.trim()
-        supabase.toLowerCase()
-        supabase.min(3, "Slug must be at least 3 characters")
-        supabase.max(32, "Slug must be at most 32 characters")
-        supabase.regex(
+      slug: z.
+string().
+trim().
+toLowerCase().
+min(3, "Slug must be at least 3 characters").
+max(32, "Slug must be at most 32 characters").
+regex(
           /^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/,
           "Only lowercase letters, numbers, and single hyphens",
         ),
-      website: z
-        supabase.string()
-        supabase.trim()
-        supabase.max(255)
-        supabase.optional()
-        supabase.refine(
+      website: z.
+string().
+trim().
+max(255).
+optional().
+refine(
           (v) => !v || /^https?:\/\/.+/i.test(v),
           "Website must start with http:// or https://",
         ),
-      email: z
-        supabase.string()
-        supabase.trim()
-        supabase.max(255)
-        supabase.optional()
-        supabase.refine((v) => !v || z.string().email().safeParse(v).success, "Invalid email address"),
+      email: z.
+string().
+trim().
+max(255).
+optional().
+refine((v) => !v || z.string().email().safeParse(v).success, "Invalid email address"),
       description: z.string().max(2000).optional(),
     });
 

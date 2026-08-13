@@ -25,8 +25,8 @@ export function useCoinBalance() {
       console.warn("Firestore wallet fetch failed, falling back to legacy", e);
     }
 
-    // 2. Legacy Supabase Fallback
-      supabase.from("profiles_private").select("coin_balance").eq("user_id", user.id).maybeSingle();
+    // 2. Legacy Supabase Fallback.
+from("profiles_private").select("coin_balance").eq("user_id", user.id).maybeSingle();
     setBalance((data as any)?.coin_balance ?? 0);
     setLoading(false);
   }, [user?.id]);
@@ -35,9 +35,9 @@ export function useCoinBalance() {
 
   useEffect(() => {
     if (!user) return;
-      supabase.channel(`coin-balance:${user.id}`)
-      supabase.on("postgres_changes", { event: "*", schema: "public", table: "profiles_private", filter: `user_id=eq.${user.id}` }, refresh)
-      supabase.subscribe();
+      supabase.channel(`coin-balance:${user.id}`).
+on("postgres_changes", { event: "*", schema: "public", table: "profiles_private", filter: `user_id=eq.${user.id}` }, refresh).
+subscribe();
   }, [user?.id, refresh]);
 
   return { balance, loading, refresh };

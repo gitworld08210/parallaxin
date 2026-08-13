@@ -84,8 +84,8 @@ const Support = () => {
         console.warn("Firestore support tickets fetch failed", e);
       }
 
-      // 2. Supabase Fallback
-        supabase.from("sup_tickets").select("id, ticket_number, subject, category, priority, status, created_at, owning_department_id").eq("requester_id", user!.id).order("created_at", { ascending: false }).limit(20);
+      // 2. Supabase Fallback.
+from("sup_tickets").select("id, ticket_number, subject, category, priority, status, created_at, owning_department_id").eq("requester_id", user!.id).order("created_at", { ascending: false }).limit(20);
       if (error) throw error;
       return data ?? [];
     },

@@ -169,18 +169,18 @@ export default function LiveHost() {
 
   useEffect(() => {
     if (!streamId) return;
-      supabase.channel(`live:${streamId}`)
-      supabase.on("postgres_changes", { event: "INSERT", schema: "public", table: "live_chat", filter: `stream_id=eq.${streamId}` },
-        (p) => setChat((c) => [...c.slice(-50), p.new as ChatRow]))
-      supabase.on("postgres_changes", { event: "INSERT", schema: "public", table: "live_reactions", filter: `stream_id=eq.${streamId}` },
-        () => setHearts((h) => [...h, { id: Date.now() + Math.random() }]))
-      supabase.on("postgres_changes", { event: "INSERT", schema: "public", table: "live_gifts", filter: `stream_id=eq.${streamId}` },
+      supabase.channel(`live:${streamId}`).
+on("postgres_changes", { event: "INSERT", schema: "public", table: "live_chat", filter: `stream_id=eq.${streamId}` },
+        (p) => setChat((c) => [...c.slice(-50), p.new as ChatRow])).
+on("postgres_changes", { event: "INSERT", schema: "public", table: "live_reactions", filter: `stream_id=eq.${streamId}` },
+        () => setHearts((h) => [...h, { id: Date.now() + Math.random() }])).
+on("postgres_changes", { event: "INSERT", schema: "public", table: "live_gifts", filter: `stream_id=eq.${streamId}` },
         (p) => {
           const g = p.new as GiftRow;
           setTips((t) => t + Number(g.coins_total || 0));
           setRecentGifts((arr) => [g, ...arr].slice(0, 6));
-        })
-      supabase.subscribe();
+        }).
+subscribe();
   }, [streamId]);
 
   useEffect(() => {

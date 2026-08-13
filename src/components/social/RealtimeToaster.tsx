@@ -13,8 +13,8 @@ export const RealtimeToaster = () => {
   useEffect(() => {
     if (!user) return;
 
-      supabase.channel(`toast-notif:${user.id}`)
-      supabase.on("postgres_changes",
+      supabase.channel(`toast-notif:${user.id}`).
+on("postgres_changes",
         { event: "INSERT", schema: "public", table: "notifications", filter: `user_id=eq.${user.id}` },
         async (payload) => {
           const n = payload.new as any;
@@ -31,12 +31,12 @@ export const RealtimeToaster = () => {
           toast(msg, {
             action: { label: "View", onClick: () => nav(n.post_id ? `/p/${n.post_id}` : "/notifications") },
           });
-        })
-      supabase.subscribe();
+        }).
+subscribe();
 
-    // DM toasts: subscribe to all messages, filter to ones not from me in convs I'm in
-      supabase.channel(`toast-dm:${user.id}`)
-      supabase.on("postgres_changes",
+    // DM toasts: subscribe to all messages, filter to ones not from me in convs I'm in.
+channel(`toast-dm:${user.id}`).
+on("postgres_changes",
         { event: "INSERT", schema: "public", table: "messages" },
         async (payload) => {
           const m = payload.new as any;
@@ -51,8 +51,8 @@ export const RealtimeToaster = () => {
           toast(`${name}: ${String(m.content).slice(0, 60)}`, {
             action: { label: "Open", onClick: () => nav(`/messages/${m.conversation_id}`) },
           });
-        })
-      supabase.subscribe();
+        }).
+subscribe();
 
     return () => {
     };

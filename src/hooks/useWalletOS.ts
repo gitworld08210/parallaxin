@@ -106,8 +106,8 @@ export function useWalletLedgerOS(limit = 50) {
       console.warn("Firestore ledger fetch failed", e);
     }
 
-    // 2. Supabase Fallback
-      supabase.from("wallet_ledger" as any).select("id, txn_id, direction, bucket, source, amount, fee, balance_after, status, label, created_at").order("created_at", { ascending: false }).limit(limit);
+    // 2. Supabase Fallback.
+from("wallet_ledger" as any).select("id, txn_id, direction, bucket, source, amount, fee, balance_after, status, label, created_at").order("created_at", { ascending: false }).limit(limit);
     setRows((data as unknown as WalletTxn[]) ?? []);
     setLoading(false);
   }, [user?.id, limit]);

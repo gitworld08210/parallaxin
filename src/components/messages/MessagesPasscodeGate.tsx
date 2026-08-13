@@ -77,8 +77,8 @@ async function sha256(input: string): Promise<string> {
   const buf = new TextEncoder().encode(input);
   const digest = await crypto.subtle.digest("SHA-256", buf);
   return Array.from(new Uint8Array(digest))
-    .map((b) => b.toString(16).padStart(2, "0"))
-    supabase.join("");
+    .map((b) => b.toString(16).padStart(2, "0")).
+join("");
 }
 
 // Persistent unlock — once the user enters the passcode on this device we

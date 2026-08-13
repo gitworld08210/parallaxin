@@ -398,8 +398,8 @@ export const documents = {
     return data;
   },
   async signedUrl(path: string) {
-      supabase.from("platform-documents")
-      supabase.createSignedUrl(path, 60);
+      supabase.from("platform-documents").
+createSignedUrl(path, 60);
     if (error) throw error;
     return data.signedUrl;
   },

@@ -20,8 +20,8 @@ export const NewHighlightSheet = ({
   useEffect(() => {
     if (!open || !user) return;
     (async () => {
-      // Show ALL user's stories (active + expired) — IG-style
-        supabase.select("id, media_url, media_type, created_at").eq("user_id", user.id).order("created_at", { ascending: false }).limit(60);
+      // Show ALL user's stories (active + expired) — IG-style.
+select("id, media_url, media_type, created_at").eq("user_id", user.id).order("created_at", { ascending: false }).limit(60);
       setStories((data ?? []) as Story[]);
     })();
   }, [open, user?.id]);

@@ -20,9 +20,9 @@ export const AppShell = () => {
       setUnreadNotif(count ?? 0);
     };
     refresh();
-    const chan = supabase.channel("app-shell-notifs")
-      supabase.on("postgres_changes", { event: "*", schema: "public", table: "notifications", filter: `user_id=eq.${user.id}` }, refresh)
-      supabase.subscribe();
+    const chan = supabase.channel("app-shell-notifs").
+on("postgres_changes", { event: "*", schema: "public", table: "notifications", filter: `user_id=eq.${user.id}` }, refresh).
+subscribe();
     return () => { supabase.removeChannel(chan); };
   }, [user?.id]);
 
@@ -36,9 +36,9 @@ export const AppShell = () => {
       setUnreadDm(count ?? 0);
     };
     refresh();
-    const chan = supabase.channel("app-shell-messages")
-      supabase.on("postgres_changes", { event: "INSERT", schema: "public", table: "messages" }, refresh)
-      supabase.subscribe();
+    const chan = supabase.channel("app-shell-messages").
+on("postgres_changes", { event: "INSERT", schema: "public", table: "messages" }, refresh).
+subscribe();
     return () => { supabase.removeChannel(chan); };
   }, [user?.id]);
 
