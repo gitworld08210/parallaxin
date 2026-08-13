@@ -30,7 +30,8 @@ import { ReportSheet } from "@/components/social/ReportSheet";
 import { BecomeCreatorSheet } from "@/components/creator/BecomeCreatorSheet";
 import { SubscribeButton } from "@/components/creator/SubscribeButton";
 import { EmptyState } from "@/components/empty/EmptyState";
-
+import { SideMenu } from "@/components/layout/SideMenu";
+import { AuraAvatar } from "@/components/vibe/AuraAvatar";
 import { VerificationBadge } from "@/components/vibe/VerificationBadge";
 import {
   DropdownMenu,
