@@ -202,16 +202,17 @@ const Profile = () => {
       setLoading(false);
 
       if (p) {
+        const userId = p.user_id || p.id;
         const qPosts = query(
           collection(db, "posts"),
-          where("user_id", "==", p.user_id),
+          where("user_id", "==", userId),
           where("is_reel", "==", false),
           orderBy("created_at", "desc"),
           limit(10)
         );
         const qReels = query(
           collection(db, "posts"),
-          where("user_id", "==", p.user_id),
+          where("user_id", "==", userId),
           where("is_reel", "==", true),
           orderBy("created_at", "desc"),
           limit(8)
@@ -242,14 +243,14 @@ const Profile = () => {
             .map((d: any) => ({ ...d, liked: liked.has(d.id) })));
         setReels((rdata ?? []).map((d: any) => ({ ...d, liked: liked.has(d.id) })));
 
-        if (user && p.user_id !== user.uid) {
-          const followSnap = await getDocs(query(collection(db, "follows"), where("follower_id", "==", user.uid), where("following_id", "==", p.user_id), limit(1)));
+        if (user && userId !== user.uid) {
+          const followSnap = await getDocs(query(collection(db, "follows"), where("follower_id", "==", user.uid), where("following_id", "==", userId), limit(1)));
           setIsFollowing(!followSnap.empty);
           
-          const blockSnap = await getDocs(query(collection(db, "blocks"), where("blocker_id", "==", user.uid), where("blocked_id", "==", p.user_id), limit(1)));
+          const blockSnap = await getDocs(query(collection(db, "blocks"), where("blocker_id", "==", user.uid), where("blocked_id", "==", userId), limit(1)));
           setIsBlocked(!blockSnap.empty);
 
-          const muteSnap = await getDocs(query(collection(db, "mutes"), where("muter_id", "==", user.uid), where("muted_id", "==", p.user_id), limit(1)));
+          const muteSnap = await getDocs(query(collection(db, "mutes"), where("muter_id", "==", user.uid), where("muted_id", "==", userId), limit(1)));
           setIsMuted(!muteSnap.empty);
         }
       }
