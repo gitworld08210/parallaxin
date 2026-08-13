@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { auth, db } from "@/lib/firebase";
 import { onAuthStateChanged, signOut as firebaseSignOut } from "firebase/auth";
-import { doc, getDoc, onSnapshot } from "firebase/firestore";
+import { doc, onSnapshot } from "firebase/firestore";
 
 type Profile = {
   id: string;
@@ -18,28 +18,27 @@ type Profile = {
   posts_count: number;
   onboarded_at?: string | null;
   interests?: string[] | null;
+  account_type?: "personal" | "organization";
+  organization_id?: string | null;
 };
 
 type User = {
   id: string;
-  /** Firebase-native alias of `id`, always populated. */
   uid: string;
-  app_metadata: Record<string, any>;
-  user_metadata: Record<string, any>;
+  email?: string;
+  phone?: string;
+  user_metadata: any;
+  app_metadata: any;
   aud: string;
   created_at: string;
   last_sign_in_at?: string;
-  email?: string;
-  phone?: string;
 };
 
 type Ctx = {
   user: User | null;
   profile: Profile | null;
   loading: boolean;
-  refreshProfile: () => Promise<void>;
   signOut: () => Promise<void>;
-  session?: any;
 };
 
 const AuthCtx = createContext<Ctx | undefined>(undefined);
@@ -49,54 +48,47 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const loadProfile = async (uid: string) => {
-    try {
-      const docRef = doc(db, "profiles", uid);
-      const docSnap = await getDoc(docRef);
-      if (docSnap.exists()) {
-        setProfile({ id: docSnap.id, ...docSnap.data() } as Profile);
-      } else {
-        setProfile(null);
-      }
-    } catch (error) {
-      console.error("Error loading profile:", error);
-      setProfile(null);
-    }
-  };
-
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      if (firebaseUser) {
-        const mappedUser: User = {
-          id: firebaseUser.uid,
-          uid: firebaseUser.uid,
-          email: firebaseUser.email || undefined,
-          phone: firebaseUser.phoneNumber || undefined,
+    let profileUnsub: (() => void) | null = null;
+
+    const authUnsub = onAuthStateChanged(auth, async (fbUser) => {
+      if (profileUnsub) {
+        profileUnsub();
+        profileUnsub = null;
+      }
+
+      if (fbUser) {
+        setUser({
+          id: fbUser.uid,
+          uid: fbUser.uid,
+          email: fbUser.email || undefined,
+          phone: fbUser.phoneNumber || undefined,
           user_metadata: {
-            display_name: firebaseUser.displayName,
-            avatar_url: firebaseUser.photoURL,
+            display_name: fbUser.displayName,
+            avatar_url: fbUser.photoURL,
           },
           app_metadata: {},
           aud: "authenticated",
-          created_at: firebaseUser.metadata.creationTime || new Date().toISOString(),
-          last_sign_in_at: firebaseUser.metadata.lastSignInTime || new Date().toISOString(),
-        };
-        setUser(mappedUser);
+          created_at: fbUser.metadata.creationTime || new Date().toISOString(),
+          last_sign_in_at: fbUser.metadata.lastSignInTime || new Date().toISOString(),
+        });
         
-        const profileUnsubscribe = onSnapshot(doc(db, "profiles", firebaseUser.uid), (doc) => {
-          if (doc.exists()) {
-            const data = doc.data();
+        profileUnsub = onSnapshot(doc(db, "profiles", fbUser.uid), (snap) => {
+          if (snap.exists()) {
+            const data = snap.data();
             setProfile({ 
-              id: doc.id, 
+              id: snap.id, 
               ...data,
-              user_id: data.user_id || doc.id // Ensure user_id matches id for profile queries
+              user_id: data.user_id || snap.id 
             } as Profile);
           } else {
             setProfile(null);
           }
+          setLoading(false);
+        }, (err) => {
+          console.error("Profile snapshot error:", err);
+          setLoading(false);
         });
-        setLoading(false);
-        return () => profileUnsubscribe();
       } else {
         setUser(null);
         setProfile(null);
@@ -104,19 +96,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     });
 
-    return () => unsubscribe();
+    return () => {
+      authUnsub();
+      if (profileUnsub) profileUnsub();
+    };
   }, []);
 
-  const refreshProfile = async () => {
-    if (user) await loadProfile(user.id);
-  };
-
   const signOut = async () => {
-    await firebaseSignOut(auth);
+    setLoading(true);
+    try {
+      await firebaseSignOut(auth);
+    } catch (e) {
+      console.error("Sign out error:", e);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <AuthCtx.Provider value={{ user, profile, loading, refreshProfile, signOut }}>
+    <AuthCtx.Provider value={{ user, profile, loading, signOut }}>
       {children}
     </AuthCtx.Provider>
   );
@@ -127,4 +125,3 @@ export const useAuth = () => {
   if (!c) throw new Error("useAuth outside AuthProvider");
   return c;
 };
-
