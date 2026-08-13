@@ -85,26 +85,69 @@ const ProfileCreation = () => {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-6 relative">
-      <div className="w-full max-w-[400px] bg-black border border-white/10 rounded-[2.5rem] p-10 flex flex-col items-center">
-        <h1 className="text-2xl font-bold mb-8">Create Profile</h1>
+    <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-6 relative overflow-hidden">
+      <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-primary/20 blur-[120px] rounded-full pointer-events-none" />
+      
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="w-full max-w-[360px] bg-black sm:border sm:border-white/10 sm:rounded-[2.5rem] p-8 sm:p-10 flex flex-col items-center z-10"
+      >
+        <h1 className="text-3xl font-black mb-2 tracking-tight">Setup Profile</h1>
+        <p className="text-zinc-500 text-xs font-bold mb-10 text-center uppercase tracking-widest">Identify yourself in Parallax</p>
         
-        <div className="relative mb-8 group">
-          <div className="h-24 w-24 rounded-full bg-zinc-900 border border-white/10 flex items-center justify-center overflow-hidden">
-            {avatarPreview ? <img src={avatarPreview} className="h-full w-full object-cover" /> : <Camera className="h-6 w-6 text-zinc-500" />}
+        <div className="relative mb-10 group">
+          <div className="h-28 w-28 rounded-full bg-zinc-900 border-2 border-white/10 flex items-center justify-center overflow-hidden transition-all group-hover:border-primary/50">
+            {avatarPreview ? (
+              <img src={avatarPreview} className="h-full w-full object-cover" />
+            ) : (
+              <Camera className="h-8 w-8 text-zinc-700" />
+            )}
           </div>
-          <input type="file" accept="image/*" onChange={handleAvatarChange} className="absolute inset-0 opacity-0 cursor-pointer" />
+          <input 
+            type="file" 
+            accept="image/*" 
+            onChange={handleAvatarChange} 
+            className="absolute inset-0 opacity-0 cursor-pointer" 
+          />
+          <div className="absolute bottom-1 right-1 h-8 w-8 rounded-full bg-primary flex items-center justify-center shadow-lg pointer-events-none border-2 border-black">
+            <Camera className="h-4 w-4 text-white" />
+          </div>
         </div>
 
         <form onSubmit={handleCreate} className="w-full space-y-4">
-          <input required value={displayName} onChange={e => setDisplayName(e.target.value)} placeholder="Full Name" className="w-full bg-zinc-900 border border-white/10 rounded-lg px-4 py-3 text-sm outline-none focus:border-primary/50" />
-          <input required value={username} onChange={e => setUsername(e.target.value)} placeholder="Username" className="w-full bg-zinc-900 border border-white/10 rounded-lg px-4 py-3 text-sm outline-none focus:border-primary/50" />
-          <textarea value={bio} onChange={e => setBio(e.target.value)} placeholder="Bio" className="w-full bg-zinc-900 border border-white/10 rounded-lg px-4 py-3 text-sm outline-none focus:border-primary/50 h-24 resize-none" />
-          <button type="submit" disabled={busy} className="w-full bg-primary text-white font-bold py-3 rounded-lg hover:brightness-110 active:scale-[0.98] transition-all">
-            {busy ? "Saving..." : "Start Exploring"}
+          <div className="space-y-3">
+            <input 
+              required 
+              value={displayName} 
+              onChange={e => setDisplayName(e.target.value)} 
+              placeholder="Display Name" 
+              className="w-full bg-zinc-900 border border-white/10 rounded-xl px-4 py-3 text-sm outline-none focus:border-primary/50 transition-all placeholder:text-zinc-600" 
+            />
+            <input 
+              required 
+              value={username} 
+              onChange={e => setUsername(e.target.value)} 
+              placeholder="Unique Username" 
+              className="w-full bg-zinc-900 border border-white/10 rounded-xl px-4 py-3 text-sm outline-none focus:border-primary/50 transition-all placeholder:text-zinc-600" 
+            />
+            <textarea 
+              value={bio} 
+              onChange={e => setBio(e.target.value)} 
+              placeholder="Tell us about yourself..." 
+              className="w-full bg-zinc-900 border border-white/10 rounded-xl px-4 py-3 text-sm outline-none focus:border-primary/50 transition-all placeholder:text-zinc-600 h-28 resize-none" 
+            />
+          </div>
+
+          <button 
+            type="submit" 
+            disabled={busy} 
+            className="w-full bg-primary text-white font-black py-4 rounded-xl hover:brightness-110 active:scale-[0.98] transition-all shadow-lg shadow-primary/20 mt-4"
+          >
+            {busy ? "Finalizing..." : "Enter Parallax"}
           </button>
         </form>
-      </div>
+      </motion.div>
     </div>
   );
 };
