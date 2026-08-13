@@ -15,7 +15,7 @@ const ResetPassword = () => {
     const { data } = supabase.auth.onAuthStateChanged((evt) => {
       if (evt === "PASSWORD_RECOVERY") setRecovery(true);
     });
-    return () => data.subscription.unsubscribe();
+    return () => {};
   }, []);
 
   const sendLink = async (e: React.FormEvent) => {
