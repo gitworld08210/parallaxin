@@ -1,4 +1,3 @@
-import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { ChevronLeft, Send, Search, Phone, Video, MoreVertical, Paperclip, Smile, Check, CheckCheck, Users } from "lucide-react";
@@ -13,6 +12,7 @@ import { VoiceBubble, VoiceRecorder } from "@/components/dm/VoiceMessage";
 import { ReportSheet } from "@/components/social/ReportSheet";
 import { useCall } from "@/contexts/CallProvider";
 import { GroupInfoSheet } from "@/components/dm/GroupInfoSheet";
+import { reliableInvoke } from "@/lib/reliableInvoke";
 
 const WA_GREEN = "hsl(var(--wa-green))";
 const TICK_READ = "hsl(var(--chat-tick-read))";
@@ -171,7 +171,7 @@ const Conversation = () => {
     if (!last || last.sender_id === user?.id) { setAiSuggestions([]); return; }
     setAiBusy(true);
     try {
-      const { data } = await supabase.functions.invoke("ai-reply-suggestions", {
+      const { data } = await reliableInvoke("ai-reply-suggestions", {
         body: { message: last.content },
       });
       setAiSuggestions(Array.isArray(data?.suggestions) ? data.suggestions : []);
