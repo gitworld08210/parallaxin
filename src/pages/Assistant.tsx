@@ -5,7 +5,7 @@ import remarkGfm from "remark-gfm";
 import { TopBar } from "@/components/vibe/TopBar";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { useAuth } from "@/contexts/AuthProvider";
+import { auth } from "@/lib/firebase";
 
 
 type Msg = { role: "user" | "assistant"; content: string };
@@ -18,7 +18,7 @@ const SUGGESTIONS = [
 ];
 
 const Assistant = () => {
-  const { user } = useAuth();
+  const user = auth.currentUser;
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
   const [streaming, setStreaming] = useState(false);
