@@ -118,6 +118,7 @@ export const AccountSwitcherSheet = ({
           accessToken: "firebase-token",
           refreshToken: "firebase-token",
           updatedAt: Date.now(),
+        });
         toast.success("Account added ✦");
         setEmail("");
         setPw("");

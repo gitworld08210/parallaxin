@@ -44,8 +44,8 @@ export const NewGroupSheet = ({ open, onOpenChange }: { open: boolean; onOpenCha
 
   const selectedArr = useMemo(() => Object.values(selected), [selected]);
 
-  const actionStub = async () => { console.log("Action shimmed"); }; = await Promise.resolve({ data: null, error: null });
-      const { data, error } = await.rpc("create_group_conversation", {
+  
+      const { data, error } = await supabase.rpc("create_group_conversation", {
         _title: title.trim() || `Group with ${selectedArr.map((p) => p.username).slice(0, 3).join(", ")}`,
         _member_ids: selectedArr.map((p) => p.user_id),
       if (error) throw error;

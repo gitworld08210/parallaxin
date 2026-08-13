@@ -40,9 +40,9 @@ select("id, media_url, media_type, created_at").eq("user_id", user.id).order("cr
     if (picked.size === 0) return toast.error("Pick at least one story");
     setBusy(true);
     const cover = stories.find((s) => picked.has(s.id))?.media_url ?? null;
-    const { data: hl, error } = await.from("highlights").insert({ user_id: user.id, title: title.trim().slice(0, 30), cover_url: cover }).select("id").single();
+    const { data: hl, error } = await supabase.from("highlights").insert({ user_id: user.id, title: title.trim().slice(0, 30), cover_url: cover }).select("id").single();
     if (error || !hl) { setBusy(false); toast.error(error?.message || "Failed"); return; }
-    const { error: iErr } = await.from("highlight_stories").insert(rows);
+    const { error: iErr } = await supabase.from("highlight_stories").insert(rows);
     setBusy(false);
     if (iErr) return toast.error(iErr.message);
     toast.success("Highlight saved");
