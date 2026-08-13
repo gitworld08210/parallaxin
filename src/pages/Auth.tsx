@@ -84,6 +84,7 @@ const Auth = () => {
       
       // Create initial profile in Firestore
       await setDoc(doc(db, "profiles", userCredential.user.uid), {
+        id: userCredential.user.uid,
         user_id: userCredential.user.uid,
         email: email.trim(),
         account_type: kind,
@@ -106,6 +107,7 @@ const Auth = () => {
       const profSnap = await getDoc(doc(db, "profiles", userCredential.user.uid));
       if (!profSnap.exists()) {
         await setDoc(doc(db, "profiles", userCredential.user.uid), {
+          id: userCredential.user.uid,
           user_id: userCredential.user.uid,
           email: userCredential.user.email,
           account_type: kind,
