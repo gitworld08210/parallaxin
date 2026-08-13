@@ -112,7 +112,7 @@ const Onboarding = () => {
         try { await Notification.requestPermission(); } catch {}
       }
 
-      await refreshProfile();
+      if (refreshProfile) await refreshProfile();
       toast.success("Welcome to Aurelix");
       nav("/", { replace: true });
     } catch (e: any) { toast.error(e.message || "Action failed"); } finally {
