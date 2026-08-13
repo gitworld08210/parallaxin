@@ -31,7 +31,7 @@ async function hydrateMembers(members: Member[]): Promise<MemberWithProfile[]> {
   const memberIds = members.map((m) => m.id);
   const [{ data: profiles }, { data: roleLinks }] = await Promise.all([
     supabase.from("profiles").select("user_id, username, display_name, avatar_url, verified").in("user_id", userIds),
-    supabase.from("organization_member_roles").select("member_id, organization_roles(id, name)").in("member_id", memberIds),
+    supabase.from("organization_member_roles").select("member_id, organization_roles(id, name)").in("member_id", memberIds) as any,
   ]);
 
   const profileMap = new Map<string, MemberWithProfile["profile"]>(
