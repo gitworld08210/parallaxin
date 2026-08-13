@@ -1,4 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
+import { collection, addDoc, serverTimestamp, query, where, getDocs, orderBy, limit, doc, updateDoc, getDoc } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 /**
  * Aurelix Admin OS — Core Platform Engines service layer.
  *
@@ -21,6 +23,24 @@ export async function logAdminAction(input: {
   const { data: userData } = await supabase.auth.getUser();
   const uid = userData.user?.id;
   if (!uid) return;
+  
+  // Primary: Firestore for audit trails
+  try {
+    await addDoc(collection(db, "admin_audit_logs"), {
+      actor_user_id: uid,
+      module: input.module,
+      action: input.action,
+      target_type: input.target_type ?? null,
+      target_id: input.target_id ?? null,
+      before: input.before ?? null,
+      after: input.after ?? null,
+      created_at: serverTimestamp()
+    });
+  } catch (e) {
+    console.warn("Firestore audit log failed", e);
+  }
+
+  // Secondary: Supabase for legacy admin views
   await supabase.from("admin_audit_logs" as any).insert({
     actor_user_id: uid,
     module: input.module,
