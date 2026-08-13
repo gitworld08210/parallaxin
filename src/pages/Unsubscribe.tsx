@@ -54,10 +54,10 @@ export default function Unsubscribe() {
   const confirm = async () => {
     if (!token) return;
     setState({ kind: "submitting" });
-    try { /* shimmed */ } = await Promise.resolve({ data: null, error: null });
-      const { data, error } = await.functions.invoke(
-        "handle-email-unsubscribe",
-      );
+    try {
+      const { data, error } = await supabase.functions.invoke("handle-email-unsubscribe", {
+        body: { token }
+      });
       if (error) throw error;
       if (data?.success) setState({ kind: "done" });
       else if (data?.reason === "already_unsubscribed") setState({ kind: "already" });
