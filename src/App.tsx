@@ -71,9 +71,7 @@ const DeleteAccountScreen = lazy(() => import("./pages/security/DeleteAccountScr
 const ChangePasswordScreen = lazy(() => import("./pages/security/ChangePasswordScreen"));
 const ChangeEmailScreen = lazy(() => import("./pages/security/ChangeEmailScreen"));
 const ChangePhoneScreen = lazy(() => import("./pages/security/ChangePhoneScreen"));
-const Onboarding = lazy(() => import("./pages/Onboarding"));
 const ProfileCreation = lazy(() => import("./pages/ProfileCreation"));
-const OrganizationOnboarding = lazy(() => import("./pages/OrganizationOnboarding"));
 
 // Aurelix Ads Manager
 const AdsLayout = lazy(() => import("./pages/NotFound"));
@@ -432,9 +430,7 @@ const App = () => (
               <Route path="/unsubscribe" element={<Unsubscribe />} />
               <Route path="/certificate/:postId" element={<Certificate />} />
               <Route element={<ProtectedRoute />}>
-                <Route path="/onboarding" element={<Onboarding />} />
                 <Route path="/profile-creation" element={<ProfileCreation />} />
-                <Route path="/onboarding/organization" element={<OrganizationOnboarding />} />
                 
                 <Route element={<AppShell />}>
                   <Route path="/admin-os/verification" element={<AdminOSVerificationQueue />} />

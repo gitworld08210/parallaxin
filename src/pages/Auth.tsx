@@ -48,20 +48,15 @@ const Auth = () => {
     const intent = (localStorage.getItem(ORG_INTENT_KEY) as AccountKind | null) || null;
     const wantsOrg = intent === "organization" || prof?.account_type === "organization";
 
-    if (wantsOrg && !prof?.organization_id) {
-      if (prof && prof.account_type !== "organization") {
-        try {
-          await setDoc(doc(db, "profiles", uid), { account_type: "organization" }, { merge: true });
-        } catch (e) {
-          console.error("Error updating profile to organization:", e);
-        }
-      }
+    // Standard routing: if no username, go to profile creation, otherwise feed
+    if (!prof?.username) {
       localStorage.removeItem(ORG_INTENT_KEY);
-      nav("/onboarding/organization", { replace: true });
+      nav("/profile-creation", { replace: true });
       return;
     }
+
     localStorage.removeItem(ORG_INTENT_KEY);
-    nav(prof?.username ? "/" : "/profile-creation", { replace: true });
+    nav("/", { replace: true });
   };
 
   useEffect(() => { 
@@ -90,7 +85,7 @@ const Auth = () => {
           user_id: res.user.uid,
           email: email.trim(),
           account_type: kind,
-          onboarded_at: null,
+          onboarded_at: serverTimestamp(),
           created_at: serverTimestamp()
         };
 
@@ -141,7 +136,7 @@ const Auth = () => {
           email,
           account_type: kind,
           avatar_url: res.user.photoURL,
-          onboarded_at: null,
+          onboarded_at: serverTimestamp(),
           created_at: serverTimestamp()
         });
 

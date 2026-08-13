@@ -133,7 +133,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
               username: fbUser.email?.split('@')[0] || fbUser.uid.slice(0, 8),
               display_name: fbUser.displayName || fbUser.email?.split('@')[0] || "User",
               avatar_url: fbUser.photoURL,
-              onboarded_at: null,
+              onboarded_at: new Date().toISOString(),
               verified: false,
               followers_count: 0,
               following_count: 0,
