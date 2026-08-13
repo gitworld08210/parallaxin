@@ -3,9 +3,10 @@ import { TopBar } from "@/components/vibe/TopBar";
 import { useAuth } from "@/contexts/AuthProvider";
 import { collection, query, orderBy, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { Briefcase, UserPlus, Clock, CheckCircle2, AlertCircle, Search, Filter } from "lucide-react";
+import { Briefcase, UserPlus, Clock, AlertCircle, Search, Filter } from "lucide-react";
 import { format } from "date-fns";
 import { Link } from "react-router-dom";
+import { cn } from "@/lib/utils";
 
 const RecruitmentCenter = () => {
   const [sessions, setSessions] = useState<any[]>([]);
