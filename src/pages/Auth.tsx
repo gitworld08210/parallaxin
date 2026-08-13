@@ -57,11 +57,11 @@ const Auth = () => {
         }
       }
       localStorage.removeItem(ORG_INTENT_KEY);
-      nav("/onboarding/organization", { replace: true });
+      nav("/", { replace: true });
       return;
     }
     localStorage.removeItem(ORG_INTENT_KEY);
-    nav(prof?.username ? "/" : "/profile-creation", { replace: true });
+    nav("/", { replace: true });
   };
 
   useEffect(() => { 

@@ -28,7 +28,6 @@ export default function AppRoutes() {
       <Route element={<AppShell />}>
         <Route element={<ProtectedRoute />}>
           <Route path="/" element={<Feed />} />
-          <Route path="/onboarding" element={<Onboarding />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/u/:username" element={<Profile />} />
           <Route path="/profile/edit" element={<EditProfile />} />
