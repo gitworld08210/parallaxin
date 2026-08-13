@@ -109,8 +109,8 @@ const ContentClassificationQueue = lazy(() => import("./pages/NotFound"));
 const ReviewerWorkspace = lazy(() => import("./pages/NotFound"));
 
 // Admin OS workspace (Phase 1 foundation)
-const AdminOSGate = lazy(() => import("./pages/NotFound"));
-const AdminOSLayout = lazy(() => import("./pages/NotFound"));
+const AdminOSGate = lazy(() => import("@/components/ProtectedRoute").then(m => ({ default: m.AdminOSGate })));
+const AdminOSLayout = lazy(() => import("@/components/organization/layout/OrganizationLayout")); // Using existing shell for consistency
 const AdminOSDashboard = lazy(() => import("./pages/admin-os/AdminOSDashboard"));
 const AppointmentsPanel = lazy(() => import("./pages/admin-os/AppointmentsPanel"));
 const RoutingOverview = lazy(() => import("./pages/NotFound"));
@@ -433,12 +433,8 @@ const App = () => (
                 <Route path="/profile-creation" element={<ProfileCreation />} />
                 
                 <Route element={<AppShell />}>
-                  <Route path="/admin-os/verification" element={<AdminOSVerificationQueue />} />
-                  <Route path="/admin-os/appointments" element={<AppointmentsPanel />} />
-                  <Route path="/admin-os/dashboard" element={<AdminOSDashboard />} />
-                  <Route path="/admin-os/approvals" element={<ApprovalsInbox />} />
-                  <Route path="/admin-os/recruitment" element={<RecruitmentIndex />} />
                   <Route path="/" element={<Feed />} />
+
                   <Route path="/reels" element={<Reels />} />
                   <Route path="/discover" element={<Discover />} />
                   <Route path="/messages" element={<MessagesPasscodeGate><Messages /></MessagesPasscodeGate>} />
@@ -571,6 +567,14 @@ const App = () => (
               <Route path="/admin/*" element={<Navigate to="/admin-os" replace />} />
 
               {/* Aurelix Admin OS — internal enterprise workspace */}
+              <Route element={<AdminOSGate />}>
+                <Route path="/admin-os" element={<AdminOSDashboard />} />
+                <Route path="/admin-os/verification" element={<AdminOSVerificationQueue />} />
+                <Route path="/admin-os/appointments" element={<AppointmentsPanel />} />
+                <Route path="/admin-os/approvals" element={<ApprovalsInbox />} />
+                <Route path="/admin-os/recruitment" element={<RecruitmentIndex />} />
+              </Route>
+
               <Route path="/admin-os/no-access" element={<AdminOSNoAccess />} />
 
               {/* Founder Office Executive Workspace (Phase 3.1) */}

@@ -198,7 +198,23 @@ export const SideMenu = ({ trigger, unreadNotif, unreadDm }: { trigger?: React.R
         <MenuSection label="More" rows={utility} />
 
         {/* Meta-style app switcher chip */}
-        <div className="px-4 pt-3">
+        <div className="px-4 pt-3 flex flex-col gap-2">
+          {canAdminOS && (
+            <Link
+              to="/admin-os"
+              className="flex items-center gap-3 rounded-2xl border border-primary/20 bg-primary/5 hover:bg-primary/10 transition-colors px-3 py-3"
+            >
+              <span className="h-9 w-9 rounded-xl bg-primary grid place-items-center shrink-0 text-white font-black text-[10px]">
+                OS
+              </span>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-bold text-primary">Aurelix Admin OS</p>
+                <p className="text-[11px] text-primary/60 truncate">Manage staff, verification & finance</p>
+              </div>
+              <ChevronRight className="h-4 w-4 text-primary/40" />
+            </Link>
+          )}
+
           <Link
             to="/premium"
             className="flex items-center gap-3 rounded-2xl border border-border bg-secondary/40 hover:bg-secondary/70 transition-colors px-3 py-3"
