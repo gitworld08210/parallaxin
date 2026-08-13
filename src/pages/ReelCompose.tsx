@@ -67,6 +67,7 @@ const ReelCompose = () => {
         if (mod?.flagged) throw new Error(mod.reason || "Caption flagged");
       }
       const url = await uploadToCloudinary(file);
+      const { data: inserted, error } = await supabase.from("posts").insert({
         user_id: user.id,
         content: content.trim() + (music ? `\n\n🎵 ${music}` : ""),
         media_url: url,
