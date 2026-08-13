@@ -98,15 +98,18 @@ const Verification = () => {
         await addDoc(collection(firestoreDb, "verification_requests"), {
           ...payload,
           created_at: serverTimestamp(),
+        });
       } catch (e) {
         console.warn("Firestore verification submission failed", e);
       }
 
       // 2. Supabase Insert (Legacy/Admin OS trigger)
+      const { data: inserted, error } = await supabase.from("verification_requests" as any).insert(payload as any).select("id").maybeSingle();
       if (error) throw error;
+
       
       toast.success("Submitted · review within 48h");
-      setExisting({ id: inserted?.id ?? "tmp", status: "pending", category, created_at: new Date().toISOString() });
+      setExisting({ id: (inserted as any)?.id ?? "tmp", status: "pending", category, created_at: new Date().toISOString() });
     } catch (e: any) { toast.error(e.message || "Action failed"); } finally { setBusy(false); }
   };
 

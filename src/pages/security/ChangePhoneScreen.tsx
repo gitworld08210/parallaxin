@@ -33,8 +33,10 @@ export default function ChangePhoneScreen() {
   const verify = async () => {
     if (!/^\d{4,8}$/.test(otp)) return toast.error("Enter the code");
     setBusy(true);
+    const { data, error } = await supabase.functions.invoke("verify-phone-code", {
       body: { phone: phone.trim(), code: otp },
     });
+
     setBusy(false);
     if (error || (data as any)?.error) {
       return toast.error((data as any)?.error || error?.message || "Verification failed");

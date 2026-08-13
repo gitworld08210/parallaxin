@@ -18,8 +18,10 @@ export default function ChangeEmailScreen() {
       return toast.error("Enter a valid email");
     }
     setBusy(true);
+    const { error } = await supabase.auth.updateUser(
       { email: email.trim() },
-      { emailRedirectTo: `${window.location.origin}/` });
+      { emailRedirectTo: `${window.location.origin}/` },
+    );
     setBusy(false);
     if (error) return toast.error(error.message);
     toast.success("Verification link sent to your new address");
@@ -29,8 +31,10 @@ export default function ChangeEmailScreen() {
   const resend = async () => {
     if (!pending) return;
     setBusy(true);
+    const { error } = await supabase.auth.resend({ type: "email_change", email: pending });
     setBusy(false);
     if (error) return toast.error(error.message);
+
     toast.success("Verification link re-sent");
   };
 

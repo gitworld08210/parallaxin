@@ -52,8 +52,10 @@ export const departmentService = {
    * Uses a server-side aggregate RPC so we never download raw member rows.
    */
   async memberCountsByDepartment(orgId: string): Promise<Record<string, number>> {
+    const { data, error } = await supabase.rpc("org_member_counts_by_department" as never, {
       _organization_id: orgId,
-    });
+    } as never);
+
     if (error) throw error;
     const counts: Record<string, number> = {};
     for (const row of (data ?? []) as Array<{ department_id: string; member_count: number }>) {
