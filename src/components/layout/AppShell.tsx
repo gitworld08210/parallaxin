@@ -59,7 +59,8 @@ subscribe();
 
   return (
     <div className="min-h-screen bg-black text-foreground flex justify-center items-center overflow-hidden p-0 sm:p-4">
-      <div className="w-full h-full sm:h-[844px] max-w-[390px] aspect-[9/19.5] relative flex flex-col bg-background shadow-2xl border-x border-white/5 sm:rounded-[3rem] sm:border-[8px] sm:border-zinc-800 overflow-hidden">
+      <div className="w-full h-full sm:h-[844px] max-w-[390px] aspect-[9/19.5] relative flex flex-col bg-background shadow-2xl border-x border-white/5 sm:rounded-[3rem] sm:border-[12px] sm:border-zinc-800 overflow-hidden">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-6 bg-zinc-800 rounded-b-2xl z-50 hidden sm:block" />
         <main className="flex-1 overflow-y-auto relative outline-none no-scrollbar">
           <Outlet />
         </main>
