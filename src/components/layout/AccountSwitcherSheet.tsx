@@ -5,7 +5,8 @@ import { useEffect, useMemo, useState } from "react";
 import { Check, Loader2, LogIn, Plus, X, Eye, EyeOff } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { auth, db } from "@/lib/firebase";
-import { doc, getDoc, setDoc } from "firebase/firestore";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
 import { useAuth } from "@/contexts/AuthProvider";
 import {
   MAX_ACCOUNTS,
@@ -109,8 +110,7 @@ export const AccountSwitcherSheet = ({
       const firebaseUser = userCredential.user;
       
       if (firebaseUser) {
-        // We'd ideally fetch profile here to populate username etc.
-        const profileSnap = await getDoc(doc(db, "profiles", firebaseUser.id));
+        const profileSnap = await getDoc(doc(db, "profiles", firebaseUser.uid));
         const prof = profileSnap.exists() ? profileSnap.data() : null;
 
         upsertSavedAccount({
@@ -119,7 +119,7 @@ export const AccountSwitcherSheet = ({
           username: prof?.username ?? null,
           displayName: prof?.display_name ?? null,
           avatarUrl: prof?.avatar_url ?? null,
-          accessToken: "firebase-token", // handled by lib/multiAccount
+          accessToken: "firebase-token",
           refreshToken: "firebase-token",
           updatedAt: Date.now(),
         });

@@ -2,11 +2,11 @@ import { useEffect, useState } from "react";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { doc, updateDoc, setDoc, getDoc } from "firebase/firestore";
+import { doc, updateDoc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/contexts/AuthProvider";
 import { toast } from "sonner";
-import { Sparkles, DollarSign, BarChart3, ShieldCheck, Loader2 } from "lucide-react";
+import { Sparkles, DollarSign, BarChart3, ShieldCheck, Loader2, ChevronRight } from "lucide-react";
 import { Link } from "react-router-dom";
 
 type Props = { open: boolean; onOpenChange: (b: boolean) => void };
@@ -48,9 +48,14 @@ export const BecomeCreatorSheet = ({ open, onOpenChange }: Props) => {
         creator_terms_version: version,
         creator_activated_at: new Date().toISOString()
       });
-    toast.success("Welcome, Creator ✦");
-    await refreshProfile();
-    onOpenChange(false);
+      toast.success("Welcome, Creator ✦");
+      await refreshProfile();
+      onOpenChange(false);
+    } catch (error: any) {
+      toast.error(error.message || "Could not enable creator mode");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (

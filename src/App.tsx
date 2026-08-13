@@ -43,8 +43,6 @@ const WalletWithdraw = lazy(() => import("./pages/Wallet"));
 const WalletQR = lazy(() => import("./pages/Wallet"));
 const WalletSecurity = lazy(() => import("./pages/Wallet"));
 const WalletCardPage = lazy(() => import("./pages/Wallet"));
-const MyPayslips = lazy(() => import("./pages/MyPayslips"));
-const PayslipDetail = lazy(() => import("./pages/PayslipDetail"));
 const Profile = lazy(() => import("./pages/Profile"));
 const EditProfile = lazy(() => import("./pages/EditProfile"));
 const Premium = lazy(() => import("./pages/Premium"));
