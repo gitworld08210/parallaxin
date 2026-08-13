@@ -117,12 +117,12 @@ const Discover = () => {
 
   return (
     <div className="pb-8">
-      <header className="h-14 px-5 flex items-center border-b border-border">
-        <h1 className="text-xl font-bold tracking-tight">Discover</h1>
+      <header className="h-14 px-5 flex items-center border-b border-white/5 bg-black/50 backdrop-blur-md sticky top-0 z-20">
+        <h1 className="text-xl font-bold tracking-tight">Search</h1>
       </header>
 
       <div className="px-4 pt-3">
-        <div className="bg-secondary/60 border border-border rounded-full flex items-center gap-2 px-4 py-2.5">
+        <div className="bg-[#111] border border-white/5 rounded-lg flex items-center gap-2 px-4 py-2">
           <Search className="h-4 w-4 text-muted-foreground" />
           <input
             value={q}
@@ -141,10 +141,10 @@ const Discover = () => {
               key={f}
               onClick={() => setFilter(f)}
               className={cn(
-                "shrink-0 px-4 py-1.5 rounded-full text-xs font-semibold border transition-colors",
+                "shrink-0 px-4 py-1.5 rounded-lg text-xs font-semibold border transition-colors",
                 filter === f
-                  ? "bg-primary text-primary-foreground border-primary shadow-glow"
-                  : "bg-secondary/40 text-foreground border-border hover:border-primary/40"
+                  ? "bg-primary text-primary-foreground border-primary"
+                  : "bg-[#111] text-foreground border-white/5 hover:border-primary/40"
               )}
             >
               {f}

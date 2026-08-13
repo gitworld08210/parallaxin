@@ -7,6 +7,7 @@ import { formatDistanceToNow } from "date-fns";
 import { collection, query, where, orderBy, limit, onSnapshot, updateDoc, doc, getDocs, writeBatch } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { IncomingInvitesList } from "@/components/organization/members/IncomingInvitesList";
+import { cn } from "@/lib/utils";
 
 const Notifications = () => {
   const { user } = useAuth();
@@ -69,21 +70,21 @@ const Notifications = () => {
   if (!user) return null;
 
   return (
-    <div className="pb-24 pt-4 px-4 max-w-2xl mx-auto min-h-screen">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="font-display text-2xl font-bold">Notifications</h1>
+    <div className="pb-24 pt-0 min-h-screen">
+      <header className="h-14 px-5 flex items-center justify-between border-b border-white/5 bg-black/50 backdrop-blur-md sticky top-0 z-20">
+        <h1 className="text-xl font-bold tracking-tight">Notifications</h1>
         {visibleItems.some(i => !i.read) && (
           <button onClick={markAllRead} className="text-xs font-semibold text-primary hover:underline">
             Mark all read
           </button>
         )}
-      </div>
+      </header>
 
-      <div className="space-y-4 mb-8">
+      <div className="px-4 space-y-4 my-6">
         <IncomingInvitesList />
       </div>
 
-      <div className="space-y-1">
+      <div className="divide-y divide-white/5">
         {visibleItems.length === 0 ? (
           <div className="py-20 text-center">
             <div className="h-16 w-16 bg-secondary/40 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -96,11 +97,14 @@ const Notifications = () => {
             <Link
               key={n.id}
               to={getUrl(n)}
-              onClick={() => markRead(n.id)}
-              className={`flex items-start gap-4 p-4 rounded-2xl transition-colors ${n.read ? 'opacity-70 grayscale-[0.3]' : 'bg-secondary/20 shadow-sm border border-border/50'}`}
-            >
-              <div className="relative flex-shrink-0">
-                <img src={n.actor?.avatar_url || "/placeholder.svg"} alt="" className="h-12 w-12 rounded-xl object-cover border border-border/50" />
+                onClick={() => markRead(n.id)}
+                className={cn(
+                  "flex items-start gap-3 p-4 transition-colors",
+                  !n.read ? "bg-white/[0.03]" : "hover:bg-white/[0.02]"
+                )}
+              >
+                <div className="relative shrink-0">
+                  <img src={n.actor?.avatar_url || "/placeholder.svg"} alt="" className="h-12 w-12 rounded-full object-cover ring-1 ring-white/10" />
                 <div className="absolute -bottom-1 -right-1 h-5 w-5 bg-background rounded-full border-2 border-background flex items-center justify-center shadow-sm">
                   {getIcon(n.type)}
                 </div>

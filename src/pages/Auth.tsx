@@ -176,7 +176,7 @@ const Auth = () => {
         animate={{ opacity: 1, y: 0 }}
         className="w-full max-w-[440px] relative z-10"
       >
-        <div className="text-center mb-8 border border-white/10 p-8 rounded-none bg-black/40 backdrop-blur-md">
+        <div className="text-center mb-8 border border-white/10 p-8 rounded-none bg-black/40 backdrop-blur-md shadow-2xl">
           <div className="flex justify-center mb-8">
             <span className="text-5xl font-serif italic tracking-tighter">Parallax</span>
           </div>
@@ -185,7 +185,7 @@ const Auth = () => {
           </h1>
         </div>
 
-        <div className="space-y-4 border border-white/10 p-8 rounded-none bg-black/40 backdrop-blur-md">
+        <div className="space-y-4 border border-white/10 p-8 rounded-none bg-black/40 backdrop-blur-md shadow-2xl">
           {tab === "signup" && (
             <div className="grid grid-cols-2 gap-3 p-1 bg-[#111] border border-white/5 rounded-2xl">
               <button 
