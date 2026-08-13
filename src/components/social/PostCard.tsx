@@ -186,8 +186,8 @@ export const PostCard = ({ post, onOpenComments }: { post: FeedPost; onOpenComme
   const shortCaption = longCaption && !expanded ? caption.slice(0, 240) : caption;
 
   return (
-    <article ref={articleRef} className="bg-black px-4 pt-3 pb-3 border-b border-white/[0.05] hover:bg-white/[0.01] transition-colors">
-      {/* X-style: avatar left, content right */}
+    <article ref={articleRef} className="bg-black px-4 pt-3 pb-3 border-b border-white/[0.05] transition-colors">
+      {/* TikTok/Insta merge style: clean focus on content */}
       <div className="flex gap-3">
         {/* Avatar column */}
         <Link to={`/u/${handle}`} className="shrink-0">

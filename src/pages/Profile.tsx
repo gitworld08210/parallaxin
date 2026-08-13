@@ -115,20 +115,78 @@ const Profile = () => {
         return;
       }
       
-      let profDoc = await getDoc(doc(db, "profiles", target));
-      let p = profDoc.exists() ? ({ id: profDoc.id, ...profDoc.data() } as any) : null;
+      console.log("Resolving profile for:", target);
+      
+      let p: any = null;
 
+      // 1. Try resolving as UID directly (most common for own profile or direct links)
+      try {
+        const profDoc = await getDoc(doc(db, "profiles", target));
+        if (profDoc.exists()) {
+          p = { id: profDoc.id, ...profDoc.data() };
+        }
+      } catch (err) {
+        console.warn("UID resolution failed:", err);
+      }
+
+      // 2. Try resolving via "usernames" mapping collection (most efficient for handle lookup)
       if (!p) {
-        const qProf = query(
-          collection(db, "profiles"),
-          where("username", "==", target),
-          limit(1)
-        );
-        const snapProf = await getDocs(qProf);
-        p = snapProf.docs.length > 0 ? ({ id: snapProf.docs[0].id, ...snapProf.docs[0].data() } as any) : null;
+        try {
+          const nameDoc = await getDoc(doc(db, "usernames", target.toLowerCase()));
+          if (nameDoc.exists()) {
+            const resolvedUid = nameDoc.data().user_id;
+            const profDoc = await getDoc(doc(db, "profiles", resolvedUid));
+            if (profDoc.exists()) {
+              p = { id: profDoc.id, ...profDoc.data() };
+            }
+          }
+        } catch (err) {
+          console.warn("Username mapping resolution failed:", err);
+        }
+      }
+
+      // 3. Fallback: query profiles collection by username field
+      if (!p) {
+        try {
+          const qProf = query(
+            collection(db, "profiles"),
+            where("username", "==", target),
+            limit(1)
+          );
+          const snapProf = await getDocs(qProf);
+          if (!snapProf.empty) {
+            p = { id: snapProf.docs[0].id, ...snapProf.docs[0].data() };
+          }
+        } catch (err) {
+          console.warn("Username query resolution failed:", err);
+        }
       }
       
-      setProfile(p as ProfileRow | null);
+      // 4. Final Fallback: query by user_id field
+      if (!p) {
+        try {
+          const qId = query(
+            collection(db, "profiles"),
+            where("user_id", "==", target),
+            limit(1)
+          );
+          const snapId = await getDocs(qId);
+          if (!snapId.empty) {
+            p = { id: snapId.docs[0].id, ...snapId.docs[0].data() };
+          }
+        } catch (err) {
+          console.warn("ID field query resolution failed:", err);
+        }
+      }
+      
+      if (p) {
+        setProfile({
+          ...p,
+          user_id: p.user_id || p.id
+        } as ProfileRow);
+      } else {
+        setProfile(null);
+      }
       setLoading(false);
 
       if (p) {
@@ -350,8 +408,29 @@ const Profile = () => {
           </div>
         </div>
         <div className="flex items-center gap-3">
-          <button className="p-1"><Share2 className="h-6 w-6" /></button>
-          <button className="p-1"><MoreHorizontal className="h-6 w-6" /></button>
+          <IconBtn label="Share" onClick={shareProfile}>
+            <Share2 className="h-6 w-6" />
+          </IconBtn>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="p-1"><MoreHorizontal className="h-6 w-6" /></button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48 bg-[#111] border-white/10">
+              <DropdownMenuItem onClick={shareProfile} className="gap-2">
+                <Share2 className="h-4 w-4" /> Share profile
+              </DropdownMenuItem>
+              {!isMe && (
+                <>
+                  <DropdownMenuItem onClick={toggleMute} className="gap-2">
+                    <VolumeX className="h-4 w-4" /> {isMuted ? "Unmute" : "Mute"}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={toggleBlock} className="gap-2 text-rose-500 focus:text-rose-500">
+                    <Ban className="h-4 w-4" /> {isBlocked ? "Unblock" : "Block"}
+                  </DropdownMenuItem>
+                </>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </header>
 
