@@ -172,7 +172,8 @@ const Reels = () => {
           </div>
         )}
         {reels.map((r) => (
-          <ReelItem
+          <div key={r.id} className="snap-start min-h-full w-full">
+            <ReelItem
             key={r.id}
             r={r}
             muted={muted}
@@ -185,7 +186,8 @@ const Reels = () => {
             onToggleBookmark={toggleBookmark}
             onOpenComments={(id) => setCommentPost(id)}
             onShare={share}
-          />
+            />
+          </div>
         ))}
       </div>
 
