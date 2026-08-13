@@ -52,15 +52,23 @@ export const useVirtualWorld = () => {
       setLoading(false);
       return;
     }
-    const [appRes, accessRes, logRes] = await Promise.all([
-      supabase.from("virtual_world_applications").select("*").eq("user_id", user.id).order("created_at", { ascending: false }).limit(1).maybeSingle(),
-      supabase.from("virtual_world_access").select("*").eq("user_id", user.id).maybeSingle(),
-      supabase.from("virtual_world_logs").select("id,channel,to_number,body,status,error,created_at").order("created_at", { ascending: false }).limit(30),
-    ]);
-    setApplication((appRes.data as VwApplication) ?? null);
-    setAccess((accessRes.data as VwAccess) ?? null);
-    setLogs((logRes.data as VwLog[]) ?? []);
-    setLoading(false);
+    
+    try {
+      const { collection, query, where, orderBy, limit, getDocs } = await import("firebase/firestore");
+      const { db } = await import("@/lib/firebase");
+      
+      const appSnap = await getDocs(query(collection(db, "virtual_world_applications"), where("user_id", "==", user.id), orderBy("created_at", "desc"), limit(1)));
+      const accessSnap = await getDocs(query(collection(db, "virtual_world_access"), where("user_id", "==", user.id), limit(1)));
+      const logsSnap = await getDocs(query(collection(db, "virtual_world_logs"), where("user_id", "==", user.id), orderBy("created_at", "desc"), limit(30)));
+      
+      setApplication(appSnap.docs.length > 0 ? (appSnap.docs[0].data() as VwApplication) : null);
+      setAccess(accessSnap.docs.length > 0 ? (accessSnap.docs[0].data() as VwAccess) : null);
+      setLogs(logsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as VwLog[]);
+    } catch (err) {
+      console.error("Error fetching virtual world data:", err);
+    } finally {
+      setLoading(false);
+    }
   }, [user?.id]);
 
   useEffect(() => {

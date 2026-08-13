@@ -2,6 +2,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Sparkles, Check, ArrowRight, Bell } from "lucide-react";
+import { collection, query, where, limit, getDocs, writeBatch, doc } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 import { motion, AnimatePresence } from "framer-motion";
 
 import { useAuth } from "@/contexts/AuthProvider";
@@ -28,7 +30,11 @@ const Onboarding = () => {
 
 
   useEffect(() => {
-    (async () => { /* shimmed action */ })();
+    (async () => {
+      const q = query(collection(db, "profiles"), where("is_founder", "==", true), limit(10));
+      const snap = await getDocs(q);
+      setFounders(snap.docs.map(doc => ({ user_id: doc.id, ...doc.data() })) as any);
+    })();
   }, []);
 
   const toggleInterest = (tag: string) => {
@@ -90,11 +96,15 @@ const Onboarding = () => {
       }
 
       if (followed.size > 0) {
-        try {
-          const rows = Array.from(followed).map((following_id) => ({ follower_id: user.id, following_id }));
-        } catch (e) {
-          console.warn("Supabase follow sync failed", e);
-        }
+        const batch = writeBatch(firestoreDb);
+        Array.from(followed).forEach(following_id => {
+          batch.set(doc(firestoreDb, "follows", `${user.id}_${following_id}`), {
+            follower_id: user.id,
+            following_id,
+            created_at: new Date().toISOString()
+          });
+        });
+        await batch.commit();
       }
 
       if ("Notification" in window && Notification.permission === "default") {

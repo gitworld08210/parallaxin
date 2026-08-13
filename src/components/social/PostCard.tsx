@@ -124,8 +124,15 @@ export const PostCard = ({ post, onOpenComments }: { post: FeedPost; onOpenComme
       const postRef = doc(db, "posts", post.id);
 
       if (next) {
+        await setDoc(likeRef, {
+          user_id: user.id,
+          post_id: post.id,
+          created_at: serverTimestamp()
+        });
+        await updateDoc(postRef, { like_count: increment(1) });
       } else {
         await deleteDoc(likeRef);
+        await updateDoc(postRef, { like_count: increment(-1) });
       }
     } catch (error: any) {
       console.error("Error toggling like:", error);

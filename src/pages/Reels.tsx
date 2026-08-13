@@ -49,18 +49,15 @@ const Reels = () => {
       const q = query(
         collection(db, "posts"),
         where("is_reel", "==", true),
+        where("status", "==", "published"),
         orderBy("created_at", "desc"),
         limit(50)
       );
       const snap = await getDocs(q);
-      const data = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      const data = snap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as any[];
 
-      let liked = new Set<string>();
-      if (user && data.length) {
-        const { data: l } = await supabase.from("post_likes").select("post_id").eq("user_id", user.id).in("post_id", data.map((d: any) => d.id));
-        liked = new Set((l ?? []).map((x: any) => x.post_id));
-      }
-      setReels((data as any[]).map((d: any) => ({ ...d, liked: liked.has(d.id) })));
+      // Liked status handled by ReelItem/PostCard logic
+      setReels(data.map(d => ({ ...d, liked: false })));
     })();
   }, [user?.id]);
 

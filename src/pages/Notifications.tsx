@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthProvider";
-import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Bell, Heart, MessageCircle, UserPlus, Info, CheckCircle2, ChevronRight, X, UserCheck, Briefcase } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { collection, query, where, orderBy, limit, onSnapshot, updateDoc, doc, getDocs, writeBatch } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 import { IncomingInvitesList } from "@/components/organization/members/IncomingInvitesList";
 
 const Notifications = () => {
@@ -13,23 +14,18 @@ const Notifications = () => {
 
   useEffect(() => {
     if (!user) return;
-    const load = async () => {
-      const { data } = await supabase.from("notifications")
-        .select("id, type, read, created_at, actor_id, post_id, organization_id, actor:profiles!notifications_actor_profile_fkey(username, display_name, avatar_url)")
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false })
-        .limit(80);
-      setItems(data ?? []);
-    };
-    load();
+    const q = query(
+      collection(db, "notifications"),
+      where("user_id", "==", user.id),
+      orderBy("created_at", "desc"),
+      limit(80)
+    );
 
-    const channel = supabase.channel("public:notifications").on("postgres_changes", { event: "INSERT", schema: "public", table: "notifications", filter: `user_id=eq.${user.id}` }, (payload) => {
-        setItems(prev => [payload.new, ...prev]);
-      }).subscribe();
+    const unsubscribe = onSnapshot(q, (snap) => {
+      setItems(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    });
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
+    return () => unsubscribe();
   }, [user?.id]);
 
   const visibleItems = useMemo(
@@ -38,14 +34,19 @@ const Notifications = () => {
   );
 
   const markAllRead = async () => {
-    if (!user) return;
-    await supabase.from("notifications").update({ read: true }).eq("user_id", user.id);
-    setItems(items.map(i => ({ ...i, read: true })));
+    if (!user || !items.length) return;
+    const unread = items.filter(i => !i.read);
+    if (!unread.length) return;
+    
+    const batch = writeBatch(db);
+    unread.forEach(item => {
+      batch.update(doc(db, "notifications", item.id), { read: true });
+    });
+    await batch.commit();
   };
 
   const markRead = async (id: string) => {
-    await supabase.from("notifications").update({ read: true }).eq("id", id);
-    setItems(items.map(i => i.id === id ? { ...i, read: true } : i));
+    await updateDoc(doc(db, "notifications", id), { read: true });
   };
 
   const getIcon = (type: string) => {

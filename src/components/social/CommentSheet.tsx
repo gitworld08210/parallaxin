@@ -3,8 +3,10 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { useAuth } from "@/contexts/AuthProvider";
 import { AuraAvatar } from "@/components/vibe/AuraAvatar";
 import { gradientFor, initialsOf, timeAgo } from "@/lib/format";
-import { Send } from "lucide-react";
+import { Send, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { collection, query, where, orderBy, limit, onSnapshot, addDoc, serverTimestamp, doc, updateDoc, increment } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 
 type Comment = {
   id: string;
@@ -22,15 +24,43 @@ export const CommentSheet = ({ postId, open, onOpenChange }: { postId: string | 
 
   useEffect(() => {
     if (!postId || !open) return;
-    // Firestore fetching for comments logic would go here.
-    setItems([]);
+    const q = query(
+      collection(db, "comments"),
+      where("post_id", "==", postId),
+      orderBy("created_at", "asc"),
+      limit(100)
+    );
+
+    const unsubscribe = onSnapshot(q, (snap) => {
+      setItems(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Comment[]);
+    });
+
+    return () => unsubscribe();
   }, [postId, open]);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user || !postId || !text.trim()) return;
-    toast.info("Comments moving to Firestore...");
-    setText("");
+    setLoading(true);
+    try {
+      await addDoc(collection(db, "comments"), {
+        post_id: postId,
+        user_id: user.id,
+        content: text.trim(),
+        created_at: serverTimestamp(),
+        profile: {
+          username: user.user_metadata?.username || user.email?.split('@')[0] || "user",
+          display_name: user.user_metadata?.display_name || "User",
+          avatar_url: user.user_metadata?.avatar_url || null
+        }
+      });
+      await updateDoc(doc(db, "posts", postId), { comment_count: increment(1) });
+      setText("");
+    } catch (e: any) {
+      toast.error(e.message || "Action failed");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
