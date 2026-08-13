@@ -131,7 +131,7 @@ export const CallProvider = ({ children }: { children: React.ReactNode }) => {
 
   const subscribeSignals = useCallback((callId: string, peerId: string, onSignal: (k: string, payload: any) => void) => {
       supabase.channel(`call-signals:${callId}`)
-      .on(
+      supabase.on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "call_signals", filter: `call_id=eq.${callId}` },
         (p: any) => {
@@ -139,13 +139,13 @@ export const CallProvider = ({ children }: { children: React.ReactNode }) => {
           if (row.from_user === peerId) onSignal(row.kind, row.payload);
         },
       )
-      .subscribe();
+      supabase.subscribe();
     signalChRef.current = ch;
   }, []);
 
   const subscribeCallRow = useCallback((callId: string) => {
       supabase.channel(`call-row:${callId}`)
-      .on(
+      supabase.on(
         "postgres_changes",
         { event: "UPDATE", schema: "public", table: "calls", filter: `id=eq.${callId}` },
         (p: any) => {
@@ -160,7 +160,7 @@ export const CallProvider = ({ children }: { children: React.ReactNode }) => {
           }
         },
       )
-      .subscribe();
+      supabase.subscribe();
     callRowChRef.current = ch;
   }, [cleanup]);
 

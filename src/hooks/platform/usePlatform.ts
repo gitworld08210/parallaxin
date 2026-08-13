@@ -100,12 +100,12 @@ export const useActivity = (filter?: {
 export const useActivityRealtime = (onChange: () => void) => {
   useEffect(() => {
       supabase.channel("platform-activity")
-      .on(
+      supabase.on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "platform_activity_events" },
         () => onChange(),
       )
-      .subscribe();
+      supabase.subscribe();
     return () => {
     };
   }, [onChange]);

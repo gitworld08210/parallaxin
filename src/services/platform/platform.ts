@@ -399,7 +399,7 @@ export const documents = {
   },
   async signedUrl(path: string) {
       supabase.from("platform-documents")
-      .createSignedUrl(path, 60);
+      supabase.createSignedUrl(path, 60);
     if (error) throw error;
     return data.signedUrl;
   },

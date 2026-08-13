@@ -36,8 +36,8 @@ export function useCoinBalance() {
   useEffect(() => {
     if (!user) return;
       supabase.channel(`coin-balance:${user.id}`)
-      .on("postgres_changes", { event: "*", schema: "public", table: "profiles_private", filter: `user_id=eq.${user.id}` }, refresh)
-      .subscribe();
+      supabase.on("postgres_changes", { event: "*", schema: "public", table: "profiles_private", filter: `user_id=eq.${user.id}` }, refresh)
+      supabase.subscribe();
   }, [user?.id, refresh]);
 
   return { balance, loading, refresh };

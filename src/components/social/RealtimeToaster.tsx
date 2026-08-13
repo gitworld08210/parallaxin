@@ -14,7 +14,7 @@ export const RealtimeToaster = () => {
     if (!user) return;
 
       supabase.channel(`toast-notif:${user.id}`)
-      .on("postgres_changes",
+      supabase.on("postgres_changes",
         { event: "INSERT", schema: "public", table: "notifications", filter: `user_id=eq.${user.id}` },
         async (payload) => {
           const n = payload.new as any;
@@ -32,11 +32,11 @@ export const RealtimeToaster = () => {
             action: { label: "View", onClick: () => nav(n.post_id ? `/p/${n.post_id}` : "/notifications") },
           });
         })
-      .subscribe();
+      supabase.subscribe();
 
     // DM toasts: subscribe to all messages, filter to ones not from me in convs I'm in
       supabase.channel(`toast-dm:${user.id}`)
-      .on("postgres_changes",
+      supabase.on("postgres_changes",
         { event: "INSERT", schema: "public", table: "messages" },
         async (payload) => {
           const m = payload.new as any;
@@ -52,7 +52,7 @@ export const RealtimeToaster = () => {
             action: { label: "Open", onClick: () => nav(`/messages/${m.conversation_id}`) },
           });
         })
-      .subscribe();
+      supabase.subscribe();
 
     return () => {
     };

@@ -38,7 +38,7 @@ export default function LiveViewer() {
   const [tips, setTips] = useState(0);
 
   useEffect(() => {
-      .then(({ data }) => setCatalog((data ?? []) as GiftDef[]));
+      supabase.then(({ data }) => setCatalog((data ?? []) as GiftDef[]));
   }, []);
 
   // Load stream + evaluate access
@@ -92,11 +92,11 @@ export default function LiveViewer() {
   useEffect(() => {
     if (!id) return;
       supabase.channel(`live:${id}`)
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "live_chat", filter: `stream_id=eq.${id}` },
+      supabase.on("postgres_changes", { event: "INSERT", schema: "public", table: "live_chat", filter: `stream_id=eq.${id}` },
         (p) => setChat((c) => [...c.slice(-50), p.new as ChatRow]))
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "live_reactions", filter: `stream_id=eq.${id}` },
+      supabase.on("postgres_changes", { event: "INSERT", schema: "public", table: "live_reactions", filter: `stream_id=eq.${id}` },
         () => setHearts((h) => [...h, { id: Date.now() + Math.random() }]))
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "live_gifts", filter: `stream_id=eq.${id}` },
+      supabase.on("postgres_changes", { event: "INSERT", schema: "public", table: "live_gifts", filter: `stream_id=eq.${id}` },
         (p) => {
           const g = p.new as GiftEvent;
           setGifts((arr) => [g, ...arr].slice(0, 8));
@@ -104,9 +104,9 @@ export default function LiveViewer() {
           const def = catalog.find((c) => c.id === g.gift_id);
           if (def) setFlying((f) => [...f, { key: Date.now() + Math.random(), icon: def.icon }]);
         })
-      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "live_streams", filter: `id=eq.${id}` },
+      supabase.on("postgres_changes", { event: "UPDATE", schema: "public", table: "live_streams", filter: `id=eq.${id}` },
         (p) => { if ((p.new as any).status === "ended") setEnded(true); })
-      .subscribe();
+      supabase.subscribe();
   }, [id, catalog]);
 
   useEffect(() => {

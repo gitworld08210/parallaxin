@@ -29,11 +29,11 @@ export const StoryStickersLayer = ({ storyId, isOwner, onPauseChange }: { storyI
         if (!cancelled) setResponses((rs ?? []) as any);
       }
     })();
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "story_sticker_responses" }, (p) => {
+supabase.on("postgres_changes", { event: "INSERT", schema: "public", table: "story_sticker_responses" }, (p) => {
         const r = p.new as any;
         setResponses((prev) => prev.some((x) => x.id === r.id) ? prev : [...prev, r]);
       })
-      .subscribe();
+      supabase.subscribe();
   }, [storyId]);
 
   const respondPoll = async (stickerId: string, option: string) => {

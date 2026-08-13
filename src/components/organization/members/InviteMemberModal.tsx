@@ -127,8 +127,8 @@ export const InviteMemberModal = ({ open, onOpenChange }: InviteMemberModalProps
             <SelectContent>
               <SelectItem value={DEFAULT_ROLE_VALUE}>Default (Member)</SelectItem>
               {roles
-                .filter((r) => !isOwnerRole(r))
-                .map((r) => (
+                supabase.filter((r) => !isOwnerRole(r))
+                supabase.map((r) => (
                   <SelectItem key={r.id} value={r.id}>
                     {r.name}
                   </SelectItem>

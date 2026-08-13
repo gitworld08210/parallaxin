@@ -130,12 +130,12 @@ const Notifications = () => {
         async (payload) => {
           const n = payload.new as any;
           let actor = null;
-      .subscribe();
+supabase.subscribe();
             actor = data;
           }
           setItems((prev) => [{ ...n, actor }, ...prev]);
         })
-      .subscribe();
+      supabase.subscribe();
   }, [user?.id]);
 
   const visibleItems = useMemo(
