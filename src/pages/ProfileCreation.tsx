@@ -52,19 +52,23 @@ const ProfileCreation = () => {
     try {
       let avatarUrl = null;
       if (avatar) {
-        const avatarRef = ref(storage, `avatars/${user.uid}_${Date.now()}`);
-        await uploadBytes(avatarRef, avatar);
-        avatarUrl = await getDownloadURL(avatarRef);
+        try {
+          const avatarRef = ref(storage, `avatars/${user.uid}_${Date.now()}`);
+          await uploadBytes(avatarRef, avatar);
+          avatarUrl = await getDownloadURL(avatarRef);
+        } catch (upErr) {
+          console.warn("Avatar upload skipped:", upErr);
+        }
       }
 
       // Generate a default username if not provided
       const rawUsername = username.trim() || displayName.trim();
       const baseUsername = rawUsername.toLowerCase().replace(/[^a-z0-9._]/g, "");
-      const finalUsername = username.trim() 
-        ? baseUsername 
+      const finalUsername = username.trim()
+        ? baseUsername
         : `${baseUsername}${Math.floor(1000 + Math.random() * 9000)}`;
-      
-      const profileData = {
+
+      const profileData: Record<string, any> = {
         id: user.uid,
         user_id: user.uid,
         display_name: displayName.trim(),
@@ -72,20 +76,23 @@ const ProfileCreation = () => {
         bio: bio.trim(),
         location: location.trim(),
         website: website.trim(),
-        avatar_url: avatarUrl,
         updated_at: serverTimestamp(),
         onboarded_at: serverTimestamp(),
-        followers_count: 0,
-        following_count: 0,
-        posts_count: 0,
-        verified: false,
       };
+      if (avatarUrl) profileData.avatar_url = avatarUrl;
 
       await setDoc(doc(db, "profiles", user.uid), profileData, { merge: true });
-      await setDoc(doc(db, "usernames", finalUsername), { 
-        user_id: user.uid, 
-        updated_at: serverTimestamp() 
-      });
+
+      // Username index is best-effort — never block onboarding on it
+      try {
+        await setDoc(doc(db, "usernames", finalUsername), {
+          user_id: user.uid,
+          uid: user.uid,
+          updated_at: serverTimestamp(),
+        }, { merge: true });
+      } catch (idxErr) {
+        console.warn("Username index skipped:", idxErr);
+      }
 
       if (refreshProfile) await refreshProfile();
       toast.success("Profile created!");
