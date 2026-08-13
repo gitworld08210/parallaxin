@@ -32,11 +32,13 @@ const Auth = () => {
   const [kind, setKind] = useState<AccountKind>("personal");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [name, setName] = useState("");
+  const [handle, setHandle] = useState("");
   const [busy, setBusy] = useState(false);
 
   const routeForUser = async (uid: string) => {
     if (nextPath) { nav(nextPath, { replace: true }); return; }
-    
+
     let prof: any = null;
     try {
       const profSnap = await getDoc(doc(db, "profiles", uid));
@@ -45,17 +47,14 @@ const Auth = () => {
       console.error("Error fetching profile during routing:", e);
     }
 
-    const intent = (localStorage.getItem(ORG_INTENT_KEY) as AccountKind | null) || null;
-    const wantsOrg = intent === "organization" || prof?.account_type === "organization";
+    localStorage.removeItem(ORG_INTENT_KEY);
 
-    // Standard routing: if no username, go to profile creation, otherwise feed
-    if (!prof?.username) {
-      localStorage.removeItem(ORG_INTENT_KEY);
+    // Profile is created during signup — only fall back if it's genuinely missing
+    if (!prof?.display_name && !prof?.username) {
       nav("/profile-creation", { replace: true });
       return;
     }
 
-    localStorage.removeItem(ORG_INTENT_KEY);
     nav("/", { replace: true });
   };
 
@@ -65,10 +64,30 @@ const Auth = () => {
 
   const validEmail = () => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
 
+  const buildUsername = (raw: string, fallback: string) => {
+    const base = (raw || fallback).toLowerCase().replace(/[^a-z0-9._]/g, "");
+    return raw ? base : `${base}${Math.floor(1000 + Math.random() * 9000)}`;
+  };
+
+  const writeProfile = async (uid: string, data: Record<string, any>, username: string) => {
+    await setDoc(doc(db, "profiles", uid), data, { merge: true });
+    try {
+      await setDoc(doc(db, "usernames", username), {
+        user_id: uid, uid, updated_at: serverTimestamp(),
+      }, { merge: true });
+    } catch (e) {
+      console.warn("Username index skipped:", e);
+    }
+  };
+
   const handleAuth = async () => {
     if (!validEmail() || password.length < 6) { 
       toast.error("Please enter a valid email and 6+ character password"); 
       return; 
+    }
+    if (tab === "signup" && !name.trim()) {
+      toast.error("Please enter your name");
+      return;
     }
     setBusy(true);
     try {
@@ -79,31 +98,36 @@ const Auth = () => {
       } else {
         if (kind === "organization") localStorage.setItem(ORG_INTENT_KEY, "organization");
         const res = await createUserWithEmailAndPassword(auth, email.trim(), password);
-        
-        const initialProfile = {
+
+        const displayName = name.trim();
+        const username = buildUsername(
+          handle.trim(),
+          displayName || email.trim().split("@")[0]
+        );
+
+        // Profile is fully created as part of signup
+        await writeProfile(res.user.uid, {
           id: res.user.uid,
           user_id: res.user.uid,
           email: email.trim(),
+          display_name: displayName,
+          username,
+          bio: "",
           account_type: kind,
           onboarded_at: serverTimestamp(),
-          created_at: serverTimestamp()
-        };
-
-        // Try Firestore write first
-        try {
-          await setDoc(doc(db, "profiles", res.user.uid), initialProfile);
-        } catch (e: any) {
-          console.error("Firestore initial profile write failed:", e);
-          // If Firestore fails due to permissions, the toast will show it below
-          throw e; 
-        }
+          created_at: serverTimestamp(),
+          followers_count: 0,
+          following_count: 0,
+          posts_count: 0,
+          verified: false,
+        }, username);
 
         try {
           await supabase.from("profiles").insert({
             id: res.user.uid,
             user_id: res.user.uid,
-            username: email.trim().split('@')[0],
-            display_name: email.trim().split('@')[0],
+            username,
+            display_name: displayName,
             account_type: kind
           } as any);
         } catch (e) {
