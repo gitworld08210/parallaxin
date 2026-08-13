@@ -119,9 +119,14 @@ const Compose = () => {
 
   const uploadMedia = async () => {
     if (!file || !user) return { media_url: null, media_type: null };
-    const url = await uploadToCloudinary(file);
-    return { media_url: url, media_type: file.type.startsWith("video") ? "video" : "image" };
-
+    setBusy(true);
+    try {
+      const url = await uploadToCloudinary(file);
+      return { media_url: url, media_type: file.type.startsWith("video") ? "video" : "image" };
+    } catch (e: any) {
+      toast.error("Upload failed: " + (e.message || "Unknown error"));
+      throw e;
+    }
   };
 
   const insertPost = async (status: "draft" | "scheduled" | "published", scheduled_for: string | null) => {
@@ -218,7 +223,7 @@ const Compose = () => {
           placeholder="Share something…"
           maxLength={1000}
           rows={5}
-          className="w-full bg-card border border-border rounded-xl p-4 text-sm outline-none resize-none"
+          className="w-full bg-zinc-900 border border-white/5 rounded-2xl p-4 text-[15px] outline-none resize-none focus:border-primary/50 transition-colors"
         />
 
         <div className="mt-3 flex items-center gap-2 flex-wrap">
@@ -277,13 +282,13 @@ const Compose = () => {
         )}
 
         {file && (
-          <label className="mt-4 flex items-start gap-3 p-3 rounded-xl border border-border bg-card cursor-pointer">
-            <input type="checkbox" checked={certify} onChange={(e) => setCertify(e.target.checked)} className="mt-0.5 h-4 w-4 accent-primary" />
+          <label className="mt-4 flex items-start gap-3 p-4 rounded-2xl border border-white/5 bg-zinc-900 cursor-pointer hover:bg-zinc-800 transition-colors">
+            <input type="checkbox" checked={certify} onChange={(e) => setCertify(e.target.checked)} className="mt-1 h-4 w-4 rounded border-white/20 bg-black text-primary focus:ring-primary" />
             <div className="flex-1">
-              <p className="text-sm font-semibold flex items-center gap-1.5">
+              <p className="text-[14px] font-bold flex items-center gap-1.5">
                 <ShieldCheck className="h-4 w-4 text-primary" /> Generate ownership certificate
               </p>
-              <p className="text-[11px] text-muted-foreground mt-0.5">
+              <p className="text-[11px] text-muted-foreground mt-0.5 leading-relaxed">
                 Anchors a SHA-256 hash of your media to Bitcoin via OpenTimestamps. Proof of timestamp, not a copyright filing.
               </p>
             </div>

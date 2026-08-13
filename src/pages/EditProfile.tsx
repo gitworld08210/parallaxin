@@ -123,77 +123,79 @@ const EditProfile = () => {
           </button>
         }
       />
-      <div className="px-5 space-y-4">
+      <div className="px-5 space-y-6">
         {/* Cover banner */}
-        <div className="relative h-32 rounded-2xl overflow-hidden bg-gradient-to-br from-primary/30 to-accent/30 border border-border">
+        <div className="relative h-32 rounded-3xl overflow-hidden bg-zinc-900 border border-white/5">
           {cover && <img src={cover} alt="" className="absolute inset-0 w-full h-full object-cover" />}
-          <label className="absolute bottom-2 right-2 glass-strong rounded-full px-3 py-1.5 text-xs font-semibold flex items-center gap-1.5 cursor-pointer">
-            <Upload className="h-3.5 w-3.5" /> {cover ? "Change banner" : "Add banner"}
+          <div className="absolute inset-0 bg-black/20" />
+          <label className="absolute bottom-3 right-3 h-10 w-10 bg-black/60 backdrop-blur-md rounded-full grid place-items-center cursor-pointer hover:bg-black/80 transition-colors">
+            <Upload className="h-4 w-4" />
             <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files?.[0] && uploadImage(e.target.files[0], "cover")} />
           </label>
           {cover && (
-            <button onClick={() => setCover(null)} className="absolute bottom-2 left-2 glass-strong rounded-full px-3 py-1.5 text-xs font-semibold">
+            <button onClick={() => setCover(null)} className="absolute bottom-3 left-3 h-10 px-4 bg-black/60 backdrop-blur-md rounded-full text-xs font-bold hover:bg-black/80 transition-colors">
               Remove
             </button>
           )}
         </div>
 
-        <div className="flex flex-col items-center gap-3 -mt-12">
-          {avatar ? (
-            <img src={avatar} alt="" className="h-24 w-24 rounded-full object-cover ring-4 ring-background shadow-glow" />
-          ) : (
-            <AuraAvatar gradient={gradientFor(username)} size="lg" glow initials={initialsOf(displayName || username)} />
-          )}
-          <label className="glass-strong rounded-full px-4 py-2 text-xs font-semibold flex items-center gap-2 cursor-pointer">
-            <Upload className="h-4 w-4" /> Change avatar
-            <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files?.[0] && uploadImage(e.target.files[0], "avatar")} />
-          </label>
-        </div>
-
-
-        <Field label="Display name" value={displayName} onChange={setDisplayName} maxLength={50} />
-        <Field label="Username" value={username} onChange={(v) => setUsername(v.toLowerCase().replace(/[^a-z0-9_]/g, ""))} maxLength={24} />
-        <div>
-          <div className="flex items-center justify-between">
-            <label className="text-[10px] uppercase tracking-widest text-muted-foreground">Bio</label>
-            <button
-              type="button"
-              onClick={rewriteBio}
-              disabled={bioAiBusy}
-              className="text-[10px] uppercase tracking-widest text-primary flex items-center gap-1 disabled:opacity-50"
-            >
-              <Sparkles className="h-3 w-3" />
-              {bioAiBusy ? "Thinking…" : "AI rewrite"}
-            </button>
+        <div className="flex flex-col items-center gap-4 -mt-14">
+          <div className="relative group">
+            {avatar ? (
+              <img src={avatar} alt="" className="h-28 w-28 rounded-full object-cover ring-[6px] ring-black shadow-2xl" />
+            ) : (
+              <div className="h-28 w-28 rounded-full ring-[6px] ring-black shadow-2xl overflow-hidden">
+                <AuraAvatar gradient={gradientFor(username)} size="lg" glow initials={initialsOf(displayName || username)} />
+              </div>
+            )}
+            <label className="absolute bottom-0 right-0 h-9 w-9 bg-primary rounded-full grid place-items-center ring-4 ring-black cursor-pointer hover:scale-105 transition-transform">
+              <Upload className="h-4 w-4 text-white" />
+              <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files?.[0] && uploadImage(e.target.files[0], "avatar")} />
+            </label>
           </div>
-          <textarea
-            value={bio} onChange={(e) => setBio(e.target.value)} maxLength={200} rows={3}
-            className="mt-1 w-full glass rounded-2xl p-3 text-sm outline-none resize-none"
-          />
-          {bioVariants.length > 0 && (
-            <div className="mt-2 space-y-2">
-              {bioVariants.map((v, i) => (
-                <button
-                  key={i}
-                  type="button"
-                  onClick={() => { setBio(v.text); setBioVariants([]); }}
-                  className="w-full text-left glass rounded-2xl p-3 text-sm hover:bg-muted/40 transition-colors"
-                >
-                  <div className="text-[10px] uppercase tracking-widest text-primary mb-1">{v.style}</div>
-                  <div>{v.text}</div>
-                </button>
-              ))}
-            </div>
-          )}
         </div>
 
+        <div className="space-y-4 pt-2">
+          <Field label="Display name" value={displayName} onChange={setDisplayName} maxLength={50} />
+          <Field label="Username" value={username} onChange={(v) => setUsername(v.toLowerCase().replace(/[^a-z0-9_]/g, ""))} maxLength={24} />
+          <div>
+            <div className="flex items-center justify-between mb-1.5 px-1">
+              <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Bio</label>
+              <button
+                type="button"
+                onClick={rewriteBio}
+                disabled={bioAiBusy}
+                className="text-[11px] font-bold uppercase tracking-wider text-primary flex items-center gap-1.5 disabled:opacity-50"
+              >
+                <Sparkles className="h-3.5 w-3.5" />
+                {bioAiBusy ? "Thinking…" : "AI rewrite"}
+              </button>
+            </div>
+            <textarea
+              value={bio} onChange={(e) => setBio(e.target.value)} maxLength={200} rows={4}
+              className="w-full bg-zinc-900 border border-white/5 rounded-2xl p-4 text-[15px] outline-none resize-none focus:border-primary/50 transition-colors"
+              placeholder="Tell us about yourself..."
+            />
+            {bioVariants.length > 0 && (
+              <div className="mt-3 space-y-2">
+                {bioVariants.map((v, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => { setBio(v.text); setBioVariants([]); }}
+                    className="w-full text-left bg-zinc-900 border border-white/5 rounded-2xl p-4 text-[14px] hover:bg-zinc-800 transition-colors"
+                  >
+                    <div className="text-[10px] font-black uppercase tracking-widest text-primary mb-1">{v.style}</div>
+                    <div className="leading-snug">{v.text}</div>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
 
-
-
-
-
-        <button onClick={save} disabled={busy} className="w-full py-3 rounded-2xl bg-gradient-primary text-primary-foreground font-semibold text-sm shadow-glow">
-          {busy ? "Saving…" : "Save"}
+        <button onClick={save} disabled={busy} className="w-full h-14 rounded-2xl bg-primary text-white font-bold text-[15px] shadow-lg hover:brightness-110 active:scale-[0.98] transition-all disabled:opacity-50">
+          {busy ? "Saving Changes..." : "Save Profile"}
         </button>
       </div>
     </div>
@@ -202,9 +204,9 @@ const EditProfile = () => {
 
 const Field = ({ label, value, onChange, maxLength }: any) => (
   <div>
-    <label className="text-[10px] uppercase tracking-widest text-muted-foreground">{label}</label>
+    <label className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5 px-1">{label}</label>
     <input value={value} onChange={(e) => onChange(e.target.value)} maxLength={maxLength}
-      className="mt-1 w-full glass rounded-2xl px-4 py-3 text-sm outline-none" />
+      className="w-full bg-zinc-900 border border-white/5 rounded-2xl px-4 py-3.5 text-[15px] outline-none focus:border-primary/50 transition-colors" />
   </div>
 );
 
