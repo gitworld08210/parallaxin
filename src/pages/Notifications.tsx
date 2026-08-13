@@ -89,7 +89,7 @@ const Notifications = () => {
     if (!token) {
       // Fall back to the SECURITY DEFINER RPC — works for invitees who aren't
       // yet org members (base-table SELECT is scoped to members).
-        "list_incoming_organization_invites" as any);
+      const { data } = await supabase.rpc("list_incoming_organization_invites");
       const rows = (data ?? []) as any[];
       const match = rows.find((r) => r.organization_id === organizationId);
       token = match?.invite_token;
