@@ -85,7 +85,7 @@ const Auth = () => {
           user_id: res.user.uid,
           email: email.trim(),
           account_type: kind,
-          onboarded_at: null,
+          onboarded_at: serverTimestamp(),
           created_at: serverTimestamp()
         };
 
@@ -136,7 +136,7 @@ const Auth = () => {
           email,
           account_type: kind,
           avatar_url: res.user.photoURL,
-          onboarded_at: null,
+          onboarded_at: serverTimestamp(),
           created_at: serverTimestamp()
         });
 
