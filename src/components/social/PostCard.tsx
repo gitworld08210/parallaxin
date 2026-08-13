@@ -245,8 +245,6 @@ export const PostCard = ({ post, onOpenComments }: { post: FeedPost; onOpenComme
                     // Certificate generation will be moved to a Firebase Cloud Function.
                     // For now, we simulate success or show coming soon.
                     toast.error("Certificate generation coming soon to Firebase");
-                    if (error) toast.error(error.message, { id: "cert" });
-                    else { toast.success("Certificate created", { id: "cert" }); window.location.href = `/certificate/${post.id}`; }
                   }}>
                     <ShieldCheck className="h-4 w-4 mr-2" /> Generate certificate
                   </DropdownMenuItem>
