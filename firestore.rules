@@ -1,0 +1,83 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    // Profiles
+    match /profiles/{userId} {
+      allow read: if isSignedIn();
+      allow write: if isOwner(userId);
+    }
+
+    // Follows
+    match /follows/{followId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && request.resource.data.follower_id == request.auth.uid;
+      allow delete: if isSignedIn() && resource.data.follower_id == request.auth.uid;
+    }
+
+    // Posts, Reels, Stories
+    match /posts/{postId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && request.resource.data.author_id == request.auth.uid;
+      allow update, delete: if isSignedIn() && resource.data.author_id == request.auth.uid;
+    }
+    
+    match /reels/{reelId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && request.resource.data.author_id == request.auth.uid;
+      allow update, delete: if isSignedIn() && resource.data.author_id == request.auth.uid;
+    }
+
+    match /stories/{storyId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && request.resource.data.author_id == request.auth.uid;
+      allow update, delete: if isSignedIn() && resource.data.author_id == request.auth.uid;
+    }
+
+    // Comments
+    match /comments/{commentId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && request.resource.data.author_id == request.auth.uid;
+      allow delete: if isSignedIn() && resource.data.author_id == request.auth.uid;
+    }
+
+    // Notifications
+    match /notifications/{notifId} {
+      allow read: if isSignedIn() && resource.data.user_id == request.auth.uid;
+      allow write: if false; // Only system/functions should write notifications
+      allow delete: if isSignedIn() && resource.data.user_id == request.auth.uid;
+    }
+
+    // Messaging
+    match /messages/{messageId} {
+      allow read: if isSignedIn() && (resource.data.sender_id == request.auth.uid || resource.data.receiver_id == request.auth.uid);
+      allow create: if isSignedIn() && request.resource.data.sender_id == request.auth.uid;
+    }
+
+    // Organizations
+    match /organizations/{orgId} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn(); // Simplified, should be refined based on roles
+    }
+
+    // Wallet Ledger
+    match /wallet_ledger/{entryId} {
+      allow read: if isSignedIn() && resource.data.user_id == request.auth.uid;
+      allow write: if false; // System only
+    }
+    
+    // Virtual World / KYC
+    match /kyc_applications/{appId} {
+      allow read: if isSignedIn() && resource.data.user_id == request.auth.uid;
+      allow create: if isSignedIn() && request.resource.data.user_id == request.auth.uid;
+    }
+  }
+}
