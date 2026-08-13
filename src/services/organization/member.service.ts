@@ -1,3 +1,4 @@
+import { supabase } from "@/integrations/supabase/client";
 // MemberService — organization member reads + mutations (via RPC).
 
 import type { Member, MemberWithProfile } from "@/types/organization/member";

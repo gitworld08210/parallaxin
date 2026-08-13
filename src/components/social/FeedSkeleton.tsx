@@ -1,3 +1,4 @@
+import { supabase } from "@/integrations/supabase/client";
 /**
  * Skeleton that matches PostCard dimensions exactly — no layout shift on load.
  */

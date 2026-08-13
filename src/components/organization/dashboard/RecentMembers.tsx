@@ -1,3 +1,4 @@
+import { supabase } from "@/integrations/supabase/client";
 // RecentMembers — real member list from useOrganizationDashboard.
 import { NavLink } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";

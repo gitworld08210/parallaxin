@@ -1,3 +1,4 @@
+import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { ChevronLeft, Crown, Sparkles, Shield, Vote, Infinity as InfinityIcon, Gem, Rocket, Scroll } from "lucide-react";

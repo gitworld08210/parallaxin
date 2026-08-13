@@ -1,3 +1,4 @@
+import { supabase } from "@/integrations/supabase/client";
 // organizationDepartment.api — thin Supabase adapter for departments.
 // All UI/hook code must go through department.service.ts, not this file.
 

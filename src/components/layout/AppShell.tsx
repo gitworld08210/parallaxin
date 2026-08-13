@@ -1,3 +1,4 @@
+import { supabase } from "@/integrations/supabase/client";
 import { Home, Film, MessageCircle, Plus, ImageIcon, Sparkles, User, Radio, Camera, Upload, Wand2, Search, Compass, Bell } from "lucide-react";
 import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";

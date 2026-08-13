@@ -1,3 +1,4 @@
+import { supabase } from "@/integrations/supabase/client";
 // RecentActivity — real audit/activity data from useOrganizationDashboard.
 import { formatDistanceToNow } from "date-fns";
 import { Activity } from "lucide-react";

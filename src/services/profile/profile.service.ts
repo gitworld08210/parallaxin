@@ -1,3 +1,4 @@
+import { supabase } from "@/integrations/supabase/client";
 // ProfileService — thin read layer for public.profiles. Kept tiny on purpose;
 // this is the single place organization hooks look up profile fields such as
 // the canonical username.

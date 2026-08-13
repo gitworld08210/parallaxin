@@ -1,3 +1,4 @@
+import { supabase } from "@/integrations/supabase/client";
 // InviteService — organization invitation reads + mutations (via RPC).
 
 import type { Invite, InviteWithMeta } from "@/types/organization/invite";

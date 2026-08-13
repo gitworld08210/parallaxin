@@ -1,3 +1,4 @@
+import { supabase } from "@/integrations/supabase/client";
 // RolePermissionsTable — permission matrix (roles × permissions). Toggling a
 // cell edits a working copy; the Save button per-role commits via the
 // permission-checked RPC. Owner role is displayed as fully granted and

@@ -1,3 +1,4 @@
+import { supabase } from "@/integrations/supabase/client";
 // DashboardService — aggregates data displayed on the org dashboard.
 // Every dashboard widget must read through this service (no direct queries in UI).
 

@@ -1,3 +1,4 @@
+import { supabase } from "@/integrations/supabase/client";
 // RoleService — organization role reads + mutations (permission-checked RPCs).
 
 import type { Role } from "@/types/organization/role";

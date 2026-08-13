@@ -1,3 +1,4 @@
+import { supabase } from "@/integrations/supabase/client";
 // CollabInviteAccept — celebratory page shown when a user taps a collab invite
 // notification. Displays a 🎉 congratulations header, the inviter's identity
 // and description, a preview of the post, and premium Accept / Decline CTAs.

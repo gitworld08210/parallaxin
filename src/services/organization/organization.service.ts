@@ -1,3 +1,4 @@
+import { supabase } from "@/integrations/supabase/client";
 // OrganizationService — high-level reads used by the OrganizationProvider.
 import { organizationApi } from "./organization.api";
 import { permissionService } from "./permission.service";

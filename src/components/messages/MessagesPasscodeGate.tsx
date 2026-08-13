@@ -1,3 +1,4 @@
+import { supabase } from "@/integrations/supabase/client";
 // MessagesPasscodeGate — Signal-style 4-digit lock for the Messages surface.
 // Flow:
 //   1. First visit → setup wizard (create passcode → confirm → pick a security

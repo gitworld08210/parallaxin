@@ -1,3 +1,4 @@
+import { supabase } from "@/integrations/supabase/client";
 // PermissionService — catalogue, per-role permissions, and effective
 // permissions for a user in an org.
 

@@ -1,3 +1,4 @@
+import { supabase } from "@/integrations/supabase/client";
 // SettingsService — organization_settings row (1:1 with organization) +
 // server-side update RPC covering both the organization profile and the
 // settings row atomically. All writes go through `org_update_settings`.

@@ -1,3 +1,4 @@
+import { supabase } from "@/integrations/supabase/client";
 /**
  * Aurelix Admin OS — Core Platform Engines service layer.
  *
