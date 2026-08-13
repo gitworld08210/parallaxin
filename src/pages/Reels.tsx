@@ -156,7 +156,7 @@ const Reels = () => {
         </Link>
       </header>
 
-      <div ref={containerRef} className="h-full overflow-y-scroll snap-y snap-mandatory scrollbar-hide">
+      <div ref={containerRef} className="h-full w-full overflow-y-scroll snap-y snap-mandatory scrollbar-hide">
         {reels.length === 0 && (
           <div className="h-full grid place-items-center text-center px-8">
             <div>
