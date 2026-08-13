@@ -15,6 +15,7 @@ import {
   MoreHorizontal,
   Share2,
   Sparkles,
+  User,
   UserPlus,
   VolumeX,
   Bookmark,
