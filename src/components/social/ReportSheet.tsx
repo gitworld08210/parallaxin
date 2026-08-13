@@ -33,7 +33,7 @@ export const ReportSheet = ({
   const submit = async () => {
     if (!user || !targetId || !reason) return;
     setBusy(true);
-    const { error } = await supabase.from("reports").insert({
+    const { error } = await.from("reports").insert({
       reporter_id: user.id,
       target_kind: targetKind,
       target_id: targetId,

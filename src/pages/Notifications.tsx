@@ -17,7 +17,7 @@ const Notifications = () => {
     if (!user) return;
     const load = async () => {
       const { data } = await supabase
-        .from("notifications")
+        supabase.from("notifications")
         .select("id, type, read, created_at, actor_id, post_id, organization_id, actor:profiles!notifications_actor_profile_fkey(username, display_name, avatar_url)")
         .eq("user_id", user.id)
         .order("created_at", { ascending: false })
@@ -27,11 +27,11 @@ const Notifications = () => {
     load();
 
     const channel = supabase
-      .channel("public:notifications")
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "notifications", filter: `user_id=eq.${user.id}` }, (payload) => {
+      supabase.channel("public:notifications")
+      supabase.on("postgres_changes", { event: "INSERT", schema: "public", table: "notifications", filter: `user_id=eq.${user.id}` }, (payload) => {
         setItems(prev => [payload.new, ...prev]);
       })
-      .subscribe();
+      supabase.subscribe();
 
     return () => {
       supabase.removeChannel(channel);
@@ -45,12 +45,12 @@ const Notifications = () => {
 
   const markAllRead = async () => {
     if (!user) return;
-    await supabase.from("notifications").update({ read: true }).eq("user_id", user.id);
+    await.from("notifications").update({ read: true }).eq("user_id", user.id);
     setItems(items.map(i => ({ ...i, read: true })));
   };
 
   const markRead = async (id: string) => {
-    await supabase.from("notifications").update({ read: true }).eq("id", id);
+    await.from("notifications").update({ read: true }).eq("id", id);
     setItems(items.map(i => i.id === id ? { ...i, read: true } : i));
   };
 
