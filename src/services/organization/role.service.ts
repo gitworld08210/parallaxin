@@ -23,8 +23,8 @@ export interface UpdateRoleInput {
 
 export const roleService = {
   async list(orgId: string): Promise<Role[]> {
-      .from("organization_roles")
-      .select("*")
+      supabase.from("organization_roles")
+      supabase.select("*")
       .eq("organization_id", orgId)
       .order("priority", { ascending: true });
     if (error) throw error;
@@ -32,8 +32,8 @@ export const roleService = {
   },
 
   async rolesForMember(memberId: string): Promise<Role[]> {
-      .from("organization_member_roles")
-      .select("organization_roles(*)")
+      supabase.from("organization_member_roles")
+      supabase.select("organization_roles(*)")
       .eq("member_id", memberId);
     if (error) throw error;
     return ((data ?? []) as RoleLinkRow[])

@@ -58,12 +58,12 @@ const CollabInviteAccept = () => {
       if (!user) return;
       setLoading(true);
       const [{ data: postData }, { data: rowData }] = await Promise.all([
-          .from("posts")
-          .select("id, content, media_url, user_id, created_at")
+          supabase.from("posts")
+          supabase.select("id, content, media_url, user_id, created_at")
           .eq("id", postId)
           .maybeSingle(),
-          .from("post_collaborators" as any)
-          .select("status, invited_at, responded_at")
+          supabase.from("post_collaborators" as any)
+          supabase.select("status, invited_at, responded_at")
           .eq("post_id", postId)
           .eq("user_id", user.id)
           .maybeSingle(),
@@ -76,8 +76,8 @@ const CollabInviteAccept = () => {
       }
       setPost(postData as any);
       setRow((rowData as any) ?? null);
-        .from("profiles")
-        .select("user_id, username, display_name, avatar_url, bio, verified, verification_kind")
+        supabase.from("profiles")
+        supabase.select("user_id, username, display_name, avatar_url, bio, verified, verification_kind")
         .eq("user_id", (postData as any).user_id)
         .maybeSingle();
       if (!cancelled) setAuthor((authorData as any) ?? null);
@@ -91,7 +91,7 @@ const CollabInviteAccept = () => {
   const respond = async (status: "accepted" | "declined") => {
     if (!user) return;
     setBusy(status === "accepted" ? "accept" : "decline");
-      .from("post_collaborators" as any)
+      supabase.from("post_collaborators" as any)
       .update({ status, responded_at: new Date().toISOString() } as any)
       .eq("post_id", postId)
       .eq("user_id", user.id);

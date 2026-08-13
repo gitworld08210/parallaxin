@@ -53,7 +53,7 @@ const Compose = () => {
     if (!collabQuery.trim() || !user) { setCollabResults([]); return; }
     let cancelled = false;
     (async () => {
-        .select("user_id, username, display_name, avatar_url")
+        supabase.select("user_id, username, display_name, avatar_url")
         .ilike("username", `%${collabQuery.trim()}%`)
         .neq("user_id", user.id)
         .limit(8);

@@ -154,8 +154,8 @@ const Profile = () => {
         let liked = new Set<string>();
         const allIds = [...(pdata ?? []), ...(rdata ?? [])].map((d: any) => d.id);
         if (user && allIds.length) {
-            .from("likes")
-            .select("post_id")
+            supabase.from("likes")
+            supabase.select("post_id")
             .eq("user_id", user.id)
             .in("post_id", allIds);
           liked = new Set((l ?? []).map((x) => x.post_id));
@@ -173,20 +173,20 @@ const Profile = () => {
         setReels((rdata ?? []).map((d: any) => ({ ...d, liked: liked.has(d.id) })));
 
         if (user && p.user_id !== user.id) {
-            .from("follows")
-            .select("follower_id")
+            supabase.from("follows")
+            supabase.select("follower_id")
             .eq("follower_id", user.id)
             .eq("following_id", p.user_id)
             .maybeSingle();
           setIsFollowing(!!f);
-            .from("blocks" as any)
-            .select("blocker_id")
+            supabase.from("blocks" as any)
+            supabase.select("blocker_id")
             .eq("blocker_id", user.id)
             .eq("blocked_id", p.user_id)
             .maybeSingle() as any);
           setIsBlocked(!!b);
-            .from("mutes" as any)
-            .select("muter_id")
+            supabase.from("mutes" as any)
+            supabase.select("muter_id")
             .eq("muter_id", user.id)
             .eq("muted_id", p.user_id)
             .maybeSingle() as any);

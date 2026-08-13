@@ -29,8 +29,8 @@ const Onboarding = () => {
 
   useEffect(() => {
     (async () => {
-        .from("profiles")
-        .select("user_id, username, display_name, avatar_url")
+        supabase.from("profiles")
+        supabase.select("user_id, username, display_name, avatar_url")
         .eq("is_founder", true)
         .limit(6);
       setFounders(data ?? []);
@@ -74,7 +74,7 @@ const Onboarding = () => {
 
       // 2. Update Supabase (Secondary/Admin OS)
       try {
-          .from("profiles")
+          supabase.from("profiles")
           .update({
             interests,
             onboarded_at: new Date().toISOString(),

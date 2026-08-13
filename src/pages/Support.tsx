@@ -85,8 +85,8 @@ const Support = () => {
       }
 
       // 2. Supabase Fallback
-        .from("sup_tickets")
-        .select("id, ticket_number, subject, category, priority, status, created_at, owning_department_id")
+        supabase.from("sup_tickets")
+        supabase.select("id, ticket_number, subject, category, priority, status, created_at, owning_department_id")
         .eq("requester_id", user!.id)
         .order("created_at", { ascending: false })
         .limit(20);

@@ -32,11 +32,11 @@ const FounderChronicle = () => {
   useEffect(() => {
     if (!username) return;
     (async () => {
-        .select("user_id, username, display_name, avatar_url, bio, founder_title, aura_rank, join_era, council_role, chronicle, signature_aura")
+        supabase.select("user_id, username, display_name, avatar_url, bio, founder_title, aura_rank, join_era, council_role, chronicle, signature_aura")
         .eq("username", username).maybeSingle();
       setP(data as FounderProfile | null);
       if (data) {
-          .select("id, media_url, media_type, content")
+          supabase.select("id, media_url, media_type, content")
           .eq("user_id", (data as any).user_id)
           .eq("status", "published")
           .order("like_count", { ascending: false })

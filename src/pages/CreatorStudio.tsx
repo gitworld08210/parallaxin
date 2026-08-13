@@ -39,11 +39,11 @@ const CreatorStudio = () => {
     (async () => {
       setLoading(true);
       const [{ data: p }, { count: subs }] = await Promise.all([
-          .select("id, content, is_reel, media_url, like_count, comment_count, created_at")
+          supabase.select("id, content, is_reel, media_url, like_count, comment_count, created_at")
           .eq("user_id", user.id)
           .order("created_at", { ascending: false })
           .limit(60),
-          .select("*", { count: "exact", head: true })
+          supabase.select("*", { count: "exact", head: true })
           .eq("creator_id", user.id)
           .eq("status", "active") as any,
       ]);

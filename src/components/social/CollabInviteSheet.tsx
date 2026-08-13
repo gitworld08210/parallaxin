@@ -21,8 +21,8 @@ export const CollabInviteSheet = ({ open, onOpenChange }: { open: boolean; onOpe
   useEffect(() => {
     if (!open || !user) return;
     (async () => {
-        .from("post_collaborators" as any)
-        .select("post_id, invited_at, post:posts(id, content, media_url, user_id)")
+        supabase.from("post_collaborators" as any)
+        supabase.select("post_id, invited_at, post:posts(id, content, media_url, user_id)")
         .eq("user_id", user.id).eq("status", "pending");
       const rows = (data ?? []) as any[];
       const authorIds = Array.from(new Set(rows.map((r) => r.post?.user_id).filter(Boolean)));
@@ -37,7 +37,7 @@ export const CollabInviteSheet = ({ open, onOpenChange }: { open: boolean; onOpe
   const respond = async (postId: string, status: "accepted" | "declined") => {
     if (!user) return;
     setBusy(postId);
-      .from("post_collaborators" as any)
+      supabase.from("post_collaborators" as any)
       .update({ status, responded_at: new Date().toISOString() } as any)
       .eq("post_id", postId).eq("user_id", user.id);
     setBusy(null);

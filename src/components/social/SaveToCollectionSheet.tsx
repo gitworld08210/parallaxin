@@ -19,9 +19,9 @@ export const SaveToCollectionSheet = ({
   useEffect(() => {
     if (!open || !user) return;
     (async () => {
-        .select("id, name").eq("user_id", user.id).order("created_at", { ascending: false }) as any);
+        supabase.select("id, name").eq("user_id", user.id).order("created_at", { ascending: false }) as any);
       setCollections((cs ?? []) as Collection[]);
-        .select("collection_id").eq("post_id", postId) as any);
+        supabase.select("collection_id").eq("post_id", postId) as any);
       setInSet(new Set((items ?? []).map((i: any) => i.collection_id)));
     })();
   }, [open, user?.id, postId]);

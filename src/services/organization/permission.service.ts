@@ -21,8 +21,8 @@ interface MemberRolesPermRow {
 export const permissionService = {
   /** Full permission catalogue (module + key). */
   async listCatalogue(): Promise<Permission[]> {
-      .from("organization_permissions")
-      .select("*")
+      supabase.from("organization_permissions")
+      supabase.select("*")
       .order("module", { ascending: true })
       .order("permission_key", { ascending: true });
     if (error) throw error;
@@ -31,8 +31,8 @@ export const permissionService = {
 
   /** Permission keys attached to a role. */
   async listForRole(roleId: string): Promise<string[]> {
-      .from("organization_role_permissions")
-      .select("role_id, organization_permissions(permission_key)")
+      supabase.from("organization_role_permissions")
+      supabase.select("role_id, organization_permissions(permission_key)")
       .eq("role_id", roleId);
     if (error) throw error;
     return ((data ?? []) as RolePermRow[])
@@ -45,8 +45,8 @@ export const permissionService = {
    * the whole permission matrix (no per-row queries).
    */
   async matrixForOrg(orgId: string): Promise<Record<string, string[]>> {
-      .from("organization_role_permissions")
-      .select("role_id, organization_permissions(permission_key), organization_roles!inner(organization_id)")
+      supabase.from("organization_role_permissions")
+      supabase.select("role_id, organization_permissions(permission_key), organization_roles!inner(organization_id)")
       .eq("organization_roles.organization_id", orgId);
     if (error) throw error;
 
@@ -60,8 +60,8 @@ export const permissionService = {
   },
 
   async listForMember(orgId: string, userId: string): Promise<string[]> {
-      .from("organizations")
-      .select("owner_user_id")
+      supabase.from("organizations")
+      supabase.select("owner_user_id")
       .eq("id", orgId)
       .maybeSingle();
 
@@ -70,16 +70,16 @@ export const permissionService = {
       return catalogue.map((p) => p.permission_key);
     }
 
-      .from("organization_members")
-      .select("id, status")
+      supabase.from("organization_members")
+      supabase.select("id, status")
       .eq("organization_id", orgId)
       .eq("user_id", userId)
       .maybeSingle();
     if (memberErr) throw memberErr;
     if (!memberRow || memberRow.status !== "active") return [];
 
-      .from("organization_member_roles")
-      .select(
+      supabase.from("organization_member_roles")
+      supabase.select(
         "organization_roles!inner(id, organization_role_permissions(organization_permissions(permission_key)))",
       )
       .eq("member_id", memberRow.id);

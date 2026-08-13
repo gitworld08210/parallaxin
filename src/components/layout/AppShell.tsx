@@ -28,8 +28,8 @@ export const AppShell = () => {
   useEffect(() => {
     if (!user) return;
     const refresh = async () => {
-        .from("notifications")
-        .select("*", { count: "exact", head: true })
+        supabase.from("notifications")
+        supabase.select("*", { count: "exact", head: true })
         .eq("user_id", user.id).eq("read", false);
       setUnreadNotif(count ?? 0);
     };
@@ -41,11 +41,11 @@ export const AppShell = () => {
   useEffect(() => {
     if (!user) return;
     const refresh = async () => {
-        .from("conversation_participants").select("conversation_id").eq("user_id", user.id);
+        supabase.from("conversation_participants").select("conversation_id").eq("user_id", user.id);
       const ids = (parts ?? []).map((p) => p.conversation_id);
       if (!ids.length) { setUnreadDm(0); return; }
-        .from("messages")
-        .select("*", { count: "exact", head: true })
+        supabase.from("messages")
+        supabase.select("*", { count: "exact", head: true })
         .in("conversation_id", ids)
         .neq("sender_id", user.id)
         .is("read_at", null);

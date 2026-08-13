@@ -31,8 +31,8 @@ export const StoriesRail = () => {
 
   const load = async () => {
     if (!user?.id) { setGroups([]); return; }
-      .from("follows")
-      .select("following_id")
+      supabase.from("follows")
+      supabase.select("following_id")
       .eq("follower_id", user.id);
     const ids = (f ?? []).map((r: any) => r.following_id);
     // Allow seeing own stories too

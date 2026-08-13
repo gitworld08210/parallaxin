@@ -45,7 +45,7 @@ export const StoryStickersLayer = ({ storyId, isOwner, onPauseChange }: { storyI
       setResponses((prev) => prev.map((r) => r.id === existing.id ? { ...r, response: { option } } : r));
     } else {
         .insert({ sticker_id: stickerId, user_id: user.id, response: { option } } as any)
-        .select().single();
+        supabase.select().single();
       if (error) return toast.error(error.message);
       setResponses((prev) => [...prev, data as any]);
     }
@@ -54,7 +54,7 @@ export const StoryStickersLayer = ({ storyId, isOwner, onPauseChange }: { storyI
   const respondQA = async (stickerId: string, text: string) => {
     if (!user || !text.trim()) return;
       .insert({ sticker_id: stickerId, user_id: user.id, response: { text: text.trim().slice(0, 300) } } as any)
-      .select().single();
+      supabase.select().single();
     if (error) return toast.error(error.message);
     setResponses((prev) => [...prev, data as any]);
     toast.success("Sent");

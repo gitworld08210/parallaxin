@@ -13,8 +13,8 @@ export interface ProfileBasics {
 
 export const profileService = {
   async getByUserId(userId: string): Promise<ProfileBasics | null> {
-      .from("profiles")
-      .select("user_id, username, display_name, avatar_url")
+      supabase.from("profiles")
+      supabase.select("user_id, username, display_name, avatar_url")
       .eq("user_id", userId)
       .maybeSingle();
     if (error) throw error;

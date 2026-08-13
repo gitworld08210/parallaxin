@@ -13,14 +13,14 @@ export default function LiveList() {
 
   useEffect(() => {
     (async () => {
-        .from("live_streams")
-        .select("id,title,host_id,started_at")
+        supabase.from("live_streams")
+        supabase.select("id,title,host_id,started_at")
         .eq("status", "live")
         .order("started_at", { ascending: false });
       if (!data) return;
       const ids = data.map((s) => s.host_id);
-        .from("profiles")
-        .select("id,username,avatar_url")
+        supabase.from("profiles")
+        supabase.select("id,username,avatar_url")
         .in("id", ids);
       const map = new Map(profs?.map((p: any) => [p.id, p]) ?? []);
       setStreams(data.map((s) => ({ ...s, ...(map.get(s.host_id) as any) })));

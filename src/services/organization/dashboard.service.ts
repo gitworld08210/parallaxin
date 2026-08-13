@@ -27,23 +27,23 @@ export interface DashboardActivityItem {
 export const dashboardService = {
   async stats(orgId: string): Promise<DashboardStats> {
     const [orgRow, memberActive, memberPending, deptCount, roleCount] = await Promise.all([
-        .from("organizations")
-        .select("member_count, follower_count, post_count")
+        supabase.from("organizations")
+        supabase.select("member_count, follower_count, post_count")
         .eq("id", orgId)
         .maybeSingle(),
-        .from("organization_members")
-        .select("id", { count: "exact", head: true })
+        supabase.from("organization_members")
+        supabase.select("id", { count: "exact", head: true })
         .eq("organization_id", orgId)
         .eq("status", "active"),
-        .from("organization_members")
-        .select("id", { count: "exact", head: true })
+        supabase.from("organization_members")
+        supabase.select("id", { count: "exact", head: true })
         .eq("organization_id", orgId)
         .eq("status", "pending"),
-        .from("organization_departments")
-        .select("id", { count: "exact", head: true })
+        supabase.from("organization_departments")
+        supabase.select("id", { count: "exact", head: true })
         .eq("organization_id", orgId),
-        .from("organization_roles")
-        .select("id", { count: "exact", head: true })
+        supabase.from("organization_roles")
+        supabase.select("id", { count: "exact", head: true })
         .eq("organization_id", orgId),
     ]);
     return {
@@ -62,8 +62,8 @@ export const dashboardService = {
   },
 
   async recentActivity(orgId: string, limit = 6): Promise<DashboardActivityItem[]> {
-      .from("organization_activity")
-      .select("id, activity_type, title, description, created_at, actor_id")
+      supabase.from("organization_activity")
+      supabase.select("id, activity_type, title, description, created_at, actor_id")
       .eq("organization_id", orgId)
       .order("created_at", { ascending: false })
       .limit(limit);

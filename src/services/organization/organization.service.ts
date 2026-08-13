@@ -47,15 +47,15 @@ export const organizationService = {
 
   /** Load the signed-in user's membership for a given org. Null if not a member. */
   async getMembership(orgId: string, userId: string): Promise<OrganizationMembership | null> {
-      .from("organization_members")
-      .select("id, organization_id, user_id, department_id, status, joined_at, invited_by")
+      supabase.from("organization_members")
+      supabase.select("id, organization_id, user_id, department_id, status, joined_at, invited_by")
       .eq("organization_id", orgId)
       .eq("user_id", userId)
       .maybeSingle();
     if (error) throw error;
     if (!memberRow) {
-        .from("organizations")
-        .select("owner_user_id")
+        supabase.from("organizations")
+        supabase.select("owner_user_id")
         .eq("id", orgId)
         .maybeSingle();
       if (ownerCheck?.owner_user_id === userId) {
@@ -72,8 +72,8 @@ export const organizationService = {
       }
       return null;
     }
-      .from("organizations")
-      .select("owner_user_id")
+      supabase.from("organizations")
+      supabase.select("owner_user_id")
       .eq("id", orgId)
       .maybeSingle();
     return {

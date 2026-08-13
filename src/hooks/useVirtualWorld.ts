@@ -53,14 +53,14 @@ export const useVirtualWorld = () => {
       return;
     }
     const [appRes, accessRes, logRes] = await Promise.all([
-        .from("virtual_world_applications")
-        .select("*")
+        supabase.from("virtual_world_applications")
+        supabase.select("*")
         .eq("user_id", user.id)
         .order("created_at", { ascending: false })
         .limit(1)
         .maybeSingle(),
-        .from("virtual_world_logs")
-        .select("id,channel,to_number,body,status,error,created_at")
+        supabase.from("virtual_world_logs")
+        supabase.select("id,channel,to_number,body,status,error,created_at")
         .order("created_at", { ascending: false })
         .limit(30),
     ]);

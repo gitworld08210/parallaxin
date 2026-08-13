@@ -8,8 +8,8 @@ export const useContentQueue = () => {
   return useQuery({
     queryKey: ['content-classification-queue'],
     queryFn: async () => {
-        .from('content_context')
-        .select('*')
+        supabase.from('content_context')
+        supabase.select('*')
         .eq('human_review_required', true)
         .order('created_at', { ascending: false });
       

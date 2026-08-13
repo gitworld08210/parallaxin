@@ -26,7 +26,7 @@ const Drafts = () => {
   const load = async () => {
     if (!user) return;
     setLoading(true);
-      .select("id, content, media_url, media_type, status, scheduled_for, created_at")
+      supabase.select("id, content, media_url, media_type, status, scheduled_for, created_at")
       .eq("user_id", user.id)
       .in("status", ["draft", "scheduled"])
       .order("created_at", { ascending: false }) as any);

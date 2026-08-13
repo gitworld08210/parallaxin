@@ -116,7 +116,7 @@ export default function LiveHost() {
 
       // 2) Create the stream record
       const roomName = `live_${user.id}_${Date.now()}`;
-        .from("live_streams")
+        supabase.from("live_streams")
         .insert({
           host_id: user.id,
           title: title || null,
@@ -125,7 +125,7 @@ export default function LiveHost() {
           ticket_price_coins: access === "ticket" ? Math.max(1, price) : 0,
           allow_gifts: allowGifts,
         } as any)
-        .select()
+        supabase.select()
         .single();
       if (insErr) throw insErr;
       setStreamId(stream.id);
@@ -163,7 +163,7 @@ export default function LiveHost() {
       roomRef.current?.disconnect();
       roomRef.current = null;
       if (streamId) {
-          .from("live_streams")
+          supabase.from("live_streams")
           .update({ status: "ended", ended_at: new Date().toISOString() })
           .eq("id", streamId);
       }
@@ -174,7 +174,7 @@ export default function LiveHost() {
 
   useEffect(() => {
     if (!streamId) return;
-      .channel(`live:${streamId}`)
+      supabase.channel(`live:${streamId}`)
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "live_chat", filter: `stream_id=eq.${streamId}` },
         (p) => setChat((c) => [...c.slice(-50), p.new as ChatRow]))
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "live_reactions", filter: `stream_id=eq.${streamId}` },

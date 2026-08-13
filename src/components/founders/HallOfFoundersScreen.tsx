@@ -38,15 +38,15 @@ export const HallOfFoundersScreen = () => {
 
   useEffect(() => {
     (async () => {
-        .select("seat_number, user_id, council_role, founder_title")
+        supabase.select("seat_number, user_id, council_role, founder_title")
         .order("seat_number", { ascending: true });
 
       const rows = (data ?? []) as Seat[];
       const ids = rows.map((r) => r.user_id).filter(Boolean) as string[];
       let profiles: Record<string, Seat["profile"]> = {};
       if (ids.length) {
-          .from("profiles")
-          .select("user_id, username, display_name, avatar_url, aura_rank, join_era")
+          supabase.from("profiles")
+          supabase.select("user_id, username, display_name, avatar_url, aura_rank, join_era")
           .in("user_id", ids);
         for (const p of (profs ?? []) as any[]) profiles[p.user_id] = p;
       }

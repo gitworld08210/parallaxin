@@ -91,7 +91,7 @@ export default function LiveViewer() {
   // Realtime: chat, reactions, gifts, stream status
   useEffect(() => {
     if (!id) return;
-      .channel(`live:${id}`)
+      supabase.channel(`live:${id}`)
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "live_chat", filter: `stream_id=eq.${id}` },
         (p) => setChat((c) => [...c.slice(-50), p.new as ChatRow]))
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "live_reactions", filter: `stream_id=eq.${id}` },

@@ -23,8 +23,8 @@ const FollowList = () => {
       const sel = kind === "following" ? "following_id" : "follower_id";
       const ids = (data ?? []).map((r: any) => r[sel]);
       if (ids.length === 0) { setItems([]); return; }
-        .from("profiles")
-        .select("user_id, username, display_name, avatar_url, verified, verification_kind, followers_count")
+        supabase.from("profiles")
+        supabase.select("user_id, username, display_name, avatar_url, verified, verification_kind, followers_count")
         .in("user_id", ids);
       setItems((profs ?? []) as P[]);
     })();

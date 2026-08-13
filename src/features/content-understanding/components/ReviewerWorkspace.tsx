@@ -32,8 +32,8 @@ export const ReviewerWorkspace = () => {
   const { data: item, isLoading } = useQuery({
     queryKey: ['content-context-detail', id],
     queryFn: async () => {
-        .from('content_context')
-        .select('*')
+        supabase.from('content_context')
+        supabase.select('*')
         .eq('id', id)
         .single();
       if (error) throw error;

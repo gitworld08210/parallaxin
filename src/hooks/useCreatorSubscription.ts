@@ -52,8 +52,8 @@ export function useMySubscriptions() {
 
   const load = useCallback(async () => {
     if (!user) { setSubs([]); setLoading(false); return; }
-      .from("creator_subscriptions" as any)
-      .select("*, creator:profiles!creator_subscriptions_creator_id_fkey(username, display_name, avatar_url)")
+      supabase.from("creator_subscriptions" as any)
+      supabase.select("*, creator:profiles!creator_subscriptions_creator_id_fkey(username, display_name, avatar_url)")
       .eq("subscriber_id", user.id)
       .order("current_period_end", { ascending: false });
     setSubs((data as any) ?? []);

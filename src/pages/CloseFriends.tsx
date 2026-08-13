@@ -26,15 +26,15 @@ const CloseFriends = () => {
     if (!user) return;
     (async () => {
       setLoading(true);
-        .select("following_id").eq("follower_id", user.id);
+        supabase.select("following_id").eq("follower_id", user.id);
       const ids = (f ?? []).map((x: any) => x.following_id);
       let rows: Row[] = [];
       if (ids.length) {
-          .select("user_id, username, display_name, avatar_url").in("user_id", ids);
+          supabase.select("user_id, username, display_name, avatar_url").in("user_id", ids);
         rows = (ps ?? []) as Row[];
       }
       setFollowing(rows);
-        .select("friend_id").eq("owner_id", user.id) as any);
+        supabase.select("friend_id").eq("owner_id", user.id) as any);
       setCloseSet(new Set((cf ?? []).map((x: any) => x.friend_id)));
       setLoading(false);
     })();

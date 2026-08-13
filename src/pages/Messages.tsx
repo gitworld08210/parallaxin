@@ -109,8 +109,8 @@ const Messages = () => {
     if (!q) { setResults([]); return; }
     let cancelled = false;
     const t = setTimeout(async () => {
-        .from("profiles")
-        .select("user_id, username, display_name, avatar_url, verification_kind")
+        supabase.from("profiles")
+        supabase.select("user_id, username, display_name, avatar_url, verification_kind")
         .or(`username.ilike.%${q}%,display_name.ilike.%${q}%`)
         .neq("user_id", user?.id ?? "")
         .limit(12);

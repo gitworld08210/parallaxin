@@ -16,14 +16,14 @@ export const useAdRanking = (contentId?: string) => {
       if (!user || !contentId) return [];
 
       // 1. Get current content context
-        .from('content_context')
-        .select('*')
+        supabase.from('content_context')
+        supabase.select('*')
         .eq('content_id', contentId)
         .maybeSingle();
 
       // 2. Get user interests
-        .from('ads_user_interests')
-        .select('topic_id, interest_score')
+        supabase.from('ads_user_interests')
+        supabase.select('topic_id, interest_score')
         .eq('user_id', user.id);
 
       // 3. Ad Ranking Algorithm (Spec #16 & #25)

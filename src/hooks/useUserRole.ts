@@ -14,8 +14,8 @@ export const useUserRole = () => {
     if (!user) { setIsAdmin(false); setIsModerator(false); setLoading(false); return; }
     let cancelled = false;
     (async () => {
-        .from("user_roles")
-        .select("role")
+        supabase.from("user_roles")
+        supabase.select("role")
         .eq("user_id", user.id);
       if (cancelled) return;
       const roles = new Set((data ?? []).map((r: any) => r.role));

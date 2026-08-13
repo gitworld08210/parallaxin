@@ -6,8 +6,8 @@ import type { Department } from "@/types/organization/department";
 
 export const organizationDepartmentApi = {
   async list(orgId: string): Promise<Department[]> {
-      .from("organization_departments")
-      .select("*")
+      supabase.from("organization_departments")
+      supabase.select("*")
       .eq("organization_id", orgId)
       .order("name", { ascending: true });
     if (error) throw error;
@@ -15,8 +15,8 @@ export const organizationDepartmentApi = {
   },
 
   async getById(id: string): Promise<Department | null> {
-      .from("organization_departments")
-      .select("*")
+      supabase.from("organization_departments")
+      supabase.select("*")
       .eq("id", id)
       .maybeSingle();
     if (error) throw error;

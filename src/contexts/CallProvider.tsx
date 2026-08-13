@@ -130,7 +130,7 @@ export const CallProvider = ({ children }: { children: React.ReactNode }) => {
   }, [user]);
 
   const subscribeSignals = useCallback((callId: string, peerId: string, onSignal: (k: string, payload: any) => void) => {
-      .channel(`call-signals:${callId}`)
+      supabase.channel(`call-signals:${callId}`)
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "call_signals", filter: `call_id=eq.${callId}` },
@@ -144,7 +144,7 @@ export const CallProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   const subscribeCallRow = useCallback((callId: string) => {
-      .channel(`call-row:${callId}`)
+      supabase.channel(`call-row:${callId}`)
       .on(
         "postgres_changes",
         { event: "UPDATE", schema: "public", table: "calls", filter: `id=eq.${callId}` },
@@ -321,8 +321,8 @@ export const CallProvider = ({ children }: { children: React.ReactNode }) => {
       // Mark accepted (the caller may have inserted offer before we marked accepted, that's fine)
 
       // Fetch any offer that arrived before subscribe
-        .from("call_signals")
-        .select("kind, payload, from_user")
+        supabase.from("call_signals")
+        supabase.select("kind, payload, from_user")
         .eq("call_id", inc.call_id)
         .eq("from_user", inc.caller_id)
         .order("created_at", { ascending: true });

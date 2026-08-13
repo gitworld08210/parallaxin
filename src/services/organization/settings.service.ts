@@ -38,8 +38,8 @@ export interface OrganizationSettingsUpdate {
 
 export const settingsService = {
   async get(orgId: string): Promise<OrganizationSettings | null> {
-      .from("organization_settings")
-      .select("*")
+      supabase.from("organization_settings")
+      supabase.select("*")
       .eq("organization_id", orgId)
       .maybeSingle();
     if (error) throw error;

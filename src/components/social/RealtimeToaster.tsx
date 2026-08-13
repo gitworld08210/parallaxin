@@ -13,7 +13,7 @@ export const RealtimeToaster = () => {
   useEffect(() => {
     if (!user) return;
 
-      .channel(`toast-notif:${user.id}`)
+      supabase.channel(`toast-notif:${user.id}`)
       .on("postgres_changes",
         { event: "INSERT", schema: "public", table: "notifications", filter: `user_id=eq.${user.id}` },
         async (payload) => {
@@ -35,7 +35,7 @@ export const RealtimeToaster = () => {
       .subscribe();
 
     // DM toasts: subscribe to all messages, filter to ones not from me in convs I'm in
-      .channel(`toast-dm:${user.id}`)
+      supabase.channel(`toast-dm:${user.id}`)
       .on("postgres_changes",
         { event: "INSERT", schema: "public", table: "messages" },
         async (payload) => {
@@ -45,7 +45,7 @@ export const RealtimeToaster = () => {
           // skip if currently viewing this conversation
           if (window.location.pathname === `/messages/${m.conversation_id}`) return;
           // verify membership (RLS would have hidden it anyway, but check defensively)
-            .select("user_id").eq("conversation_id", m.conversation_id).eq("user_id", user.id).maybeSingle();
+            supabase.select("user_id").eq("conversation_id", m.conversation_id).eq("user_id", user.id).maybeSingle();
           if (!mem) return;
           lastShown.current.add(m.id);
           const name = sender?.display_name || sender?.username || "New message";

@@ -26,8 +26,8 @@ export function useCoinBalance() {
     }
 
     // 2. Legacy Supabase Fallback
-      .from("profiles_private")
-      .select("coin_balance")
+      supabase.from("profiles_private")
+      supabase.select("coin_balance")
       .eq("user_id", user.id)
       .maybeSingle();
     setBalance((data as any)?.coin_balance ?? 0);
@@ -38,7 +38,7 @@ export function useCoinBalance() {
 
   useEffect(() => {
     if (!user) return;
-      .channel(`coin-balance:${user.id}`)
+      supabase.channel(`coin-balance:${user.id}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "profiles_private", filter: `user_id=eq.${user.id}` }, refresh)
       .subscribe();
   }, [user?.id, refresh]);
