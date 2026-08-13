@@ -424,10 +424,10 @@ const App = () => (
           <CallProvider>
           <Suspense fallback={<RouteFallback />}>
             <Routes>
-                <Route path="/auth" element={<Auth />} />
-                <Route path="/forgot-password" element={<ForgotPassword />} />
-              <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
+              <Route path="/auth" element={<Auth />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/reset-password" element={<ResetPassword />} />
+              <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
               <Route path="/unsubscribe" element={<Unsubscribe />} />
               <Route path="/certificate/:postId" element={<Certificate />} />
               <Route element={<ProtectedRoute />}>
