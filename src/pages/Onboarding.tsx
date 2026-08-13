@@ -1,3 +1,4 @@
+// Onboarding refactored for Firestore primary storage.
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
