@@ -129,22 +129,35 @@ const Auth = () => {
         const uid = res.user.uid;
         const email = res.user.email;
         const name = res.user.displayName || email?.split('@')[0] || "User";
+        const baseUsername = email?.split('@')[0] || uid.slice(0, 8);
+        const finalUsername = `${baseUsername}${Math.floor(1000 + Math.random() * 9000)}`;
         
         await setDoc(doc(db, "profiles", uid), {
           id: uid,
           user_id: uid,
           email,
+          display_name: name,
+          username: finalUsername,
           account_type: kind,
           avatar_url: res.user.photoURL,
           onboarded_at: serverTimestamp(),
-          created_at: serverTimestamp()
+          created_at: serverTimestamp(),
+          followers_count: 0,
+          following_count: 0,
+          posts_count: 0,
+          verified: false
+        });
+
+        await setDoc(doc(db, "usernames", finalUsername), {
+          user_id: uid,
+          updated_at: serverTimestamp()
         });
 
         try {
           await supabase.from("profiles").insert({
             id: uid,
             user_id: uid,
-            username: email?.split('@')[0] || uid.slice(0, 8),
+            username: finalUsername,
             display_name: name,
             account_type: kind,
             avatar_url: res.user.photoURL
