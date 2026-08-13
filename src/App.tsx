@@ -116,7 +116,7 @@ const AdminOSLayout = lazy(() => import("./pages/NotFound"));
 const AdminOSDashboard = lazy(() => import("./pages/admin-os/AdminOSDashboard"));
 const AppointmentsPanel = lazy(() => import("./pages/admin-os/AppointmentsPanel"));
 const RoutingOverview = lazy(() => import("./pages/NotFound"));
-const ApprovalsInbox = lazy(() => import("./pages/NotFound"));
+const ApprovalsInbox = lazy(() => import("./pages/admin-os/ApprovalsInbox"));
 const AdminOSModulePlaceholder = lazy(() => import("./pages/NotFound"));
 const AdminOSNoAccess = lazy(() => import("./pages/NotFound"));
 const AdminOSFirstLogin = lazy(() => import("./pages/NotFound"));
@@ -440,6 +440,7 @@ const App = () => (
                   <Route path="/admin-os/verification" element={<AdminOSVerificationQueue />} />
                   <Route path="/admin-os/appointments" element={<AppointmentsPanel />} />
                   <Route path="/admin-os/dashboard" element={<AdminOSDashboard />} />
+                  <Route path="/admin-os/approvals" element={<ApprovalsInbox />} />
                   <Route path="/" element={<Feed />} />
                   <Route path="/reels" element={<Reels />} />
                   <Route path="/discover" element={<Discover />} />
