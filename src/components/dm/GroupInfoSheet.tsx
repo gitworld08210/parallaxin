@@ -23,24 +23,19 @@ export const GroupInfoSheet = ({
 
   useEffect(() => {
     if (!open) return;
-    (async () => {
-        .from("conversation_participants")
-        .select("user_id, role, profile:profiles!conv_participants_user_profile_fkey(username, display_name, avatar_url)")
-        .eq("conversation_id", conversationId);
-      setMembers((data ?? []) as any);
-    })();
+    // Data fetching logic removed.
+    setMembers([]);
   }, [open, conversationId]);
 
   const remove = async (uid: string) => {
     if (!confirm("Remove this member?")) return;
-    if (error) toast.error(error.message);
-    else { setMembers((m) => m.filter((x) => x.user_id !== uid)); toast.success("Removed"); }
+    toast.info("Group management moving to Firestore...");
   };
 
   const leave = async () => {
     if (!confirm("Leave this group?")) return;
-    if (error) toast.error(error.message);
-    else { onOpenChange(false); nav("/messages"); }
+    onOpenChange(false); 
+    nav("/messages");
   };
 
   return (
