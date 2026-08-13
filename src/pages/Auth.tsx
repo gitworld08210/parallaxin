@@ -85,7 +85,7 @@ const Auth = () => {
         if (kind === "organization") localStorage.setItem(ORG_INTENT_KEY, "organization");
         const res = await createUserWithEmailAndPassword(auth, email.trim(), password);
         
-        await setDoc(doc(db, "profiles", res.user.uid), {
+        const initialProfile = {
           id: res.user.uid,
           user_id: res.user.uid,
           email: email.trim(),
@@ -94,7 +94,16 @@ const Auth = () => {
           account_type: kind,
           onboarded_at: null,
           created_at: serverTimestamp()
-        });
+        };
+
+        // Try Firestore write first
+        try {
+          await setDoc(doc(db, "profiles", res.user.uid), initialProfile);
+        } catch (e: any) {
+          console.error("Firestore initial profile write failed:", e);
+          // If Firestore fails due to permissions, the toast will show it below
+          throw e; 
+        }
 
         try {
           await supabase.from("profiles").insert({
