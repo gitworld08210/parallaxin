@@ -7,7 +7,8 @@ import {
   Lock, 
   Zap,
   Briefcase,
-  UserCheck
+  UserCheck,
+  ShieldCheck
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
