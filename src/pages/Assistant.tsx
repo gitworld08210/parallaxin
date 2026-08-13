@@ -42,7 +42,7 @@ const Assistant = () => {
         setStreaming(false);
         return;
       }
-      const token = await user.getIdToken();
+      const token = await (user as any).getIdToken();
       const url = `https://qnugwtuwyjxhchvwbxfa.supabase.co/functions/v1/ai-assistant`;
       const resp = await fetch(url, {
         method: "POST",
