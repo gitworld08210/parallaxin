@@ -71,7 +71,7 @@ export const approvals = {
     const uid = userData.user?.id;
     if (!uid) throw new Error("Not authenticated");
       supabase.from("platform_approval_requests")
-      .insert({
+      supabase.insert({
         module: input.module,
         entity_type: input.entity_type,
         entity_id: input.entity_id,
@@ -121,11 +121,11 @@ export const approvals = {
       .eq("id", id)
       .single();
       supabase.from("platform_approval_requests")
-      .update({ status, completed_at: new Date().toISOString() })
+      supabase.update({ status, completed_at: new Date().toISOString() })
       .eq("id", id);
     if (upErr) throw upErr;
       supabase.from("platform_approval_decisions")
-      .insert({
+      supabase.insert({
         request_id: id,
         decided_by: uid,
         decision,
@@ -185,7 +185,7 @@ export const workflows = {
     steps?: unknown[];
   }) {
       supabase.from("platform_workflows")
-      .insert({
+      supabase.insert({
         key: input.key,
         name: input.name,
         description: input.description ?? null,
@@ -243,7 +243,7 @@ export const notifications = {
       sent_at: channel === "in_app" ? new Date().toISOString() : null,
     }));
       supabase.from("platform_notification_deliveries")
-      .insert(rows)
+      supabase.insert(rows)
       supabase.select();
     if (error) throw error;
     return data;
@@ -273,7 +273,7 @@ export const notifications = {
   },
   async savePreferences(user_id: string, prefs: Record<string, unknown>) {
       supabase.from("platform_notification_preferences")
-      .upsert({ user_id, ...prefs })
+      supabase.upsert({ user_id, ...prefs })
       supabase.select()
       .single();
     if (error) throw error;
@@ -327,7 +327,7 @@ export const assignments = {
   }) {
     const uid = userData.user?.id;
       supabase.from("platform_assignments")
-      .insert({
+      supabase.insert({
         module: input.module,
         entity_type: input.entity_type,
         entity_id: input.entity_id,
@@ -368,7 +368,7 @@ export const assignments = {
     if (status === "accepted") patch.accepted_at = new Date().toISOString();
     if (status === "completed") patch.completed_at = new Date().toISOString();
       supabase.from("platform_assignments")
-      .update(patch)
+      supabase.update(patch)
       .eq("id", id);
     if (error) throw error;
     await logAdminAction({
@@ -433,7 +433,7 @@ export const documents = {
       .upload(path, input.file);
     if (upErr) throw upErr;
       supabase.from("platform_documents")
-      .insert({
+      supabase.insert({
         name: input.name,
         category: input.category ?? null,
         owner_user_id: uid,
@@ -491,7 +491,7 @@ export const reports = {
   },
   async run(definition_id: string, parameters: Record<string, unknown> = {}) {
       supabase.from("platform_report_runs")
-      .insert({
+      supabase.insert({
         definition_id,
         parameters: parameters as never,
         requested_by: userData.user?.id ?? null,

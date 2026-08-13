@@ -117,7 +117,7 @@ export default function LiveHost() {
       // 2) Create the stream record
       const roomName = `live_${user.id}_${Date.now()}`;
         supabase.from("live_streams")
-        .insert({
+        supabase.insert({
           host_id: user.id,
           title: title || null,
           livekit_room: roomName,
@@ -164,7 +164,7 @@ export default function LiveHost() {
       roomRef.current = null;
       if (streamId) {
           supabase.from("live_streams")
-          .update({ status: "ended", ended_at: new Date().toISOString() })
+          supabase.update({ status: "ended", ended_at: new Date().toISOString() })
           .eq("id", streamId);
       }
     } finally {

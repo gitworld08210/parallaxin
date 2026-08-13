@@ -74,7 +74,7 @@ const Onboarding = () => {
       // 2. Update Supabase (Secondary/Admin OS)
       try {
           supabase.from("profiles")
-          .update({
+          supabase.update({
             interests,
             onboarded_at: new Date().toISOString(),
           } as any)

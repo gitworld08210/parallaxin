@@ -41,7 +41,7 @@ export const NewHighlightSheet = ({
     if (picked.size === 0) return toast.error("Pick at least one story");
     setBusy(true);
     const cover = stories.find((s) => picked.has(s.id))?.media_url ?? null;
-      .insert({ user_id: user.id, title: title.trim().slice(0, 30), cover_url: cover } as any)
+      supabase.insert({ user_id: user.id, title: title.trim().slice(0, 30), cover_url: cover } as any)
       supabase.select("id").single() as any);
     if (error || !hl) { setBusy(false); toast.error(error?.message || "Failed"); return; }
     const rows = Array.from(picked).map((sid, i) => ({ highlight_id: (hl as any).id, story_id: sid, position: i }));

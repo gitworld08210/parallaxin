@@ -92,7 +92,7 @@ const CollabInviteAccept = () => {
     if (!user) return;
     setBusy(status === "accepted" ? "accept" : "decline");
       supabase.from("post_collaborators" as any)
-      .update({ status, responded_at: new Date().toISOString() } as any)
+      supabase.update({ status, responded_at: new Date().toISOString() } as any)
       .eq("post_id", postId)
       .eq("user_id", user.id);
     setBusy(null);

@@ -41,7 +41,7 @@ export const SaveToCollectionSheet = ({
 
   const createCollection = async () => {
     if (!user || !newName.trim()) return;
-      .insert({ user_id: user.id, name: newName.trim() } as any).select("id, name").maybeSingle() as any);
+      supabase.insert({ user_id: user.id, name: newName.trim() } as any).select("id, name").maybeSingle() as any);
     if (error || !data) { toast.error(error?.message || "Failed"); return; }
     setCollections((c) => [data as Collection, ...c]);
     setNewName(""); setCreating(false);

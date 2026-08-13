@@ -40,11 +40,11 @@ export const StoryStickersLayer = ({ storyId, isOwner, onPauseChange }: { storyI
     if (!user) return toast.error("Sign in");
     const existing = responses.find((r) => r.sticker_id === stickerId && r.user_id === user.id);
     if (existing) {
-        .update({ response: { option } } as any).eq("id", existing.id);
+        supabase.update({ response: { option } } as any).eq("id", existing.id);
       if (error) return toast.error(error.message);
       setResponses((prev) => prev.map((r) => r.id === existing.id ? { ...r, response: { option } } : r));
     } else {
-        .insert({ sticker_id: stickerId, user_id: user.id, response: { option } } as any)
+        supabase.insert({ sticker_id: stickerId, user_id: user.id, response: { option } } as any)
         supabase.select().single();
       if (error) return toast.error(error.message);
       setResponses((prev) => [...prev, data as any]);
@@ -53,7 +53,7 @@ export const StoryStickersLayer = ({ storyId, isOwner, onPauseChange }: { storyI
 
   const respondQA = async (stickerId: string, text: string) => {
     if (!user || !text.trim()) return;
-      .insert({ sticker_id: stickerId, user_id: user.id, response: { text: text.trim().slice(0, 300) } } as any)
+      supabase.insert({ sticker_id: stickerId, user_id: user.id, response: { text: text.trim().slice(0, 300) } } as any)
       supabase.select().single();
     if (error) return toast.error(error.message);
     setResponses((prev) => [...prev, data as any]);

@@ -67,7 +67,7 @@ const fetchRemote = async (uid: string): Promise<Stored | null> => {
 
 const saveRemote = async (uid: string, value: Stored) => {
     supabase.from("message_passcodes" as any)
-    .upsert(
+    supabase.upsert(
       {
         user_id: uid,
         hash: value.hash,

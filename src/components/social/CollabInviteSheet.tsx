@@ -38,7 +38,7 @@ export const CollabInviteSheet = ({ open, onOpenChange }: { open: boolean; onOpe
     if (!user) return;
     setBusy(postId);
       supabase.from("post_collaborators" as any)
-      .update({ status, responded_at: new Date().toISOString() } as any)
+      supabase.update({ status, responded_at: new Date().toISOString() } as any)
       .eq("post_id", postId).eq("user_id", user.id);
     setBusy(null);
     if (error) return toast.error(error.message);

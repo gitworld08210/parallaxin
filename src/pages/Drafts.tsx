@@ -37,7 +37,7 @@ const Drafts = () => {
   useEffect(() => { load(); /* eslint-disable-next-line */ }, [user?.id]);
 
   const publishNow = async (id: string) => {
-      .update({ status: "published" as any, scheduled_for: null })
+      supabase.update({ status: "published" as any, scheduled_for: null })
       .eq("id", id);
     if (error) return toast.error(error.message);
     toast.success("Published");
