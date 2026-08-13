@@ -92,7 +92,18 @@ const Feed = () => {
         )}
       >
         <header className="h-14 px-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
+            <SideMenu 
+              trigger={
+                <button className="h-8 w-8 rounded-full overflow-hidden ring-1 ring-white/10">
+                  {profile?.avatar_url ? (
+                    <img src={profile.avatar_url} alt="" className="h-full w-full object-cover" />
+                  ) : (
+                    <AuraAvatar gradient={gradientFor(profile?.username)} initials={initialsOf(displayName)} />
+                  )}
+                </button>
+              }
+            />
             <span className="font-serif italic text-2xl tracking-tighter">
               Parallax
             </span>
