@@ -69,6 +69,8 @@ const EditProfile = () => {
       const { doc, setDoc, serverTimestamp } = await import("firebase/firestore");
       const { db } = await import("@/lib/firebase");
       await setDoc(doc(db, "profiles", user.uid), {
+        id: user.uid,
+        user_id: user.uid,
         display_name: displayName,
         username,
         bio,

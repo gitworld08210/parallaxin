@@ -116,14 +116,20 @@ const Profile = () => {
       }
       
       // Fetch profile from Firestore
-      // Note: We'll search by username in Firestore 'profiles' collection
-      const qProf = query(
-        collection(db, "profiles"),
-        where("username", "==", target),
-        limit(1)
-      );
-      const snapProf = await getDocs(qProf);
-      const p = snapProf.docs.length > 0 ? ({ id: snapProf.docs[0].id, ...snapProf.docs[0].data() } as any) : null;
+      // 1. Try fetching by ID first (most reliable for "Me")
+      let profDoc = await getDoc(doc(db, "profiles", target));
+      let p = profDoc.exists() ? ({ id: profDoc.id, ...profDoc.data() } as any) : null;
+
+      // 2. If not found by ID, search by username
+      if (!p) {
+        const qProf = query(
+          collection(db, "profiles"),
+          where("username", "==", target),
+          limit(1)
+        );
+        const snapProf = await getDocs(qProf);
+        p = snapProf.docs.length > 0 ? ({ id: snapProf.docs[0].id, ...snapProf.docs[0].data() } as any) : null;
+      }
       
       setProfile(p as ProfileRow | null);
       setLoading(false);
@@ -264,14 +270,29 @@ const Profile = () => {
       </div>
     );
   }
-  if (!profile) {
+  if (!profile && !loading) {
     return (
-      <EmptyState
-        icon={Info}
-        title="Profile not found"
-        subtitle="This account may have been removed or the username is incorrect."
-        size="lg"
-      />
+      <div className="pb-24">
+        <header className="sticky top-0 z-30 h-14 px-3 flex items-center gap-3 bg-background/85 backdrop-blur-xl supports-[backdrop-filter]:bg-background/70 border-b border-border">
+          <button
+            onClick={() => nav(-1)}
+            className="p-2 -ml-2 rounded-full hover:bg-secondary/60 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            aria-label="Back"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </button>
+          <div className="min-w-0">
+            <p className="text-base font-bold leading-tight truncate">Profile</p>
+          </div>
+        </header>
+        <EmptyState
+          icon={Info}
+          title="Profile not found"
+          subtitle={`The user "@${username || (me?.username || 'user')}" could not be found. They may have changed their username or deleted their account.`}
+          size="lg"
+          cta={isMe ? { label: "Go to Onboarding", to: "/onboarding" } : undefined}
+        />
+      </div>
     );
   }
 

@@ -85,7 +85,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         
         const profileUnsubscribe = onSnapshot(doc(db, "profiles", firebaseUser.uid), (doc) => {
           if (doc.exists()) {
-            setProfile({ id: doc.id, ...doc.data() } as Profile);
+            const data = doc.data();
+            setProfile({ 
+              id: doc.id, 
+              ...data,
+              user_id: data.user_id || doc.id // Ensure user_id matches id for profile queries
+            } as Profile);
           } else {
             setProfile(null);
           }
