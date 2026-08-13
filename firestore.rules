@@ -29,8 +29,10 @@ service cloud.firestore {
       allow read: if request.auth != null && saveId.startsWith(request.auth.uid);
       allow write: if request.auth != null && saveId.startsWith(request.auth.uid);
     }
+    // Fallback for other collections to ensure basic functionality
     match /{document=**} {
-      allow read, write: if request.auth != null;
+      allow read: if request.auth != null;
+      allow write: if request.auth != null;
     }
   }
 }

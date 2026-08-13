@@ -57,6 +57,13 @@ const ProfileCreation = () => {
       };
 
       await setDoc(doc(db, "profiles", user.uid), profileData, { merge: true });
+      
+      // Update the usernames mapping for faster lookup
+      await setDoc(doc(db, "usernames", username.trim().toLowerCase()), { 
+        uid: user.uid,
+        updated_at: serverTimestamp()
+      });
+
       if (refreshProfile) await refreshProfile();
       
       toast.success("Profile created!");
