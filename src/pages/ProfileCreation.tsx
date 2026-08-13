@@ -43,8 +43,8 @@ const ProfileCreation = () => {
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
-    if (!username.trim() || !displayName.trim()) {
-      toast.error("Username and Display Name are required");
+    if (!displayName.trim()) {
+      toast.error("Display Name is required");
       return;
     }
 
@@ -57,23 +57,30 @@ const ProfileCreation = () => {
         avatarUrl = await getDownloadURL(avatarRef);
       }
 
-      const cleanUsername = username.trim().toLowerCase().replace(/[^a-z0-9._]/g, "");
+      // Generate a default username if not provided
+      const finalUsername = username.trim() 
+        ? username.trim().toLowerCase().replace(/[^a-z0-9._]/g, "")
+        : `${displayName.trim().toLowerCase().replace(/[^a-z0-9._]/g, "")}${Math.floor(1000 + Math.random() * 9000)}`;
       
       const profileData = {
         id: user.uid,
         user_id: user.uid,
         display_name: displayName.trim(),
-        username: cleanUsername,
+        username: finalUsername,
         bio: bio.trim(),
         location: location.trim(),
         website: website.trim(),
         avatar_url: avatarUrl,
         updated_at: serverTimestamp(),
         onboarded_at: serverTimestamp(),
+        followers_count: 0,
+        following_count: 0,
+        posts_count: 0,
+        verified: false,
       };
 
       await setDoc(doc(db, "profiles", user.uid), profileData, { merge: true });
-      await setDoc(doc(db, "usernames", cleanUsername), { 
+      await setDoc(doc(db, "usernames", finalUsername), { 
         user_id: user.uid, 
         updated_at: serverTimestamp() 
       });
@@ -120,6 +127,10 @@ const ProfileCreation = () => {
           </div>
         </div>
 
+        <p className="text-zinc-500 text-[10px] mb-6 text-center italic opacity-60">
+          Only Display Name is mandatory. You can skip the rest.
+        </p>
+
         <form onSubmit={handleCreate} className="w-full space-y-4">
           <div className="space-y-3">
             <input 
@@ -130,10 +141,9 @@ const ProfileCreation = () => {
               className="w-full bg-zinc-900 border border-white/10 rounded-xl px-4 py-3 text-sm outline-none focus:border-primary/50 transition-all placeholder:text-zinc-600" 
             />
             <input 
-              required 
               value={username} 
               onChange={e => setUsername(e.target.value)} 
-              placeholder="Unique Username" 
+              placeholder="Username (Optional)" 
               className="w-full bg-zinc-900 border border-white/10 rounded-xl px-4 py-3 text-sm outline-none focus:border-primary/50 transition-all placeholder:text-zinc-600" 
             />
             <textarea 
