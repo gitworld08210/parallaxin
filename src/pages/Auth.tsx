@@ -121,7 +121,10 @@ const Auth = () => {
           id: uid,
           user_id: uid,
           email,
+          display_name: name,
+          username: email?.split('@')[0] || uid.slice(0, 8),
           account_type: kind,
+          avatar_url: res.user.photoURL,
           onboarded_at: null,
           created_at: serverTimestamp()
         });
