@@ -53,13 +53,15 @@ const ProfileCreation = () => {
         website: website.trim(),
         avatar_url: avatarUrl,
         updated_at: serverTimestamp(),
+        onboarded_at: serverTimestamp(), // Mark as onboarded immediately after profile creation
       };
 
       await setDoc(doc(db, "profiles", user.uid), profileData, { merge: true });
       if (refreshProfile) await refreshProfile();
       
       toast.success("Profile created!");
-      nav("/onboarding");
+      nav("/", { replace: true }); // Go straight to feed like Instagram/X
+
     } catch (error: any) {
       console.error(error);
       toast.error(error.message || "Failed to create profile");
