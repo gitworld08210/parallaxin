@@ -11,6 +11,7 @@ import { useAuth } from "@/contexts/AuthProvider";
 import { fmt, gradientFor, initialsOf } from "@/lib/format";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { setDoc, doc, deleteDoc, serverTimestamp } from "firebase/firestore";
 
 type Profile = {
   user_id: string;
@@ -73,11 +74,18 @@ const Discover = () => {
     const next = new Set(following);
     if (isF) {
       next.delete(target); setFollowing(next);
+      await deleteDoc(doc(db, "follows", `${user.id}_${target}`));
     } else {
       next.add(target); setFollowing(next);
-      const error = null;
-      if (error) { next.delete(target); setFollowing(new Set(next)); toast.error("Follow failed"); }
-
+      try {
+        await setDoc(doc(db, "follows", `${user.id}_${target}`), {
+          follower_id: user.id,
+          following_id: target,
+          created_at: serverTimestamp()
+        });
+      } catch (e) {
+        next.delete(target); setFollowing(new Set(next)); toast.error("Follow failed");
+      }
     }
   };
 

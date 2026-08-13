@@ -70,27 +70,32 @@ const ReelCompose = () => {
         if (mod?.flagged) throw new Error(mod.reason || "Caption flagged");
       }
       const url = await uploadToCloudinary(file);
-      const { data: inserted, error } = await supabase.from("posts").insert({
+      const { doc, addDoc, collection, serverTimestamp } = await import("firebase/firestore");
+      const { db } = await import("@/lib/firebase");
+      
+      const postRef = await addDoc(collection(db, "posts"), {
         user_id: user.id,
         content: content.trim() + (music ? `\n\n🎵 ${music}` : ""),
         media_url: url,
         media_type: "video",
         is_reel: true,
+        status: "published",
         like_count: 0,
         comment_count: 0,
+        created_at: serverTimestamp(),
         profile: {
-          username: (profile as any)?.username || "",
-          display_name: (profile as any)?.display_name || "User",
-          avatar_url: (profile as any)?.avatar_url || null,
-          verified: !!(profile as any)?.verified,
+          username: profile?.username || "",
+          display_name: profile?.display_name || "User",
+          avatar_url: profile?.avatar_url || null,
+          verified: !!profile?.verified,
         }
-      } as any).select("id").single();
-      if (error) throw error;
-      if (certify && inserted?.id) {
-        void reliableInvoke("ownership-certify", { body: { post_id: inserted.id }, retries: 1 });
+      });
+      const newId = postRef.id;
+      if (certify && newId) {
+        void reliableInvoke("ownership-certify", { body: { post_id: newId }, retries: 1 });
       }
-      if (inserted?.id) {
-        void reliableInvoke("authenticity-score", { body: { post_id: inserted.id }, retries: 1 });
+      if (newId) {
+        void reliableInvoke("authenticity-score", { body: { post_id: newId }, retries: 1 });
       }
       toast.success("Reel posted ✦");
       nav("/reels");

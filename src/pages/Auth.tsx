@@ -7,10 +7,11 @@ import {
   createUserWithEmailAndPassword, 
   signInWithPopup,
 } from "firebase/auth";
-import { doc, setDoc, getDoc } from "firebase/firestore";
+import { doc, setDoc, getDoc, serverTimestamp } from "firebase/firestore";
 import { useAuth } from "@/contexts/AuthProvider";
 import { toast } from "sonner";
 import { Sparkles, ArrowLeft } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 type Tab = "signin" | "signup";
 type AccountKind = "personal" | "organization";
@@ -89,8 +90,21 @@ const Auth = () => {
         email: email.trim(),
         account_type: kind,
         onboarded_at: null,
-        created_at: new Date().toISOString()
+        created_at: serverTimestamp()
       });
+
+      // Mirror to Supabase for admin/internal tools
+      try {
+        await supabase.from("profiles").insert({
+          id: userCredential.user.uid,
+          user_id: userCredential.user.uid,
+          username: email.trim().split('@')[0],
+          display_name: email.trim().split('@')[0],
+          account_type: kind
+        } as any);
+      } catch (e) {
+        console.warn("Supabase mirroring failed", e);
+      }
 
       toast.success("Account created successfully");
       await routeForUser(userCredential.user.uid);
@@ -106,14 +120,32 @@ const Auth = () => {
       // Check if profile exists, if not create it
       const profSnap = await getDoc(doc(db, "profiles", userCredential.user.uid));
       if (!profSnap.exists()) {
-        await setDoc(doc(db, "profiles", userCredential.user.uid), {
-          id: userCredential.user.uid,
-          user_id: userCredential.user.uid,
-          email: userCredential.user.email,
+        const uid = userCredential.user.uid;
+        const email = userCredential.user.email;
+        const name = userCredential.user.displayName || email?.split('@')[0] || "User";
+        
+        await setDoc(doc(db, "profiles", uid), {
+          id: uid,
+          user_id: uid,
+          email: email,
           account_type: kind,
           onboarded_at: null,
-          created_at: new Date().toISOString()
+          created_at: serverTimestamp()
         });
+
+        // Mirror to Supabase
+        try {
+          await supabase.from("profiles").insert({
+            id: uid,
+            user_id: uid,
+            username: email?.split('@')[0] || uid.slice(0, 8),
+            display_name: name,
+            account_type: kind,
+            avatar_url: userCredential.user.photoURL
+          } as any);
+        } catch (e) {
+          console.warn("Supabase mirroring failed", e);
+        }
       }
       
       toast.success("Signed in with Google");

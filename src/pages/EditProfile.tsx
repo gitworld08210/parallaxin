@@ -65,10 +65,11 @@ const EditProfile = () => {
     setBusy(true);
     
     try {
-      // 1. Dual-write Profile to Firestore
+      // 1. Update Profile in Firestore (Primary Source of Truth)
       const { doc, setDoc, serverTimestamp } = await import("firebase/firestore");
       const { db } = await import("@/lib/firebase");
-      await setDoc(doc(db, "profiles", user.uid), {
+      
+      const profileData = {
         id: user.uid,
         user_id: user.uid,
         display_name: displayName,
@@ -77,22 +78,31 @@ const EditProfile = () => {
         avatar_url: avatar,
         cover_url: cover,
         updated_at: serverTimestamp(),
-      }, { merge: true });
-    } catch (e) {
-      console.warn("Firestore profile update failed", e);
+      };
+
+      await setDoc(doc(db, "profiles", user.uid), profileData, { merge: true });
+
+      // 2. Sync to Supabase for backend triggers/legacy logic
+      try {
+        await supabase.from("profiles").update({
+          display_name: displayName, 
+          username, 
+          bio, 
+          avatar_url: avatar, 
+          cover_url: cover,
+        } as any).eq("user_id", user.uid);
+      } catch (err) {
+        console.warn("Supabase sync failed, continuing...", err);
+      }
+
+      await refreshProfile();
+      toast.success("Profile saved");
+      nav("/profile");
+    } catch (e: any) { 
+      toast.error(e.message || "Action failed"); 
+    } finally {
+      setBusy(false);
     }
-
-    // 2. Update Supabase (Legacy)
-    const { error } = await supabase.from("profiles").update({
-      display_name: displayName, username, bio, avatar_url: avatar, cover_url: cover,
-    } as any).eq("user_id", user.uid);
-
-    setBusy(false);
-    if (error) return toast.error(error.message);
-
-    await refreshProfile();
-    toast.success("Profile saved");
-    nav("/profile");
   };
 
   if (!profile) return <p className="p-10 text-center text-sm text-muted-foreground">Loading…</p>;

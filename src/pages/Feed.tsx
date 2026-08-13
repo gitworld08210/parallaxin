@@ -30,20 +30,20 @@ const Feed = () => {
     setLoading(true);
 
     try {
-      // Mutes/Blocks/Follows migration needed. For now, we load all public Firestore posts.
-      const qFirestore = query(
+      // Load posts from Firestore
+      const q = query(
         collection(db, "posts"),
+        where("status", "==", "published"),
         where("is_reel", "==", false),
         orderBy("created_at", "desc"),
         limit(30)
       );
-      const postsSnap = await getDocs(qFirestore);
-      const postsData = postsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      const snap = await getDocs(q);
+      const postsData = snap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as any[];
 
-      // Mocking visibility filter until social graph is in Firestore
-      const visible = postsData as any[];
-
-      setPosts(visible.map((d: any) => ({ ...d, liked: false })));
+      // In Firestore version, 'liked' is usually handled by checking a sub-collection or a separate 'likes' collection.
+      // For now, we'll initialize liked: false and handle real liked status via PostCard.
+      setPosts(postsData.map(d => ({ ...d, liked: false })));
     } catch (err) {
       console.error("Error loading feed:", err);
     } finally {

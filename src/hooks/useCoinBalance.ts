@@ -1,7 +1,7 @@
-import { supabase } from "@/integrations/supabase/client";
 import { useCallback, useEffect, useState } from "react";
-
 import { useAuth } from "@/contexts/AuthProvider";
+import { doc, getDoc, onSnapshot } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 
 export function useCoinBalance() {
   const { user } = useAuth();
@@ -12,33 +12,28 @@ export function useCoinBalance() {
     if (!user) { setBalance(0); setLoading(false); return; }
     
     try {
-      // 1. Check Firestore (Primary)
-      const { doc, getDoc } = await import("firebase/firestore");
-      const { db } = await import("@/lib/firebase");
       const snap = await getDoc(doc(db, "wallets", user.id));
       if (snap.exists()) {
         setBalance(snap.data().total || 0);
-        setLoading(false);
-        return;
       }
     } catch (e) {
-      console.warn("Firestore wallet fetch failed, falling back to legacy", e);
+      console.warn("Firestore wallet fetch failed", e);
+    } finally {
+      setLoading(false);
     }
-
-    // 2. Legacy Supabase Fallback.
-    const { data } = await supabase.from("profiles_private").select("coin_balance").eq("user_id", user.id).maybeSingle();
-    setBalance((data as any)?.coin_balance ?? 0);
-    setLoading(false);
   }, [user?.id]);
 
   useEffect(() => { refresh(); }, [refresh]);
 
   useEffect(() => {
     if (!user) return;
-      supabase.channel(`coin-balance:${user.id}`).
-on("postgres_changes", { event: "*", schema: "public", table: "profiles_private", filter: `user_id=eq.${user.id}` }, refresh).
-subscribe();
-  }, [user?.id, refresh]);
+    const unsubscribe = onSnapshot(doc(db, "wallets", user.id), (snap) => {
+      if (snap.exists()) {
+        setBalance(snap.data().total || 0);
+      }
+    });
+    return () => unsubscribe();
+  }, [user?.id]);
 
   return { balance, loading, refresh };
 }

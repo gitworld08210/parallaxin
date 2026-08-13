@@ -109,8 +109,18 @@ const Messages = () => {
     if (!q) { setResults([]); return; }
     let cancelled = false;
     const t = setTimeout(async () => {
-      const { data } = await supabase.from("profiles").select("user_id, username, display_name, avatar_url, verification_kind").or(`username.ilike.%${q}%,display_name.ilike.%${q}%`).neq("user_id", user?.id ?? "").limit(12);
-      if (!cancelled) setResults((data as any) ?? []);
+      try {
+        const profQ = firestoreQuery(
+          collection(db, "profiles"),
+          where("username", ">=", q.toLowerCase()),
+          where("username", "<=", q.toLowerCase() + "\uf8ff"),
+          limit(12)
+        );
+        const snap = await getDocs(profQ);
+        if (!cancelled) setResults(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as any);
+      } catch (e) {
+        console.warn("Firestore search failed", e);
+      }
     }, 220);
     return () => { cancelled = true; clearTimeout(t); };
   }, [composerQuery, user?.id]);

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
-
 import { useAuth } from "@/contexts/AuthProvider";
-import { supabase } from "@/integrations/supabase/client";
+import { collection, query, where, orderBy, limit as firestoreLimit, getDocs } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 
 export type LedgerRow = {
   id: string;
@@ -23,43 +23,59 @@ export function useWalletLedger(limit = 40) {
     setLoading(true);
     const uid = user.id;
 
+    const fetchCol = async (col: string, userIdKey = "user_id") => {
+      try {
+        const q = query(
+          collection(db, col),
+          where(userIdKey, "==", uid),
+          orderBy("created_at", "desc"),
+          firestoreLimit(limit)
+        );
+        const snap = await getDocs(q);
+        return snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      } catch (e) {
+        console.warn(`Failed to fetch ${col} from Firestore`, e);
+        return [];
+      }
+    };
+
     const [coinTxns, tipsSent, tipsRecv, giftsSent, unlocks, payouts, topups] = await Promise.all([
-      supabase.from("coin_transactions" as any).select("*").eq("user_id", uid).order("created_at", { ascending: false }).limit(limit),
-      supabase.from("tips" as any).select("*").eq("sender_id", uid).order("created_at", { ascending: false }).limit(limit),
-      supabase.from("tips" as any).select("*").eq("recipient_id", uid).order("created_at", { ascending: false }).limit(limit),
-      supabase.from("live_gifts" as any).select("*").eq("sender_id", uid).order("created_at", { ascending: false }).limit(limit),
-      supabase.from("post_unlocks" as any).select("*").eq("user_id", uid).order("created_at", { ascending: false }).limit(limit),
-      supabase.from("creator_payout_requests" as any).select("*").eq("user_id", uid).order("created_at", { ascending: false }).limit(limit),
-      supabase.from("coin_topups" as any).select("*").eq("user_id", uid).order("created_at", { ascending: false }).limit(limit),
+      fetchCol("coin_transactions"),
+      fetchCol("tips", "sender_id"),
+      fetchCol("tips", "recipient_id"),
+      fetchCol("live_gifts", "sender_id"),
+      fetchCol("post_unlocks"),
+      fetchCol("creator_payout_requests"),
+      fetchCol("coin_topups"),
     ]);
 
     const out: LedgerRow[] = [];
-    (coinTxns.data ?? []).forEach((r: any) => out.push({
+    (coinTxns).forEach((r: any) => out.push({
       id: `coin-${r.id}`, kind: "coin",
       label: r.kind === "purchase" ? "Coins purchased" : r.kind === "subscription" ? "Creator subscription" : r.kind === "gift" ? "Gift sent" : r.kind,
       amount: r.amount, currency: "coins", created_at: r.created_at,
     }));
-    (tipsSent.data ?? []).forEach((r: any) => out.push({
+    (tipsSent).forEach((r: any) => out.push({
       id: `ts-${r.id}`, kind: "tip_sent", label: "Tip sent",
       amount: -r.amount_cents, currency: "inr", status: r.status, created_at: r.created_at,
     }));
-    (tipsRecv.data ?? []).forEach((r: any) => out.push({
+    (tipsRecv).forEach((r: any) => out.push({
       id: `tr-${r.id}`, kind: "tip_received", label: "Tip received",
       amount: r.net_cents, currency: "inr", status: r.status, created_at: r.created_at,
     }));
-    (giftsSent.data ?? []).forEach((r: any) => out.push({
+    (giftsSent).forEach((r: any) => out.push({
       id: `gs-${r.id}`, kind: "gift_sent", label: "Live gift sent",
       amount: -r.coins_total, currency: "coins", created_at: r.created_at,
     }));
-    (unlocks.data ?? []).forEach((r: any) => out.push({
+    (unlocks).forEach((r: any) => out.push({
       id: `u-${r.id}`, kind: "unlock", label: "Post unlocked",
       amount: -r.amount_cents, currency: "inr", status: r.status, created_at: r.created_at,
     }));
-    (payouts.data ?? []).forEach((r: any) => out.push({
+    (payouts).forEach((r: any) => out.push({
       id: `p-${r.id}`, kind: "payout", label: "Payout",
       amount: -r.amount_cents, currency: "inr", status: r.status, created_at: r.created_at,
     }));
-    (topups.data ?? []).forEach((r: any) => out.push({
+    (topups).forEach((r: any) => out.push({
       id: `t-${r.id}`, kind: "topup",
       label: r.status === "approved" ? `Top-up ${r.coins} coins` : `Top-up ${r.coins} coins (${r.status.replace("_"," ")})`,
       amount: r.status === "approved" ? r.coins : 0, currency: "coins", status: r.status, created_at: r.created_at,

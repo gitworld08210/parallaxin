@@ -6,7 +6,7 @@ import {
 } from "lucide-react";
 import { TipSheet } from "@/components/social/TipSheet";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { doc, getDoc, setDoc, deleteDoc, updateDoc, increment, arrayUnion, arrayRemove, collection, addDoc, query, where, getDocs } from "firebase/firestore";
+import { doc, getDoc, setDoc, deleteDoc, updateDoc, increment, arrayUnion, arrayRemove, collection, addDoc, query, where, getDocs, serverTimestamp } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/contexts/AuthProvider";
 import { AuraAvatar } from "@/components/vibe/AuraAvatar";
@@ -124,8 +124,15 @@ export const PostCard = ({ post, onOpenComments }: { post: FeedPost; onOpenComme
       const postRef = doc(db, "posts", post.id);
 
       if (next) {
+        await setDoc(likeRef, {
+          user_id: user.id,
+          post_id: post.id,
+          created_at: serverTimestamp()
+        });
+        await updateDoc(postRef, { like_count: increment(1) });
       } else {
         await deleteDoc(likeRef);
+        await updateDoc(postRef, { like_count: increment(-1) });
       }
     } catch (error: any) {
       console.error("Error toggling like:", error);
