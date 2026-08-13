@@ -28,62 +28,21 @@ const Feed = () => {
   const load = async () => {
     setLoading(true);
 
-    // Mutes/Blocks/Follows still on Supabase for now (Step 2.C)
-    const blocksOut = user ? (supabase.from("blocks" as any).select("blocked_id").eq("blocker_id", user.id) as any) : Promise.resolve({ data: [] });
-    const blocksIn = user ? (supabase.from("blocks" as any).select("blocker_id").eq("blocked_id", user.id) as any) : Promise.resolve({ data: [] });
-    const mutesP = user ? (supabase.from("mutes" as any).select("muted_id").eq("muter_id", user.id) as any) : Promise.resolve({ data: [] });
-    const followsP = (tab === "following" && user)
-      ? supabase.from("follows").select("following_id").eq("follower_id", user.id)
-      : Promise.resolve({ data: null as any });
-
+    // Mutes/Blocks/Follows migration needed. For now, we load all public Firestore posts.
     const qFirestore = query(
       collection(db, "posts"),
       where("is_reel", "==", false),
       orderBy("created_at", "desc"),
       limit(30)
     );
-    const postsP = getDocs(qFirestore);
-
-    const [{ data: bOut }, { data: bIn }, { data: mu }, followsRes, postsSnap] = await Promise.all([
-      blocksOut, blocksIn, mutesP, followsP, postsP,
-    ]);
-
+    const postsSnap = await getDocs(qFirestore);
     const postsData = postsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-    const excluded = new Set<string>();
-    (bOut ?? []).forEach((x: any) => excluded.add(x.blocked_id));
-    (bIn ?? []).forEach((x: any) => excluded.add(x.blocker_id));
-    (mu ?? []).forEach((x: any) => excluded.add(x.muted_id));
-
-    let visible = (postsData ?? []).filter((d: any) => !excluded.has(d.user_id));
-
-    if (tab === "following" && user) {
-      const followIds = new Set(((followsRes as any).data ?? []).map((f: any) => f.following_id));
-      visible = visible.filter((d: any) => followIds.has(d.user_id));
-    }
+    // Mocking visibility filter until social graph is in Firestore
+    const visible = postsData as any[];
 
     setPosts(visible.map((d: any) => ({ ...d, liked: false })));
     setLoading(false);
-
-    if (user && visible.length) {
-      supabase.from("likes").select("post_id").eq("user_id", user.id)
-        .in("post_id", visible.map((d: any) => d.id))
-        .then(({ data: l }) => {
-          const liked = new Set((l ?? []).map((x: any) => x.post_id));
-          setPosts((cur) => cur.map((p) => ({ ...p, liked: liked.has(p.id) })));
-        });
-    }
-
-    if (tab === "foryou" && user && visible.length) {
-      supabase.functions.invoke("rank-foryou", { body: {} }).then(({ data }) => {
-        const ids: string[] | undefined = data?.post_ids;
-        if (!Array.isArray(ids) || !ids.length) return;
-        const order = new Map(ids.map((id, i) => [id, i]));
-        setPosts((cur) => [...cur].sort(
-          (a, b) => (order.get(a.id) ?? 999) - (order.get(b.id) ?? 999),
-        ));
-      }).catch(() => {});
-    }
   };
 
   useEffect(() => { load(); /* eslint-disable-next-line */ }, [tab, user?.id]);
