@@ -154,7 +154,7 @@ const SkillsCenter = lazy(() => import("./pages/NotFound"));
 const CertificationCenter = lazy(() => import("./pages/NotFound"));
 const DepartmentSkillMatrix = lazy(() => import("./pages/NotFound"));
 const CareerRoadmapsPage = lazy(() => import("./pages/NotFound"));
-const RecruitmentIndex = lazy(() => import("./pages/NotFound"));
+const RecruitmentIndex = lazy(() => import("./pages/admin-os/RecruitmentCenter"));
 const HiringRequestCenter = lazy(() => import("./pages/NotFound"));
 const CandidateDirectory = lazy(() => import("./pages/NotFound"));
 const CandidateDetail = lazy(() => import("./pages/NotFound"));
@@ -441,6 +441,7 @@ const App = () => (
                   <Route path="/admin-os/appointments" element={<AppointmentsPanel />} />
                   <Route path="/admin-os/dashboard" element={<AdminOSDashboard />} />
                   <Route path="/admin-os/approvals" element={<ApprovalsInbox />} />
+                  <Route path="/admin-os/recruitment" element={<RecruitmentIndex />} />
                   <Route path="/" element={<Feed />} />
                   <Route path="/reels" element={<Reels />} />
                   <Route path="/discover" element={<Discover />} />
