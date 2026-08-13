@@ -29,15 +29,13 @@ const ForgotPassword = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white flex items-center justify-center p-6 relative overflow-hidden">
-      {/* Background Decor */}
-      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary/20 blur-[120px] rounded-full pointer-events-none" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-accent/10 blur-[120px] rounded-full pointer-events-none" />
+    <div className="min-h-screen bg-black text-white flex items-center justify-center sm:p-6 relative overflow-hidden">
+      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary/10 blur-[120px] rounded-full pointer-events-none" />
       
       <motion.div 
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-[440px] relative z-10"
+        className="w-full max-w-[400px] min-h-screen sm:min-h-0 sm:aspect-[9/19.5] relative z-10 bg-black sm:border sm:border-white/10 sm:rounded-[3rem] sm:shadow-2xl flex flex-col items-center pt-24 px-10 pb-10"
       >
         <div className="text-center mb-10">
           <Link to="/auth" className="inline-flex items-center gap-2 text-muted-foreground hover:text-white transition-colors mb-8 group">
@@ -65,42 +63,39 @@ const ForgotPassword = () => {
         {!sent ? (
           <form onSubmit={handleReset} className="space-y-6">
             <div className="relative">
-              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground">
-                <Mail className="h-5 w-5" />
-              </div>
               <input 
                 type="email" 
                 required
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 placeholder="Email address"
-                className="w-full bg-[#111] border border-white/5 rounded-2xl pl-12 pr-4 py-4 text-[15px] outline-none focus:border-primary/50 transition-colors"
+                className="w-full bg-[#121212] border border-white/10 rounded-md pl-4 pr-4 py-3 text-[14px] outline-none focus:border-white/20 transition-all placeholder:text-zinc-500"
               />
             </div>
 
             <button 
               type="submit"
               disabled={busy || !email}
-              className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-4 rounded-2xl shadow-glow transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2"
+              className="w-full bg-[#0095F6] hover:bg-[#1877F2] text-white font-semibold py-2 rounded-lg transition-all active:opacity-70 disabled:opacity-50 text-sm"
             >
               {busy ? "Sending..." : "Send Reset Link"}
-              {!busy && <ChevronRight className="h-5 w-5" />}
             </button>
           </form>
         ) : (
           <button 
             onClick={() => setSent(false)}
-            className="w-full bg-[#111] border border-white/5 hover:bg-white/5 text-white font-bold py-4 rounded-2xl transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+            className="w-full bg-[#121212] border border-white/10 hover:bg-white/5 text-white font-semibold py-2 rounded-lg transition-all active:scale-[0.98] text-sm"
           >
             Try another email
           </button>
+        </div>
         )}
 
-        <div className="mt-8 text-center">
-          <p className="text-sm text-muted-foreground">
-            Remembered your password?{" "}
-            <Link to="/auth" className="text-primary font-bold hover:underline">
-              Sign in
+        <div className="w-full mt-auto pt-6 border-t border-white/10">
+          <p className="text-[14px] text-center text-white">
+            Remembered?{" "}
+            <Link to="/auth" className="text-[#0095F6] font-semibold hover:text-[#1877F2]">
+              Log in
             </Link>
           </p>
         </div>
