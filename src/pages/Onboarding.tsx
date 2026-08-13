@@ -64,13 +64,15 @@ const Onboarding = () => {
     setSaving(true);
     try {
       // 1. Update Firestore (Primary)
-      const { doc, setDoc } = await import("firebase/firestore");
+      const { doc, setDoc, serverTimestamp } = await import("firebase/firestore");
       const { db: firestoreDb } = await import("@/lib/firebase");
       
-      await setDoc(doc(firestoreDb, "profiles", user.uid), {
+      const updateData = {
         interests,
-        onboarded_at: new Date().toISOString(),
-      }, { merge: true });
+        onboarded_at: serverTimestamp(),
+      };
+      
+      await setDoc(doc(firestoreDb, "profiles", user.uid), updateData, { merge: true });
 
       // 2. Update Supabase (Secondary/Admin OS)
       try {
