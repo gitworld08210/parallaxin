@@ -30,9 +30,12 @@ export function useCreatorSubscription(creatorId: string | null | undefined) {
     if (!creatorId) { setLoading(false); return; }
     setLoading(true);
     const [s, sub] = await Promise.all([
+      supabase.from("creator_subscription_settings" as any).select("*").eq("creator_id", creatorId).maybeSingle(),
       user
+        ? supabase.from("creator_subscriptions" as any).select("*").eq("creator_id", creatorId).eq("subscriber_id", user.uid).maybeSingle()
         : Promise.resolve({ data: null }),
     ]);
+
     setSettings((s.data as any) ?? null);
     setSubscription((sub.data as any) ?? null);
     setLoading(false);
