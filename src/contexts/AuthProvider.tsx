@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { auth, db } from "@/lib/firebase";
 import { onAuthStateChanged, signOut as firebaseSignOut } from "firebase/auth";
-import { doc, onSnapshot } from "firebase/firestore";
+import { doc, getDoc, onSnapshot } from "firebase/firestore";
 
 type Profile = {
   id: string;
@@ -47,6 +47,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const loadProfile = async (uid: string) => {
+    try {
+      const docRef = doc(db, "profiles", uid);
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        setProfile({ id: docSnap.id, ...docSnap.data() } as Profile);
+      } else {
+        setProfile(null);
+      }
+    } catch (error) {
+      console.error("Error loading profile:", error);
+      setProfile(null);
+    }
+  };
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
@@ -84,12 +99,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return () => unsubscribe();
   }, []);
 
+  const refreshProfile = async () => {
+    if (user) await loadProfile(user.id);
+  };
+
   const signOut = async () => {
     await firebaseSignOut(auth);
   };
 
   return (
-    <AuthCtx.Provider value={{ user, profile, loading, signOut }}>
+    <AuthCtx.Provider value={{ user, profile, loading, refreshProfile, signOut }}>
       {children}
     </AuthCtx.Provider>
   );
