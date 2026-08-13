@@ -116,14 +116,20 @@ const Profile = () => {
       }
       
       // Fetch profile from Firestore
-      // Note: We'll search by username in Firestore 'profiles' collection
-      const qProf = query(
-        collection(db, "profiles"),
-        where("username", "==", target),
-        limit(1)
-      );
-      const snapProf = await getDocs(qProf);
-      const p = snapProf.docs.length > 0 ? ({ id: snapProf.docs[0].id, ...snapProf.docs[0].data() } as any) : null;
+      // 1. Try fetching by ID first (most reliable for "Me")
+      let profDoc = await getDoc(doc(db, "profiles", target));
+      let p = profDoc.exists() ? ({ id: profDoc.id, ...profDoc.data() } as any) : null;
+
+      // 2. If not found by ID, search by username
+      if (!p) {
+        const qProf = query(
+          collection(db, "profiles"),
+          where("username", "==", target),
+          limit(1)
+        );
+        const snapProf = await getDocs(qProf);
+        p = snapProf.docs.length > 0 ? ({ id: snapProf.docs[0].id, ...snapProf.docs[0].data() } as any) : null;
+      }
       
       setProfile(p as ProfileRow | null);
       setLoading(false);
