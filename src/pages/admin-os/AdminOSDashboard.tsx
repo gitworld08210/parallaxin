@@ -6,7 +6,8 @@ import {
   BarChart3, 
   Lock, 
   Zap,
-  Briefcase
+  Briefcase,
+  UserCheck
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
