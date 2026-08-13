@@ -36,6 +36,8 @@ type Ctx = {
   profile: Profile | null;
   loading: boolean;
   refreshProfile: () => Promise<void>;
+  signOut: () => Promise<void>;
+  session?: any;
 };
 
 const AuthCtx = createContext<Ctx | undefined>(undefined);
