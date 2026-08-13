@@ -20,33 +20,67 @@ export const SaveToCollectionSheet = ({
   useEffect(() => {
     if (!open || !user) return;
     (async () => {
-        await supabase.from("collections").select("id, name").eq("user_id", user.uid).order("created_at", { ascending: false }) as any);
-      setCollections((cs ?? []) as Collection[]);
-        await supabase.from("collections").select("collection_id").eq("post_id", postId) as any);
-      setInSet(new Set((items ?? []).map((i: any) => i.collection_id)));
+      try {
+        const { data: cs } = await supabase.from("collections").select("id, name").eq("user_id", user.uid).order("created_at", { ascending: false });
+        setCollections((cs ?? []) as Collection[]);
+        const { data: items } = await supabase.from("collection_items").select("collection_id").eq("post_id", postId);
+        setInSet(new Set((items ?? []).map((i: any) => i.collection_id)));
+      } catch (e) {
+        console.error("Failed to load collections:", e);
+      }
     })();
-  }, [open, user?.id, postId]);
+  }, [open, user?.uid, postId]);
 
   const toggle = async (cid: string) => {
     if (!user) return;
     const is = inSet.has(cid);
     const next = new Set(inSet);
+    
     if (is) {
-      next.delete(cid); setInSet(next);
+      next.delete(cid);
+      setInSet(next);
+      const { error } = await supabase.from("collection_items").delete().eq("collection_id", cid).eq("post_id", postId);
+      if (error) {
+        next.add(cid);
+        setInSet(new Set(next));
+        toast.error(error.message);
+      }
     } else {
-      next.add(cid); setInSet(next);
-      // also ensure it's saved
-      if (error) { const x = new Set(next); x.delete(cid); setInSet(x); toast.error(error.message); }
+      next.add(cid);
+      setInSet(next);
+      const { error } = await supabase.from("collection_items").insert({
+        collection_id: cid,
+        post_id: postId,
+        user_id: user.uid
+      });
+      if (error) {
+        next.delete(cid);
+        setInSet(new Set(next));
+        toast.error(error.message);
+      }
     }
   };
 
   const createCollection = async () => {
     if (!user || !newName.trim()) return;
-      /* shimmed */
-    if (error || !data) { toast.error(error?.message || "Failed"); return; }
-    setCollections((c) => [data as Collection, ...c]);
-    setNewName(""); setCreating(false);
-    toggle((data as Collection).id);
+    try {
+      const { data, error } = await supabase.from("collections").insert({
+        name: newName.trim(),
+        user_id: user.uid
+      }).select().single();
+      
+      if (error || !data) {
+        toast.error(error?.message || "Failed to create collection");
+        return;
+      }
+      
+      setCollections((c) => [data as Collection, ...c]);
+      setNewName("");
+      setCreating(false);
+      toggle((data as Collection).id);
+    } catch (e: any) {
+      toast.error(e.message || "Something went wrong");
+    }
   };
 
   return (
