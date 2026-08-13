@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from "react-router-dom";
-import { Home, Search, PlusSquare, Heart, User } from "lucide-react";
+import { Home, Search, PlusSquare, Heart, User, Wallet } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthProvider";
 import { AuraAvatar } from "@/components/vibe/AuraAvatar";
@@ -20,7 +20,7 @@ export const MobileNav = ({ unreadNotif = 0, unreadDm = 0 }: Props) => {
     { to: "/", icon: Home, label: "Home", end: true },
     { to: "/discover", icon: Search, label: "Explore" },
     { to: "#create", icon: PlusSquare, label: "Create", action: () => setCreateOpen(true) },
-    { to: "/notifications", icon: Heart, label: "Alerts", badgeKey: "notif" as const },
+    { to: "/wallet", icon: Wallet, label: "Wallet" },
     { to: "/profile", icon: User, label: "Profile" },
   ];
 
@@ -31,8 +31,8 @@ export const MobileNav = ({ unreadNotif = 0, unreadDm = 0 }: Props) => {
         className="absolute bottom-0 inset-x-0 z-50 border-t border-white/[0.05] bg-black/90 backdrop-blur-2xl"
       >
         <ul className="flex items-stretch justify-around px-1 pb-[env(safe-area-inset-bottom)]">
-          {items.map(({ to, icon: Icon, label, end, badgeKey, action }) => {
-            const badge = badgeKey === "notif" ? unreadNotif : badgeKey === "dm" ? unreadDm : 0;
+          {items.map(({ to, icon: Icon, label, end, action }) => {
+            const badge = label === "Alerts" ? unreadNotif : 0;
             const isCreate = label === "Create";
             
             return (

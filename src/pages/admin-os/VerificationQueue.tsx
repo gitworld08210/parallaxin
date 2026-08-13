@@ -9,7 +9,7 @@ import { ShieldCheck, UserCheck, AlertCircle, Clock, CheckCircle2, XCircle } fro
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import { updateDoc, doc } from "firebase/firestore";
+import { updateDoc, doc, runTransaction } from "firebase/firestore";
 
 const VerificationQueue = () => {
   const { user } = useAuth();
@@ -30,12 +30,24 @@ const VerificationQueue = () => {
     return () => unsub();
   }, []);
 
-  const handleAction = async (id: string, status: 'approved' | 'rejected') => {
+  const handleAction = async (req: any, status: 'approved' | 'rejected') => {
     try {
-      await updateDoc(doc(db, "verification_requests", id), {
-        status,
-        reviewed_at: new Date().toISOString(),
-        reviewer_id: user?.id
+      await runTransaction(db, async (transaction) => {
+        const reqRef = doc(db, "verification_requests", req.id);
+        const profileRef = doc(db, "profiles", req.user_id);
+
+        transaction.update(reqRef, {
+          status,
+          reviewed_at: new Date().toISOString(),
+          reviewer_id: user?.id
+        });
+
+        if (status === 'approved') {
+          transaction.update(profileRef, {
+            verified: true,
+            verification_kind: req.kind || 'verified'
+          });
+        }
       });
       toast.success(`Request ${status}`);
     } catch (e: any) {
@@ -74,13 +86,13 @@ const VerificationQueue = () => {
                     {req.status === 'pending' && (
                       <div className="flex items-center gap-2">
                         <button 
-                          onClick={() => handleAction(req.id, 'rejected')}
+                          onClick={() => handleAction(req, 'rejected')}
                           className="h-8 w-8 rounded-full bg-destructive/10 text-destructive grid place-items-center hover:bg-destructive/20 transition-colors"
                         >
                           <XCircle className="h-4 w-4" />
                         </button>
                         <button 
-                          onClick={() => handleAction(req.id, 'approved')}
+                          onClick={() => handleAction(req, 'approved')}
                           className="h-8 w-8 rounded-full bg-primary/10 text-primary grid place-items-center hover:bg-primary/20 transition-colors"
                         >
                           <CheckCircle2 className="h-4 w-4" />
