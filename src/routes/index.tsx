@@ -25,9 +25,9 @@ export default function AppRoutes() {
   return (
     <Routes>
       <Route path="/auth" element={<Auth />} />
-      <Route path="/profile-creation" element={<ProfileCreation />} />
-      <Route element={<AppShell />}>
-        <Route element={<ProtectedRoute />}>
+      <Route element={<ProtectedRoute />}>
+        <Route path="/profile-creation" element={<ProfileCreation />} />
+        <Route element={<AppShell />}>
           <Route path="/" element={<Feed />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/u/:username" element={<Profile />} />
