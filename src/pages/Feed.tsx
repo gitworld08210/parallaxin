@@ -166,9 +166,9 @@ const Feed = () => {
             />
           )
         )}
-        <div className="divide-y divide-border">
+        <div className="divide-y divide-border flex flex-col">
           {posts.map((p, idx) => (
-            <div key={p.id}>
+            <div key={p.id} className="min-h-[400px]">
               <PostCard post={p} onOpenComments={setCommentPost} />
               {idx === 2 && <SuggestedUsersRail />}
             </div>
