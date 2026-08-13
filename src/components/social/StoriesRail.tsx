@@ -31,30 +31,29 @@ export const StoriesRail = () => {
 
   const load = async () => {
     if (!user?.id) { setGroups([]); return; }
-    const { data: f } = await supabase.from("follows").select("following_id").eq("follower_id", user.id);
-    const ids = (f ?? []).map((r: any) => r.following_id);
-    // Allow seeing own stories too
-    if (!ids.includes(user.id)) ids.push(user.id);
     
-    if (ids.length === 0) { setGroups([]); return; }
-    
-    // Fetch stories from Firestore
-    const q = query(
-      collection(db, "stories"),
-      where("user_id", "in", ids),
-      where("expires_at", ">", new Date().toISOString()),
-      orderBy("created_at", "asc")
-    );
-    const snap = await getDocs(q);
-    const data = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    const map = new Map<string, Group>();
-    (data ?? []).forEach((s: any) => {
-      const g = map.get(s.user_id) ?? { user_id: s.user_id, profile: s.profile, stories: [] };
-      g.stories.push(s);
-      map.set(s.user_id, g);
-    });
-    setGroups(Array.from(map.values()));
+    try {
+      // Fetch stories from Firestore
+      // For now, since social graph is not fully in Firestore, we show all active stories
+      const q = query(
+        collection(db, "stories"),
+        where("expires_at", ">", new Date().toISOString()),
+        orderBy("created_at", "asc")
+      );
+      const snap = await getDocs(q);
+      const data = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      const map = new Map<string, Group>();
+      (data ?? []).forEach((s: any) => {
+        const g = map.get(s.user_id) ?? { user_id: s.user_id, profile: s.profile, stories: [] };
+        g.stories.push(s);
+        map.set(s.user_id, g);
+      });
+      setGroups(Array.from(map.values()));
+    } catch (err) {
+      console.error("Error loading stories:", err);
+    }
   };
+
 
   useEffect(() => { load(); }, [user?.id]);
 

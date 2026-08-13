@@ -26,24 +26,31 @@ const Feed = () => {
   const [commentPost, setCommentPost] = useState<string | null>(null);
 
   const load = async () => {
+    if (!user) return;
     setLoading(true);
 
-    // Mutes/Blocks/Follows migration needed. For now, we load all public Firestore posts.
-    const qFirestore = query(
-      collection(db, "posts"),
-      where("is_reel", "==", false),
-      orderBy("created_at", "desc"),
-      limit(30)
-    );
-    const postsSnap = await getDocs(qFirestore);
-    const postsData = postsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    try {
+      // Mutes/Blocks/Follows migration needed. For now, we load all public Firestore posts.
+      const qFirestore = query(
+        collection(db, "posts"),
+        where("is_reel", "==", false),
+        orderBy("created_at", "desc"),
+        limit(30)
+      );
+      const postsSnap = await getDocs(qFirestore);
+      const postsData = postsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-    // Mocking visibility filter until social graph is in Firestore
-    const visible = postsData as any[];
+      // Mocking visibility filter until social graph is in Firestore
+      const visible = postsData as any[];
 
-    setPosts(visible.map((d: any) => ({ ...d, liked: false })));
-    setLoading(false);
+      setPosts(visible.map((d: any) => ({ ...d, liked: false })));
+    } catch (err) {
+      console.error("Error loading feed:", err);
+    } finally {
+      setLoading(false);
+    }
   };
+
 
   useEffect(() => { load(); /* eslint-disable-next-line */ }, [tab, user?.id]);
 
