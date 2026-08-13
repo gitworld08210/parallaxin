@@ -1,70 +1,8 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    function isSignedIn() {
-      return request.auth != null;
-    }
-
-    match /profiles/{userId} {
-      allow read: if isSignedIn();
-      allow create, update: if isSignedIn() && request.auth.uid == userId;
-      allow delete: if isSignedIn() && request.auth.uid == userId;
-    }
-
-    match /follows/{followId} {
-      allow read: if isSignedIn();
-      allow create: if isSignedIn() && request.resource.data.follower_id == request.auth.uid;
-      allow delete: if isSignedIn() && resource.data.follower_id == request.auth.uid;
-    }
-
-    match /posts/{postId} {
-      allow read: if isSignedIn();
-      allow create: if isSignedIn() && request.resource.data.author_id == request.auth.uid;
-      allow update, delete: if isSignedIn() && resource.data.author_id == request.auth.uid;
-    }
-    
-    match /reels/{reelId} {
-      allow read: if isSignedIn();
-      allow create: if isSignedIn() && request.resource.data.author_id == request.auth.uid;
-      allow update, delete: if isSignedIn() && resource.data.author_id == request.auth.uid;
-    }
-
-    match /stories/{storyId} {
-      allow read: if isSignedIn();
-      allow create: if isSignedIn() && request.resource.data.author_id == request.auth.uid;
-      allow update, delete: if isSignedIn() && resource.data.author_id == request.auth.uid;
-    }
-
-    match /comments/{commentId} {
-      allow read: if isSignedIn();
-      allow create: if isSignedIn() && request.resource.data.author_id == request.auth.uid;
-      allow delete: if isSignedIn() && resource.data.author_id == request.auth.uid;
-    }
-
-    match /notifications/{notifId} {
-      allow read: if isSignedIn() && resource.data.user_id == request.auth.uid;
-      allow create: if isSignedIn();
-      allow update, delete: if isSignedIn() && resource.data.user_id == request.auth.uid;
-    }
-
-    match /messages/{messageId} {
-      allow read: if isSignedIn() && (resource.data.sender_id == request.auth.uid || resource.data.receiver_id == request.auth.uid);
-      allow create: if isSignedIn() && request.resource.data.sender_id == request.auth.uid;
-    }
-
-    match /organizations/{orgId} {
-      allow read: if isSignedIn();
-      allow write: if isSignedIn();
-    }
-
-    match /wallet_ledger/{entryId} {
-      allow read: if isSignedIn() && resource.data.user_id == request.auth.uid;
-      allow write: if false;
-    }
-    
-    match /kyc_applications/{appId} {
-      allow read: if isSignedIn() && resource.data.user_id == request.auth.uid;
-      allow create: if isSignedIn() && request.resource.data.user_id == request.auth.uid;
+    match /{document=**} {
+      allow read, write: if request.auth != null;
     }
   }
 }
