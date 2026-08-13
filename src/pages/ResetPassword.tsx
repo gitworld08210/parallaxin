@@ -35,7 +35,7 @@ const ResetPassword = () => {
     e.preventDefault();
     setBusy(true);
     // Supposed to be updatePassword but using shimmed method
-    const { error } = await.auth.signInWithPassword({
+    const { error } = await supabase.auth.signInWithPassword({
       email,
       password: password,
     });
