@@ -180,7 +180,15 @@ const Auth = () => {
           </h1>
         </div>
 
-        <div className="space-y-6 w-full flex-1">
+        <AnimatePresence mode="wait">
+          <motion.div 
+            key={tab}
+            initial={{ opacity: 0, x: tab === 'signin' ? -10 : 10 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: tab === 'signin' ? 10 : -10 }}
+            transition={{ duration: 0.2 }}
+            className="space-y-6 w-full flex-1"
+          >
           {tab === "signup" && (
             <div className="grid grid-cols-2 gap-3 p-1 bg-[#111] border border-white/5 rounded-2xl">
               <button 
@@ -259,7 +267,8 @@ const Auth = () => {
               </button>
             )}
           </div>
-        </div>
+        </motion.div>
+        </AnimatePresence>
 
         <div className="w-full mt-auto pt-6 border-t border-white/10">
           <p className="text-[14px] text-center text-white">
