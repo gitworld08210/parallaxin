@@ -55,7 +55,7 @@ const Onboarding = () => {
   const finish = async () => {
     if (!user) return;
     setSaving(true);
-    try { /* shimmed */ }
+    try {
       // 1. Update Firestore (Primary)
       const { doc, setDoc } = await import("firebase/firestore");
       const { db: firestoreDb } = await import("@/lib/firebase");
@@ -65,7 +65,7 @@ const Onboarding = () => {
         onboarded_at: new Date().toISOString(),
 
       // 2. Update Supabase (Secondary/Admin OS)
-      try { /* shimmed */ }
+      try {
           supabase.from("profiles").update({
             interests,
             onboarded_at: new Date().toISOString(),
@@ -75,7 +75,7 @@ const Onboarding = () => {
       }
 
       if (dob || gender) {
-        try { /* shimmed */ }
+        try {
             _dob: dob || null,
             _gender: gender || null,
         } catch (e) {
@@ -86,7 +86,7 @@ const Onboarding = () => {
       }
 
       if (followed.size > 0) {
-        try { /* shimmed */ }
+        try {
           const rows = Array.from(followed).map((following_id) => ({ follower_id: user.id, following_id }));
         } catch (e) {
           console.warn("Supabase follow sync failed", e);

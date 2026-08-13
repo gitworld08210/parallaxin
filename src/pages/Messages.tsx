@@ -137,7 +137,7 @@ const Messages = () => {
   const startChat = async (otherId: string) => {
     if (!user) return;
     setStarting(true);
-    try { /* shimmed */ }
+    try {
       // Check if conversation already exists in Firestore
       const q = firestoreQuery(
         collection(db, "conversations"),

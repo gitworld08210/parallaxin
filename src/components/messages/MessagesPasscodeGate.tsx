@@ -38,7 +38,7 @@ type Stored = {
 };
 
 const readCache = (uid: string): Stored | null => {
-  try { /* shimmed */ }
+  try {
     const raw = localStorage.getItem(KEY(uid));
     return raw ? (JSON.parse(raw) as Stored) : null;
   } catch {

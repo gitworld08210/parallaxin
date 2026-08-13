@@ -24,7 +24,7 @@ export const BecomeCreatorSheet = ({ open, onOpenChange }: Props) => {
   useEffect(() => {
     if (!open) return;
     (async () => {
-      try { /* shimmed */ }
+      try {
         const configRef = doc(db, "app_config", "creator_settings");
         const docSnap = await getDoc(configRef);
         if (docSnap.exists()) {

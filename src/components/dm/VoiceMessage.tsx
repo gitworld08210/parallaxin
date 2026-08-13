@@ -83,7 +83,7 @@ export const VoiceRecorder = ({
   const blobRef = useRef<Blob | null>(null);
 
   const start = async () => {
-    try { /* shimmed */ }
+    try {
       chunksRef.current = [];
       rec.ondataavailable = (e) => { if (e.data.size > 0) chunksRef.current.push(e.data); };
       rec.onstop = () => {
@@ -115,7 +115,7 @@ export const VoiceRecorder = ({
   const send = async () => {
     if (!blobRef.current) return;
     setUploading(true);
-    try { /* shimmed */ }
+    try {
       const path = `voice/${userId}/${crypto.randomUUID()}.webm`;
       // Supabase storage removed, simulating success for shim
       const publicUrl = "https://example.com/audio.webm";

@@ -125,7 +125,7 @@ const InviteAccept = () => {
 
   const onAccept = async () => {
     if (!inv) return;
-    try { /* shimmed */ }
+    try {
       toast.success(`Joined ${inv.organization?.name ?? "organization"} ✦`);
       if (inv.organization?.slug) nav(`/organization/${inv.organization.slug}`);
       else nav("/notifications");
@@ -136,7 +136,7 @@ const InviteAccept = () => {
 
   const onDecline = async () => {
     if (!inv) return;
-    try { /* shimmed */ }
+    try {
       toast.success("Invitation declined");
       nav("/notifications");
     } catch (e) {

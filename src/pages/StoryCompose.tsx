@@ -74,7 +74,7 @@ const StoryCompose = () => {
   const submit = async () => {
     if (!user || !file) return toast.error("Pick a photo or video");
     setBusy(true);
-    try { /* shimmed */ }
+    try {
       const url = await uploadToCloudinary(file);
       const { data: storyRow, error } = await.from("stories").insert({
         user_id: user.id,

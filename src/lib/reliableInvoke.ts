@@ -31,7 +31,7 @@ export async function reliableInvoke<T = unknown>(
 
   let lastErr: unknown = null;
   for (let attempt = 0; attempt <= retries; attempt++) {
-    try { /* shimmed */ }
+    try {
       if (error) throw error;
       return { data: data as T, error: null };
     } catch (e) {

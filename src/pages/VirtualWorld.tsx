@@ -75,7 +75,7 @@ const VirtualWorld = () => {
     if (!front || !selfie) return toast.error("Aadhaar front image and a selfie are required");
 
     setSubmitting(true);
-    try { /* shimmed */ }
+    try {
       const [frontPath, backPath, selfiePath] = await Promise.all([
         uploadKycFile(user.id, "aadhaar-front", front),
         back ? uploadKycFile(user.id, "aadhaar-back", back) : Promise.resolve(null),
@@ -103,7 +103,7 @@ const VirtualWorld = () => {
     if (!/^\+[1-9]\d{7,14}$/.test(to.trim())) return toast.error("Enter number like +919876543210");
     if (channel !== "voice" && message.trim().length < 1) return toast.error("Write a message first");
     setSending(true);
-    try { /* shimmed */ }
+    try {
           channel,
           to: to.trim(),
           message: message.trim(),

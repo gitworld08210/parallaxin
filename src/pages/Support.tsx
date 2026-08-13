@@ -66,7 +66,7 @@ const Support = () => {
     enabled: !!user?.id,
     queryKey: ["my-support-tickets", user?.id],
     queryFn: async () => {
-      try { /* shimmed */ }
+      try {
         // 1. Check Firestore
         const { collection, query, where, orderBy, limit, getDocs } = await import("firebase/firestore");
         const { db } = await import("@/lib/firebase");
@@ -107,7 +107,7 @@ from("sup_tickets").select("id, ticket_number, subject, category, priority, stat
         requester_display: user.email ?? null,
       };
 
-      try { /* shimmed */ }
+      try {
         // 1. Dual-write to Firestore
         const { collection, addDoc, serverTimestamp } = await import("firebase/firestore");
         const { db } = await import("@/lib/firebase");

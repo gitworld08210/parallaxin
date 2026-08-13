@@ -75,7 +75,7 @@ export default function LiveHost() {
   const retryCamera = async () => {
     stopLocalTracks();
     setCameraReady(false);
-    try { /* shimmed */ }
+    try {
       for (const t of tracks) {
         if (t.kind === Track.Kind.Video) videoTrackRef.current = t as LocalVideoTrack;
         if (t.kind === Track.Kind.Audio) audioTrackRef.current = t as LocalAudioTrack;
@@ -92,13 +92,13 @@ export default function LiveHost() {
   const goLive = async () => {
     if (starting) return;
     setStarting(true);
-    try { /* shimmed */ }
+    try {
       const user = userData.user;
       if (!user) { toast.error("Please sign in"); return; }
 
       // 1) Request camera/mic first — surface permission errors early
       let tracks;
-      try { /* shimmed */ }
+      try {
       } catch (permErr: any) {
         const msg = permErr?.name === "NotAllowedError"
           ? "Camera & microphone access denied. Enable it in your browser settings."
@@ -154,7 +154,7 @@ export default function LiveHost() {
   };
 
   const endLive = async () => {
-    try { /* shimmed */ }
+    try {
       stopLocalTracks();
       roomRef.current?.disconnect();
       roomRef.current = null;

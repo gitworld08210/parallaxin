@@ -34,7 +34,7 @@ const Assistant = () => {
     setMessages(next);
     setStreaming(true);
 
-    try { /* shimmed */ }
+    try {
       if (!session?.access_token) {
         toast.error("Please sign in to use the assistant.");
         setStreaming(false);
@@ -68,7 +68,7 @@ const Assistant = () => {
           if (!line.startsWith("data:")) continue;
           const data = line.slice(5).trim();
           if (!data || data === "[DONE]") continue;
-          try { /* shimmed */ }
+          try {
             const json = JSON.parse(data);
             const delta = json.choices?.[0]?.delta?.content;
             if (delta) {

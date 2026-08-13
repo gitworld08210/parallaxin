@@ -48,7 +48,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   const loadProfile = async (uid: string) => {
-    try { /* shimmed */ }
+    try {
       const docRef = doc(db, "profiles", uid);
       const docSnap = await getDoc(docRef);
       if (docSnap.exists()) {
