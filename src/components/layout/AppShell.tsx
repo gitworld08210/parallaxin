@@ -58,12 +58,12 @@ subscribe();
   if (hideNav) return <Outlet />;
 
   return (
-    <div className="min-h-screen bg-black text-foreground flex justify-center overflow-hidden">
-      <div className="w-full h-screen max-w-[440px] relative flex flex-col bg-background shadow-2xl border-x border-white/5">
+    <div className="min-h-screen bg-black text-foreground flex justify-center items-center overflow-hidden p-0 sm:p-4">
+      <div className="w-full h-full sm:h-[844px] max-w-[390px] aspect-[9/19.5] relative flex flex-col bg-background shadow-2xl border-x border-white/5 sm:rounded-[3rem] sm:border-[8px] sm:border-zinc-800 overflow-hidden">
         <main className="flex-1 overflow-y-auto relative outline-none no-scrollbar">
           <Outlet />
         </main>
-        {!isDesktop && <MobileNav unreadNotif={unreadNotif} unreadDm={unreadDm} />}
+        <MobileNav unreadNotif={unreadNotif} unreadDm={unreadDm} />
       </div>
     </div>
   );
