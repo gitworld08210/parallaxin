@@ -156,11 +156,12 @@ const Messages = () => {
 
       // Create new DM
       const docRef = await addDoc(collection(db, "conversations"), {
-        member_ids: [user.id, otherId],
+        member_ids: [user.uid, otherId],
         is_group: false,
         created_at: serverTimestamp(),
         last_message_at: serverTimestamp(),
-        members: [] // You'd typically include minimal profile data here for fast listing
+        members: [] 
+      });
       
       setComposerOpen(false);
       setComposerQuery("");
