@@ -16,7 +16,7 @@ export const AppShell = () => {
   useEffect(() => {
     if (!user) return;
     const refresh = async () => {
-      const { count } = await.from("notifications").select("*", { count: "exact", head: true }).eq("user_id", user.id).eq("read", false);
+      const { count } = await supabase.from("notifications").select("*", { count: "exact", head: true }).eq("user_id", user.id).eq("read", false);
       setUnreadNotif(count ?? 0);
     };
     refresh();
@@ -29,10 +29,10 @@ subscribe();
   useEffect(() => {
     if (!user) return;
     const refresh = async () => {
-      const { data: parts } = await.from("conversation_participants").select("conversation_id").eq("user_id", user.id);
+      const { data: parts } = await supabase.from("conversation_participants").select("conversation_id").eq("user_id", user.id);
       const ids = (parts ?? []).map((p) => p.conversation_id);
       if (!ids.length) { setUnreadDm(0); return; }
-      const { count } = await.from("messages").select("*", { count: "exact", head: true }).in("conversation_id", ids).neq("sender_id", user.id).is("read_at", null);
+      const { count } = await supabase.from("messages").select("*", { count: "exact", head: true }).in("conversation_id", ids).neq("sender_id", user.id).is("read_at", null);
       setUnreadDm(count ?? 0);
     };
     refresh();

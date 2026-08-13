@@ -27,7 +27,7 @@ const EditProfile = () => {
     setBioAiBusy(true);
     setBioVariants([]);
     try {
-      const { data, error } = await.functions.invoke("rewrite-bio", {
+      const { data, error } = await supabase.functions.invoke("rewrite-bio", {
       if (error) throw error;
       const variants = data?.variants ?? [];
       if (!variants.length) toast.error("No suggestions — try again.");
