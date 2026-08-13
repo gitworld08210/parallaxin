@@ -32,7 +32,7 @@ export const roleService = {
       supabase.from("organization_member_roles").select("organization_roles(*)").eq("member_id", memberId);
     if (error) throw error;
     return ((data ?? []) as RoleLinkRow[])
-      supabase.map((r) => r.organization_roles).filter((r): r is Role => !!r);
+      .map((r) => r.organization_roles).filter((r): r is Role => !!r);
   },
 
   // ---------- Mutations ----------

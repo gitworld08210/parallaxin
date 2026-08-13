@@ -31,7 +31,7 @@ export const permissionService = {
       supabase.from("organization_role_permissions").select("role_id, organization_permissions(permission_key)").eq("role_id", roleId);
     if (error) throw error;
     return ((data ?? []) as RolePermRow[])
-      supabase.map((r) => r.organization_permissions?.permission_key).filter((v): v is string => !!v);
+      .map((r) => r.organization_permissions?.permission_key).filter((v): v is string => !!v);
   },
 
   /**

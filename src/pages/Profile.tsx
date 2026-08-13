@@ -158,13 +158,13 @@ const Profile = () => {
         }
         setPosts(
           ((pdata ?? []) as any[])
-            supabase.sort((a, b) => {
+            .sort((a, b) => {
               const ap = a.is_pinned ? 1 : 0;
               const bp = b.is_pinned ? 1 : 0;
               if (ap !== bp) return bp - ap;
               return +new Date(b.created_at) - +new Date(a.created_at);
             })
-            supabase.map((d: any) => ({ ...d, liked: liked.has(d.id) })));
+            .map((d: any) => ({ ...d, liked: liked.has(d.id) })));
         setReels((rdata ?? []).map((d: any) => ({ ...d, liked: liked.has(d.id) })));
 
         if (user && p.user_id !== user.id) {
