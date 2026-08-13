@@ -80,13 +80,6 @@ export const AccountSwitcherSheet = ({
     setEmail(acc.email || "");
     setShowLogin(true);
   };
-    } catch (e) {
-      toast.error((e as Error).message || "Couldn't switch account. Please sign in again.");
-      removeSavedAccount(acc.userId);
-    } finally {
-      setBusy(null);
-    }
-  };
 
   const handleRemove = (acc: SavedAccount, e: React.MouseEvent) => {
     e.stopPropagation();
