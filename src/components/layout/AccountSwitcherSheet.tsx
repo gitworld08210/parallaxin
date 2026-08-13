@@ -4,7 +4,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { Check, Loader2, LogIn, Plus, X, Eye, EyeOff } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { supabase } from "@/integrations/supabase/client";
+import { auth, db } from "@/lib/firebase";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 import { useAuth } from "@/contexts/AuthProvider";
 import {
   MAX_ACCOUNTS,
