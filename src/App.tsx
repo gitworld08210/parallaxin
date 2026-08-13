@@ -377,8 +377,8 @@ const DesignSystem = lazy(() => import("./pages/NotFound"));
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 60_000,
-      gcTime: 5 * 60_000,
+      staleTime: 1000 * 60 * 5, // 5 minutes
+      gcTime: 1000 * 60 * 30, // 30 minutes
       refetchOnWindowFocus: false,
       retry: 1,
     },
