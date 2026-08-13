@@ -54,16 +54,18 @@ subscribe();
     return () => clearInterval(inv);
   }, [user?.id]);
 
-  const hideNav = ["/auth", "/onboarding"].some((p) => loc.pathname.startsWith(p));
+  const hideNav = ["/auth", "/onboarding", "/profile-creation"].some((p) => loc.pathname.startsWith(p));
   if (hideNav) return <Outlet />;
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex overflow-hidden">
-      {isDesktop && <SideMenu unreadNotif={unreadNotif} unreadDm={unreadDm} />}
-      <main className="flex-1 overflow-y-auto pb-20 lg:pb-0 relative outline-none border-x border-border/40">
-        <Outlet />
-      </main>
-      {!isDesktop && <MobileNav unreadNotif={unreadNotif} unreadDm={unreadDm} />}
+    <div className="min-h-screen bg-black text-foreground flex justify-center overflow-hidden">
+      <div className="w-full h-screen max-w-[440px] aspect-[9/16] relative flex bg-background shadow-2xl border-x border-white/10">
+        {isDesktop && <SideMenu unreadNotif={unreadNotif} unreadDm={unreadDm} />}
+        <main className="flex-1 overflow-y-auto pb-20 lg:pb-0 relative outline-none">
+          <Outlet />
+        </main>
+        {!isDesktop && <MobileNav unreadNotif={unreadNotif} unreadDm={unreadDm} />}
+      </div>
     </div>
   );
 };
