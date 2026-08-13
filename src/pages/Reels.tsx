@@ -116,7 +116,7 @@ const Reels = () => {
   };
 
   return (
-    <div className="bg-black text-white relative h-full overflow-hidden" onMouseMove={bumpChrome} onTouchStart={bumpChrome}>
+    <div className="bg-black text-white relative h-full w-full overflow-hidden" onMouseMove={bumpChrome} onTouchStart={bumpChrome}>
       {/* TikTok-style top: For You / Following with animated pill underline */}
       <header
         className={cn(
