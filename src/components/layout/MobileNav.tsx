@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from "react-router-dom";
-import { Home, Search, PlusSquare, Heart, User } from "lucide-react";
+import { Home, Search, PlusSquare, Heart, User, Wallet } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthProvider";
 import { AuraAvatar } from "@/components/vibe/AuraAvatar";
@@ -20,7 +20,7 @@ export const MobileNav = ({ unreadNotif = 0, unreadDm = 0 }: Props) => {
     { to: "/", icon: Home, label: "Home", end: true },
     { to: "/discover", icon: Search, label: "Explore" },
     { to: "#create", icon: PlusSquare, label: "Create", action: () => setCreateOpen(true) },
-    { to: "/notifications", icon: Heart, label: "Alerts", badgeKey: "notif" as const },
+    { to: "/wallet", icon: Wallet, label: "Wallet" },
     { to: "/profile", icon: User, label: "Profile" },
   ];
 
