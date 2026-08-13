@@ -71,9 +71,7 @@ const DeleteAccountScreen = lazy(() => import("./pages/security/DeleteAccountScr
 const ChangePasswordScreen = lazy(() => import("./pages/security/ChangePasswordScreen"));
 const ChangeEmailScreen = lazy(() => import("./pages/security/ChangeEmailScreen"));
 const ChangePhoneScreen = lazy(() => import("./pages/security/ChangePhoneScreen"));
-const Onboarding = lazy(() => import("./pages/Onboarding"));
 const ProfileCreation = lazy(() => import("./pages/ProfileCreation"));
-const OrganizationOnboarding = lazy(() => import("./pages/OrganizationOnboarding"));
 
 // Aurelix Ads Manager
 const AdsLayout = lazy(() => import("./pages/NotFound"));
