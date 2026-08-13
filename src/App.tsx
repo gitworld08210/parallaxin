@@ -106,13 +106,11 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 const Certificate = lazy(() => import("./pages/Certificate"));
 const CreatorTerms = lazy(() => import("./pages/CreatorTerms"));
 import { CreatorGate } from "@/components/creator/CreatorGate";
-const ContentClassificationQueue = lazy(() => import("./pages/NotFound").then(m => ({ default: m.ContentClassificationQueue })));
-const ReviewerWorkspace = lazy(() => import("./pages/NotFound").then(m => ({ default: m.ReviewerWorkspace })));
+const ContentClassificationQueue = lazy(() => import("./pages/NotFound"));
+const ReviewerWorkspace = lazy(() => import("./pages/NotFound"));
 
 // Admin OS workspace (Phase 1 foundation)
-const AdminOSGate = lazy(() =>
-  import("./pages/NotFound").then((m) => ({ default: m.AdminOSGate })),
-);
+const AdminOSGate = lazy(() => import("./pages/NotFound"));
 const AdminOSLayout = lazy(() => import("./pages/NotFound"));
 const AdminOSDashboard = lazy(() => import("./pages/NotFound"));
 const RoutingOverview = lazy(() => import("./pages/NotFound"));
@@ -178,9 +176,7 @@ const BonusCenter = lazy(() => import("./pages/NotFound"));
 const BenefitsCenter = lazy(() => import("./pages/NotFound"));
 const ReimbursementCenter = lazy(() => import("./pages/NotFound"));
 // Executive Workspace (Phase 3.1)
-const ExecutiveGate = lazy(() =>
-  import("./pages/NotFound").then((m) => ({ default: m.ExecutiveGate })),
-);
+const ExecutiveGate = lazy(() => import("./pages/NotFound"));
 const ExecutiveLayout = lazy(() => import("./pages/NotFound"));
 const ExecutiveDashboard = lazy(() => import("./pages/NotFound"));
 const ExecutiveProfile = lazy(() => import("./pages/NotFound"));
