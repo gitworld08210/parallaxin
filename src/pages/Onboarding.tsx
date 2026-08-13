@@ -114,7 +114,10 @@ const Onboarding = () => {
 
       if (refreshProfile) await refreshProfile();
       toast.success("Welcome to Aurelix");
+      console.log("Onboarding complete, navigating home");
       nav("/", { replace: true });
+      // Final fallback if nav fails
+      setTimeout(() => { if (window.location.pathname.includes("onboarding")) window.location.href = "/"; }, 500);
     } catch (e: any) { toast.error(e.message || "Action failed"); } finally {
       setSaving(false);
     }
