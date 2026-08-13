@@ -5,7 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Coins, Copy, Check, ExternalLink, Loader2, ShieldCheck } from "lucide-react";
 
 import { useAuth } from "@/contexts/AuthProvider";
-import { supabase } from "@/integrations/supabase/client";
+import { collection, query, limit, getDocs, addDoc, doc, updateDoc, serverTimestamp } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 import { toast } from "sonner";
 
 interface Pack { coins: number; inr: number; badge?: string }
@@ -32,9 +33,15 @@ export function BuyCoinsSheet({ open, onOpenChange }: Props) {
   useEffect(() => {
     if (!open) return;
     (async () => {
-      const { data } = await supabase.from("payment_settings" as any).select("upi_id, qr_url, payee_name").limit(1).maybeSingle();
-      const row: any = Array.isArray(data) ? data[0] : data;
-      setPay({ upi: row?.upi_id || "", qr: row?.qr_url || "", payee: row?.payee_name || "Aurelix" });
+      try {
+        const snap = await getDocs(query(collection(db, "payment_settings"), limit(1)));
+        if (!snap.empty) {
+          const row: any = snap.docs[0].data();
+          setPay({ upi: row?.upi_id || "", qr: row?.qr_url || "", payee: row?.payee_name || "Aurelix" });
+        }
+      } catch (e) {
+        console.warn("Failed to load payment settings", e);
+      }
     })();
   }, [open]);
 
@@ -45,16 +52,21 @@ export function BuyCoinsSheet({ open, onOpenChange }: Props) {
     if (!user) return toast.error("Sign in first");
     if (!pay?.upi && !pay?.qr) return toast.error("Payments not configured yet");
     setLoading(true);
-    const { data, error } = await supabase.from("coin_topups" as any).insert({
-      user_id: user.id,
-      coins: pack.coins,
-      amount_inr: pack.inr,
-      status: "pending",
-    } as any).select("id").single();
-    setLoading(false);
-    if (error || !data) return toast.error(error?.message || "Failed");
-    setTopupId(String((data as any).id));
-    setStep("pay");
+    try {
+      const docRef = await addDoc(collection(db, "coin_topups"), {
+        user_id: user.id,
+        coins: pack.coins,
+        amount_inr: pack.inr,
+        status: "pending",
+        created_at: serverTimestamp()
+      });
+      setTopupId(docRef.id);
+      setStep("pay");
+    } catch (e: any) {
+      toast.error(e.message || "Failed");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const submitUtr = async () => {
@@ -62,13 +74,18 @@ export function BuyCoinsSheet({ open, onOpenChange }: Props) {
     const cleaned = utr.trim().replace(/\s+/g, "");
     if (!/^[0-9]{12}$/.test(cleaned)) return toast.error("Enter your 12-digit UPI UTR");
     setLoading(true);
-    const { error } = await supabase.from("coin_topups" as any).update({
-      utr: cleaned,
-      status: "submitted",
-    } as any).eq("id", topupId);
-    setLoading(false);
-    if (error) return toast.error(error.message);
-    setStep("done");
+    try {
+      await updateDoc(doc(db, "coin_topups", topupId), {
+        utr: cleaned,
+        status: "submitted",
+        updated_at: serverTimestamp()
+      });
+      setStep("done");
+    } catch (e: any) {
+      toast.error(e.message || "Action failed");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const upiLink = pay?.upi
