@@ -42,7 +42,7 @@ const ApprovalsInbox = () => {
     });
 
     // 3. KYC Queue (Virtual World)
-    const qKyc = query(collection(db, "kyc_applications"), orderBy("created_at", "desc"));
+    const qKyc = query(collection(db, "virtual_world_applications"), orderBy("created_at", "desc"));
     const unsubKyc = onSnapshot(qKyc, (snap) => {
       setKycRequests(snap.docs.map(d => ({ id: d.id, ...d.data() })));
     });
@@ -100,6 +100,33 @@ const ApprovalsInbox = () => {
         reviewer_id: user?.id
       });
       toast.success("Request rejected");
+    } catch (e: any) {
+      toast.error(e.message);
+    }
+  };
+
+  const handleApproveKyc = async (req: any) => {
+    try {
+      await runTransaction(db, async (transaction) => {
+        const reqRef = doc(db, "virtual_world_applications", req.id);
+        const accessRef = doc(db, "virtual_world_access", req.user_id);
+        
+        transaction.update(reqRef, {
+          status: "approved",
+          approved_at: serverTimestamp(),
+          reviewer_id: user?.id
+        });
+        
+        transaction.set(accessRef, {
+          user_id: req.user_id,
+          is_active: true,
+          daily_limit: 25,
+          approved_at: serverTimestamp(),
+          reviewer_id: user?.id
+        });
+      });
+      
+      toast.success(`Approved Virtual World access for ${req.full_name}`);
     } catch (e: any) {
       toast.error(e.message);
     }
@@ -190,6 +217,40 @@ const ApprovalsInbox = () => {
           </TabsContent>
           
           <TabsContent value="kyc" className="mt-0 space-y-4">
+            {kycRequests.filter(k => k.status === 'pending').map((req) => (
+              <div key={req.id} className="p-5 rounded-3xl border border-white/[0.08] bg-zinc-900/20 space-y-4">
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="h-10 w-10 rounded-2xl bg-indigo-400/10 grid place-items-center">
+                      <ShieldCheck className="h-5 w-5 text-indigo-400" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold">{req.full_name}</p>
+                      <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
+                        KYC Request · {req.contact_phone}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button onClick={() => handleReject("virtual_world_applications", req.id)} className="h-8 w-8 rounded-full bg-rose-500/10 text-rose-500 grid place-items-center"><XCircle className="h-4 w-4" /></button>
+                    <button onClick={() => handleApproveKyc(req)} className="h-8 w-8 rounded-full bg-emerald-500/10 text-emerald-500 grid place-items-center"><CheckCircle2 className="h-4 w-4" /></button>
+                  </div>
+                </div>
+                {req.purpose && <p className="text-[11px] text-zinc-400 italic">"{req.purpose}"</p>}
+                <div className="grid grid-cols-3 gap-2">
+                  {req.aadhaar_front_path && (
+                    <div className="aspect-video rounded-lg bg-zinc-800 overflow-hidden border border-white/5">
+                      <img src={req.aadhaar_front_path} alt="Front" className="w-full h-full object-cover opacity-60 hover:opacity-100 transition-opacity" />
+                    </div>
+                  )}
+                  {req.selfie_path && (
+                    <div className="aspect-square rounded-lg bg-zinc-800 overflow-hidden border border-white/5">
+                      <img src={req.selfie_path} alt="Selfie" className="w-full h-full object-cover opacity-60 hover:opacity-100 transition-opacity" />
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
             {kycRequests.filter(k => k.status === 'pending').length === 0 && (
               <div className="py-20 text-center opacity-30 space-y-2">
                 <ShieldCheck className="h-10 w-10 mx-auto" />
