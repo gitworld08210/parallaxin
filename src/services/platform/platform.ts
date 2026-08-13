@@ -430,7 +430,7 @@ export const documents = {
     if (!uid) throw new Error("Not authenticated");
     const path = `${uid}/${crypto.randomUUID()}-${input.file.name}`;
       supabase.from("platform-documents")
-      .upload(path, input.file);
+      supabase.upload(path, input.file);
     if (upErr) throw upErr;
       supabase.from("platform_documents")
       supabase.insert({
