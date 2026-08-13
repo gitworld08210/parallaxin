@@ -452,7 +452,7 @@ const App = () => (
                   <Route path="/creator/terms" element={<CreatorTerms />} />
                   <Route path="/p/:postId" element={<PostDetail />} />
                   <Route path="/tag/:tag" element={<Tag />} />
-                  <Route path="/wallet" element={<WalletHome />} />
+                  <Route path="/wallet" element={<Wallet />} />
                   <Route path="/wallet/legacy" element={<Wallet />} />
                   <Route path="/wallet/analytics" element={<WalletAnalytics />} />
                   <Route path="/wallet/transactions" element={<WalletTransactions />} />
@@ -575,7 +575,7 @@ const App = () => (
 
               {/* Founder Office Executive Workspace (Phase 3.1) */}
               <Route element={<ExecutiveGate />}>
-                <Route path="/admin-os/executive" element={<ExecutiveLayout />}>
+                <Route path="/admin-os/executive" element={<AdminOSGate><ExecutiveLayout /></AdminOSGate>}>
                   <Route index element={<ExecutiveDashboard />} />
                   <Route path="inbox" element={<ExecutiveInbox />} />
                   <Route path="inbox/:id" element={<ExecutiveApprovalDetail />} />

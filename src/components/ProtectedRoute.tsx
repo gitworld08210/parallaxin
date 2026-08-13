@@ -21,6 +21,35 @@ export const ProtectedRoute = () => {
   return <Outlet />;
 };
 
-export const AdminOSGate = () => <Outlet />;
-export const ExecutiveGate = () => <Outlet />;
+export const AdminOSGate = () => {
+  const { profile, loading } = useAuth();
+  const location = useLocation();
+
+  if (loading) return null;
+
+  const isAdmin = profile?.account_type === "organization" || 
+                  profile?.is_admin || 
+                  profile?.is_founder || 
+                  ["COO", "CEO", "HR Head", "Finance Head"].includes(profile?.role || "");
+
+  if (!isAdmin) {
+    return <Navigate to="/admin-os/no-access" replace />;
+  }
+
+  return <Outlet />;
+};
+
+export const ExecutiveGate = () => {
+  const { profile, loading } = useAuth();
+
+  if (loading) return null;
+
+  const isExec = profile?.is_founder || ["COO", "CEO"].includes(profile?.role || "");
+
+  if (!isExec) {
+    return <Navigate to="/admin-os/no-access" replace />;
+  }
+
+  return <Outlet />;
+};
 

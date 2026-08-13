@@ -27,7 +27,7 @@ const AppointmentsPanel = () => {
   const [permissions, setPermissions] = useState<any[]>([]);
 
   // Only Founders, Co-Founders, and COO can appoint
-  const canAppoint = profile?.is_founder || profile?.role === "COO" || profile?.role === "CEO";
+  const canAppoint = profile?.is_founder || profile?.role === "COO" || profile?.role === "CEO" || profile?.role === "HR Head";
 
   const handleAppoint = async () => {
     if (!email || !role || !dept) {

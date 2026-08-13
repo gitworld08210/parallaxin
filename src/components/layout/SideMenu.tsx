@@ -43,9 +43,10 @@ export const SideMenu = ({ trigger, unreadNotif, unreadDm }: { trigger?: React.R
   const [switcherOpen, setSwitcherOpen] = useState(false);
 
 
-  const workspaces: any[] = [];
-  const ownedWorkspace = null;
-  const adminOrgSlug = null;
+  const { workspaces } = useMyWorkspaces();
+  const ownedWorkspace = workspaces?.find(w => w.owner_id === profile?.uid);
+  const adminOrgSlug = ownedWorkspace?.slug;
+
 
 
   const displayName = profile?.display_name || profile?.username || "You";
@@ -74,7 +75,11 @@ export const SideMenu = ({ trigger, unreadNotif, unreadDm }: { trigger?: React.R
     { to: "/premium", icon: Crown, label: "Aurelix Premium", badge: "PRO" },
   ];
 
-  const canAdminOS = false;
+  const canAdminOS = profile?.account_type === "organization" || 
+                     profile?.is_admin || 
+                     profile?.is_founder || 
+                     ["COO", "CEO", "HR Head", "Finance Head"].includes(profile?.role || "");
+
 
   const community: Row[] = [
     { to: "/verification-center", icon: BadgeCheck, label: "Verification center", badge: "NEW" },
