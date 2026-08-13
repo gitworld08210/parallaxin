@@ -109,7 +109,7 @@ const Profile = () => {
   useEffect(() => {
     (async () => {
       setLoading(true);
-      const target = username || me?.username;
+      const target = username || me?.username || user?.uid;
       if (!target) {
         setLoading(false);
         return;
@@ -362,6 +362,26 @@ const Profile = () => {
     );
   }
   if (!profile && !loading) {
+    if (isMe) {
+      return (
+        <div className="pb-24 flex flex-col items-center justify-center min-h-[60vh] px-6 text-center">
+          <div className="h-20 w-20 rounded-full bg-primary/10 flex items-center justify-center mb-6">
+            <User className="h-10 w-10 text-primary" />
+          </div>
+          <h2 className="text-2xl font-black mb-2">Complete your profile</h2>
+          <p className="text-zinc-500 text-sm mb-8 max-w-[280px]">
+            You haven't finished setting up your profile yet. Let others know who you are!
+          </p>
+          <Link
+            to="/profile-creation"
+            className="h-12 px-8 rounded-full bg-primary text-white font-bold flex items-center justify-center hover:brightness-110 active:scale-95 transition-all shadow-lg shadow-primary/20"
+          >
+            Setup Profile
+          </Link>
+        </div>
+      );
+    }
+
     return (
       <div className="pb-24">
         <header className="sticky top-0 z-30 h-14 px-3 flex items-center gap-3 bg-background/85 backdrop-blur-xl supports-[backdrop-filter]:bg-background/70 border-b border-border">
@@ -379,9 +399,8 @@ const Profile = () => {
         <EmptyState
           icon={Info}
           title="Profile not found"
-          subtitle={`The user "@${username || (me?.username || 'user')}" could not be found. They may have changed their username or deleted their account.`}
+          subtitle={`The user "@${username || 'user'}" could not be found. They may have changed their username or deleted their account.`}
           size="lg"
-          cta={isMe ? { label: "Go to Onboarding", to: "/onboarding" } : undefined}
         />
       </div>
     );
