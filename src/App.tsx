@@ -72,6 +72,7 @@ const ChangePasswordScreen = lazy(() => import("./pages/security/ChangePasswordS
 const ChangeEmailScreen = lazy(() => import("./pages/security/ChangeEmailScreen"));
 const ChangePhoneScreen = lazy(() => import("./pages/security/ChangePhoneScreen"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
+const ProfileCreation = lazy(() => import("./pages/ProfileCreation"));
 const OrganizationOnboarding = lazy(() => import("./pages/OrganizationOnboarding"));
 
 // Aurelix Ads Manager
@@ -431,6 +432,7 @@ const App = () => (
               <Route path="/certificate/:postId" element={<Certificate />} />
               <Route element={<ProtectedRoute />}>
                 <Route path="/onboarding" element={<Onboarding />} />
+                <Route path="/profile-creation" element={<ProfileCreation />} />
                 <Route path="/onboarding/organization" element={<OrganizationOnboarding />} />
                 
                 <Route element={<AppShell />}>

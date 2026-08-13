@@ -61,7 +61,7 @@ const Auth = () => {
       return;
     }
     localStorage.removeItem(ORG_INTENT_KEY);
-    nav(prof?.onboarded_at ? "/" : "/onboarding", { replace: true });
+    nav(prof?.onboarded_at ? "/" : (prof?.username ? "/onboarding" : "/profile-creation"), { replace: true });
   };
 
   useEffect(() => { 
@@ -89,8 +89,6 @@ const Auth = () => {
           id: res.user.uid,
           user_id: res.user.uid,
           email: email.trim(),
-          display_name: email.trim().split('@')[0],
-          username: email.trim().split('@')[0],
           account_type: kind,
           onboarded_at: null,
           created_at: serverTimestamp()
@@ -141,8 +139,6 @@ const Auth = () => {
           id: uid,
           user_id: uid,
           email,
-          display_name: name,
-          username: email?.split('@')[0] || uid.slice(0, 8),
           account_type: kind,
           avatar_url: res.user.photoURL,
           onboarded_at: null,
