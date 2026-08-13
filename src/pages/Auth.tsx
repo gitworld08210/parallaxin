@@ -98,7 +98,9 @@ const Auth = () => {
 
         // Try Firestore write first
         try {
+          console.log("Writing initial profile to Firestore:", res.user.uid);
           await setDoc(doc(db, "profiles", res.user.uid), initialProfile);
+          console.log("Initial profile write success");
         } catch (e: any) {
           console.error("Firestore initial profile write failed:", e);
           // If Firestore fails due to permissions, the toast will show it below
