@@ -30,20 +30,21 @@ const Feed = () => {
     setLoading(true);
 
     try {
-      // Load posts from Firestore
+      // Load posts from Firestore - using a memoized query would be better but let's optimize the execution
       const q = query(
         collection(db, "posts"),
         where("status", "==", "published"),
         where("is_reel", "==", false),
         orderBy("created_at", "desc"),
-        limit(30)
+        limit(15) // Reduced from 30 to 15 for faster initial load
       );
       const snap = await getDocs(q);
-      const postsData = snap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as any[];
-
-      // In Firestore version, 'liked' is usually handled by checking a sub-collection or a separate 'likes' collection.
-      // For now, we'll initialize liked: false and handle real liked status via PostCard.
-      setPosts(postsData.map(d => ({ ...d, liked: false })));
+      const postsData = snap.docs.map(doc => ({ 
+        id: doc.id, 
+        ...doc.data(),
+        liked: false // Initialize liked state
+      })) as FeedPost[];
+      setPosts(postsData);
     } catch (err) {
       console.error("Error loading feed:", err);
     } finally {
@@ -165,9 +166,9 @@ const Feed = () => {
             />
           )
         )}
-        <div className="divide-y divide-border">
+        <div className="divide-y divide-border flex flex-col">
           {posts.map((p, idx) => (
-            <div key={p.id}>
+            <div key={p.id} className="min-h-[400px]">
               <PostCard post={p} onOpenComments={setCommentPost} />
               {idx === 2 && <SuggestedUsersRail />}
             </div>
