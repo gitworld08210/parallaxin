@@ -48,6 +48,7 @@ export const NewGroupSheet = ({ open, onOpenChange }: { open: boolean; onOpenCha
     if (selectedArr.length < 1) return toast.error("Add at least one person");
     setCreating(true);
     try {
+      const { data, error } = await supabase.rpc("create_group_conversation", {
         _title: title.trim() || `Group with ${selectedArr.map((p) => p.username).slice(0, 3).join(", ")}`,
         _member_ids: selectedArr.map((p) => p.user_id),
       });
