@@ -44,16 +44,23 @@ export const NewGroupSheet = ({ open, onOpenChange }: { open: boolean; onOpenCha
 
   const selectedArr = useMemo(() => Object.values(selected), [selected]);
 
-  
+  const createGroup = async () => {
+    if (selectedArr.length === 0) return;
+    setCreating(true);
+    try {
       const { data, error } = await supabase.rpc("create_group_conversation", {
         _title: title.trim() || `Group with ${selectedArr.map((p) => p.username).slice(0, 3).join(", ")}`,
         _member_ids: selectedArr.map((p) => p.user_id),
+      });
       if (error) throw error;
       onOpenChange(false);
       setSelected({}); setTitle(""); setQ("");
       nav(`/messages/${data}`);
-    } catch (e: any) { toast.error(e.message || "Action failed"); }
-    finally { setCreating(false); }
+    } catch (e: any) { 
+      toast.error(e.message || "Action failed"); 
+    } finally { 
+      setCreating(false); 
+    }
   };
 
   return (
