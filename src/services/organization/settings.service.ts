@@ -69,9 +69,11 @@ export const settingsService = {
 
     if (Object.keys(j).length === 0) return; // Nothing to update.
 
+    const { error } = await supabase.rpc("org_update_settings" as never, {
       _organization_id: orgId,
       _patch: j as never,
-    });
+    } as never);
+
     if (error) throw error;
   },
 };

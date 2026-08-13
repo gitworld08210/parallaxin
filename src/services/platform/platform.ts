@@ -18,8 +18,10 @@ export async function logAdminAction(input: {
   before?: unknown;
   after?: unknown;
 }) {
+  const { data: userData } = await supabase.auth.getUser();
   const uid = userData.user?.id;
   if (!uid) return;
+  await supabase.from("admin_audit_logs" as any).insert({
     actor_user_id: uid,
     module: input.module,
     action: input.action,
@@ -27,7 +29,7 @@ export async function logAdminAction(input: {
     target_id: input.target_id ?? null,
     before: (input.before ?? null) as never,
     after: (input.after ?? null) as never,
-  });
+  } as any);
 }
 
 export async function emitActivity(input: {
@@ -39,8 +41,10 @@ export async function emitActivity(input: {
   summary: string;
   metadata?: Record<string, unknown>;
 }) {
+  const { data: userData } = await supabase.auth.getUser();
   const uid = userData.user?.id;
   if (!uid) return;
+  await supabase.from("platform_activity" as any).insert({
     actor_user_id: uid,
     verb: input.verb,
     object_type: input.object_type,
@@ -49,7 +53,8 @@ export async function emitActivity(input: {
     visibility: input.visibility ?? "admin",
     summary: input.summary,
     metadata: (input.metadata ?? {}) as never,
-  });
+  } as any);
+
 }
 
 // -------- Approval engine --------
@@ -334,9 +339,10 @@ export const assignments = {
 export const search = {
   async query(q: string, limit = 25) {
     if (!q.trim()) return [];
+    const { data, error } = await supabase.rpc("platform_global_search" as never, {
       _q: q,
       _limit: limit,
-    });
+    } as never);
     if (error) throw error;
     return data ?? [];
   },
@@ -346,17 +352,17 @@ export const search = {
 
 export const documents = {
   async list() {
-      supabase.from("platform_documents").select("*").is("deleted_at", null).order("updated_at", { ascending: false });
+    const { data, error } = await supabase.from("platform_documents").select("*").is("deleted_at", null).order("updated_at", { ascending: false });
     if (error) throw error;
     return data;
   },
   async get(id: string) {
-      supabase.from("platform_documents").select("*").eq("id", id).single();
+    const { data, error } = await supabase.from("platform_documents").select("*").eq("id", id).single();
     if (error) throw error;
     return data;
   },
   async versions(id: string) {
-      supabase.from("platform_document_versions").select("*").eq("document_id", id).order("version", { ascending: false });
+    const { data, error } = await supabase.from("platform_document_versions").select("*").eq("document_id", id).order("version", { ascending: false });
     if (error) throw error;
     return data;
   },
@@ -366,44 +372,46 @@ export const documents = {
     file: File;
     department?: string;
   }) {
+    const { data: userData } = await supabase.auth.getUser();
     const uid = userData.user?.id;
     if (!uid) throw new Error("Not authenticated");
     const path = `${uid}/${crypto.randomUUID()}-${input.file.name}`;
-      supabase.from("platform-documents").upload(path, input.file);
+    const { error: upErr } = await supabase.storage.from("platform-documents").upload(path, input.file);
     if (upErr) throw upErr;
-      supabase.from("platform_documents").insert({
-        name: input.name,
-        category: input.category ?? null,
-        owner_user_id: uid,
-        department: input.department ?? null,
-        storage_path: path,
-        mime_type: input.file.type,
-        size_bytes: input.file.size,
-        current_version: 1,
-      }).select().single();
+    const { data, error } = await supabase.from("platform_documents").insert({
+      name: input.name,
+      category: input.category ?? null,
+      owner_user_id: uid,
+      department: input.department ?? null,
+      storage_path: path,
+      mime_type: input.file.type,
+      size_bytes: input.file.size,
+      current_version: 1,
+    } as any).select().single();
     if (error) throw error;
-      document_id: data.id,
+    await supabase.from("platform_document_versions").insert({
+      document_id: (data as any).id,
       version: 1,
       storage_path: path,
       size_bytes: input.file.size,
       created_by: uid,
-    });
+    } as any);
     await logAdminAction({
       module: "documents",
       action: "uploaded",
       target_type: "document",
-      target_id: data.id,
-      after: { name: data.name },
+      target_id: (data as any).id,
+      after: { name: (data as any).name },
     });
     return data;
   },
   async signedUrl(path: string) {
-      supabase.from("platform-documents").
-createSignedUrl(path, 60);
+    const { data, error } = await supabase.storage.from("platform-documents").createSignedUrl(path, 60);
     if (error) throw error;
     return data.signedUrl;
   },
 };
+
 
 // -------- Reports --------
 
