@@ -83,33 +83,30 @@ const Feed = () => {
         <meta property="og:url" content="https://parallaxai.in/" />
       </Helmet>
       <h1 className="sr-only">Aurelix Feed</h1>
-      {/* X-style translucent top chrome */}
+      {/* Instagram-style translucent top chrome */}
       <div
         className={cn(
-          "sticky top-0 z-30 liquid-nav border-b border-border/50 rounded-none transition-transform duration-300",
+          "sticky top-0 z-30 bg-background/80 backdrop-blur-md border-b border-white/5 transition-transform duration-300",
           chromeHidden ? "-translate-y-full" : "translate-y-0",
         )}
       >
-        <header className="h-14 px-3 grid grid-cols-[auto_1fr_auto] items-center gap-2">
-          <SideMenu
-            trigger={
-              <button className="p-1 rounded-full" aria-label="Menu">
-                {profile?.avatar_url ? (
-                  <img
-                    src={profile.avatar_url}
-                    alt=""
-                    className="h-8 w-8 rounded-full object-cover ring-1 ring-border"
-                  />
-                ) : (
-                  <AuraAvatar
-                    gradient={gradientFor(profile?.username)}
-                    size="sm"
-                    initials={initialsOf(displayName)}
-                  />
-                )}
-              </button>
-            }
-          />
+        <header className="h-14 px-4 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="font-serif italic text-2xl tracking-tighter">
+              Parallax
+            </span>
+          </div>
+          <div className="flex items-center gap-4">
+            <Link to="/notifications" className="relative">
+              <Bell className="h-6 w-6" />
+            </Link>
+            <Link to="/messages">
+              <svg viewBox="0 0 24 24" className="h-6 w-6 fill-none stroke-current" strokeWidth="2">
+                <path d="M22 2L11 13M22 2L15 22L11 13L2 9L22 2Z" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </Link>
+          </div>
+        </header>
           <div className="flex items-center justify-center">
             <span className="font-serif italic text-2xl tracking-tighter">
               Parallax
