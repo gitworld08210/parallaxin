@@ -117,8 +117,11 @@ const Discover = () => {
 
   return (
     <div className="pb-8">
-      <header className="h-14 px-5 flex items-center border-b border-white/5 bg-black/50 backdrop-blur-md sticky top-0 z-20">
-        <h1 className="text-xl font-bold tracking-tight">Search</h1>
+      <header className="h-14 px-5 flex items-center justify-between border-b border-white/5 bg-black/50 backdrop-blur-md sticky top-0 z-20">
+        <h1 className="text-xl font-bold tracking-tight">Explore</h1>
+        <div className="flex items-center gap-4">
+          <Link to="/compose"><PenSquare className="h-6 w-6" /></Link>
+        </div>
       </header>
 
       <div className="px-4 pt-3">
