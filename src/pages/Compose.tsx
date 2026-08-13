@@ -226,19 +226,19 @@ const Compose = () => {
           className="w-full bg-zinc-900 border border-white/5 rounded-2xl p-4 text-[15px] outline-none resize-none focus:border-primary/50 transition-colors"
         />
 
-        <div className="mt-3 flex items-center gap-2 flex-wrap">
-          <label className="bg-muted rounded-md px-3 py-1.5 text-xs font-semibold flex items-center gap-2 cursor-pointer">
-            <ImagePlus className="h-4 w-4" /> Media
+        <div className="mt-4 flex items-center gap-2 flex-wrap">
+          <label className="bg-zinc-900 border border-white/5 rounded-xl px-4 py-2 text-xs font-bold flex items-center gap-2 cursor-pointer hover:bg-zinc-800 transition-colors">
+            <ImagePlus className="h-4 w-4 text-primary" /> Media
             <input type="file" accept="image/*,video/*" className="hidden" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
           </label>
-          <button disabled={aiBusy} onClick={aiCaption} className="bg-muted rounded-md px-3 py-1.5 text-xs font-semibold flex items-center gap-2">
+          <button disabled={aiBusy} onClick={aiCaption} className="bg-zinc-900 border border-white/5 rounded-xl px-4 py-2 text-xs font-bold flex items-center gap-2 hover:bg-zinc-800 transition-colors">
             <Sparkles className="h-4 w-4 text-primary" />{aiBusy ? "Generating…" : "AI caption"}
           </button>
-          <button disabled={suggestBusy} onClick={aiSuggest} className="bg-muted rounded-md px-3 py-1.5 text-xs font-semibold flex items-center gap-2">
+          <button disabled={suggestBusy} onClick={aiSuggest} className="bg-zinc-900 border border-white/5 rounded-xl px-4 py-2 text-xs font-bold flex items-center gap-2 hover:bg-zinc-800 transition-colors">
             <Hash className="h-4 w-4 text-primary" />{suggestBusy ? "…" : "AI suggest"}
           </button>
-          <button onClick={() => setCollabOpen(true)} className="bg-muted rounded-md px-3 py-1.5 text-xs font-semibold flex items-center gap-2">
-            <Users className="h-4 w-4" />Collab{collabs.length > 0 && ` · ${collabs.length}`}
+          <button onClick={() => setCollabOpen(true)} className="bg-zinc-900 border border-white/5 rounded-xl px-4 py-2 text-xs font-bold flex items-center gap-2 hover:bg-zinc-800 transition-colors">
+            <Users className="h-4 w-4 text-primary" />Collab{collabs.length > 0 && ` · ${collabs.length}`}
           </button>
         </div>
 
@@ -295,14 +295,14 @@ const Compose = () => {
           </label>
         )}
 
-        <div className="mt-6 grid grid-cols-3 gap-2">
-          <button onClick={saveDraft} disabled={busy} className="py-3 rounded-md bg-muted text-foreground font-semibold text-sm flex items-center justify-center gap-1.5 disabled:opacity-60">
+        <div className="mt-8 grid grid-cols-3 gap-3">
+          <button onClick={saveDraft} disabled={busy} className="h-14 rounded-2xl bg-zinc-900 border border-white/5 text-white font-bold text-[14px] flex items-center justify-center gap-2 hover:bg-zinc-800 transition-colors disabled:opacity-50">
             <FileText className="h-4 w-4" /> Draft
           </button>
-          <button onClick={() => setScheduleOpen(true)} disabled={busy} className="py-3 rounded-md bg-muted text-foreground font-semibold text-sm flex items-center justify-center gap-1.5 disabled:opacity-60">
+          <button onClick={() => setScheduleOpen(true)} disabled={busy} className="h-14 rounded-2xl bg-zinc-900 border border-white/5 text-white font-bold text-[14px] flex items-center justify-center gap-2 hover:bg-zinc-800 transition-colors disabled:opacity-50">
             <Calendar className="h-4 w-4" /> Schedule
           </button>
-          <button onClick={submit} disabled={busy} className="py-3 rounded-md bg-primary text-primary-foreground font-semibold text-sm disabled:opacity-60">
+          <button onClick={submit} disabled={busy} className="h-14 rounded-2xl bg-primary text-white font-bold text-[14px] shadow-lg hover:brightness-110 active:scale-[0.98] transition-all disabled:opacity-50">
             {busy ? "Posting…" : "Post"}
           </button>
         </div>
