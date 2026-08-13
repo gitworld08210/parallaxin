@@ -69,7 +69,7 @@ const CollabInviteAccept = () => {
       }
       setPost(postData as any);
       setRow((rowData as any) ?? null);
-        supabase.from("profiles").select("user_id, username, display_name, avatar_url, bio, verified, verification_kind").eq("user_id", (postData as any).user_id).maybeSingle();
+      const { data: authorData } = await supabase.from("profiles").select("user_id, username, display_name, avatar_url, bio, verified, verification_kind").eq("user_id", (postData as any).user_id).maybeSingle();
       if (!cancelled) setAuthor((authorData as any) ?? null);
       setLoading(false);
     })();
@@ -81,7 +81,7 @@ const CollabInviteAccept = () => {
   const respond = async (status: "accepted" | "declined") => {
     if (!user) return;
     setBusy(status === "accepted" ? "accept" : "decline");
-      supabase.from("post_collaborators" as any).update({ status, responded_at: new Date().toISOString() } as any).eq("post_id", postId).eq("user_id", user.id);
+    const { error } = await supabase.from("post_collaborators" as any).update({ status, responded_at: new Date().toISOString() } as any).eq("post_id", postId).eq("user_id", user.id);
     setBusy(null);
     if (error) return toast.error(error.message);
     if (status === "accepted") {

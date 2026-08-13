@@ -73,20 +73,21 @@ export interface CreateApprovalInput {
 
 export const approvals = {
   async create(input: CreateApprovalInput) {
+    const { data: userData } = await supabase.auth.getUser();
     const uid = userData.user?.id;
     if (!uid) throw new Error("Not authenticated");
-      supabase.from("platform_approval_requests").insert({
-        module: input.module,
-        entity_type: input.entity_type,
-        entity_id: input.entity_id,
-        title: input.title,
-        description: input.description ?? null,
-        payload: (input.payload ?? {}) as never,
-        workflow_id: input.workflow_id ?? null,
-        priority: input.priority ?? "normal",
-        due_at: input.due_at ?? null,
-        requested_by: uid,
-      }).select().single();
+    const { data, error } = await supabase.from("platform_approval_requests").insert({
+      module: input.module,
+      entity_type: input.entity_type,
+      entity_id: input.entity_id,
+      title: input.title,
+      description: input.description ?? null,
+      payload: (input.payload ?? {}) as never,
+      workflow_id: input.workflow_id ?? null,
+      priority: input.priority ?? "normal",
+      due_at: input.due_at ?? null,
+      requested_by: uid,
+    }).select().single();
     if (error) throw error;
     await logAdminAction({
       module: "approvals",
@@ -105,7 +106,7 @@ export const approvals = {
     return data;
   },
   async list(filter?: { status?: string; module?: string }) {
-      supabase.from("platform_approval_requests").select("*").order("created_at", { ascending: false });
+    let q = supabase.from("platform_approval_requests").select("*").order("created_at", { ascending: false });
     if (filter?.status) q = q.eq("status", filter.status);
     if (filter?.module) q = q.eq("module", filter.module);
     const { data, error } = await q;
@@ -113,18 +114,19 @@ export const approvals = {
     return data;
   },
   async decide(id: string, decision: "approved" | "rejected", reason?: string) {
+    const { data: userData } = await supabase.auth.getUser();
     const uid = userData.user?.id;
     if (!uid) throw new Error("Not authenticated");
     const status = decision === "approved" ? "approved" : "rejected";
-      supabase.from("platform_approval_requests").select("*").eq("id", id).single();
-      supabase.from("platform_approval_requests").update({ status, completed_at: new Date().toISOString() }).eq("id", id);
+    const { data: before } = await supabase.from("platform_approval_requests").select("*").eq("id", id).single();
+    const { error: upErr } = await supabase.from("platform_approval_requests").update({ status, completed_at: new Date().toISOString() }).eq("id", id);
     if (upErr) throw upErr;
-      supabase.from("platform_approval_decisions").insert({
-        request_id: id,
-        decided_by: uid,
-        decision,
-        reason: reason ?? null,
-      });
+    const { error: decErr } = await supabase.from("platform_approval_decisions").insert({
+      request_id: id,
+      decided_by: uid,
+      decision,
+      reason: reason ?? null,
+    });
     if (decErr) throw decErr;
     await logAdminAction({
       module: "approvals",
@@ -142,7 +144,7 @@ export const approvals = {
     });
   },
   async decisions(id: string) {
-      supabase.from("platform_approval_decisions").select("*").eq("request_id", id).order("created_at", { ascending: false });
+    const { data, error } = await supabase.from("platform_approval_decisions").select("*").eq("request_id", id).order("created_at", { ascending: false });
     if (error) throw error;
     return data;
   },
@@ -152,12 +154,12 @@ export const approvals = {
 
 export const workflows = {
   async list() {
-      supabase.from("platform_workflows").select("*").is("deleted_at", null).order("created_at", { ascending: false });
+    const { data, error } = await supabase.from("platform_workflows").select("*").is("deleted_at", null).order("created_at", { ascending: false });
     if (error) throw error;
     return data;
   },
   async get(id: string) {
-      supabase.from("platform_workflows").select("*").eq("id", id).single();
+    const { data, error } = await supabase.from("platform_workflows").select("*").eq("id", id).single();
     if (error) throw error;
     return data;
   },
@@ -169,15 +171,16 @@ export const workflows = {
     trigger?: string;
     steps?: unknown[];
   }) {
-      supabase.from("platform_workflows").insert({
-        key: input.key,
-        name: input.name,
-        description: input.description ?? null,
-        owner_department: input.owner_department ?? null,
-        trigger: input.trigger ?? "manual",
-        steps: (input.steps ?? []) as never,
-        created_by: userData.user?.id ?? null,
-      }).select().single();
+    const { data: userData } = await supabase.auth.getUser();
+    const { data, error } = await supabase.from("platform_workflows").insert({
+      key: input.key,
+      name: input.name,
+      description: input.description ?? null,
+      owner_department: input.owner_department ?? null,
+      trigger: input.trigger ?? "manual",
+      steps: (input.steps ?? []) as never,
+      created_by: userData.user?.id ?? null,
+    }).select().single();
     if (error) throw error;
     await logAdminAction({
       module: "workflows",
@@ -189,7 +192,7 @@ export const workflows = {
     return data;
   },
   async runs(workflow_id?: string) {
-      supabase.from("platform_workflow_runs").select("*").order("created_at", { ascending: false }).limit(50);
+    let q = supabase.from("platform_workflow_runs").select("*").order("created_at", { ascending: false }).limit(50);
     if (workflow_id) q = q.eq("workflow_id", workflow_id);
     const { data, error } = await q;
     if (error) throw error;
@@ -221,26 +224,26 @@ export const notifications = {
       } as never,
       sent_at: channel === "in_app" ? new Date().toISOString() : null,
     }));
-      supabase.from("platform_notification_deliveries").insert(rows).select();
+    const { data, error } = await supabase.from("platform_notification_deliveries").insert(rows).select();
     if (error) throw error;
     return data;
   },
   async deliveries(user_id: string, limit = 30) {
-      supabase.from("platform_notification_deliveries").select("*").eq("recipient_user_id", user_id).order("created_at", { ascending: false }).limit(limit);
+    const { data, error } = await supabase.from("platform_notification_deliveries").select("*").eq("recipient_user_id", user_id).order("created_at", { ascending: false }).limit(limit);
     if (error) throw error;
     return data;
   },
   async templates() {
-      supabase.from("platform_notification_templates").select("*").order("key");
+    const { data, error } = await supabase.from("platform_notification_templates").select("*").order("key");
     if (error) throw error;
     return data;
   },
   async getPreferences(user_id: string) {
-      supabase.from("platform_notification_preferences").select("*").eq("user_id", user_id).maybeSingle();
+    const { data } = await supabase.from("platform_notification_preferences").select("*").eq("user_id", user_id).maybeSingle();
     return data;
   },
   async savePreferences(user_id: string, prefs: Record<string, unknown>) {
-      supabase.from("platform_notification_preferences").upsert({ user_id, ...prefs }).select().single();
+    const { data, error } = await supabase.from("platform_notification_preferences").upsert({ user_id, ...prefs }).select().single();
     if (error) throw error;
     return data;
   },
@@ -254,7 +257,7 @@ export const activity = {
     object_type?: string;
     limit?: number;
   }) {
-      supabase.from("platform_activity_events").select("*").order("created_at", { ascending: false }).limit(filter?.limit ?? 50);
+    let q = supabase.from("platform_activity_events").select("*").order("created_at", { ascending: false }).limit(filter?.limit ?? 50);
     if (filter?.department) q = q.eq("department", filter.department);
     if (filter?.object_type) q = q.eq("object_type", filter.object_type);
     const { data, error } = await q;
@@ -267,7 +270,7 @@ export const activity = {
 
 export const assignments = {
   async list(filter?: { status?: string; assignee_user_id?: string }) {
-      supabase.from("platform_assignments").select("*").order("created_at", { ascending: false }).limit(100);
+    let q = supabase.from("platform_assignments").select("*").order("created_at", { ascending: false }).limit(100);
     if (filter?.status) q = q.eq("status", filter.status);
     if (filter?.assignee_user_id)
       q = q.eq("assignee_user_id", filter.assignee_user_id);
@@ -284,17 +287,18 @@ export const assignments = {
     method?: "manual" | "auto" | "rule";
     priority?: "low" | "normal" | "high" | "urgent";
   }) {
+    const { data: userData } = await supabase.auth.getUser();
     const uid = userData.user?.id;
-      supabase.from("platform_assignments").insert({
-        module: input.module,
-        entity_type: input.entity_type,
-        entity_id: input.entity_id,
-        assignee_user_id: input.assignee_user_id,
-        assigned_by: uid ?? null,
-        department: input.department ?? null,
-        method: input.method ?? "manual",
-        priority: input.priority ?? "normal",
-      }).select().single();
+    const { data, error } = await supabase.from("platform_assignments").insert({
+      module: input.module,
+      entity_type: input.entity_type,
+      entity_id: input.entity_id,
+      assignee_user_id: input.assignee_user_id,
+      assigned_by: uid ?? null,
+      department: input.department ?? null,
+      method: input.method ?? "manual",
+      priority: input.priority ?? "normal",
+    }).select().single();
     if (error) throw error;
     await logAdminAction({
       module: "assignments",
@@ -323,7 +327,7 @@ export const assignments = {
     } = { status };
     if (status === "accepted") patch.accepted_at = new Date().toISOString();
     if (status === "completed") patch.completed_at = new Date().toISOString();
-      supabase.from("platform_assignments").update(patch).eq("id", id);
+    const { error } = await supabase.from("platform_assignments").update(patch).eq("id", id);
     if (error) throw error;
     await logAdminAction({
       module: "assignments",
@@ -417,24 +421,25 @@ export const documents = {
 
 export const reports = {
   async definitions() {
-      supabase.from("platform_report_definitions").select("*").order("name");
+    const { data, error } = await supabase.from("platform_report_definitions").select("*").order("name");
     if (error) throw error;
     return data;
   },
   async runs(definition_id?: string) {
-      supabase.from("platform_report_runs").select("*").order("created_at", { ascending: false }).limit(50);
+    let q = supabase.from("platform_report_runs").select("*").order("created_at", { ascending: false }).limit(50);
     if (definition_id) q = q.eq("definition_id", definition_id);
     const { data, error } = await q;
     if (error) throw error;
     return data;
   },
   async run(definition_id: string, parameters: Record<string, unknown> = {}) {
-      supabase.from("platform_report_runs").insert({
-        definition_id,
-        parameters: parameters as never,
-        requested_by: userData.user?.id ?? null,
-        status: "pending",
-      }).select().single();
+    const { data: userData } = await supabase.auth.getUser();
+    const { data, error } = await supabase.from("platform_report_runs").insert({
+      definition_id,
+      parameters: parameters as never,
+      requested_by: userData.user?.id ?? null,
+      status: "pending",
+    }).select().single();
     if (error) throw error;
     return data;
   },
@@ -444,12 +449,12 @@ export const reports = {
 
 export const dashboards = {
   async list() {
-      supabase.from("platform_dashboards").select("*").order("name");
+    const { data, error } = await supabase.from("platform_dashboards").select("*").order("name");
     if (error) throw error;
     return data;
   },
   async widgets(dashboard_id: string) {
-      supabase.from("platform_dashboard_widgets").select("*").eq("dashboard_id", dashboard_id).order("position");
+    const { data, error } = await supabase.from("platform_dashboard_widgets").select("*").eq("dashboard_id", dashboard_id).order("position");
     if (error) throw error;
     return data;
   },
@@ -459,12 +464,12 @@ export const dashboards = {
 
 export const scheduler = {
   async jobs() {
-      supabase.from("platform_scheduled_jobs").select("*").order("name");
+    const { data, error } = await supabase.from("platform_scheduled_jobs").select("*").order("name");
     if (error) throw error;
     return data;
   },
   async runs(job_id?: string) {
-      supabase.from("platform_scheduled_job_runs").select("*").order("created_at", { ascending: false }).limit(50);
+    let q = supabase.from("platform_scheduled_job_runs").select("*").order("created_at", { ascending: false }).limit(50);
     if (job_id) q = q.eq("job_id", job_id);
     const { data, error } = await q;
     if (error) throw error;

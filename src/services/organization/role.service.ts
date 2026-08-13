@@ -23,7 +23,7 @@ export interface UpdateRoleInput {
 
 export const roleService = {
   async list(orgId: string): Promise<Role[]> {
-      supabase.from("organization_roles").select("*").eq("organization_id", orgId).order("priority", { ascending: true });
+    const { data, error } = await supabase.from("organization_roles").select("*").eq("organization_id", orgId).order("priority", { ascending: true });
     if (error) throw error;
     return (data as Role[]) ?? [];
   },

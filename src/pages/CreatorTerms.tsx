@@ -9,8 +9,8 @@ export default function CreatorTerms() {
 
   useEffect(() => {
     (async () => {
-        supabase.in("key", ["creator_revenue_split", "creator_terms_version"]);
-      for (const row of data ?? []) {
+      const { data } = await supabase.from("platform_settings" as any).select("key, value").in("key", ["creator_revenue_split", "creator_terms_version"]);
+      for (const row of (data ?? []) as any[]) {
         if (row.key === "creator_revenue_split" && row.value) {
           const v: any = row.value;
           if (typeof v?.creator === "number") setSplit(v);

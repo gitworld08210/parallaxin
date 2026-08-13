@@ -4,6 +4,7 @@ import { ChevronLeft, LogOut } from "lucide-react";
 import { TopBar } from "@/components/vibe/TopBar";
 
 import { useAuth } from "@/contexts/AuthProvider";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 type Event = { id: string; ip: string | null; user_agent: string | null; city: string | null; created_at: string };
@@ -25,11 +26,13 @@ export default function LoginActivityScreen() {
 
   useEffect(() => { (async () => {
     if (!user) return;
+    const { data } = await supabase.from("login_events" as any).select("id, ip, user_agent, city, created_at").eq("user_id", user.id).order("created_at", { ascending: false });
     setEvents((data || []) as Event[]);
   })(); }, [user]);
 
   const signOutAll = async () => {
     if (!confirm("Sign out of all devices?")) return;
+    const { error } = await supabase.auth.signOut({ scope: "global" } as any);
     if (error) toast.error(error.message);
     else toast.success("Signed out everywhere");
   };

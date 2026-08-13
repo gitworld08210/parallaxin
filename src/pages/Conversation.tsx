@@ -171,6 +171,9 @@ const Conversation = () => {
     if (!last || last.sender_id === user?.id) { setAiSuggestions([]); return; }
     setAiBusy(true);
     try {
+      const { data } = await supabase.functions.invoke("ai-reply-suggestions", {
+        body: { message: last.content },
+      });
       setAiSuggestions(Array.isArray(data?.suggestions) ? data.suggestions : []);
     } catch { /* silent */ }
     finally { setAiBusy(false); }

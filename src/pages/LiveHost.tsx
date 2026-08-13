@@ -36,6 +36,7 @@ export default function LiveHost() {
 
   useEffect(() => {
     (async () => {
+      const { data } = await supabase.from("gifts").select("id, icon, name");
       const map: Record<string, { icon: string; name: string }> = {};
       (data ?? []).forEach((g: any) => { map[g.id] = { icon: g.icon, name: g.name }; });
       setCatalog(map);
@@ -72,6 +73,7 @@ export default function LiveHost() {
     stopLocalTracks();
     setCameraReady(false);
     try {
+      const tracks = await createLocalTracks({ audio: true, video: true });
       for (const t of tracks) {
         if (t.kind === Track.Kind.Video) videoTrackRef.current = t as LocalVideoTrack;
         if (t.kind === Track.Kind.Audio) audioTrackRef.current = t as LocalAudioTrack;
@@ -89,12 +91,14 @@ export default function LiveHost() {
     if (starting) return;
     setStarting(true);
     try {
+      const { data: userData } = await supabase.auth.getUser();
       const user = userData.user;
       if (!user) { toast.error("Please sign in"); return; }
 
       // 1) Request camera/mic first — surface permission errors early
-      let tracks;
+      let tracks: Awaited<ReturnType<typeof createLocalTracks>> = [];
       try {
+        tracks = await createLocalTracks({ audio: true, video: true });
       } catch (permErr: any) {
         const msg = permErr?.name === "NotAllowedError"
           ? "Camera & microphone access denied. Enable it in your browser settings."
@@ -111,7 +115,7 @@ export default function LiveHost() {
 
       // 2) Create the stream record
       const roomName = `live_${user.id}_${Date.now()}`;
-        supabase.from("live_streams").insert({
+      const { data: stream, error: insErr } = await supabase.from("live_streams").insert({
           host_id: user.id,
           title: title || null,
           livekit_room: roomName,
@@ -120,7 +124,7 @@ export default function LiveHost() {
           allow_gifts: allowGifts,
         } as any).select().single();
       if (insErr) throw insErr;
-      setStreamId(stream.id);
+      setStreamId((stream as any).id);
       setTips((stream as any).total_tips_coins ?? 0);
 
       // 3) Get LiveKit token & connect

@@ -1,5 +1,7 @@
 
 
+import { supabase } from "@/integrations/supabase/client";
+
 type InvokeOpts = {
   body?: unknown;
   /** Retries on failure (default 1 for enrichment, 0 for fire-and-forget). */
@@ -32,6 +34,7 @@ export async function reliableInvoke<T = unknown>(
   let lastErr: unknown = null;
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
+      const { data, error } = await supabase.functions.invoke(functionName, { body });
       if (error) throw error;
       return { data: data as T, error: null };
     } catch (e) {

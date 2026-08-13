@@ -18,12 +18,14 @@ const FollowList = () => {
   useEffect(() => {
     (async () => {
       if (!username) return;
+      const { data: prof } = await supabase.from("profiles").select("user_id").eq("username", username).maybeSingle();
       if (!prof) return;
       const col = kind === "following" ? "follower_id" : "following_id";
       const sel = kind === "following" ? "following_id" : "follower_id";
+      const { data } = await supabase.from("follows").select(sel).eq(col, prof.user_id);
       const ids = (data ?? []).map((r: any) => r[sel]);
       if (ids.length === 0) { setItems([]); return; }
-        supabase.from("profiles").select("user_id, username, display_name, avatar_url, verified, verification_kind, followers_count").in("user_id", ids);
+      const { data: profs } = await supabase.from("profiles").select("user_id, username, display_name, avatar_url, verified, verification_kind, followers_count").in("user_id", ids);
       setItems((profs ?? []) as P[]);
     })();
   }, [username, kind]);

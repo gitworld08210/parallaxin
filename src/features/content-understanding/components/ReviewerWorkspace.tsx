@@ -31,7 +31,17 @@ export const ReviewerWorkspace = () => {
   
   const { data: item, isLoading } = useQuery({
     queryKey: ['content-context-detail', id],
-    queryFn: async () => { /* shimmed action */ }
+    queryFn: async () => {
+      if (!id) return null;
+      const { data, error } = await supabase
+        .from('content_context')
+        .select('*')
+        .eq('content_id', id)
+        .maybeSingle();
+      if (error) throw error;
+      return data as any;
+    },
+    enabled: !!id,
   });
 
   if (isLoading) return <div>Loading review workspace...</div>;

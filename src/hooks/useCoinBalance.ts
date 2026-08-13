@@ -26,7 +26,7 @@ export function useCoinBalance() {
     }
 
     // 2. Legacy Supabase Fallback.
-from("profiles_private").select("coin_balance").eq("user_id", user.id).maybeSingle();
+    const { data } = await supabase.from("profiles_private").select("coin_balance").eq("user_id", user.id).maybeSingle();
     setBalance((data as any)?.coin_balance ?? 0);
     setLoading(false);
   }, [user?.id]);

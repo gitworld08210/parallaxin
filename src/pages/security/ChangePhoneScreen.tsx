@@ -4,6 +4,7 @@ import { ChevronLeft, Phone } from "lucide-react";
 import { TopBar } from "@/components/vibe/TopBar";
 
 import { useAuth } from "@/contexts/AuthProvider";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 export default function ChangePhoneScreen() {
@@ -22,6 +23,9 @@ export default function ChangePhoneScreen() {
       return toast.error("Enter phone in E.164 format, e.g. +14155551234");
     }
     setBusy(true);
+    const { data, error } = await supabase.functions.invoke("send-phone-code", {
+      body: { phone: p },
+    });
     setBusy(false);
     if (error || (data as any)?.error) {
       return toast.error((data as any)?.error || error?.message || "Failed to send code");

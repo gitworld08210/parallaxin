@@ -5,6 +5,7 @@ import { TopBar } from "@/components/vibe/TopBar";
 
 import { useAuth } from "@/contexts/AuthProvider";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function ChangeEmailScreen() {
   const nav = useNavigate();

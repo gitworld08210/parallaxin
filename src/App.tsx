@@ -10,7 +10,7 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AppShell } from "@/components/layout/AppShell";
 import { ThemeProvider } from "@/contexts/ThemeProvider";
 import { CallProvider } from "@/contexts/CallProvider";
-import { MessagesPasscodeGate } from "@/components/messages/MessagesPasscodeGate";
+import MessagesPasscodeGate from "@/components/messages/MessagesPasscodeGate";
 
 // Eager: critical first-paint routes
 import Feed from "./pages/Feed";

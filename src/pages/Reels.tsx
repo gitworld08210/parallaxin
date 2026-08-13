@@ -57,7 +57,8 @@ const Reels = () => {
 
       let liked = new Set<string>();
       if (user && data.length) {
-        liked = new Set((l ?? []).map((x) => x.post_id));
+        const { data: l } = await supabase.from("post_likes").select("post_id").eq("user_id", user.id).in("post_id", data.map((d: any) => d.id));
+        liked = new Set((l ?? []).map((x: any) => x.post_id));
       }
       setReels((data as any[]).map((d: any) => ({ ...d, liked: liked.has(d.id) })));
     })();
@@ -238,7 +239,7 @@ const ReelItem = ({
           if (p >= cp) {
             recordInteraction({ 
               contentId: r.id, 
-              topicIds: context ? [context.primary_category_id, ...context.secondary_category_ids].filter(Boolean) as string[] : [], 
+              topicIds: context ? [(context as any).primary_category_id, ...((context as any).secondary_category_ids ?? [])].filter(Boolean) as string[] : [], 
               signalType: `watch_${cp}` as any 
             });
             checkpoints.delete(cp);

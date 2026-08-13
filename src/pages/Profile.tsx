@@ -153,8 +153,8 @@ const Profile = () => {
         let liked = new Set<string>();
         const allIds = [...(pdata ?? []), ...(rdata ?? [])].map((d: any) => d.id);
         if (user && allIds.length) {
-            supabase.from("likes").select("post_id").eq("user_id", user.id).in("post_id", allIds);
-          liked = new Set((l ?? []).map((x) => x.post_id));
+          const { data: l } = await supabase.from("likes").select("post_id").eq("user_id", user.id).in("post_id", allIds);
+          liked = new Set((l ?? []).map((x: any) => x.post_id));
         }
         setPosts(
           ((pdata ?? []) as any[])

@@ -109,7 +109,7 @@ const Messages = () => {
     if (!q) { setResults([]); return; }
     let cancelled = false;
     const t = setTimeout(async () => {
-        supabase.from("profiles").select("user_id, username, display_name, avatar_url, verification_kind").or(`username.ilike.%${q}%,display_name.ilike.%${q}%`).neq("user_id", user?.id ?? "").limit(12);
+      const { data } = await supabase.from("profiles").select("user_id, username, display_name, avatar_url, verification_kind").or(`username.ilike.%${q}%,display_name.ilike.%${q}%`).neq("user_id", user?.id ?? "").limit(12);
       if (!cancelled) setResults((data as any) ?? []);
     }, 220);
     return () => { cancelled = true; clearTimeout(t); };

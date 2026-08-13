@@ -1,4 +1,3 @@
-import { supabase } from '@/integrations/supabase/client';
 const mock = {
   from: () => mock,
   select: () => mock,

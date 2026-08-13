@@ -4,6 +4,7 @@ import { ChevronLeft, Download, Sparkles } from "lucide-react";
 import { TopBar } from "@/components/vibe/TopBar";
 
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function DataExportScreen() {
   const nav = useNavigate();
@@ -12,6 +13,7 @@ export default function DataExportScreen() {
   const exportNow = async () => {
     setBusy(true);
     try {
+      const { data, error } = await supabase.functions.invoke("export-user-data", {});
       if (error) throw error;
       const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
       const a = document.createElement("a");

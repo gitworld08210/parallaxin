@@ -5,6 +5,7 @@ import { useAuth } from "@/contexts/AuthProvider";
 import { toast } from "sonner";
 import { Building2, Upload, Sparkles } from "lucide-react";
 import { ORG_TYPES } from "@/lib/orgTypes";
+import { supabase } from "@/integrations/supabase/client";
 import type { OrgType } from "@/types/organization/organization";
 
 const input =
@@ -37,7 +38,9 @@ const OrganizationOnboarding = () => {
     try {
       const ext = file.name.split(".").pop() || "png";
       const path = `org-logos/${user.id}/${Date.now()}.${ext}`;
+      const { error } = await supabase.storage.from("org-logos").upload(path, file, { upsert: true });
       if (error) throw error;
+      const { data } = supabase.storage.from("org-logos").getPublicUrl(path);
       setLogoUrl(data.publicUrl);
     } catch (e: any) { toast.error(e.message || "Action failed"); } finally {
       setLogoUploading(false);

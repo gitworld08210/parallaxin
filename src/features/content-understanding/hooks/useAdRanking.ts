@@ -1,6 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 
 import { useQuery } from "@tanstack/react-query";
+import { useAuth } from "@/contexts/AuthProvider";
 
 export interface AdRankingResult {
   ad_id: string;
@@ -10,16 +11,17 @@ export interface AdRankingResult {
 }
 
 export const useAdRanking = (contentId?: string) => {
+  const { user } = useAuth();
   return useQuery({
     queryKey: ['ad-ranking', contentId],
     queryFn: async () => {
       if (!user || !contentId) return [];
 
       // 1. Get current content context.
-from('content_context').select('*').eq('content_id', contentId).maybeSingle();
+      const { data: context } = await supabase.from('content_context' as any).select('*').eq('content_id', contentId).maybeSingle();
 
       // 2. Get user interests.
-from('ads_user_interests').select('topic_id, interest_score').eq('user_id', user.id);
+      const { data: interests } = await supabase.from('ads_user_interests' as any).select('topic_id, interest_score').eq('user_id', user.id);
 
       // 3. Ad Ranking Algorithm (Spec #16 & #25)
       // Score = (TargetingMatch * 0.3) + (ContextMatch * 0.4) + (InterestMatch * 0.3)

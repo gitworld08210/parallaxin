@@ -8,6 +8,7 @@ import { useAuth } from "@/contexts/AuthProvider";
 import { gradientFor, initialsOf } from "@/lib/format";
 import { toast } from "sonner";
 import { uploadToCloudinary } from "@/lib/cloudinary";
+import { supabase } from "@/integrations/supabase/client";
 
 
 

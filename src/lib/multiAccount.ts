@@ -54,6 +54,8 @@ export const removeSavedAccount = (userId: string) => {
   write(read().filter((a) => a.userId !== userId));
 };
 
+import { supabase } from "@/integrations/supabase/client";
+
 export const switchToAccount = async (acc: SavedAccount) => {
   const { error } = await supabase.auth.setSession({
     access_token: acc.accessToken,

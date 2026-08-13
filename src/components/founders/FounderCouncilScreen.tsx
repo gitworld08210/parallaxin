@@ -28,7 +28,7 @@ export const FounderCouncilScreen = () => {
 
   useEffect(() => {
     (async () => {
-        supabase.select("user_id, username, display_name, avatar_url, council_role, founder_title").not("council_role", "is", null).order("created_at", { ascending: true });
+      const { data } = await supabase.from("profiles").select("user_id, username, display_name, avatar_url, council_role, founder_title").not("council_role", "is", null).order("created_at", { ascending: true });
       setMembers((data ?? []) as Member[]);
       setLoading(false);
     })();

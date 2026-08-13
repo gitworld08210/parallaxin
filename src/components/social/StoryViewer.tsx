@@ -3,8 +3,11 @@ import { X, Send } from "lucide-react";
 import { timeAgo } from "@/lib/format";
 
 import { useAuth } from "@/contexts/AuthProvider";
+import { supabase } from "@/integrations/supabase/client";
 import { StoryStickersLayer } from "@/components/social/StoryStickersLayer";
 import { toast } from "sonner";
+import { collection, addDoc, query, where, getDocs, serverTimestamp } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 
 type Story = {
   id: string;
@@ -62,10 +65,29 @@ export const StoryViewer = ({ stories, startIdx, onClose }: { stories: Story[]; 
   const sendReply = async () => {
     if (!user || !reply.trim() || !current.profile) return;
     if (current.user_id === user.uid) { toast.error("Can't reply to yourself"); return; }
-    if (rpcErr || !convId) { toast.error("Couldn't start chat"); return; }
-    const content = `↩️ Replied to story: ${reply.trim().slice(0, 500)}`;
-    setReply("");
-    toast.success("Reply sent");
+    try {
+      const convsRef = collection(db, "conversations");
+      const q1 = query(convsRef, where("member_ids", "array-contains", user.uid));
+      const snap = await getDocs(q1);
+      let convId = snap.docs.find((d) => (d.data().member_ids || []).includes(current.user_id))?.id ?? null;
+      if (!convId) {
+        const newConv = await addDoc(convsRef, {
+          member_ids: [user.uid, current.user_id],
+          created_at: serverTimestamp(),
+        });
+        convId = newConv.id;
+      }
+      const content = `↩️ Replied to story: ${reply.trim().slice(0, 500)}`;
+      await addDoc(collection(db, "conversations", convId, "messages"), {
+        sender_id: user.uid,
+        content,
+        created_at: serverTimestamp(),
+      });
+      setReply("");
+      toast.success("Reply sent");
+    } catch {
+      toast.error("Couldn't start chat");
+    }
   };
 
   return (

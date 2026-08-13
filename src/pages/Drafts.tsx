@@ -44,6 +44,7 @@ const Drafts = () => {
 
   const remove = async (id: string) => {
     if (!confirm("Delete this draft?")) return;
+    const { error } = await supabase.from("posts").delete().eq("id", id);
     if (error) return toast.error(error.message);
     setItems((arr) => arr.filter((i) => i.id !== id));
   };

@@ -4,6 +4,8 @@ import { ChevronLeft, Trash2 } from "lucide-react";
 import { TopBar } from "@/components/vibe/TopBar";
 
 import { useAuth } from "@/contexts/AuthProvider";
+import { supabase } from "@/integrations/supabase/client";
+import { EmailAuthProvider, reauthenticateWithCredential } from "firebase/auth";
 import { toast } from "sonner";
 
 export default function DeleteAccountScreen() {
@@ -19,7 +21,15 @@ export default function DeleteAccountScreen() {
     if (!user) return;
     setBusy(true);
     try {
+      const credential = EmailAuthProvider.credential(user.email || "", password);
+      const { error: reauth } = await reauthenticateWithCredential(user as any, credential).then(
+        () => ({ error: null }),
+        (e: any) => ({ error: e }),
+      );
       if (reauth) throw reauth;
+      const { error } = await supabase.rpc("schedule_account_deletion" as never, {
+        _reason: reason || null,
+      } as never);
       if (error) throw error;
       toast.success("Your account is scheduled for erasure. You have 7 days to undo by signing back in.");
       await signOut();
