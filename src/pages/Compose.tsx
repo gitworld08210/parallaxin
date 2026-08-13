@@ -132,7 +132,7 @@ const Compose = () => {
       if (status === "published" && content.trim()) {
         try {
           const { data: mod } = await reliableInvoke("moderate-content", { body: { content: content.trim() }, retries: 1 });
-          if (mod?.flagged) throw new Error(mod.reason || "Content flagged by moderation");
+          if ((mod as any)?.flagged) throw new Error((mod as any).reason || "Content flagged by moderation");
         } catch (modErr: any) {
           // Only block if moderation actually flagged content; ignore transport/AI errors.
           if (modErr?.message && !/non-2xx|Failed to fetch|FunctionsHttpError|FunctionsFetchError/i.test(modErr.message)) {

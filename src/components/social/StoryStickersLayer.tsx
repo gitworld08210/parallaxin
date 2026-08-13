@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthProvider";
 import { Send } from "lucide-react";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
 
 type Sticker = {
   id: string;
