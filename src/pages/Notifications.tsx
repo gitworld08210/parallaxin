@@ -126,11 +126,11 @@ const Notifications = () => {
       // Incoming organization invites are loaded via useIncomingInvites().
     })();
 
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "notifications", filter: `user_id=eq.${user.id}` },
+    const channel = supabase.channel("public:notifications")
         async (payload) => {
           const n = payload.new as any;
           let actor = null;
-          if (n.actor_id) {
+      .subscribe();
             actor = data;
           }
           setItems((prev) => [{ ...n, actor }, ...prev]);
