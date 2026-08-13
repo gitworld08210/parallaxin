@@ -37,15 +37,24 @@ const Auth = () => {
   const routeForUser = async (uid: string) => {
     if (nextPath) { nav(nextPath, { replace: true }); return; }
     
-    const profSnap = await getDoc(doc(db, "profiles", uid));
-    const prof = profSnap.exists() ? profSnap.data() : null;
+    let prof: any = null;
+    try {
+      const profSnap = await getDoc(doc(db, "profiles", uid));
+      prof = profSnap.exists() ? profSnap.data() : null;
+    } catch (e) {
+      console.error("Error fetching profile during routing:", e);
+    }
 
     const intent = (localStorage.getItem(ORG_INTENT_KEY) as AccountKind | null) || null;
     const wantsOrg = intent === "organization" || prof?.account_type === "organization";
 
     if (wantsOrg && !prof?.organization_id) {
       if (prof && prof.account_type !== "organization") {
-        await setDoc(doc(db, "profiles", uid), { account_type: "organization" }, { merge: true });
+        try {
+          await setDoc(doc(db, "profiles", uid), { account_type: "organization" }, { merge: true });
+        } catch (e) {
+          console.error("Error updating profile to organization:", e);
+        }
       }
       localStorage.removeItem(ORG_INTENT_KEY);
       nav("/onboarding/organization", { replace: true });
