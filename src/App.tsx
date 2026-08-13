@@ -99,6 +99,7 @@ const Achievements = lazy(() => import("./pages/Achievements"));
 const AuraLevel = lazy(() => import("./pages/AuraLevel"));
 const Monetization = lazy(() => import("./pages/Monetization"));
 const VerificationCenter = lazy(() => import("./pages/VerificationCenter"));
+const AdminOSVerificationQueue = lazy(() => import("./pages/admin-os/VerificationQueue"));
 const VirtualWorld = lazy(() => import("./pages/VirtualWorld"));
 const Store = lazy(() => import("./pages/Store"));
 const CheckoutReturn = lazy(() => import("./pages/CheckoutReturn"));
@@ -112,9 +113,10 @@ const ReviewerWorkspace = lazy(() => import("./pages/NotFound"));
 // Admin OS workspace (Phase 1 foundation)
 const AdminOSGate = lazy(() => import("./pages/NotFound"));
 const AdminOSLayout = lazy(() => import("./pages/NotFound"));
-const AdminOSDashboard = lazy(() => import("./pages/NotFound"));
+const AdminOSDashboard = lazy(() => import("./pages/admin-os/AdminOSDashboard"));
+const AppointmentsPanel = lazy(() => import("./pages/admin-os/AppointmentsPanel"));
 const RoutingOverview = lazy(() => import("./pages/NotFound"));
-const ApprovalsInbox = lazy(() => import("./pages/NotFound"));
+const ApprovalsInbox = lazy(() => import("./pages/admin-os/ApprovalsInbox"));
 const AdminOSModulePlaceholder = lazy(() => import("./pages/NotFound"));
 const AdminOSNoAccess = lazy(() => import("./pages/NotFound"));
 const AdminOSFirstLogin = lazy(() => import("./pages/NotFound"));
@@ -152,7 +154,7 @@ const SkillsCenter = lazy(() => import("./pages/NotFound"));
 const CertificationCenter = lazy(() => import("./pages/NotFound"));
 const DepartmentSkillMatrix = lazy(() => import("./pages/NotFound"));
 const CareerRoadmapsPage = lazy(() => import("./pages/NotFound"));
-const RecruitmentIndex = lazy(() => import("./pages/NotFound"));
+const RecruitmentIndex = lazy(() => import("./pages/admin-os/RecruitmentCenter"));
 const HiringRequestCenter = lazy(() => import("./pages/NotFound"));
 const CandidateDirectory = lazy(() => import("./pages/NotFound"));
 const CandidateDetail = lazy(() => import("./pages/NotFound"));
@@ -290,8 +292,7 @@ const LockdownPanelPage = lazy(() => import("./pages/NotFound"));
 const WatchlistPanelPage = lazy(() => import("./pages/NotFound"));
 const FounderOfficeDashboard = lazy(
   () => import("./pages/NotFound"));
-const AppointmentsPanel = lazy(
-  () => import("./pages/NotFound"));
+// AppointmentsPanel handled in admin-os lazy imports above
 const AuditCenter = lazy(() => import("./pages/NotFound"));
 const DepartmentsIndex = lazy(
   () => import("./pages/NotFound"));
@@ -436,6 +437,11 @@ const App = () => (
                 <Route path="/onboarding/organization" element={<OrganizationOnboarding />} />
                 
                 <Route element={<AppShell />}>
+                  <Route path="/admin-os/verification" element={<AdminOSVerificationQueue />} />
+                  <Route path="/admin-os/appointments" element={<AppointmentsPanel />} />
+                  <Route path="/admin-os/dashboard" element={<AdminOSDashboard />} />
+                  <Route path="/admin-os/approvals" element={<ApprovalsInbox />} />
+                  <Route path="/admin-os/recruitment" element={<RecruitmentIndex />} />
                   <Route path="/" element={<Feed />} />
                   <Route path="/reels" element={<Reels />} />
                   <Route path="/discover" element={<Discover />} />

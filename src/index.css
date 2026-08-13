@@ -7,9 +7,8 @@
 
 @layer base {
   :root {
-    /* ===== Midnight Indigo — Dark First =====
-       Palette: #0a0a1a bg → #141432 surface → #1e1e5a elevated → #4f46e5 primary */
-    --background: 240 43% 6%;
+    /* ===== Pure Black Aesthetics ===== */
+    --background: 0 0% 0%;
     --foreground: 0 0% 100%;
 
     --surface: 240 44% 14%;
@@ -23,9 +22,9 @@
     --popover-foreground: 0 0% 100%;
 
     /* Brand — electric indigo */
-    --primary: 244 76% 59%;
+    --primary: 203 89% 53%;
     --primary-foreground: 0 0% 100%;
-    --primary-glow: 250 90% 72%;
+    --primary-glow: 203 89% 65%;
 
     --secondary: 240 30% 16%;
     --secondary-foreground: 0 0% 100%;
@@ -56,7 +55,7 @@
     --destructive: 0 72% 55%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 240 30% 20%;
+    --border: 0 0% 15%;
     --input: 240 30% 16%;
     --ring: 244 76% 59%;
 
