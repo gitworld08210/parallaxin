@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Plus } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 import { NewHighlightSheet } from "./NewHighlightSheet";
 
@@ -10,9 +11,10 @@ export const HighlightsRail = ({ userId, isMe }: { userId: string; isMe: boolean
   const [open, setOpen] = useState(false);
 
   const load = async () => {
-      supabase.select("id, title, cover_url")
+    const { data } = await supabase.from("highlights")
+      .select("id, title, cover_url")
       .eq("user_id", userId)
-      .order("created_at", { ascending: false }) as any);
+      .order("created_at", { ascending: false });
     setItems((data as Highlight[]) ?? []);
   };
 
