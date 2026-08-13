@@ -12,8 +12,15 @@ service cloud.firestore {
 
     // Profiles
     match /profiles/{userId} {
+      // Allow read for all authenticated users to see other profiles
       allow read: if isSignedIn();
-      allow write: if isOwner(userId);
+      // Allow create if the user is creating their own document
+      // and they are authenticated.
+      allow create: if isSignedIn() && request.auth.uid == userId;
+      // Allow update only by the owner
+      allow update: if isOwner(userId);
+      // Allow delete only by the owner
+      allow delete: if isOwner(userId);
     }
 
     // Follows
@@ -52,7 +59,8 @@ service cloud.firestore {
     // Notifications
     match /notifications/{notifId} {
       allow read: if isSignedIn() && resource.data.user_id == request.auth.uid;
-      allow write: if false; // Only system/functions should write notifications
+      allow create: if isSignedIn(); // Allow creating notifications for others
+      allow update: if isSignedIn() && resource.data.user_id == request.auth.uid;
       allow delete: if isSignedIn() && resource.data.user_id == request.auth.uid;
     }
 
@@ -65,7 +73,7 @@ service cloud.firestore {
     // Organizations
     match /organizations/{orgId} {
       allow read: if isSignedIn();
-      allow write: if isSignedIn(); // Simplified, should be refined based on roles
+      allow write: if isSignedIn();
     }
 
     // Wallet Ledger
