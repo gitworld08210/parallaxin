@@ -115,12 +115,9 @@ const Profile = () => {
         return;
       }
       
-      // Fetch profile from Firestore
-      // 1. Try fetching by ID first (most reliable for "Me")
       let profDoc = await getDoc(doc(db, "profiles", target));
       let p = profDoc.exists() ? ({ id: profDoc.id, ...profDoc.data() } as any) : null;
 
-      // 2. If not found by ID, search by username
       if (!p) {
         const qProf = query(
           collection(db, "profiles"),
@@ -139,13 +136,15 @@ const Profile = () => {
           collection(db, "posts"),
           where("user_id", "==", p.user_id),
           where("is_reel", "==", false),
-          orderBy("created_at", "desc")
+          orderBy("created_at", "desc"),
+          limit(10)
         );
         const qReels = query(
           collection(db, "posts"),
           where("user_id", "==", p.user_id),
           where("is_reel", "==", true),
-          orderBy("created_at", "desc")
+          orderBy("created_at", "desc"),
+          limit(8)
         );
 
         const [snapPosts, snapReels] = await Promise.all([
