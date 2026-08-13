@@ -285,7 +285,7 @@ const ReelItem = ({
   }, []);
 
   return (
-    <section className="relative h-full snap-start grid place-items-center shrink-0">
+    <section className="relative h-full w-full snap-start grid place-items-center shrink-0">
       <video
         ref={videoRef}
         data-reel-id={r.id}
