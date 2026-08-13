@@ -1,4 +1,4 @@
-import { supabase } from "@/integrations/supabase/client";
+
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { Search, TrendingUp, Sparkles, Crown, BadgeCheck, Flame } from "lucide-react";

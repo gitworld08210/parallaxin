@@ -7,7 +7,7 @@ import { AuraAvatar } from "@/components/vibe/AuraAvatar";
 import { VerificationBadge } from "@/components/vibe/VerificationBadge";
 import { gradientFor, initialsOf } from "@/lib/format";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
+
 
 type SuggestedUser = {
   user_id: string;
