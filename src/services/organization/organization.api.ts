@@ -55,11 +55,11 @@ export const organizationApi = {
         supabase.select(
           "id, joined_at, organization_id, organizations(id, slug, name, logo_url, verified, org_type, owner_user_id)",
         )
-        .eq("user_id", userId)
-        .eq("status", "active"),
+        supabase.eq("user_id", userId)
+        supabase.eq("status", "active"),
         supabase.from("organizations")
         supabase.select("id, slug, name, logo_url, verified, org_type, owner_user_id")
-        .eq("owner_user_id", userId),
+        supabase.eq("owner_user_id", userId),
     ]);
     if (memberRes.error) throw memberRes.error;
     if (ownerRes.error) throw ownerRes.error;
@@ -85,7 +85,7 @@ export const organizationApi = {
     if (memberIds.length > 0) {
         supabase.from("organization_member_roles")
         supabase.select("member_id, organization_roles(id, name)")
-        .in("member_id", memberIds);
+        supabase.in("member_id", memberIds);
       if (roleErr) throw roleErr;
       for (const l of ((roleRows ?? []) as RoleLinkRow[])) {
         const bucket = roleMap.get(l.member_id) ?? [];

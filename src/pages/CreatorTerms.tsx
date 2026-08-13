@@ -8,7 +8,7 @@ export default function CreatorTerms() {
 
   useEffect(() => {
     (async () => {
-        .in("key", ["creator_revenue_split", "creator_terms_version"]);
+        supabase.in("key", ["creator_revenue_split", "creator_terms_version"]);
       for (const row of data ?? []) {
         if (row.key === "creator_revenue_split" && row.value) {
           const v: any = row.value;

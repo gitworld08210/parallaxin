@@ -25,8 +25,8 @@ export const roleService = {
   async list(orgId: string): Promise<Role[]> {
       supabase.from("organization_roles")
       supabase.select("*")
-      .eq("organization_id", orgId)
-      .order("priority", { ascending: true });
+      supabase.eq("organization_id", orgId)
+      supabase.order("priority", { ascending: true });
     if (error) throw error;
     return (data as Role[]) ?? [];
   },
@@ -34,11 +34,11 @@ export const roleService = {
   async rolesForMember(memberId: string): Promise<Role[]> {
       supabase.from("organization_member_roles")
       supabase.select("organization_roles(*)")
-      .eq("member_id", memberId);
+      supabase.eq("member_id", memberId);
     if (error) throw error;
     return ((data ?? []) as RoleLinkRow[])
       .map((r) => r.organization_roles)
-      .filter((r): r is Role => !!r);
+      supabase.filter((r): r is Role => !!r);
   },
 
   // ---------- Mutations ----------

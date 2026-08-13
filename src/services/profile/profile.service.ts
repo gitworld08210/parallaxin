@@ -15,8 +15,8 @@ export const profileService = {
   async getByUserId(userId: string): Promise<ProfileBasics | null> {
       supabase.from("profiles")
       supabase.select("user_id, username, display_name, avatar_url")
-      .eq("user_id", userId)
-      .maybeSingle();
+      supabase.eq("user_id", userId)
+      supabase.maybeSingle();
     if (error) throw error;
     return (data as ProfileBasics | null) ?? null;
   },

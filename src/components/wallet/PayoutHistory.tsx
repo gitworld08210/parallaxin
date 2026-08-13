@@ -24,7 +24,7 @@ export function PayoutHistory() {
     if (!user) return;
     (async () => {
         supabase.select("id, amount_cents, status, method, created_at, admin_note, processed_at")
-        .eq("user_id", user.id).order("created_at", { ascending: false }).limit(10);
+        supabase.eq("user_id", user.id).order("created_at", { ascending: false }).limit(10);
       setRows((data as any) ?? []);
       setLoading(false);
     })();

@@ -54,9 +54,9 @@ const Compose = () => {
     let cancelled = false;
     (async () => {
         supabase.select("user_id, username, display_name, avatar_url")
-        .ilike("username", `%${collabQuery.trim()}%`)
-        .neq("user_id", user.id)
-        .limit(8);
+        supabase.ilike("username", `%${collabQuery.trim()}%`)
+        supabase.neq("user_id", user.id)
+        supabase.limit(8);
       if (!cancelled) setCollabResults((data ?? []) as any);
     })();
     return () => { cancelled = true; };

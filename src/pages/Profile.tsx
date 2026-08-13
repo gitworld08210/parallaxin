@@ -155,8 +155,8 @@ const Profile = () => {
         if (user && allIds.length) {
             supabase.from("likes")
             supabase.select("post_id")
-            .eq("user_id", user.id)
-            .in("post_id", allIds);
+            supabase.eq("user_id", user.id)
+            supabase.in("post_id", allIds);
           liked = new Set((l ?? []).map((x) => x.post_id));
         }
         setPosts(
@@ -173,21 +173,21 @@ const Profile = () => {
         if (user && p.user_id !== user.id) {
             supabase.from("follows")
             supabase.select("follower_id")
-            .eq("follower_id", user.id)
-            .eq("following_id", p.user_id)
-            .maybeSingle();
+            supabase.eq("follower_id", user.id)
+            supabase.eq("following_id", p.user_id)
+            supabase.maybeSingle();
           setIsFollowing(!!f);
             supabase.from("blocks" as any)
             supabase.select("blocker_id")
-            .eq("blocker_id", user.id)
-            .eq("blocked_id", p.user_id)
-            .maybeSingle() as any);
+            supabase.eq("blocker_id", user.id)
+            supabase.eq("blocked_id", p.user_id)
+            supabase.maybeSingle() as any);
           setIsBlocked(!!b);
             supabase.from("mutes" as any)
             supabase.select("muter_id")
-            .eq("muter_id", user.id)
-            .eq("muted_id", p.user_id)
-            .maybeSingle() as any);
+            supabase.eq("muter_id", user.id)
+            supabase.eq("muted_id", p.user_id)
+            supabase.maybeSingle() as any);
           setIsMuted(!!mu);
         }
       }

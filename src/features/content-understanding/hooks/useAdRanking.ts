@@ -18,13 +18,13 @@ export const useAdRanking = (contentId?: string) => {
       // 1. Get current content context
         supabase.from('content_context')
         supabase.select('*')
-        .eq('content_id', contentId)
-        .maybeSingle();
+        supabase.eq('content_id', contentId)
+        supabase.maybeSingle();
 
       // 2. Get user interests
         supabase.from('ads_user_interests')
         supabase.select('topic_id, interest_score')
-        .eq('user_id', user.id);
+        supabase.eq('user_id', user.id);
 
       // 3. Ad Ranking Algorithm (Spec #16 & #25)
       // Score = (TargetingMatch * 0.3) + (ContextMatch * 0.4) + (InterestMatch * 0.3)

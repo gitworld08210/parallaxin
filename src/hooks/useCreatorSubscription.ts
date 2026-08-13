@@ -54,8 +54,8 @@ export function useMySubscriptions() {
     if (!user) { setSubs([]); setLoading(false); return; }
       supabase.from("creator_subscriptions" as any)
       supabase.select("*, creator:profiles!creator_subscriptions_creator_id_fkey(username, display_name, avatar_url)")
-      .eq("subscriber_id", user.id)
-      .order("current_period_end", { ascending: false });
+      supabase.eq("subscriber_id", user.id)
+      supabase.order("current_period_end", { ascending: false });
     setSubs((data as any) ?? []);
     setLoading(false);
   }, [user?.id]);

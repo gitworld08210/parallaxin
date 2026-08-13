@@ -126,7 +126,7 @@ export default function LiveHost() {
           allow_gifts: allowGifts,
         } as any)
         supabase.select()
-        .single();
+        supabase.single();
       if (insErr) throw insErr;
       setStreamId(stream.id);
       setTips((stream as any).total_tips_coins ?? 0);
@@ -165,7 +165,7 @@ export default function LiveHost() {
       if (streamId) {
           supabase.from("live_streams")
           supabase.update({ status: "ended", ended_at: new Date().toISOString() })
-          .eq("id", streamId);
+          supabase.eq("id", streamId);
       }
     } finally {
       navigate(-1);

@@ -74,8 +74,8 @@ const Certificate = () => {
     (async () => {
         supabase.from("ownership_certificates")
         supabase.select("*, profile:profiles!ownership_certificates_creator_id_fkey(username, display_name, avatar_url)")
-        .eq("post_id", postId)
-        .maybeSingle();
+        supabase.eq("post_id", postId)
+        supabase.maybeSingle();
       if (error) toast.error(error.message);
       setCert(data as any);
       setLoading(false);

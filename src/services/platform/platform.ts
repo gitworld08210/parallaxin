@@ -84,7 +84,7 @@ export const approvals = {
         requested_by: uid,
       })
       supabase.select()
-      .single();
+      supabase.single();
     if (error) throw error;
     await logAdminAction({
       module: "approvals",
@@ -105,7 +105,7 @@ export const approvals = {
   async list(filter?: { status?: string; module?: string }) {
       supabase.from("platform_approval_requests")
       supabase.select("*")
-      .order("created_at", { ascending: false });
+      supabase.order("created_at", { ascending: false });
     if (filter?.status) q = q.eq("status", filter.status);
     if (filter?.module) q = q.eq("module", filter.module);
     const { data, error } = await q;
@@ -118,11 +118,11 @@ export const approvals = {
     const status = decision === "approved" ? "approved" : "rejected";
       supabase.from("platform_approval_requests")
       supabase.select("*")
-      .eq("id", id)
-      .single();
+      supabase.eq("id", id)
+      supabase.single();
       supabase.from("platform_approval_requests")
       supabase.update({ status, completed_at: new Date().toISOString() })
-      .eq("id", id);
+      supabase.eq("id", id);
     if (upErr) throw upErr;
       supabase.from("platform_approval_decisions")
       supabase.insert({
@@ -150,8 +150,8 @@ export const approvals = {
   async decisions(id: string) {
       supabase.from("platform_approval_decisions")
       supabase.select("*")
-      .eq("request_id", id)
-      .order("created_at", { ascending: false });
+      supabase.eq("request_id", id)
+      supabase.order("created_at", { ascending: false });
     if (error) throw error;
     return data;
   },
@@ -163,16 +163,16 @@ export const workflows = {
   async list() {
       supabase.from("platform_workflows")
       supabase.select("*")
-      .is("deleted_at", null)
-      .order("created_at", { ascending: false });
+      supabase.is("deleted_at", null)
+      supabase.order("created_at", { ascending: false });
     if (error) throw error;
     return data;
   },
   async get(id: string) {
       supabase.from("platform_workflows")
       supabase.select("*")
-      .eq("id", id)
-      .single();
+      supabase.eq("id", id)
+      supabase.single();
     if (error) throw error;
     return data;
   },
@@ -195,7 +195,7 @@ export const workflows = {
         created_by: userData.user?.id ?? null,
       })
       supabase.select()
-      .single();
+      supabase.single();
     if (error) throw error;
     await logAdminAction({
       module: "workflows",
@@ -209,8 +209,8 @@ export const workflows = {
   async runs(workflow_id?: string) {
       supabase.from("platform_workflow_runs")
       supabase.select("*")
-      .order("created_at", { ascending: false })
-      .limit(50);
+      supabase.order("created_at", { ascending: false })
+      supabase.limit(50);
     if (workflow_id) q = q.eq("workflow_id", workflow_id);
     const { data, error } = await q;
     if (error) throw error;
@@ -251,31 +251,31 @@ export const notifications = {
   async deliveries(user_id: string, limit = 30) {
       supabase.from("platform_notification_deliveries")
       supabase.select("*")
-      .eq("recipient_user_id", user_id)
-      .order("created_at", { ascending: false })
-      .limit(limit);
+      supabase.eq("recipient_user_id", user_id)
+      supabase.order("created_at", { ascending: false })
+      supabase.limit(limit);
     if (error) throw error;
     return data;
   },
   async templates() {
       supabase.from("platform_notification_templates")
       supabase.select("*")
-      .order("key");
+      supabase.order("key");
     if (error) throw error;
     return data;
   },
   async getPreferences(user_id: string) {
       supabase.from("platform_notification_preferences")
       supabase.select("*")
-      .eq("user_id", user_id)
-      .maybeSingle();
+      supabase.eq("user_id", user_id)
+      supabase.maybeSingle();
     return data;
   },
   async savePreferences(user_id: string, prefs: Record<string, unknown>) {
       supabase.from("platform_notification_preferences")
       supabase.upsert({ user_id, ...prefs })
       supabase.select()
-      .single();
+      supabase.single();
     if (error) throw error;
     return data;
   },
@@ -291,8 +291,8 @@ export const activity = {
   }) {
       supabase.from("platform_activity_events")
       supabase.select("*")
-      .order("created_at", { ascending: false })
-      .limit(filter?.limit ?? 50);
+      supabase.order("created_at", { ascending: false })
+      supabase.limit(filter?.limit ?? 50);
     if (filter?.department) q = q.eq("department", filter.department);
     if (filter?.object_type) q = q.eq("object_type", filter.object_type);
     const { data, error } = await q;
@@ -307,8 +307,8 @@ export const assignments = {
   async list(filter?: { status?: string; assignee_user_id?: string }) {
       supabase.from("platform_assignments")
       supabase.select("*")
-      .order("created_at", { ascending: false })
-      .limit(100);
+      supabase.order("created_at", { ascending: false })
+      supabase.limit(100);
     if (filter?.status) q = q.eq("status", filter.status);
     if (filter?.assignee_user_id)
       q = q.eq("assignee_user_id", filter.assignee_user_id);
@@ -338,7 +338,7 @@ export const assignments = {
         priority: input.priority ?? "normal",
       })
       supabase.select()
-      .single();
+      supabase.single();
     if (error) throw error;
     await logAdminAction({
       module: "assignments",
@@ -369,7 +369,7 @@ export const assignments = {
     if (status === "completed") patch.completed_at = new Date().toISOString();
       supabase.from("platform_assignments")
       supabase.update(patch)
-      .eq("id", id);
+      supabase.eq("id", id);
     if (error) throw error;
     await logAdminAction({
       module: "assignments",
@@ -399,24 +399,24 @@ export const documents = {
   async list() {
       supabase.from("platform_documents")
       supabase.select("*")
-      .is("deleted_at", null)
-      .order("updated_at", { ascending: false });
+      supabase.is("deleted_at", null)
+      supabase.order("updated_at", { ascending: false });
     if (error) throw error;
     return data;
   },
   async get(id: string) {
       supabase.from("platform_documents")
       supabase.select("*")
-      .eq("id", id)
-      .single();
+      supabase.eq("id", id)
+      supabase.single();
     if (error) throw error;
     return data;
   },
   async versions(id: string) {
       supabase.from("platform_document_versions")
       supabase.select("*")
-      .eq("document_id", id)
-      .order("version", { ascending: false });
+      supabase.eq("document_id", id)
+      supabase.order("version", { ascending: false });
     if (error) throw error;
     return data;
   },
@@ -444,7 +444,7 @@ export const documents = {
         current_version: 1,
       })
       supabase.select()
-      .single();
+      supabase.single();
     if (error) throw error;
       document_id: data.id,
       version: 1,
@@ -475,15 +475,15 @@ export const reports = {
   async definitions() {
       supabase.from("platform_report_definitions")
       supabase.select("*")
-      .order("name");
+      supabase.order("name");
     if (error) throw error;
     return data;
   },
   async runs(definition_id?: string) {
       supabase.from("platform_report_runs")
       supabase.select("*")
-      .order("created_at", { ascending: false })
-      .limit(50);
+      supabase.order("created_at", { ascending: false })
+      supabase.limit(50);
     if (definition_id) q = q.eq("definition_id", definition_id);
     const { data, error } = await q;
     if (error) throw error;
@@ -498,7 +498,7 @@ export const reports = {
         status: "pending",
       })
       supabase.select()
-      .single();
+      supabase.single();
     if (error) throw error;
     return data;
   },
@@ -510,15 +510,15 @@ export const dashboards = {
   async list() {
       supabase.from("platform_dashboards")
       supabase.select("*")
-      .order("name");
+      supabase.order("name");
     if (error) throw error;
     return data;
   },
   async widgets(dashboard_id: string) {
       supabase.from("platform_dashboard_widgets")
       supabase.select("*")
-      .eq("dashboard_id", dashboard_id)
-      .order("position");
+      supabase.eq("dashboard_id", dashboard_id)
+      supabase.order("position");
     if (error) throw error;
     return data;
   },
@@ -530,15 +530,15 @@ export const scheduler = {
   async jobs() {
       supabase.from("platform_scheduled_jobs")
       supabase.select("*")
-      .order("name");
+      supabase.order("name");
     if (error) throw error;
     return data;
   },
   async runs(job_id?: string) {
       supabase.from("platform_scheduled_job_runs")
       supabase.select("*")
-      .order("created_at", { ascending: false })
-      .limit(50);
+      supabase.order("created_at", { ascending: false })
+      supabase.limit(50);
     if (job_id) q = q.eq("job_id", job_id);
     const { data, error } = await q;
     if (error) throw error;

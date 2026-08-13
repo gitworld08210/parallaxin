@@ -12,9 +12,9 @@ export const HighlightsRail = ({ userId, isMe }: { userId: string; isMe: boolean
 
   const load = async () => {
     const { data } = await supabase.from("highlights")
-      .select("id, title, cover_url")
-      .eq("user_id", userId)
-      .order("created_at", { ascending: false });
+      supabase.select("id, title, cover_url")
+      supabase.eq("user_id", userId)
+      supabase.order("created_at", { ascending: false });
     setItems((data as Highlight[]) ?? []);
   };
 

@@ -34,8 +34,8 @@ export const ReviewerWorkspace = () => {
     queryFn: async () => {
         supabase.from('content_context')
         supabase.select('*')
-        .eq('id', id)
-        .single();
+        supabase.eq('id', id)
+        supabase.single();
       if (error) throw error;
       return data;
     }

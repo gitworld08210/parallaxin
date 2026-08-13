@@ -33,14 +33,14 @@ const FounderChronicle = () => {
     if (!username) return;
     (async () => {
         supabase.select("user_id, username, display_name, avatar_url, bio, founder_title, aura_rank, join_era, council_role, chronicle, signature_aura")
-        .eq("username", username).maybeSingle();
+        supabase.eq("username", username).maybeSingle();
       setP(data as FounderProfile | null);
       if (data) {
           supabase.select("id, media_url, media_type, content")
-          .eq("user_id", (data as any).user_id)
-          .eq("status", "published")
-          .order("like_count", { ascending: false })
-          .limit(3);
+          supabase.eq("user_id", (data as any).user_id)
+          supabase.eq("status", "published")
+          supabase.order("like_count", { ascending: false })
+          supabase.limit(3);
         setWorks((ws ?? []) as Work[]);
       }
       setLoading(false);

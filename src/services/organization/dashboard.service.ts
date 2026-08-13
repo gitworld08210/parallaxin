@@ -29,22 +29,22 @@ export const dashboardService = {
     const [orgRow, memberActive, memberPending, deptCount, roleCount] = await Promise.all([
         supabase.from("organizations")
         supabase.select("member_count, follower_count, post_count")
-        .eq("id", orgId)
-        .maybeSingle(),
+        supabase.eq("id", orgId)
+        supabase.maybeSingle(),
         supabase.from("organization_members")
         supabase.select("id", { count: "exact", head: true })
-        .eq("organization_id", orgId)
-        .eq("status", "active"),
+        supabase.eq("organization_id", orgId)
+        supabase.eq("status", "active"),
         supabase.from("organization_members")
         supabase.select("id", { count: "exact", head: true })
-        .eq("organization_id", orgId)
-        .eq("status", "pending"),
+        supabase.eq("organization_id", orgId)
+        supabase.eq("status", "pending"),
         supabase.from("organization_departments")
         supabase.select("id", { count: "exact", head: true })
-        .eq("organization_id", orgId),
+        supabase.eq("organization_id", orgId),
         supabase.from("organization_roles")
         supabase.select("id", { count: "exact", head: true })
-        .eq("organization_id", orgId),
+        supabase.eq("organization_id", orgId),
     ]);
     return {
       memberCount: orgRow.data?.member_count ?? memberActive.count ?? 0,
@@ -64,9 +64,9 @@ export const dashboardService = {
   async recentActivity(orgId: string, limit = 6): Promise<DashboardActivityItem[]> {
       supabase.from("organization_activity")
       supabase.select("id, activity_type, title, description, created_at, actor_id")
-      .eq("organization_id", orgId)
-      .order("created_at", { ascending: false })
-      .limit(limit);
+      supabase.eq("organization_id", orgId)
+      supabase.order("created_at", { ascending: false })
+      supabase.limit(limit);
     if (error) throw error;
     return (data as DashboardActivityItem[]) ?? [];
   },

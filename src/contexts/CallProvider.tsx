@@ -323,9 +323,9 @@ export const CallProvider = ({ children }: { children: React.ReactNode }) => {
       // Fetch any offer that arrived before subscribe
         supabase.from("call_signals")
         supabase.select("kind, payload, from_user")
-        .eq("call_id", inc.call_id)
-        .eq("from_user", inc.caller_id)
-        .order("created_at", { ascending: true });
+        supabase.eq("call_id", inc.call_id)
+        supabase.eq("from_user", inc.caller_id)
+        supabase.order("created_at", { ascending: true });
       if (signals) {
         for (const s of signals as any[]) {
           if (s.kind === "offer" && !pc.currentRemoteDescription) {

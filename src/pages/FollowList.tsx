@@ -25,7 +25,7 @@ const FollowList = () => {
       if (ids.length === 0) { setItems([]); return; }
         supabase.from("profiles")
         supabase.select("user_id, username, display_name, avatar_url, verified, verification_kind, followers_count")
-        .in("user_id", ids);
+        supabase.in("user_id", ids);
       setItems((profs ?? []) as P[]);
     })();
   }, [username, kind]);

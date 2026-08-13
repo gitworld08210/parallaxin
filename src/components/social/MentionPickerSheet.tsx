@@ -19,7 +19,7 @@ export const MentionPickerSheet = ({
     if (!open || !user) return;
     (async () => {
         supabase.select("user_id, username, display_name, avatar_url")
-        .neq("user_id", user.id).limit(30);
+        supabase.neq("user_id", user.id).limit(30);
       const term = q.trim();
       if (term) query = query.or(`username.ilike.%${term}%,display_name.ilike.%${term}%`);
       else {

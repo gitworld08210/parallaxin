@@ -109,8 +109,8 @@ export function useWalletLedgerOS(limit = 50) {
     // 2. Supabase Fallback
       supabase.from("wallet_ledger" as any)
       supabase.select("id, txn_id, direction, bucket, source, amount, fee, balance_after, status, label, created_at")
-      .order("created_at", { ascending: false })
-      .limit(limit);
+      supabase.order("created_at", { ascending: false })
+      supabase.limit(limit);
     setRows((data as unknown as WalletTxn[]) ?? []);
     setLoading(false);
   }, [user?.id, limit]);

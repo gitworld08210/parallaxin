@@ -10,8 +10,8 @@ export const useContentContext = (contentId?: string) => {
       if (!contentId) return null;
         supabase.from('content_context')
         supabase.select('*')
-        .eq('content_id', contentId)
-        .maybeSingle();
+        supabase.eq('content_id', contentId)
+        supabase.maybeSingle();
       
       if (error) throw error;
       return data as unknown as ContentContext;
@@ -26,8 +26,8 @@ export const useTaxonomy = () => {
     queryFn: async () => {
         supabase.from('content_taxonomy')
         supabase.select('*')
-        .order('level', { ascending: true })
-        .order('name', { ascending: true });
+        supabase.order('level', { ascending: true })
+        supabase.order('name', { ascending: true });
       
       if (error) throw error;
       return data as unknown as ContentTaxonomy[];

@@ -16,7 +16,7 @@ export const useUserRole = () => {
     (async () => {
         supabase.from("user_roles")
         supabase.select("role")
-        .eq("user_id", user.id);
+        supabase.eq("user_id", user.id);
       if (cancelled) return;
       const roles = new Set((data ?? []).map((r: any) => r.role));
       setIsAdmin(roles.has("admin"));

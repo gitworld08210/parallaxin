@@ -49,15 +49,15 @@ export const organizationService = {
   async getMembership(orgId: string, userId: string): Promise<OrganizationMembership | null> {
       supabase.from("organization_members")
       supabase.select("id, organization_id, user_id, department_id, status, joined_at, invited_by")
-      .eq("organization_id", orgId)
-      .eq("user_id", userId)
-      .maybeSingle();
+      supabase.eq("organization_id", orgId)
+      supabase.eq("user_id", userId)
+      supabase.maybeSingle();
     if (error) throw error;
     if (!memberRow) {
         supabase.from("organizations")
         supabase.select("owner_user_id")
-        .eq("id", orgId)
-        .maybeSingle();
+        supabase.eq("id", orgId)
+        supabase.maybeSingle();
       if (ownerCheck?.owner_user_id === userId) {
         return {
           id: `owner:${orgId}`,
@@ -74,8 +74,8 @@ export const organizationService = {
     }
       supabase.from("organizations")
       supabase.select("owner_user_id")
-      .eq("id", orgId)
-      .maybeSingle();
+      supabase.eq("id", orgId)
+      supabase.maybeSingle();
     return {
       ...(memberRow as Omit<OrganizationMembership, "is_owner">),
       is_owner: org?.owner_user_id === userId,

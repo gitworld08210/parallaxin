@@ -40,8 +40,8 @@ export const settingsService = {
   async get(orgId: string): Promise<OrganizationSettings | null> {
       supabase.from("organization_settings")
       supabase.select("*")
-      .eq("organization_id", orgId)
-      .maybeSingle();
+      supabase.eq("organization_id", orgId)
+      supabase.maybeSingle();
     if (error) throw error;
     return (data as OrganizationSettings | null) ?? null;
   },

@@ -32,7 +32,7 @@ export default function OrganizationDepartments() {
     const filterNodes = (nodes: typeof tree): typeof tree =>
       nodes
         .map((n) => ({ ...n, children: filterNodes(n.children) }))
-        .filter(
+        supabase.filter(
           (n) => n.name.toLowerCase().includes(q) || n.children.length > 0);
     return filterNodes(tree);
   }, [tree, search]);

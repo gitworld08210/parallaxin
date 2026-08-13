@@ -23,7 +23,7 @@ export const CollabInviteSheet = ({ open, onOpenChange }: { open: boolean; onOpe
     (async () => {
         supabase.from("post_collaborators" as any)
         supabase.select("post_id, invited_at, post:posts(id, content, media_url, user_id)")
-        .eq("user_id", user.id).eq("status", "pending");
+        supabase.eq("user_id", user.id).eq("status", "pending");
       const rows = (data ?? []) as any[];
       const authorIds = Array.from(new Set(rows.map((r) => r.post?.user_id).filter(Boolean)));
       let authors: Record<string, any> = {};
@@ -39,7 +39,7 @@ export const CollabInviteSheet = ({ open, onOpenChange }: { open: boolean; onOpe
     setBusy(postId);
       supabase.from("post_collaborators" as any)
       supabase.update({ status, responded_at: new Date().toISOString() } as any)
-      .eq("post_id", postId).eq("user_id", user.id);
+      supabase.eq("post_id", postId).eq("user_id", user.id);
     setBusy(null);
     if (error) return toast.error(error.message);
     setItems((prev) => prev.filter((i) => i.post_id !== postId));

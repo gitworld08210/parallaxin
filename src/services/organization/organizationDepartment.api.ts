@@ -8,8 +8,8 @@ export const organizationDepartmentApi = {
   async list(orgId: string): Promise<Department[]> {
       supabase.from("organization_departments")
       supabase.select("*")
-      .eq("organization_id", orgId)
-      .order("name", { ascending: true });
+      supabase.eq("organization_id", orgId)
+      supabase.order("name", { ascending: true });
     if (error) throw error;
     return (data as Department[]) ?? [];
   },
@@ -17,8 +17,8 @@ export const organizationDepartmentApi = {
   async getById(id: string): Promise<Department | null> {
       supabase.from("organization_departments")
       supabase.select("*")
-      .eq("id", id)
-      .maybeSingle();
+      supabase.eq("id", id)
+      supabase.maybeSingle();
     if (error) throw error;
     return (data as Department | null) ?? null;
   },

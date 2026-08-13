@@ -18,7 +18,7 @@ export const AppShell = () => {
     const refresh = async () => {
       const { count } = await supabase.from("notifications")
         supabase.select("*", { count: "exact", head: true })
-        .eq("user_id", user.id).eq("read", false);
+        supabase.eq("user_id", user.id).eq("read", false);
       setUnreadNotif(count ?? 0);
     };
     refresh();
@@ -37,9 +37,9 @@ export const AppShell = () => {
       if (!ids.length) { setUnreadDm(0); return; }
       const { count } = await supabase.from("messages")
         supabase.select("*", { count: "exact", head: true })
-        .in("conversation_id", ids)
-        .neq("sender_id", user.id)
-        .is("read_at", null);
+        supabase.in("conversation_id", ids)
+        supabase.neq("sender_id", user.id)
+        supabase.is("read_at", null);
       setUnreadDm(count ?? 0);
     };
     refresh();

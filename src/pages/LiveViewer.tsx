@@ -59,7 +59,7 @@ export default function LiveViewer() {
       if (s.access_type === "ticket") {
         setAccess(t ? "granted" : "needs_ticket");
       } else if (s.access_type === "subscribers_only") {
-          .eq("subscriber_id", uid).eq("creator_id", s.host_id).maybeSingle();
+          supabase.eq("subscriber_id", uid).eq("creator_id", s.host_id).maybeSingle();
         const active = sub && ["active", "trialing"].includes(String((sub as any).status));
         setAccess(active ? "granted" : "needs_sub");
       }

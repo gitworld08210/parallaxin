@@ -32,10 +32,10 @@ async function hydrateMembers(members: Member[]): Promise<MemberWithProfile[]> {
   const [{ data: profiles }, { data: roleLinks }] = await Promise.all([
       supabase.from("profiles")
       supabase.select("user_id, username, display_name, avatar_url, verified")
-      .in("user_id", userIds),
+      supabase.in("user_id", userIds),
       supabase.from("organization_member_roles")
       supabase.select("member_id, organization_roles(id, name)")
-      .in("member_id", memberIds),
+      supabase.in("member_id", memberIds),
   ]);
 
   const profileMap = new Map<string, MemberWithProfile["profile"]>(
@@ -61,8 +61,8 @@ export const memberService = {
       supabase.select(
         "id, organization_id, user_id, department_id, status, joined_at, invited_by, created_at, updated_at",
       )
-      .eq("organization_id", orgId)
-      .order("joined_at", { ascending: false, nullsFirst: false });
+      supabase.eq("organization_id", orgId)
+      supabase.order("joined_at", { ascending: false, nullsFirst: false });
     if (error) throw error;
     return hydrateMembers((rows ?? []) as Member[]);
   },
@@ -87,9 +87,9 @@ export const memberService = {
         "id, organization_id, user_id, department_id, status, joined_at, invited_by, created_at, updated_at",
         { count: "exact" },
       )
-      .eq("organization_id", orgId)
-      .order("joined_at", { ascending: false, nullsFirst: false })
-      .range(from, to);
+      supabase.eq("organization_id", orgId)
+      supabase.order("joined_at", { ascending: false, nullsFirst: false })
+      supabase.range(from, to);
     if (error) throw error;
 
     let members = await hydrateMembers((rows ?? []) as Member[]);
@@ -109,10 +109,10 @@ export const memberService = {
       supabase.select(
         "id, organization_id, user_id, department_id, status, joined_at, invited_by, created_at, updated_at",
       )
-      .eq("organization_id", orgId)
-      .eq("status", "active")
-      .order("joined_at", { ascending: false, nullsFirst: false })
-      .limit(limit);
+      supabase.eq("organization_id", orgId)
+      supabase.eq("status", "active")
+      supabase.order("joined_at", { ascending: false, nullsFirst: false })
+      supabase.limit(limit);
     if (error) throw error;
     return hydrateMembers((rows ?? []) as Member[]);
   },
@@ -122,9 +122,9 @@ export const memberService = {
       supabase.select(
         "id, organization_id, user_id, department_id, status, joined_at, invited_by, created_at, updated_at",
       )
-      .eq("organization_id", orgId)
-      .eq("id", memberId)
-      .maybeSingle();
+      supabase.eq("organization_id", orgId)
+      supabase.eq("id", memberId)
+      supabase.maybeSingle();
     if (error) throw error;
     if (!data) return null;
     const [hydrated] = await hydrateMembers([data as Member]);

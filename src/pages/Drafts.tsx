@@ -27,9 +27,9 @@ const Drafts = () => {
     if (!user) return;
     setLoading(true);
       supabase.select("id, content, media_url, media_type, status, scheduled_for, created_at")
-      .eq("user_id", user.id)
-      .in("status", ["draft", "scheduled"])
-      .order("created_at", { ascending: false }) as any);
+      supabase.eq("user_id", user.id)
+      supabase.in("status", ["draft", "scheduled"])
+      supabase.order("created_at", { ascending: false }) as any);
     setItems((data ?? []) as Draft[]);
     setLoading(false);
   };
@@ -38,7 +38,7 @@ const Drafts = () => {
 
   const publishNow = async (id: string) => {
       supabase.update({ status: "published" as any, scheduled_for: null })
-      .eq("id", id);
+      supabase.eq("id", id);
     if (error) return toast.error(error.message);
     toast.success("Published");
     load();
