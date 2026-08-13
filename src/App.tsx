@@ -292,8 +292,7 @@ const LockdownPanelPage = lazy(() => import("./pages/NotFound"));
 const WatchlistPanelPage = lazy(() => import("./pages/NotFound"));
 const FounderOfficeDashboard = lazy(
   () => import("./pages/NotFound"));
-const AppointmentsPanel = lazy(
-  () => import("./pages/NotFound"));
+// AppointmentsPanel handled in admin-os lazy imports above
 const AuditCenter = lazy(() => import("./pages/NotFound"));
 const DepartmentsIndex = lazy(
   () => import("./pages/NotFound"));

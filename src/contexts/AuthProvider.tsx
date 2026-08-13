@@ -21,6 +21,10 @@ type Profile = {
   account_type?: "personal" | "organization";
   organization_id?: string | null;
   is_creator?: boolean;
+  is_admin?: boolean;
+  is_founder?: boolean;
+  role?: string | null;
+  department?: string | null;
 };
 
 type Session = {
