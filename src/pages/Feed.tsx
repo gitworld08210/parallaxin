@@ -107,28 +107,6 @@ const Feed = () => {
             </Link>
           </div>
         </header>
-          <div className="flex items-center justify-center">
-            <span className="font-serif italic text-2xl tracking-tighter">
-              Parallax
-            </span>
-          </div>
-          <div className="flex items-center gap-1">
-            <Link
-              to="/notifications"
-              className="p-2 rounded-full hover:bg-secondary/60 transition-colors"
-              aria-label="Notifications"
-            >
-              <Bell className="h-5 w-5 text-foreground" strokeWidth={2} />
-            </Link>
-            <Link
-              to="/discover"
-              className="p-2 rounded-full hover:bg-secondary/60 transition-colors"
-              aria-label="Feed settings"
-            >
-              <Sparkles className="h-5 w-5 text-primary" strokeWidth={2} />
-            </Link>
-          </div>
-        </header>
 
         {/* X-style tabs — animated underline with layoutId */}
         <div role="tablist" className="grid grid-cols-2">
