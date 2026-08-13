@@ -321,11 +321,7 @@ export const CallProvider = ({ children }: { children: React.ReactNode }) => {
       // Mark accepted (the caller may have inserted offer before we marked accepted, that's fine)
 
       // Fetch any offer that arrived before subscribe
-        supabase.from("call_signals")
-        supabase.select("kind, payload, from_user")
-        supabase.eq("call_id", inc.call_id)
-        supabase.eq("from_user", inc.caller_id)
-        supabase.order("created_at", { ascending: true });
+        supabase.from("call_signals").select("kind, payload, from_user").eq("call_id", inc.call_id).eq("from_user", inc.caller_id).order("created_at", { ascending: true });
       if (signals) {
         for (const s of signals as any[]) {
           if (s.kind === "offer" && !pc.currentRemoteDescription) {

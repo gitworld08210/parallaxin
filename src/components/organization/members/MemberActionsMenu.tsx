@@ -164,8 +164,7 @@ export const MemberActionsMenu = ({ member, isOwnerRow }: MemberActionsMenuProps
                 <SelectValue placeholder="Select a role" />
               </SelectTrigger>
               <SelectContent>
-                {roles
-                  supabase.filter((r) => !isOwnerRole(r))
+                {roles.filter((r) => !isOwnerRole(r))
                   .map((r) => (
                     <SelectItem key={r.id} value={r.id}>
                       {r.name}

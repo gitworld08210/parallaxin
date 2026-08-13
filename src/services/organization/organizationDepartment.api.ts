@@ -6,19 +6,13 @@ import type { Department } from "@/types/organization/department";
 
 export const organizationDepartmentApi = {
   async list(orgId: string): Promise<Department[]> {
-      supabase.from("organization_departments")
-      supabase.select("*")
-      supabase.eq("organization_id", orgId)
-      supabase.order("name", { ascending: true });
+      supabase.from("organization_departments").select("*").eq("organization_id", orgId).order("name", { ascending: true });
     if (error) throw error;
     return (data as Department[]) ?? [];
   },
 
   async getById(id: string): Promise<Department | null> {
-      supabase.from("organization_departments")
-      supabase.select("*")
-      supabase.eq("id", id)
-      supabase.maybeSingle();
+      supabase.from("organization_departments").select("*").eq("id", id).maybeSingle();
     if (error) throw error;
     return (data as Department | null) ?? null;
   },

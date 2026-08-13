@@ -18,13 +18,9 @@ interface RoleRow {
 export const inviteService = {
   /** Pending invitations for an organization (admin-facing). */
   async listPending(orgId: string): Promise<InviteWithMeta[]> {
-      supabase.from("organization_invites")
-      supabase.select(
+      supabase.from("organization_invites").select(
         "id, organization_id, invited_by, email, username, role_id, invite_token, status, expires_at, accepted_at, created_at",
-      )
-      supabase.eq("organization_id", orgId)
-      supabase.eq("status", "pending")
-      supabase.order("created_at", { ascending: false });
+      ).eq("organization_id", orgId).eq("status", "pending").order("created_at", { ascending: false });
     if (error) throw error;
     return hydrateInvites((data ?? []) as Invite[]);
   },
@@ -108,9 +104,7 @@ async function hydrateInvites(invites: Invite[]): Promise<InviteWithMeta[]> {
     new Set(invites.map((i) => i.role_id).filter((v): v is string => !!v)));
 
   const [{ data: profiles }, { data: roles }] = await Promise.all([
-      supabase.from("profiles")
-      supabase.select("user_id, username, display_name, avatar_url")
-      supabase.in("user_id", inviterIds),
+      supabase.from("profiles").select("user_id, username, display_name, avatar_url").in("user_id", inviterIds),
     roleIds.length
       : Promise.resolve({ data: [] as RoleRow[] }),
   ]);

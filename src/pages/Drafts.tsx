@@ -26,10 +26,7 @@ const Drafts = () => {
   const load = async () => {
     if (!user) return;
     setLoading(true);
-      supabase.select("id, content, media_url, media_type, status, scheduled_for, created_at")
-      supabase.eq("user_id", user.id)
-      supabase.in("status", ["draft", "scheduled"])
-      supabase.order("created_at", { ascending: false }) as any);
+      supabase.select("id, content, media_url, media_type, status, scheduled_for, created_at").eq("user_id", user.id).in("status", ["draft", "scheduled"]).order("created_at", { ascending: false }) as any);
     setItems((data ?? []) as Draft[]);
     setLoading(false);
   };
@@ -37,8 +34,7 @@ const Drafts = () => {
   useEffect(() => { load(); /* eslint-disable-next-line */ }, [user?.id]);
 
   const publishNow = async (id: string) => {
-      supabase.update({ status: "published" as any, scheduled_for: null })
-      supabase.eq("id", id);
+      supabase.update({ status: "published" as any, scheduled_for: null }).eq("id", id);
     if (error) return toast.error(error.message);
     toast.success("Published");
     load();

@@ -22,8 +22,7 @@ export const NewGroupSheet = ({ open, onOpenChange }: { open: boolean; onOpenCha
   useEffect(() => {
     if (!open || !user) return;
     (async () => {
-        supabase.select("user_id, username, display_name, avatar_url")
-        supabase.neq("user_id", user.id).limit(40);
+        supabase.select("user_id, username, display_name, avatar_url").neq("user_id", user.id).limit(40);
       const term = q.trim();
       if (term) query = query.or(`username.ilike.%${term}%,display_name.ilike.%${term}%`);
       else {

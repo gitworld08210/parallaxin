@@ -116,17 +116,14 @@ export default function LiveHost() {
 
       // 2) Create the stream record
       const roomName = `live_${user.id}_${Date.now()}`;
-        supabase.from("live_streams")
-        supabase.insert({
+        supabase.from("live_streams").insert({
           host_id: user.id,
           title: title || null,
           livekit_room: roomName,
           access_type: access as any,
           ticket_price_coins: access === "ticket" ? Math.max(1, price) : 0,
           allow_gifts: allowGifts,
-        } as any)
-        supabase.select()
-        supabase.single();
+        } as any).select().single();
       if (insErr) throw insErr;
       setStreamId(stream.id);
       setTips((stream as any).total_tips_coins ?? 0);
@@ -163,9 +160,7 @@ export default function LiveHost() {
       roomRef.current?.disconnect();
       roomRef.current = null;
       if (streamId) {
-          supabase.from("live_streams")
-          supabase.update({ status: "ended", ended_at: new Date().toISOString() })
-          supabase.eq("id", streamId);
+          supabase.from("live_streams").update({ status: "ended", ended_at: new Date().toISOString() }).eq("id", streamId);
       }
     } finally {
       navigate(-1);

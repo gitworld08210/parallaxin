@@ -29,10 +29,7 @@ const Onboarding = () => {
 
   useEffect(() => {
     (async () => {
-        supabase.from("profiles")
-        supabase.select("user_id, username, display_name, avatar_url")
-        supabase.eq("is_founder", true)
-        supabase.limit(6);
+        supabase.from("profiles").select("user_id, username, display_name, avatar_url").eq("is_founder", true).limit(6);
       setFounders(data ?? []);
     })();
   }, []);
@@ -73,12 +70,10 @@ const Onboarding = () => {
 
       // 2. Update Supabase (Secondary/Admin OS)
       try {
-          supabase.from("profiles")
-          supabase.update({
+          supabase.from("profiles").update({
             interests,
             onboarded_at: new Date().toISOString(),
-          } as any)
-          supabase.eq("user_id", user.id);
+          } as any).eq("user_id", user.id);
       } catch (e) {
         console.warn("Supabase profile sync failed, non-critical for social", e);
       }

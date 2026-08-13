@@ -21,23 +21,17 @@ interface MemberRolesPermRow {
 export const permissionService = {
   /** Full permission catalogue (module + key). */
   async listCatalogue(): Promise<Permission[]> {
-      supabase.from("organization_permissions")
-      supabase.select("*")
-      supabase.order("module", { ascending: true })
-      supabase.order("permission_key", { ascending: true });
+      supabase.from("organization_permissions").select("*").order("module", { ascending: true }).order("permission_key", { ascending: true });
     if (error) throw error;
     return (data as Permission[]) ?? [];
   },
 
   /** Permission keys attached to a role. */
   async listForRole(roleId: string): Promise<string[]> {
-      supabase.from("organization_role_permissions")
-      supabase.select("role_id, organization_permissions(permission_key)")
-      supabase.eq("role_id", roleId);
+      supabase.from("organization_role_permissions").select("role_id, organization_permissions(permission_key)").eq("role_id", roleId);
     if (error) throw error;
     return ((data ?? []) as RolePermRow[])
-      .map((r) => r.organization_permissions?.permission_key)
-      supabase.filter((v): v is string => !!v);
+      .map((r) => r.organization_permissions?.permission_key).filter((v): v is string => !!v);
   },
 
   /**
@@ -45,9 +39,7 @@ export const permissionService = {
    * the whole permission matrix (no per-row queries).
    */
   async matrixForOrg(orgId: string): Promise<Record<string, string[]>> {
-      supabase.from("organization_role_permissions")
-      supabase.select("role_id, organization_permissions(permission_key), organization_roles!inner(organization_id)")
-      supabase.eq("organization_roles.organization_id", orgId);
+      supabase.from("organization_role_permissions").select("role_id, organization_permissions(permission_key), organization_roles!inner(organization_id)").eq("organization_roles.organization_id", orgId);
     if (error) throw error;
 
     const map: Record<string, string[]> = {};
@@ -60,29 +52,20 @@ export const permissionService = {
   },
 
   async listForMember(orgId: string, userId: string): Promise<string[]> {
-      supabase.from("organizations")
-      supabase.select("owner_user_id")
-      supabase.eq("id", orgId)
-      supabase.maybeSingle();
+      supabase.from("organizations").select("owner_user_id").eq("id", orgId).maybeSingle();
 
     if (orgRow?.owner_user_id === userId) {
       const catalogue = await this.listCatalogue();
       return catalogue.map((p) => p.permission_key);
     }
 
-      supabase.from("organization_members")
-      supabase.select("id, status")
-      supabase.eq("organization_id", orgId)
-      supabase.eq("user_id", userId)
-      supabase.maybeSingle();
+      supabase.from("organization_members").select("id, status").eq("organization_id", orgId).eq("user_id", userId).maybeSingle();
     if (memberErr) throw memberErr;
     if (!memberRow || memberRow.status !== "active") return [];
 
-      supabase.from("organization_member_roles")
-      supabase.select(
+      supabase.from("organization_member_roles").select(
         "organization_roles!inner(id, organization_role_permissions(organization_permissions(permission_key)))",
-      )
-      supabase.eq("member_id", memberRow.id);
+      ).eq("member_id", memberRow.id);
     if (rpErr) throw rpErr;
 
     const keys = new Set<string>();

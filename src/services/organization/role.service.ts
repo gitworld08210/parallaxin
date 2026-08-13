@@ -23,22 +23,16 @@ export interface UpdateRoleInput {
 
 export const roleService = {
   async list(orgId: string): Promise<Role[]> {
-      supabase.from("organization_roles")
-      supabase.select("*")
-      supabase.eq("organization_id", orgId)
-      supabase.order("priority", { ascending: true });
+      supabase.from("organization_roles").select("*").eq("organization_id", orgId).order("priority", { ascending: true });
     if (error) throw error;
     return (data as Role[]) ?? [];
   },
 
   async rolesForMember(memberId: string): Promise<Role[]> {
-      supabase.from("organization_member_roles")
-      supabase.select("organization_roles(*)")
-      supabase.eq("member_id", memberId);
+      supabase.from("organization_member_roles").select("organization_roles(*)").eq("member_id", memberId);
     if (error) throw error;
     return ((data ?? []) as RoleLinkRow[])
-      .map((r) => r.organization_roles)
-      supabase.filter((r): r is Role => !!r);
+      .map((r) => r.organization_roles).filter((r): r is Role => !!r);
   },
 
   // ---------- Mutations ----------

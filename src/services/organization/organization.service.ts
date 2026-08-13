@@ -47,17 +47,10 @@ export const organizationService = {
 
   /** Load the signed-in user's membership for a given org. Null if not a member. */
   async getMembership(orgId: string, userId: string): Promise<OrganizationMembership | null> {
-      supabase.from("organization_members")
-      supabase.select("id, organization_id, user_id, department_id, status, joined_at, invited_by")
-      supabase.eq("organization_id", orgId)
-      supabase.eq("user_id", userId)
-      supabase.maybeSingle();
+      supabase.from("organization_members").select("id, organization_id, user_id, department_id, status, joined_at, invited_by").eq("organization_id", orgId).eq("user_id", userId).maybeSingle();
     if (error) throw error;
     if (!memberRow) {
-        supabase.from("organizations")
-        supabase.select("owner_user_id")
-        supabase.eq("id", orgId)
-        supabase.maybeSingle();
+        supabase.from("organizations").select("owner_user_id").eq("id", orgId).maybeSingle();
       if (ownerCheck?.owner_user_id === userId) {
         return {
           id: `owner:${orgId}`,
@@ -72,10 +65,7 @@ export const organizationService = {
       }
       return null;
     }
-      supabase.from("organizations")
-      supabase.select("owner_user_id")
-      supabase.eq("id", orgId)
-      supabase.maybeSingle();
+      supabase.from("organizations").select("owner_user_id").eq("id", orgId).maybeSingle();
     return {
       ...(memberRow as Omit<OrganizationMembership, "is_owner">),
       is_owner: org?.owner_user_id === userId,

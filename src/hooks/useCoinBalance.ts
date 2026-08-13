@@ -26,10 +26,7 @@ export function useCoinBalance() {
     }
 
     // 2. Legacy Supabase Fallback
-      supabase.from("profiles_private")
-      supabase.select("coin_balance")
-      supabase.eq("user_id", user.id)
-      supabase.maybeSingle();
+      supabase.from("profiles_private").select("coin_balance").eq("user_id", user.id).maybeSingle();
     setBalance((data as any)?.coin_balance ?? 0);
     setLoading(false);
   }, [user?.id]);

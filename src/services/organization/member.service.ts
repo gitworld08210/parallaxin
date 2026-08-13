@@ -30,12 +30,8 @@ async function hydrateMembers(members: Member[]): Promise<MemberWithProfile[]> {
   const userIds = members.map((m) => m.user_id);
   const memberIds = members.map((m) => m.id);
   const [{ data: profiles }, { data: roleLinks }] = await Promise.all([
-      supabase.from("profiles")
-      supabase.select("user_id, username, display_name, avatar_url, verified")
-      supabase.in("user_id", userIds),
-      supabase.from("organization_member_roles")
-      supabase.select("member_id, organization_roles(id, name)")
-      supabase.in("member_id", memberIds),
+      supabase.from("profiles").select("user_id, username, display_name, avatar_url, verified").in("user_id", userIds),
+      supabase.from("organization_member_roles").select("member_id, organization_roles(id, name)").in("member_id", memberIds),
   ]);
 
   const profileMap = new Map<string, MemberWithProfile["profile"]>(
@@ -57,12 +53,9 @@ async function hydrateMembers(members: Member[]): Promise<MemberWithProfile[]> {
 export const memberService = {
   /** Full (unpaginated) list — retained for callers that need everyone. */
   async list(orgId: string): Promise<MemberWithProfile[]> {
-      supabase.from("organization_members")
-      supabase.select(
+      supabase.from("organization_members").select(
         "id, organization_id, user_id, department_id, status, joined_at, invited_by, created_at, updated_at",
-      )
-      supabase.eq("organization_id", orgId)
-      supabase.order("joined_at", { ascending: false, nullsFirst: false });
+      ).eq("organization_id", orgId).order("joined_at", { ascending: false, nullsFirst: false });
     if (error) throw error;
     return hydrateMembers((rows ?? []) as Member[]);
   },
@@ -82,14 +75,10 @@ export const memberService = {
       data: rows,
       error,
       count,
-      supabase.from("organization_members")
-      supabase.select(
+      supabase.from("organization_members").select(
         "id, organization_id, user_id, department_id, status, joined_at, invited_by, created_at, updated_at",
         { count: "exact" },
-      )
-      supabase.eq("organization_id", orgId)
-      supabase.order("joined_at", { ascending: false, nullsFirst: false })
-      supabase.range(from, to);
+      ).eq("organization_id", orgId).order("joined_at", { ascending: false, nullsFirst: false }).range(from, to);
     if (error) throw error;
 
     let members = await hydrateMembers((rows ?? []) as Member[]);
@@ -105,26 +94,17 @@ export const memberService = {
   },
 
   async recent(orgId: string, limit = 4): Promise<MemberWithProfile[]> {
-      supabase.from("organization_members")
-      supabase.select(
+      supabase.from("organization_members").select(
         "id, organization_id, user_id, department_id, status, joined_at, invited_by, created_at, updated_at",
-      )
-      supabase.eq("organization_id", orgId)
-      supabase.eq("status", "active")
-      supabase.order("joined_at", { ascending: false, nullsFirst: false })
-      supabase.limit(limit);
+      ).eq("organization_id", orgId).eq("status", "active").order("joined_at", { ascending: false, nullsFirst: false }).limit(limit);
     if (error) throw error;
     return hydrateMembers((rows ?? []) as Member[]);
   },
 
   async getById(orgId: string, memberId: string): Promise<MemberWithProfile | null> {
-      supabase.from("organization_members")
-      supabase.select(
+      supabase.from("organization_members").select(
         "id, organization_id, user_id, department_id, status, joined_at, invited_by, created_at, updated_at",
-      )
-      supabase.eq("organization_id", orgId)
-      supabase.eq("id", memberId)
-      supabase.maybeSingle();
+      ).eq("organization_id", orgId).eq("id", memberId).maybeSingle();
     if (error) throw error;
     if (!data) return null;
     const [hydrated] = await hydrateMembers([data as Member]);

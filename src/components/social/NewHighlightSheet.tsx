@@ -21,8 +21,7 @@ export const NewHighlightSheet = ({
     if (!open || !user) return;
     (async () => {
       // Show ALL user's stories (active + expired) — IG-style
-        supabase.select("id, media_url, media_type, created_at")
-        supabase.eq("user_id", user.id).order("created_at", { ascending: false }).limit(60);
+        supabase.select("id, media_url, media_type, created_at").eq("user_id", user.id).order("created_at", { ascending: false }).limit(60);
       setStories((data ?? []) as Story[]);
     })();
   }, [open, user?.id]);
@@ -41,8 +40,7 @@ export const NewHighlightSheet = ({
     if (picked.size === 0) return toast.error("Pick at least one story");
     setBusy(true);
     const cover = stories.find((s) => picked.has(s.id))?.media_url ?? null;
-      supabase.insert({ user_id: user.id, title: title.trim().slice(0, 30), cover_url: cover } as any)
-      supabase.select("id").single() as any);
+      supabase.insert({ user_id: user.id, title: title.trim().slice(0, 30), cover_url: cover } as any).select("id").single() as any);
     if (error || !hl) { setBusy(false); toast.error(error?.message || "Failed"); return; }
     const rows = Array.from(picked).map((sid, i) => ({ highlight_id: (hl as any).id, story_id: sid, position: i }));
     setBusy(false);

@@ -11,10 +11,7 @@ export const HighlightsRail = ({ userId, isMe }: { userId: string; isMe: boolean
   const [open, setOpen] = useState(false);
 
   const load = async () => {
-    const { data } = await supabase.from("highlights")
-      supabase.select("id, title, cover_url")
-      supabase.eq("user_id", userId)
-      supabase.order("created_at", { ascending: false });
+    const { data } = await supabase.from("highlights").select("id, title, cover_url").eq("user_id", userId).order("created_at", { ascending: false });
     setItems((data as Highlight[]) ?? []);
   };
 

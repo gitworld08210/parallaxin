@@ -39,13 +39,8 @@ const CreatorStudio = () => {
     (async () => {
       setLoading(true);
       const [{ data: p }, { count: subs }] = await Promise.all([
-          supabase.select("id, content, is_reel, media_url, like_count, comment_count, created_at")
-          supabase.eq("user_id", user.id)
-          supabase.order("created_at", { ascending: false })
-          supabase.limit(60),
-          supabase.select("*", { count: "exact", head: true })
-          supabase.eq("creator_id", user.id)
-          supabase.eq("status", "active") as any,
+          supabase.select("id, content, is_reel, media_url, like_count, comment_count, created_at").eq("user_id", user.id).order("created_at", { ascending: false }).limit(60),
+          supabase.select("*", { count: "exact", head: true }).eq("creator_id", user.id).eq("status", "active") as any,
       ]);
       setPosts((p ?? []) as PostRow[]);
       setSubscriberCount(subs ?? 0);

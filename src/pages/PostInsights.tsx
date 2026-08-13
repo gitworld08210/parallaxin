@@ -23,8 +23,7 @@ const PostInsights = () => {
     if (!postId || !user) return;
     (async () => {
       setLoading(true);
-        supabase.select("content, media_url, media_type, like_count, comment_count, created_at, user_id, authenticity_score, authenticity_breakdown")
-        supabase.eq("id", postId).maybeSingle();
+        supabase.select("content, media_url, media_type, like_count, comment_count, created_at, user_id, authenticity_score, authenticity_breakdown").eq("id", postId).maybeSingle();
       if (!p || p.user_id !== user.id) { setDenied(true); setLoading(false); return; }
       setPost(p as any);
       const [{ data: views }, { count: saves }] = await Promise.all([

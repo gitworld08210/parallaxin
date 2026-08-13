@@ -51,10 +51,7 @@ const writeCache = (uid: string, value: Stored) => {
 };
 
 const fetchRemote = async (uid: string): Promise<Stored | null> => {
-    supabase.from("message_passcodes" as any)
-    supabase.select("hash, question, answer_hash, created_at")
-    supabase.eq("user_id", uid)
-    supabase.maybeSingle();
+    supabase.from("message_passcodes" as any).select("hash, question, answer_hash, created_at").eq("user_id", uid).maybeSingle();
   if (error || !data) return null;
   const row: any = data;
   return {
@@ -66,8 +63,7 @@ const fetchRemote = async (uid: string): Promise<Stored | null> => {
 };
 
 const saveRemote = async (uid: string, value: Stored) => {
-    supabase.from("message_passcodes" as any)
-    supabase.upsert(
+    supabase.from("message_passcodes" as any).upsert(
       {
         user_id: uid,
         hash: value.hash,
