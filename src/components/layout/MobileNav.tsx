@@ -34,35 +34,36 @@ export const MobileNav = ({ unreadNotif = 0, unreadDm = 0 }: Props) => {
               <NavLink
                 to={to}
                 end={end}
-                className={({ isActive }) =>
-                  cn(
-                    "relative flex flex-col items-center gap-0.5 py-2.5 text-[10px] font-medium transition-colors",
-                    isActive ? "text-foreground" : "text-muted-foreground",
-                  )
-                }
               >
-                <span className="relative">
-                  {label === "Profile" && profile ? (
-                    <div className={cn(
-                      "h-[24px] w-[24px] rounded-full overflow-hidden ring-1 ring-white/20 transition-all",
-                      loc.pathname === "/profile" && "ring-white ring-2"
-                    )}>
-                      {profile.avatar_url ? (
-                        <img src={profile.avatar_url} alt="" className="h-full w-full object-cover" />
+                {({ isActive }) => (
+                  <div className={cn(
+                    "relative flex flex-col items-center gap-0.5 py-2.5 transition-colors",
+                    isActive ? "text-foreground" : "text-muted-foreground"
+                  )}>
+                    <span className="relative">
+                      {label === "Profile" && profile ? (
+                        <div className={cn(
+                          "h-[24px] w-[24px] rounded-full overflow-hidden ring-1 ring-white/20 transition-all",
+                          isActive && "ring-white ring-2"
+                        )}>
+                          {profile.avatar_url ? (
+                            <img src={profile.avatar_url} alt="" className="h-full w-full object-cover" />
+                          ) : (
+                            <AuraAvatar gradient={gradientFor(profile.username)} initials={initialsOf(profile.display_name || profile.username)} />
+                          )}
+                        </div>
                       ) : (
-                        <AuraAvatar gradient={gradientFor(profile.username)} initials={initialsOf(profile.display_name || profile.username)} />
+                        <Icon className="h-[26px] w-[26px]" strokeWidth={isActive ? 2.5 : 2} />
                       )}
-                    </div>
-                  ) : (
-                    <Icon className="h-[26px] w-[26px]" strokeWidth={isActive ? 2.5 : 2} />
-                  )}
-                  {badge > 0 && (
-                    <span className="absolute -right-1 -top-1 min-w-[16px] h-4 rounded-full bg-rose-500 px-1 text-[9px] font-bold flex items-center justify-center text-white ring-2 ring-black">
-                      {badge > 99 ? "99+" : badge}
+                      {badge > 0 && (
+                        <span className="absolute -right-1 -top-1 min-w-[16px] h-4 rounded-full bg-rose-500 px-1 text-[9px] font-bold flex items-center justify-center text-white ring-2 ring-black">
+                          {badge > 99 ? "99+" : badge}
+                        </span>
+                      )}
                     </span>
-                  )}
-                </span>
-                <span className="sr-only">{label}</span>
+                    <span className="sr-only">{label}</span>
+                  </div>
+                )}
               </NavLink>
             </li>
           );
