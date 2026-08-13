@@ -337,17 +337,22 @@ const Profile = () => {
   return (
     <div className="pb-24">
       {/* Top bar */}
-      <header className="sticky top-0 z-30 h-14 px-3 flex items-center gap-3 bg-background/85 backdrop-blur-xl supports-[backdrop-filter]:bg-background/70 border-b border-border">
-        <button
-          onClick={() => nav(-1)}
-          className="p-2 -ml-2 rounded-full hover:bg-secondary/60 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          aria-label="Back"
-        >
-          <ArrowLeft className="h-5 w-5" />
-        </button>
-        <div className="min-w-0">
-          <p className="text-base font-bold leading-tight truncate">{displayName}</p>
-          <p className="text-[11px] text-muted-foreground truncate">{fmt(profile.posts_count ?? 0)} posts</p>
+      <header className="sticky top-0 z-30 h-14 px-4 flex items-center justify-between bg-background/85 backdrop-blur-xl supports-[backdrop-filter]:bg-background/70 border-b border-white/5">
+        <div className="flex items-center gap-4">
+          <button
+            onClick={() => nav(-1)}
+            className="p-1 rounded-full hover:bg-secondary/60 transition-colors"
+            aria-label="Back"
+          >
+            <ArrowLeft className="h-6 w-6" />
+          </button>
+          <div className="min-w-0">
+            <p className="text-xl font-bold tracking-tight truncate">{displayName}</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-3">
+          <button className="p-1"><Share2 className="h-6 w-6" /></button>
+          <button className="p-1"><MoreHorizontal className="h-6 w-6" /></button>
         </div>
       </header>
 
