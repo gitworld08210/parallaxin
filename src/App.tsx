@@ -430,9 +430,7 @@ const App = () => (
               <Route path="/unsubscribe" element={<Unsubscribe />} />
               <Route path="/certificate/:postId" element={<Certificate />} />
               <Route element={<ProtectedRoute />}>
-                <Route path="/onboarding" element={<Onboarding />} />
                 <Route path="/profile-creation" element={<ProfileCreation />} />
-                <Route path="/onboarding/organization" element={<OrganizationOnboarding />} />
                 
                 <Route element={<AppShell />}>
                   <Route path="/admin-os/verification" element={<AdminOSVerificationQueue />} />
