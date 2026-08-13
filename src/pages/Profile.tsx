@@ -119,7 +119,7 @@ const Profile = () => {
       
       let p: any = null;
 
-      // 1. Try resolving as UID directly (most common for own profile or direct links)
+      // 1. Try resolving as UID directly
       try {
         const profDoc = await getDoc(doc(db, "profiles", target));
         if (profDoc.exists()) {
@@ -127,6 +127,17 @@ const Profile = () => {
         }
       } catch (err) {
         console.warn("UID resolution failed:", err);
+      }
+
+      // 1b. If UID resolution fails but it looks like a UID, don't stop yet
+      if (!p && target.length > 20) {
+         try {
+           const qId = query(collection(db, "profiles"), where("user_id", "==", target), limit(1));
+           const snapId = await getDocs(qId);
+           if (!snapId.empty) {
+             p = { id: snapId.docs[0].id, ...snapId.docs[0].data() };
+           }
+         } catch (e) {}
       }
 
       // 2. Try resolving via "usernames" mapping collection (most efficient for handle lookup)

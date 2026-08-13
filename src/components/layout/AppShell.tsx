@@ -37,6 +37,23 @@ export const AppShell = () => {
           <Outlet />
         </main>
         <MobileNav unreadNotif={unreadNotif} unreadDm={unreadDm} />
+        
+        {/* Added SideMenu trigger for mobile UX */}
+        <div className="absolute top-4 left-4 z-[60]">
+          <SideMenu 
+            unreadNotif={unreadNotif} 
+            unreadDm={unreadDm}
+            trigger={
+              <button className="h-10 w-10 rounded-full bg-black/50 backdrop-blur-md border border-white/10 flex items-center justify-center hover:bg-black/70 transition-colors">
+                <div className="flex flex-col gap-1 w-5">
+                  <span className="h-0.5 w-full bg-white rounded-full" />
+                  <span className="h-0.5 w-3/4 bg-white rounded-full" />
+                  <span className="h-0.5 w-full bg-white rounded-full" />
+                </div>
+              </button>
+            }
+          />
+        </div>
       </div>
     </div>
   );
