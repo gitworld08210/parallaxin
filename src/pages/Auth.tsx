@@ -79,7 +79,7 @@ const Auth = () => {
     try {
       if (tab === "signin") {
         const res = await signInWithEmailAndPassword(auth, email.trim(), password);
-        toast.success("Welcome back");
+        toast.success("Logged in");
         if (res.user) await routeForUser(res.user.uid);
       } else {
         if (kind === "organization") localStorage.setItem(ORG_INTENT_KEY, "organization");
