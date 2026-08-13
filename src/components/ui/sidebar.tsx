@@ -67,8 +67,7 @@ const SidebarProvider = React.forwardRef<
       // This sets the cookie to keep the sidebar state.
       document.cookie = `${SIDEBAR_COOKIE_NAME}=${openState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`;
     },
-    [setOpenProp, open],
-  );
+    [setOpenProp, open]);
 
   // Helper to toggle the sidebar.
   const toggleSidebar = React.useCallback(() => {
@@ -102,8 +101,7 @@ const SidebarProvider = React.forwardRef<
       setOpenMobile,
       toggleSidebar,
     }),
-    [state, open, setOpen, isMobile, openMobile, setOpenMobile, toggleSidebar],
-  );
+    [state, open, setOpen, isMobile, openMobile, setOpenMobile, toggleSidebar]);
 
   return (
     <SidebarContext.Provider value={contextValue}>
@@ -237,8 +235,7 @@ const SidebarTrigger = React.forwardRef<React.ElementRef<typeof Button>, React.C
         <span className="sr-only">Toggle Sidebar</span>
       </Button>
     );
-  },
-);
+  });
 SidebarTrigger.displayName = "SidebarTrigger";
 
 const SidebarRail = React.forwardRef<HTMLButtonElement, React.ComponentProps<"button">>(
@@ -265,8 +262,7 @@ const SidebarRail = React.forwardRef<HTMLButtonElement, React.ComponentProps<"bu
         {...props}
       />
     );
-  },
-);
+  });
 SidebarRail.displayName = "SidebarRail";
 
 const SidebarInset = React.forwardRef<HTMLDivElement, React.ComponentProps<"main">>(({ className, ...props }, ref) => {
@@ -297,8 +293,7 @@ const SidebarInput = React.forwardRef<React.ElementRef<typeof Input>, React.Comp
         {...props}
       />
     );
-  },
-);
+  });
 SidebarInput.displayName = "SidebarInput";
 
 const SidebarHeader = React.forwardRef<HTMLDivElement, React.ComponentProps<"div">>(({ className, ...props }, ref) => {
@@ -321,8 +316,7 @@ const SidebarSeparator = React.forwardRef<React.ElementRef<typeof Separator>, Re
         {...props}
       />
     );
-  },
-);
+  });
 SidebarSeparator.displayName = "SidebarSeparator";
 
 const SidebarContent = React.forwardRef<HTMLDivElement, React.ComponentProps<"div">>(({ className, ...props }, ref) => {
@@ -368,8 +362,7 @@ const SidebarGroupLabel = React.forwardRef<HTMLDivElement, React.ComponentProps<
         {...props}
       />
     );
-  },
-);
+  });
 SidebarGroupLabel.displayName = "SidebarGroupLabel";
 
 const SidebarGroupAction = React.forwardRef<HTMLButtonElement, React.ComponentProps<"button"> & { asChild?: boolean }>(
@@ -390,15 +383,13 @@ const SidebarGroupAction = React.forwardRef<HTMLButtonElement, React.ComponentPr
         {...props}
       />
     );
-  },
-);
+  });
 SidebarGroupAction.displayName = "SidebarGroupAction";
 
 const SidebarGroupContent = React.forwardRef<HTMLDivElement, React.ComponentProps<"div">>(
   ({ className, ...props }, ref) => (
     <div ref={ref} data-sidebar="group-content" className={cn("w-full text-sm", className)} {...props} />
-  ),
-);
+  ));
 SidebarGroupContent.displayName = "SidebarGroupContent";
 
 const SidebarMenu = React.forwardRef<HTMLUListElement, React.ComponentProps<"ul">>(({ className, ...props }, ref) => (
@@ -430,8 +421,7 @@ const sidebarMenuButtonVariants = cva(
       variant: "default",
       size: "default",
     },
-  },
-);
+  });
 
 const SidebarMenuButton = React.forwardRef<
   HTMLButtonElement,
@@ -521,8 +511,7 @@ const SidebarMenuBadge = React.forwardRef<HTMLDivElement, React.ComponentProps<"
       )}
       {...props}
     />
-  ),
-);
+  ));
 SidebarMenuBadge.displayName = "SidebarMenuBadge";
 
 const SidebarMenuSkeleton = React.forwardRef<
@@ -570,8 +559,7 @@ const SidebarMenuSub = React.forwardRef<HTMLUListElement, React.ComponentProps<"
       )}
       {...props}
     />
-  ),
-);
+  ));
 SidebarMenuSub.displayName = "SidebarMenuSub";
 
 const SidebarMenuSubItem = React.forwardRef<HTMLLIElement, React.ComponentProps<"li">>(({ ...props }, ref) => (

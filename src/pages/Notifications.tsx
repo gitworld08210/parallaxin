@@ -84,14 +84,12 @@ const Notifications = () => {
     // Prefer the cached pending list; fall back to a direct lookup so this
     // works even when the useIncomingInvites hook missed the row.
     const cached = pendingInvites.find(
-      (i: any) => (i.organization_id || i.organization?.id) === organizationId,
-    );
+      (i: any) => (i.organization_id || i.organization?.id) === organizationId);
     let token = (cached as any)?.invite_token as string | undefined;
     if (!token) {
       // Fall back to the SECURITY DEFINER RPC — works for invitees who aren't
       // yet org members (base-table SELECT is scoped to members).
-        "list_incoming_organization_invites" as any,
-      );
+        "list_incoming_organization_invites" as any);
       const rows = (data ?? []) as any[];
       const match = rows.find((r) => r.organization_id === organizationId);
       token = match?.invite_token;
@@ -147,8 +145,7 @@ const Notifications = () => {
     // (with accept/decline). Hide the duplicate generic notification row so
     // the official banner is the single CTA.
     () => items.filter((n) => !n.type.startsWith("org_invite") && n.type !== "org_invited"),
-    [items],
-  );
+    [items]);
 
   // Map organization_id -> pending invite_token for quick row->accept-page routing.
   const inviteTokenByOrg = useMemo(() => {

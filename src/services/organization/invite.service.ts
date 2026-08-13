@@ -105,8 +105,7 @@ async function hydrateInvites(invites: Invite[]): Promise<InviteWithMeta[]> {
   if (invites.length === 0) return [];
   const inviterIds = Array.from(new Set(invites.map((i) => i.invited_by)));
   const roleIds = Array.from(
-    new Set(invites.map((i) => i.role_id).filter((v): v is string => !!v)),
-  );
+    new Set(invites.map((i) => i.role_id).filter((v): v is string => !!v)));
 
   const [{ data: profiles }, { data: roles }] = await Promise.all([
       supabase.from("profiles")
@@ -117,11 +116,9 @@ async function hydrateInvites(invites: Invite[]): Promise<InviteWithMeta[]> {
   ]);
 
   const profileMap = new Map<string, InviterProfileRow>(
-    ((profiles ?? []) as InviterProfileRow[]).map((p) => [p.user_id, p]),
-  );
+    ((profiles ?? []) as InviterProfileRow[]).map((p) => [p.user_id, p]));
   const roleMap = new Map<string, string>(
-    ((roles ?? []) as RoleRow[]).map((r) => [r.id, r.name]),
-  );
+    ((roles ?? []) as RoleRow[]).map((r) => [r.id, r.name]));
 
   return invites.map((inv) => ({
     ...inv,

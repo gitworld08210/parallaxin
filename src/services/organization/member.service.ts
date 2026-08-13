@@ -39,8 +39,7 @@ async function hydrateMembers(members: Member[]): Promise<MemberWithProfile[]> {
   ]);
 
   const profileMap = new Map<string, MemberWithProfile["profile"]>(
-    ((profiles ?? []) as ProfileRow[]).map((p) => [p.user_id, p]),
-  );
+    ((profiles ?? []) as ProfileRow[]).map((p) => [p.user_id, p]));
   const roleMap = new Map<string, string[]>();
   for (const link of (roleLinks ?? []) as RoleLinkRow[]) {
     const bucket = roleMap.get(link.member_id) ?? [];
@@ -99,8 +98,7 @@ export const memberService = {
       members = members.filter(
         (m) =>
           m.profile?.username?.toLowerCase().includes(q) ||
-          m.profile?.display_name?.toLowerCase().includes(q),
-      );
+          m.profile?.display_name?.toLowerCase().includes(q));
     }
     const total = count ?? members.length;
     return { members, total, page, pageSize, hasMore: to + 1 < total };

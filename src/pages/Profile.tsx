@@ -98,8 +98,7 @@ const Profile = () => {
         if (a.is_owner !== b.is_owner) return a.is_owner ? -1 : 1;
         return a.name.localeCompare(b.name);
       }),
-    [rawMemberships],
-  );
+    [rawMemberships]);
 
   const isMe = !username || (me && username === me.username);
   const anyProfile = profile as any;
@@ -168,8 +167,7 @@ const Profile = () => {
               if (ap !== bp) return bp - ap;
               return +new Date(b.created_at) - +new Date(a.created_at);
             })
-            .map((d: any) => ({ ...d, liked: liked.has(d.id) })),
-        );
+            .map((d: any) => ({ ...d, liked: liked.has(d.id) })));
         setReels((rdata ?? []).map((d: any) => ({ ...d, liked: liked.has(d.id) })));
 
         if (user && p.user_id !== user.id) {

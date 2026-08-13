@@ -74,8 +74,7 @@ const saveRemote = async (uid: string, value: Stored) => {
         question: value.question,
         answer_hash: value.answerHash,
       } as any,
-      { onConflict: "user_id" },
-    );
+      { onConflict: "user_id" });
 };
 
 async function sha256(input: string): Promise<string> {

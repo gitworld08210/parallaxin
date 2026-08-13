@@ -39,8 +39,7 @@ const Onboarding = () => {
 
   const toggleInterest = (tag: string) => {
     setInterests((prev) =>
-      prev.includes(tag) ? prev.filter((t) => t !== tag) : prev.length < 8 ? [...prev, tag] : prev,
-    );
+      prev.includes(tag) ? prev.filter((t) => t !== tag) : prev.length < 8 ? [...prev, tag] : prev);
   };
   const toggleFollow = (uid: string) => {
     setFollowed((prev) => {

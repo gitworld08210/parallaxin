@@ -48,8 +48,7 @@ export const RoleCard = ({ role, memberCount, onEdit }: RoleCardProps) => {
           setConfirmOpen(false);
         },
         onError: (err: Error) => toast.error(err.message ?? "Failed to delete role"),
-      },
-    );
+      });
   };
 
   return (

@@ -87,8 +87,7 @@ export const RolePermissionsTable = () => {
       {
         onSuccess: () => toast.success(`Updated ${role.name} permissions`),
         onError: (err: Error) => toast.error(err.message ?? "Failed to save permissions"),
-      },
-    );
+      });
   };
 
   if (loading) {

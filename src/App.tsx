@@ -287,18 +287,14 @@ const ContinuityCenterPage = lazy(() => import("./pages/NotFound"));
 const LockdownPanelPage = lazy(() => import("./pages/NotFound"));
 const WatchlistPanelPage = lazy(() => import("./pages/NotFound"));
 const FounderOfficeDashboard = lazy(
-  () => import("./pages/NotFound"),
-);
+  () => import("./pages/NotFound"));
 const AppointmentsPanel = lazy(
-  () => import("./pages/NotFound"),
-);
+  () => import("./pages/NotFound"));
 const AuditCenter = lazy(() => import("./pages/NotFound"));
 const DepartmentsIndex = lazy(
-  () => import("./pages/NotFound"),
-);
+  () => import("./pages/NotFound"));
 const DepartmentDetail = lazy(
-  () => import("./pages/NotFound"),
-);
+  () => import("./pages/NotFound"));
 // Phase 4.1 — Trust & Safety
 const TrustSafetyShell = lazy(() => import("./pages/NotFound"));
 const TsDashboard = lazy(() => import("./pages/NotFound"));

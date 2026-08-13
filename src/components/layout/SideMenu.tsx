@@ -257,8 +257,7 @@ const MenuSection = ({ rows, label }: { rows: Row[]; label?: string }) => (
         </>
       );
       const className = cn(
-        "w-full flex items-center gap-4 px-3 py-3 rounded-xl hover:bg-secondary/60 transition-colors",
-      );
+        "w-full flex items-center gap-4 px-3 py-3 rounded-xl hover:bg-secondary/60 transition-colors");
       if (r.onClick) {
         return (
           <button key={r.label} onClick={r.onClick} className={className}>

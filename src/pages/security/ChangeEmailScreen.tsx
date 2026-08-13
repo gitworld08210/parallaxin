@@ -19,8 +19,7 @@ export default function ChangeEmailScreen() {
     }
     setBusy(true);
       { email: email.trim() },
-      { emailRedirectTo: `${window.location.origin}/` },
-    );
+      { emailRedirectTo: `${window.location.origin}/` });
     setBusy(false);
     if (error) return toast.error(error.message);
     toast.success("Verification link sent to your new address");

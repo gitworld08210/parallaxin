@@ -90,8 +90,7 @@ export const useMemberMutations = () => {
     onMutate: async ({ memberId, roleId }) => {
       if (!organizationId) return;
       const roles = qc.getQueryData<{ id: string; name: string }[]>(
-        orgKeys.roles(organizationId),
-      );
+        orgKeys.roles(organizationId));
       const roleName = roles?.find((r) => r.id === roleId)?.name ?? null;
       const affected = qc.getQueriesData<MemberPage>({
         queryKey: ["organization", organizationId, "members", "page"],

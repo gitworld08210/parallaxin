@@ -64,8 +64,7 @@ export const RoleFormModal = ({ open, onOpenChange, role }: RoleFormModalProps) 
             onOpenChange(false);
           },
           onError: (err: Error) => toast.error(err.message ?? "Failed to update role"),
-        },
-      );
+        });
     } else {
       create.mutate(payload, {
         onSuccess: () => {

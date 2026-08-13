@@ -26,8 +26,7 @@ export const lovable = {
         return result;
       }
 
-      try {
-      } catch (e) {
+      try { /* No-op */ } catch (e) {
         return { error: e instanceof Error ? e : new Error(String(e)) };
       }
       return result;

@@ -33,8 +33,7 @@ export default function Unsubscribe() {
       try {
         const res = await fetch(
           `${SUPABASE_URL}/functions/v1/handle-email-unsubscribe?token=${encodeURIComponent(token)}`,
-          { headers: { apikey: SUPABASE_ANON } },
-        );
+          { headers: { apikey: SUPABASE_ANON } });
         const data = await res.json();
         if (cancelled) return;
         if (!res.ok) {

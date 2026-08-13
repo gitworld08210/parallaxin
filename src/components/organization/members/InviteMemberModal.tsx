@@ -64,8 +64,7 @@ export const InviteMemberModal = ({ open, onOpenChange }: InviteMemberModalProps
           onOpenChange(false);
         },
         onError: (err: Error) => toast.error(err.message ?? "Failed to send invitation"),
-      },
-    );
+      });
   };
 
   return (

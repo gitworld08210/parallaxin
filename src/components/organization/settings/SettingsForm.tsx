@@ -89,8 +89,7 @@ export const SettingsForm = () => {
       timezone: settings?.timezone ?? "UTC",
       visibility: settings?.visibility ?? "public",
     }),
-    [organization, settings],
-  );
+    [organization, settings]);
 
   const dirty = JSON.stringify(form) !== JSON.stringify(initial);
 

@@ -78,8 +78,7 @@ export const MemberActionsMenu = ({ member, isOwnerRow }: MemberActionsMenuProps
           setRoleDialogOpen(false);
         },
         onError: (err: Error) => toast.error(err.message ?? "Failed to update role"),
-      },
-    );
+      });
   };
 
   const handleRemove = () => {
@@ -91,8 +90,7 @@ export const MemberActionsMenu = ({ member, isOwnerRow }: MemberActionsMenuProps
           setRemoveDialogOpen(false);
         },
         onError: (err: Error) => toast.error(err.message ?? "Failed to remove member"),
-      },
-    );
+      });
   };
 
   const handleTransfer = () => {
@@ -104,8 +102,7 @@ export const MemberActionsMenu = ({ member, isOwnerRow }: MemberActionsMenuProps
           setTransferDialogOpen(false);
         },
         onError: (err: Error) => toast.error(err.message ?? "Failed to transfer ownership"),
-      },
-    );
+      });
   };
 
   return (

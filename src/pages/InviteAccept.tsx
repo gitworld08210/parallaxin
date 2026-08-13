@@ -69,8 +69,7 @@ const InviteAccept = () => {
       // Uses a SECURITY DEFINER RPC so invitees (who aren't yet org members)
       // can still read their invitation despite table-level RLS.
         "get_organization_invite_by_token" as any,
-        { _token: token },
-      );
+        { _token: token });
       if (cancelled) return;
       const row = Array.isArray(data) ? data[0] : (data as any);
       if (error || !row) {

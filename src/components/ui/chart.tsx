@@ -227,8 +227,7 @@ const ChartTooltipContent = React.forwardRef<
         </div>
       </div>
     );
-  },
-);
+  });
 ChartTooltipContent.displayName = "ChartTooltip";
 
 const ChartLegend = RechartsPrimitive.Legend;

@@ -20,8 +20,7 @@ const NavLink = forwardRef<HTMLAnchorElement, NavLinkCompatProps>(
         {...props}
       />
     );
-  },
-);
+  });
 
 NavLink.displayName = "NavLink";
 
