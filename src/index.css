@@ -7,9 +7,8 @@
 
 @layer base {
   :root {
-    /* ===== Midnight Indigo — Dark First =====
-       Palette: #0a0a1a bg → #141432 surface → #1e1e5a elevated → #4f46e5 primary */
-    --background: 240 43% 6%;
+    /* ===== Pure Black Aesthetics ===== */
+    --background: 0 0% 0%;
     --foreground: 0 0% 100%;
 
     --surface: 240 44% 14%;

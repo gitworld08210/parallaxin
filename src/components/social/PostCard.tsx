@@ -186,7 +186,7 @@ export const PostCard = ({ post, onOpenComments }: { post: FeedPost; onOpenComme
   const shortCaption = longCaption && !expanded ? caption.slice(0, 240) : caption;
 
   return (
-    <article ref={articleRef} className="bg-background px-4 pt-3 pb-3 border-b border-white/5 hover:bg-white/[0.01] transition-colors">
+    <article ref={articleRef} className="bg-background px-4 pt-3 pb-3 border-b border-white/[0.08] hover:bg-white/[0.01] transition-colors">
       {/* X-style: avatar left, content right */}
       <div className="flex gap-3">
         {/* Avatar column */}

@@ -99,6 +99,7 @@ const Achievements = lazy(() => import("./pages/Achievements"));
 const AuraLevel = lazy(() => import("./pages/AuraLevel"));
 const Monetization = lazy(() => import("./pages/Monetization"));
 const VerificationCenter = lazy(() => import("./pages/VerificationCenter"));
+const AdminOSVerificationQueue = lazy(() => import("./pages/admin-os/VerificationQueue"));
 const VirtualWorld = lazy(() => import("./pages/VirtualWorld"));
 const Store = lazy(() => import("./pages/Store"));
 const CheckoutReturn = lazy(() => import("./pages/CheckoutReturn"));
@@ -436,6 +437,7 @@ const App = () => (
                 <Route path="/onboarding/organization" element={<OrganizationOnboarding />} />
                 
                 <Route element={<AppShell />}>
+                  <Route path="/admin-os/verification" element={<AdminOSVerificationQueue />} />
                   <Route path="/" element={<Feed />} />
                   <Route path="/reels" element={<Reels />} />
                   <Route path="/discover" element={<Discover />} />
