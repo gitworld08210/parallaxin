@@ -33,7 +33,7 @@ type Row = {
   badge?: string;
 };
 
-export const SideMenu = ({ trigger }: { trigger: React.ReactNode }) => {
+export const SideMenu = ({ trigger, unreadNotif, unreadDm }: { trigger?: React.ReactNode; unreadNotif?: number; unreadDm?: number }) => {
   const { profile, signOut } = useAuth();
   const { isCreator } = useIsCreator();
   const { theme } = useTheme();

@@ -5,6 +5,7 @@ import { useAuth } from "@/contexts/AuthProvider";
 import { toast } from "sonner";
 import { Building2, Upload, Sparkles } from "lucide-react";
 import { ORG_TYPES } from "@/lib/orgTypes";
+import { supabase } from "@/integrations/supabase/client";
 import type { OrgType } from "@/types/organization/organization";
 
 const input =
@@ -37,7 +38,9 @@ const OrganizationOnboarding = () => {
     try {
       const ext = file.name.split(".").pop() || "png";
       const path = `org-logos/${user.id}/${Date.now()}.${ext}`;
+      const { error } = await supabase.storage.from("org-logos").upload(path, file, { upsert: true });
       if (error) throw error;
+      const { data } = supabase.storage.from("org-logos").getPublicUrl(path);
       setLogoUrl(data.publicUrl);
     } catch (e: any) { toast.error(e.message || "Action failed"); } finally {
       setLogoUploading(false);
@@ -51,13 +54,16 @@ const OrganizationOnboarding = () => {
     }
     setBusy(true);
     try {
+      const { error } = await supabase.rpc("create_organization" as any, {
         p_name: form.name.trim(),
         p_username: form.username.trim().toLowerCase(),
         p_org_type: form.org_type,
         p_description: form.description?.trim() || null,
         p_logo_url: logoUrl || null,
         p_cover_url: null,
+      } as any);
       if (error) throw error;
+
       toast.success("Organization created ✦");
       nav(`/organization/dashboard`, { replace: true });
     } catch (e: any) { toast.error(e.message || "Action failed"); } finally {

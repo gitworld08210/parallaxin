@@ -5,13 +5,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Bell, Heart, MessageCircle, UserPlus, Info, CheckCircle2, ChevronRight, X, UserCheck, Briefcase } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
-import { useIncomingInvites } from "@/hooks/useIncomingInvites";
-import { OrganizationInviteBanner } from "@/components/organization/invites/OrganizationInviteBanner";
+import { IncomingInvitesList } from "@/components/organization/members/IncomingInvitesList";
 
 const Notifications = () => {
   const { user } = useAuth();
   const [items, setItems] = useState<any[]>([]);
-  const { pendingInvites } = useIncomingInvites();
 
   useEffect(() => {
     if (!user) return;
@@ -81,9 +79,7 @@ const Notifications = () => {
       </div>
 
       <div className="space-y-4 mb-8">
-        {pendingInvites.map((invite: any) => (
-          <OrganizationInviteBanner key={invite.id} invite={invite} />
-        ))}
+        <IncomingInvitesList />
       </div>
 
       <div className="space-y-1">

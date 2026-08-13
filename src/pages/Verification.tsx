@@ -6,6 +6,7 @@ import { GlassCard } from "@/components/vibe/GlassCard";
 import { VerificationBadge } from "@/components/vibe/VerificationBadge";
 
 import { useAuth } from "@/contexts/AuthProvider";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 type VR = { id: string; status: string; category: string; created_at: string };
@@ -54,7 +55,8 @@ const Verification = () => {
       }
 
       // 2. Supabase Fallback
-      setExisting((data as VR) ?? null);
+      const { data } = await supabase.from("verification_requests" as any).select("id, status, category, created_at").eq("user_id", user.id).maybeSingle();
+      setExisting((data as unknown as VR) ?? null);
       setLoading(false);
     })();
   }, [user?.id]);
@@ -62,6 +64,7 @@ const Verification = () => {
   const uploadDoc = async (f: File) => {
     const ext = f.name.split(".").pop() || "jpg";
     const path = `${user!.id}/${crypto.randomUUID()}.${ext}`;
+    const { error } = await supabase.storage.from("verification-docs").upload(path, f);
     if (error) throw error;
     return path;
   };
@@ -98,15 +101,18 @@ const Verification = () => {
         await addDoc(collection(firestoreDb, "verification_requests"), {
           ...payload,
           created_at: serverTimestamp(),
+        });
       } catch (e) {
         console.warn("Firestore verification submission failed", e);
       }
 
       // 2. Supabase Insert (Legacy/Admin OS trigger)
+      const { data: inserted, error } = await supabase.from("verification_requests" as any).insert(payload as any).select("id").maybeSingle();
       if (error) throw error;
+
       
       toast.success("Submitted · review within 48h");
-      setExisting({ id: inserted?.id ?? "tmp", status: "pending", category, created_at: new Date().toISOString() });
+      setExisting({ id: (inserted as any)?.id ?? "tmp", status: "pending", category, created_at: new Date().toISOString() });
     } catch (e: any) { toast.error(e.message || "Action failed"); } finally { setBusy(false); }
   };
 

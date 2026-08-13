@@ -23,29 +23,38 @@ export const StoryStickersLayer = ({ storyId, isOwner, onPauseChange }: { storyI
   useEffect(() => {
     let cancelled = false;
     (async () => {
+      const { data: st } = await supabase.from("story_stickers" as any).select("*").eq("story_id", storyId);
       if (cancelled) return;
       setStickers((st ?? []) as any);
       const ids = ((st ?? []) as any[]).map((s) => s.id);
       if (ids.length) {
+        const { data: rs } = await supabase.from("story_sticker_responses" as any).select("*").in("sticker_id", ids);
         if (!cancelled) setResponses((rs ?? []) as any);
       }
     })();
-supabase.on("postgres_changes", { event: "INSERT", schema: "public", table: "story_sticker_responses" }, (p) => {
+    const channel = supabase.channel(`story-stickers:${storyId}`).on(
+      "postgres_changes",
+      { event: "INSERT", schema: "public", table: "story_sticker_responses" },
+      (p: any) => {
         const r = p.new as any;
         setResponses((prev) => prev.some((x) => x.id === r.id) ? prev : [...prev, r]);
-      }).
-subscribe();
+      },
+    ).subscribe();
+    return () => {
+      cancelled = true;
+      supabase.removeChannel(channel);
+    };
   }, [storyId]);
 
   const respondPoll = async (stickerId: string, option: string) => {
     if (!user) return toast.error("Sign in");
     const existing = responses.find((r) => r.sticker_id === stickerId && r.user_id === user.id);
     if (existing) {
-        supabase.update({ response: { option } } as any).eq("id", existing.id);
+      const { error } = await supabase.from("story_sticker_responses" as any).update({ response: { option } } as any).eq("id", existing.id);
       if (error) return toast.error(error.message);
       setResponses((prev) => prev.map((r) => r.id === existing.id ? { ...r, response: { option } } : r));
     } else {
-        supabase.insert({ sticker_id: stickerId, user_id: user.id, response: { option } } as any).select().single();
+      const { data, error } = await supabase.from("story_sticker_responses" as any).insert({ sticker_id: stickerId, user_id: user.id, response: { option } } as any).select().single();
       if (error) return toast.error(error.message);
       setResponses((prev) => [...prev, data as any]);
     }
@@ -53,7 +62,7 @@ subscribe();
 
   const respondQA = async (stickerId: string, text: string) => {
     if (!user || !text.trim()) return;
-      supabase.insert({ sticker_id: stickerId, user_id: user.id, response: { text: text.trim().slice(0, 300) } } as any).select().single();
+    const { data, error } = await supabase.from("story_sticker_responses" as any).insert({ sticker_id: stickerId, user_id: user.id, response: { text: text.trim().slice(0, 300) } } as any).select().single();
     if (error) return toast.error(error.message);
     setResponses((prev) => [...prev, data as any]);
     toast.success("Sent");

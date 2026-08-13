@@ -8,6 +8,7 @@ import { useAuth } from "@/contexts/AuthProvider";
 import { gradientFor, initialsOf } from "@/lib/format";
 import { toast } from "sonner";
 import { uploadToCloudinary } from "@/lib/cloudinary";
+import { supabase } from "@/integrations/supabase/client";
 
 
 
@@ -67,23 +68,26 @@ const EditProfile = () => {
       // 1. Dual-write Profile to Firestore
       const { doc, setDoc, serverTimestamp } = await import("firebase/firestore");
       const { db } = await import("@/lib/firebase");
-      await setDoc(doc(db, "profiles", user.id), {
+      await setDoc(doc(db, "profiles", user.uid), {
         display_name: displayName,
         username,
         bio,
         avatar_url: avatar,
         cover_url: cover,
         updated_at: serverTimestamp(),
+      }, { merge: true });
     } catch (e) {
       console.warn("Firestore profile update failed", e);
     }
 
     // 2. Update Supabase (Legacy)
+    const { error } = await supabase.from("profiles").update({
       display_name: displayName, username, bio, avatar_url: avatar, cover_url: cover,
-    } as any).eq("user_id", user.id);
-    
+    } as any).eq("user_id", user.uid);
+
     setBusy(false);
     if (error) return toast.error(error.message);
+
     await refreshProfile();
     toast.success("Profile saved");
     nav("/profile");

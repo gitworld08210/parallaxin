@@ -19,8 +19,6 @@ export const getUserMedia = async (video: boolean): Promise<MediaStream> => {
 export const stopStream = (stream: MediaStream | null) => {
   if (!stream) return;
   stream.getTracks().forEach((t) => { try { t.stop(); } catch {} });
-      /* Reconstructed shim */
-      const { data, error } = await Promise.resolve({ data: null, error: null });
 };
 
 /** Simple oscillator-based ringtone (no asset). Returns stop fn. */
@@ -55,8 +53,6 @@ export const playRingtone = (): (() => void) => {
       stopped = true;
       if (timer) clearInterval(timer);
       try { ctx.close(); } catch {}
-      /* Reconstructed shim */
-      const { data, error } = await Promise.resolve({ data: null, error: null });
     };
   } catch {
     return () => {};

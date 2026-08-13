@@ -17,6 +17,7 @@ interface RoleLinkRow {
 export const organizationApi = {
   /** Resolve org UUID + membership flags from a URL slug (RPC — server-authoritative). */
   async resolveBySlug(slug: string) {
+    const { data, error } = await supabase.rpc("org_resolve_by_slug" as never, { _slug: slug } as never);
     if (error) throw error;
     return (Array.isArray(data) ? data[0] : data) as
       | {
@@ -35,6 +36,7 @@ export const organizationApi = {
 
   /** Full organization row by id. */
   async getById(id: string): Promise<Organization | null> {
+    const { data, error } = await supabase.from("organizations").select("*").eq("id", id).maybeSingle();
     if (error) throw error;
     return (data as Organization | null) ?? null;
   },
@@ -78,7 +80,7 @@ export const organizationApi = {
     const memberIds = memberRows.map((r) => r.id);
     let roleMap = new Map<string, string[]>();
     if (memberIds.length > 0) {
-        supabase.from("organization_member_roles").select("member_id, organization_roles(id, name)").in("member_id", memberIds);
+      const { data: roleRows, error: roleErr } = await supabase.from("organization_member_roles").select("member_id, organization_roles(id, name)").in("member_id", memberIds);
       if (roleErr) throw roleErr;
       for (const l of ((roleRows ?? []) as RoleLinkRow[])) {
         const bucket = roleMap.get(l.member_id) ?? [];

@@ -21,11 +21,12 @@ export const CollabInviteSheet = ({ open, onOpenChange }: { open: boolean; onOpe
   useEffect(() => {
     if (!open || !user) return;
     (async () => {
-        supabase.from("post_collaborators" as any).select("post_id, invited_at, post:posts(id, content, media_url, user_id)").eq("user_id", user.id).eq("status", "pending");
+      const { data } = await supabase.from("post_collaborators" as any).select("post_id, invited_at, post:posts(id, content, media_url, user_id)").eq("user_id", user.id).eq("status", "pending");
       const rows = (data ?? []) as any[];
       const authorIds = Array.from(new Set(rows.map((r) => r.post?.user_id).filter(Boolean)));
       let authors: Record<string, any> = {};
       if (authorIds.length) {
+        const { data: profs } = await supabase.from("profiles").select("user_id, username, display_name, avatar_url").in("user_id", authorIds);
         authors = Object.fromEntries((profs ?? []).map((p: any) => [p.user_id, p]));
       }
       setItems(rows.map((r) => ({ ...r, author: authors[r.post?.user_id] ?? null })));
@@ -35,7 +36,7 @@ export const CollabInviteSheet = ({ open, onOpenChange }: { open: boolean; onOpe
   const respond = async (postId: string, status: "accepted" | "declined") => {
     if (!user) return;
     setBusy(postId);
-      supabase.from("post_collaborators" as any).update({ status, responded_at: new Date().toISOString() } as any).eq("post_id", postId).eq("user_id", user.id);
+    const { error } = await supabase.from("post_collaborators" as any).update({ status, responded_at: new Date().toISOString() } as any).eq("post_id", postId).eq("user_id", user.id);
     setBusy(null);
     if (error) return toast.error(error.message);
     setItems((prev) => prev.filter((i) => i.post_id !== postId));

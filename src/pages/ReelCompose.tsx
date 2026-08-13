@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { FilterStrip, FilterKey, filterCss } from "@/components/compose/FilterStrip";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { uploadToCloudinary } from "@/lib/cloudinary";
+import { supabase } from "@/integrations/supabase/client";
 
 const ReelCompose = () => {
   const { user } = useAuth();
@@ -53,6 +54,7 @@ const ReelCompose = () => {
   const aiCaption = async () => {
     setAiBusy(true);
     try {
+      const { data, error } = await supabase.functions.invoke("suggest-reel-caption", { body: { content } });
       if (error) throw error;
       if (data?.caption) setContent(data.caption);
     } catch (e: any) { toast.error(e.message || "Action failed"); } finally { setAiBusy(false); }
@@ -64,6 +66,7 @@ const ReelCompose = () => {
     setBusy(true);
     try {
       if (content.trim()) {
+        const { data: mod } = await supabase.functions.invoke("moderate-caption", { body: { text: content.trim() } });
         if (mod?.flagged) throw new Error(mod.reason || "Caption flagged");
       }
       const url = await uploadToCloudinary(file);

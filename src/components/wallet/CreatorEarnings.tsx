@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Banknote, ShieldCheck, Upload, Clock, Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 const rupees = (c: number) => `₹${(c / 100).toLocaleString("en-IN")}`;
 
@@ -23,6 +24,8 @@ export function CreatorEarnings() {
     if (!user) return;
     setLoading(true);
     const [b, k] = await Promise.all([
+      supabase.from("creator_balances").select("available_cents, pending_cents, lifetime_earned_cents").eq("user_id", user.id).maybeSingle(),
+      supabase.from("creator_kyc").select("id, status, review_note").eq("user_id", user.id).maybeSingle(),
     ]);
     if (b.data) setBal(b.data as any);
     setKyc((k.data as any) ?? null);
@@ -115,6 +118,7 @@ function KycModal({ onClose }: { onClose: () => void }) {
       const upload = async (f: File, label: string) => {
         const ext = f.name.split(".").pop() || "jpg";
         const path = `${user.id}/${label}-${Date.now()}.${ext}`;
+        const { error } = await supabase.storage.from("creator-kyc").upload(path, f);
         if (error) throw error;
         return path;
       };
@@ -198,6 +202,11 @@ function PayoutModal({ available, onClose }: { available: number; onClose: () =>
       detail = { account_number: acct.trim(), ifsc: ifsc.trim().toUpperCase(), name: name.trim() };
     }
     setSaving(true);
+    const { error } = await supabase.from("creator_payout_requests").insert({
+      amount_cents: cents,
+      method,
+      detail,
+    } as any);
     setSaving(false);
     if (error) return toast.error(error.message);
     toast.success("Withdrawal requested — we'll process within 1–3 business days");

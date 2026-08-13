@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthProvider";
 import { toast } from "sonner";
 import { Check } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 const AURAS = [
   { id: "ether",   label: "Ether",   color: "hsl(204 100% 60%)" },
@@ -26,6 +27,7 @@ export const SignatureAuraPicker = () => {
     if (!user) return;
     setBusy(true);
     setCurrent(id);
+    const { error } = await supabase.from("profiles").update({ signature_aura: id }).eq("user_id", user.id);
     setBusy(false);
     if (error) toast.error(error.message); else { toast.success("Signature aura updated"); refreshProfile?.(); }
   };

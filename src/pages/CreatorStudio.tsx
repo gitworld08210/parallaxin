@@ -318,6 +318,7 @@ const CoachTab = () => {
     setBusy(true);
     setCoach(null);
     try {
+      const { data, error } = await supabase.functions.invoke("creator-coach");
       if (error) throw error;
       setCoach(data as Coach);
     } catch (e: any) { toast.error(e.message || "Action failed"); } finally {

@@ -23,10 +23,11 @@ export const NewGroupSheet = ({ open, onOpenChange }: { open: boolean; onOpenCha
   useEffect(() => {
     if (!open || !user) return;
     (async () => {
-        supabase.select("user_id, username, display_name, avatar_url").neq("user_id", user.id).limit(40);
+      let query = supabase.from("profiles").select("user_id, username, display_name, avatar_url").neq("user_id", user.id).limit(40);
       const term = q.trim();
       if (term) query = query.or(`username.ilike.%${term}%,display_name.ilike.%${term}%`);
       else {
+        const { data: follows } = await supabase.from("follows").select("following_id").eq("follower_id", user.id);
         const ids = (follows ?? []).map((f) => f.following_id);
         if (ids.length) query = query.in("user_id", ids);
       }
@@ -76,7 +77,7 @@ export const NewGroupSheet = ({ open, onOpenChange }: { open: boolean; onOpenCha
           </SheetTitle>
           <button
             disabled={selectedArr.length === 0 || creating}
-            onClick={create}
+            onClick={createGroup}
             className="text-sm font-semibold px-4 py-1.5 rounded-full disabled:opacity-40"
             style={{ background: "#E50914", color: "white" }}
           >

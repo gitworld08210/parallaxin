@@ -19,11 +19,13 @@ export const MentionPickerSheet = ({
   useEffect(() => {
     if (!open || !user) return;
     (async () => {
-        supabase.select("user_id, username, display_name, avatar_url").neq("user_id", user.id).limit(30);
+      let query = supabase.from("profiles").select("user_id, username, display_name, avatar_url").neq("user_id", user.id).limit(30);
       const term = q.trim();
-      if (term) query = query.or(`username.ilike.%${term}%,display_name.ilike.%${term}%`);
-      else {
-        const ids = (follows ?? []).map((f) => f.following_id);
+      if (term) {
+        query = query.or(`username.ilike.%${term}%,display_name.ilike.%${term}%`);
+      } else {
+        const { data: follows } = await supabase.from("follows").select("following_id").eq("follower_id", user.id);
+        const ids = (follows ?? []).map((f: any) => f.following_id);
         if (ids.length) query = query.in("user_id", ids);
       }
       const { data } = await query;

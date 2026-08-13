@@ -18,9 +18,9 @@ interface RoleRow {
 export const inviteService = {
   /** Pending invitations for an organization (admin-facing). */
   async listPending(orgId: string): Promise<InviteWithMeta[]> {
-      supabase.from("organization_invites").select(
-        "id, organization_id, invited_by, email, username, role_id, invite_token, status, expires_at, accepted_at, created_at",
-      ).eq("organization_id", orgId).eq("status", "pending").order("created_at", { ascending: false });
+    const { data, error } = await supabase.from("organization_invites").select(
+      "id, organization_id, invited_by, email, username, role_id, invite_token, status, expires_at, accepted_at, created_at",
+    ).eq("organization_id", orgId).eq("status", "pending").order("created_at", { ascending: false });
     if (error) throw error;
     return hydrateInvites((data ?? []) as Invite[]);
   },
@@ -34,6 +34,10 @@ export const inviteService = {
     username?: string | null;
     email?: string | null;
   }): Promise<InviteWithMeta[]> {
+    const { data, error } = await supabase.rpc("org_list_incoming_invites" as never, {
+      _username: _opts?.username ?? null,
+      _email: _opts?.email ?? null,
+    } as never);
     if (error) throw error;
     const rows = (data ?? []) as any[];
     return rows.map((r) => ({
@@ -74,27 +78,32 @@ export const inviteService = {
     orgId: string,
     { email, username, roleId }: { email?: string; username?: string; roleId?: string | null },
   ): Promise<string> {
+    const { data, error } = await supabase.rpc("org_invite_member" as never, {
       _organization_id: orgId,
       _email: email ?? null,
       _username: username ?? null,
       _role_id: roleId ?? null,
-    });
+    } as never);
     if (error) throw error;
     return data as string;
   },
 
   async accept(inviteToken: string): Promise<string> {
+    const { data, error } = await supabase.rpc("org_accept_invite" as never, { _token: inviteToken } as never);
     if (error) throw error;
     return data as string;
   },
 
   async decline(inviteToken: string): Promise<void> {
+    const { error } = await supabase.rpc("org_decline_invite" as never, { _token: inviteToken } as never);
     if (error) throw error;
   },
 
   async cancel(inviteId: string): Promise<void> {
+    const { error } = await supabase.rpc("org_cancel_invite" as never, { _invite_id: inviteId } as never);
     if (error) throw error;
   },
+
 };
 
 async function hydrateInvites(invites: Invite[]): Promise<InviteWithMeta[]> {
@@ -104,10 +113,12 @@ async function hydrateInvites(invites: Invite[]): Promise<InviteWithMeta[]> {
     new Set(invites.map((i) => i.role_id).filter((v): v is string => !!v)));
 
   const [{ data: profiles }, { data: roles }] = await Promise.all([
-      supabase.from("profiles").select("user_id, username, display_name, avatar_url").in("user_id", inviterIds),
+    supabase.from("profiles").select("user_id, username, display_name, avatar_url").in("user_id", inviterIds),
     roleIds.length
+      ? supabase.from("organization_roles").select("id, name").in("id", roleIds)
       : Promise.resolve({ data: [] as RoleRow[] }),
   ]);
+
 
   const profileMap = new Map<string, InviterProfileRow>(
     ((profiles ?? []) as InviterProfileRow[]).map((p) => [p.user_id, p]));

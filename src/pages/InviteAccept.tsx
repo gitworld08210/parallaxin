@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 
 import { useAuth } from "@/contexts/AuthProvider";
+import { supabase } from "@/integrations/supabase/client";
 import { useIncomingInviteActions } from "@/hooks/organization/useOrganizationInvites";
 import { toast } from "sonner";
 import { timeAgo } from "@/lib/format";

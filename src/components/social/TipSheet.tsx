@@ -6,6 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Sparkles, QrCode, Copy, Check, ExternalLink, ShieldCheck, Loader2, Clock } from "lucide-react";
 
 import { useAuth } from "@/contexts/AuthProvider";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 const PRESETS = [49, 99, 199, 499, 999, 2499];
@@ -45,6 +46,7 @@ export function TipSheet({ open, onOpenChange, recipientId, recipientName, postI
     if (!open) return;
     let cancelled = false;
     (async () => {
+      const { data, error } = await supabase.from("platform_payment_config" as any).select("*").maybeSingle();
       if (cancelled || error || !data) return;
       const row: any = Array.isArray(data) ? data[0] : data;
       setPay({
@@ -84,6 +86,10 @@ export function TipSheet({ open, onOpenChange, recipientId, recipientName, postI
     const cleaned = utr.trim().replace(/\s+/g, "");
     if (!/^[0-9]{12}$/.test(cleaned)) return toast.error("Enter your 12-digit UPI UTR");
     setLoading(true);
+    const { data, error } = await supabase.rpc("submit_tip_utr", {
+      _tip_id: tipId,
+      _utr: cleaned,
+    });
     setLoading(false);
     if (error) return toast.error(error.message);
     const s = (data as any)?.status;

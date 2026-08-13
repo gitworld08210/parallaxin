@@ -5,6 +5,7 @@ import { useCreatorSubscription } from "@/hooks/useCreatorSubscription";
 import { SubscribeSheet } from "./SubscribeSheet";
 
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 import {
   DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
@@ -20,6 +21,9 @@ export function SubscribeButton({ creatorId, creatorName, className }: Props) {
 
   const cancel = async () => {
     setCanceling(true);
+    const { error } = await supabase.rpc("cancel_creator_subscription" as never, {
+      _creator_id: creatorId,
+    } as never);
     setCanceling(false);
     if (error) return toast.error(error.message);
     toast.success("Auto-renew off — access ends on period end");

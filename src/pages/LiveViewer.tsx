@@ -39,28 +39,35 @@ export default function LiveViewer() {
   const [tips, setTips] = useState(0);
 
   useEffect(() => {
-      supabase.then(({ data }) => setCatalog((data ?? []) as GiftDef[]));
+    (async () => {
+      const { data } = await supabase.from("gift_catalog" as any).select("*");
+      setCatalog((data ?? []) as GiftDef[]);
+    })();
   }, []);
 
   // Load stream + evaluate access
   useEffect(() => {
     if (!id) return;
     (async () => {
+      const { data, error } = await supabase.from("live_streams" as any).select("*").eq("id", id).maybeSingle();
       if (error || !data) { toast.error("Stream not found"); navigate(-1); return; }
       const s = data as any as Stream;
       setStream(s);
       setTips(Number(s.total_tips_coins ?? 0));
       if (s.status === "ended") { setEnded(true); return; }
 
+      const { data: u } = await supabase.auth.getUser();
       const uid = u.user?.id;
+      setMe(uid ?? null);
       if (uid && s.host_id === uid) { setAccess("granted"); return; }
       if (s.access_type === "free") { setAccess("granted"); return; }
       if (!uid) { setAccess(s.access_type === "ticket" ? "needs_ticket" : "needs_sub"); return; }
 
       if (s.access_type === "ticket") {
+        const { data: t } = await supabase.from("live_tickets" as any).select("id").eq("stream_id", s.id).eq("user_id", uid).maybeSingle();
         setAccess(t ? "granted" : "needs_ticket");
       } else if (s.access_type === "subscribers_only") {
-          supabase.eq("subscriber_id", uid).eq("creator_id", s.host_id).maybeSingle();
+        const { data: sub } = await supabase.from("creator_subscriptions" as any).select("status").eq("subscriber_id", uid).eq("creator_id", s.host_id).maybeSingle();
         const active = sub && ["active", "trialing"].includes(String((sub as any).status));
         setAccess(active ? "granted" : "needs_sub");
       }
@@ -72,6 +79,7 @@ export default function LiveViewer() {
     if (!stream || access !== "granted" || ended) return;
     let mounted = true;
     (async () => {
+      const { data, error: tErr } = await supabase.functions.invoke("livekit-token", {
         body: { room: stream.livekit_room, role: "viewer" },
       });
       if (tErr || !data?.token) { toast.error("Could not join"); return; }
@@ -84,7 +92,9 @@ export default function LiveViewer() {
       await room.connect(data.wsUrl, data.token);
       roomRef.current = room;
 
-      if (history && mounted) setChat(history as ChatRow[]);
+      const { data: history } = await supabase.from("live_chat" as any).select("*").eq("stream_id", stream.id).order("created_at", { ascending: true }).limit(100);
+      if (history && mounted) setChat(history as unknown as ChatRow[]);
+
     })();
     return () => { mounted = false; roomRef.current?.disconnect(); roomRef.current = null; };
   }, [access, stream?.id, ended]);
@@ -134,6 +144,7 @@ subscribe();
     if (!stream) return;
     setBuying(true);
     try {
+      const { data, error } = await supabase.functions.invoke("buy-live-ticket", { body: { stream_id: stream.id } });
       if (error || (data as any)?.error) throw new Error((data as any)?.error || error?.message);
       toast.success("Unlocked ✦");
       setAccess("granted");
@@ -147,6 +158,7 @@ subscribe();
   const sendGift = async (g: GiftDef) => {
     if (!stream) return;
     setGiftSheet(false);
+    const { data, error } = await supabase.functions.invoke("send-live-gift", { body: { stream_id: stream.id, gift_id: g.id } });
     if (error || (data as any)?.error) {
       const msg = (data as any)?.error || error?.message || "Gift failed";
       if (/insufficient/i.test(msg)) toast.error("Not enough coins — top up in Wallet");

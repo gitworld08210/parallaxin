@@ -49,7 +49,7 @@ export const dashboardService = {
   },
 
   async recentActivity(orgId: string, limit = 6): Promise<DashboardActivityItem[]> {
-      supabase.from("organization_activity").select("id, activity_type, title, description, created_at, actor_id").eq("organization_id", orgId).order("created_at", { ascending: false }).limit(limit);
+    const { data, error } = await supabase.from("organization_activity").select("id, activity_type, title, description, created_at, actor_id").eq("organization_id", orgId).order("created_at", { ascending: false }).limit(limit);
     if (error) throw error;
     return (data as DashboardActivityItem[]) ?? [];
   },

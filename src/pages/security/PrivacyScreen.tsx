@@ -5,6 +5,7 @@ import { TopBar } from "@/components/vibe/TopBar";
 
 import { useAuth } from "@/contexts/AuthProvider";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 const Toggle = ({ on, onChange }: { on: boolean; onChange: (v: boolean) => void }) => (
   <button onClick={() => onChange(!on)} className={`h-7 w-12 rounded-full transition-colors ${on ? "bg-aurum" : "bg-muted"}`}>
@@ -31,6 +32,7 @@ export default function PrivacyScreen() {
 
   useEffect(() => { (async () => {
     if (!user) return;
+    const { data } = await supabase.from("profiles").select("is_private, show_read_receipts, show_activity").eq("user_id", user.uid).maybeSingle();
     if (data) {
       setIsPrivate((data as any).is_private ?? false);
       setShowRead((data as any).show_read_receipts ?? true);
@@ -40,6 +42,7 @@ export default function PrivacyScreen() {
 
   const save = async (patch: any) => {
     if (!user) return;
+    const { error } = await supabase.from("profiles").update(patch as any).eq("user_id", user.uid);
     if (error) toast.error(error.message);
   };
 

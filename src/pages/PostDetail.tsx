@@ -24,7 +24,9 @@ const PostDetail = () => {
       const data = { id: snap.id, ...snap.data() };
       let liked = false;
       if (user) {
-        liked = !!l;
+        const { doc: likeDoc, getDoc: getLikeDoc } = await import("firebase/firestore");
+        const likeSnap = await getLikeDoc(likeDoc(db, "posts", postId, "likes", user.id));
+        liked = likeSnap.exists();
       }
       setPost({ ...(data as any), liked });
     })();

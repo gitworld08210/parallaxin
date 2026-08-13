@@ -54,7 +54,7 @@ const Compose = () => {
     if (!collabQuery.trim() || !user) { setCollabResults([]); return; }
     let cancelled = false;
     (async () => {
-        supabase.select("user_id, username, display_name, avatar_url").ilike("username", `%${collabQuery.trim()}%`).neq("user_id", user.id).limit(8);
+      const { data } = await supabase.from("profiles").select("user_id, username, display_name, avatar_url").ilike("username", `%${collabQuery.trim()}%`).neq("user_id", user.id).limit(8);
       if (!cancelled) setCollabResults((data ?? []) as any);
     })();
     return () => { cancelled = true; };
@@ -63,6 +63,9 @@ const Compose = () => {
   const aiCaption = async () => {
     setAiBusy(true);
     try {
+      const { data, error } = await supabase.functions.invoke("generate-caption", {
+        body: { content, media_type: file ? (file.type.startsWith("video") ? "video" : "image") : null },
+      });
       if (error) throw error;
       if (data?.caption) setContent(data.caption);
     } catch (e: any) { toast.error(e.message || "Action failed"); }
@@ -103,6 +106,9 @@ const Compose = () => {
     setAltBusy(true);
     try {
       const url = await uploadToCloudinary(file);
+      const { data, error } = await supabase.functions.invoke("suggest-alt-text", {
+        body: { image_url: url },
+      });
       if (error) throw error;
 
       if (data?.altText) setAltText(data.altText);
@@ -125,7 +131,8 @@ const Compose = () => {
     try {
       if (status === "published" && content.trim()) {
         try {
-          if (mod?.flagged) throw new Error(mod.reason || "Content flagged by moderation");
+          const { data: mod } = await reliableInvoke("moderate-content", { body: { content: content.trim() }, retries: 1 });
+          if ((mod as any)?.flagged) throw new Error((mod as any).reason || "Content flagged by moderation");
         } catch (modErr: any) {
           // Only block if moderation actually flagged content; ignore transport/AI errors.
           if (modErr?.message && !/non-2xx|Failed to fetch|FunctionsHttpError|FunctionsFetchError/i.test(modErr.message)) {
@@ -161,7 +168,7 @@ const Compose = () => {
       if (newId && collabs.length) {
         await supabase.from("post_collaborators").insert(collabs.map((c) => ({ post_id: newId, user_id: c.user_id })));
       }
-      }
+
 
       // Enrichment — awaited via reliableInvoke, failures logged (Phase 0).
       if (newId && status === "published") {

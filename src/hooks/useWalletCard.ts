@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 import { useAuth } from "@/contexts/AuthProvider";
 
@@ -49,6 +50,7 @@ export function useWalletCard() {
 
   const load = useCallback(async () => {
     if (!user) { setState(null); setLoading(false); return; }
+    const { data } = await supabase.rpc("wallet_card_overview" as never, { _user_id: user.id } as never);
     setState((data as unknown as WalletCardState) ?? null);
     setLoading(false);
   }, [user?.id]);
@@ -56,19 +58,22 @@ export function useWalletCard() {
   useEffect(() => { load(); }, [load]);
 
   const refreshCard = useCallback(async (reason: string) => {
+    const { data, error } = await supabase.rpc("wallet_card_refresh" as never, { _user_id: user?.id, _reason: reason } as never);
     if (!error) await load();
     return { data, error };
-  }, [load]);
+  }, [load, user?.id]);
 
   const setTheme = useCallback(async (theme: CardTheme) => {
+    const { error } = await supabase.rpc("wallet_card_set_theme" as never, { _user_id: user?.id, _theme: theme } as never);
     if (!error) await load();
     return { error };
-  }, [load]);
+  }, [load, user?.id]);
 
   const runReview = useCallback(async (force = true) => {
+    const { data, error } = await supabase.rpc("wallet_card_security_review" as never, { _user_id: user?.id, _force: force } as never);
     if (!error) await load();
     return { data, error };
-  }, [load]);
+  }, [load, user?.id]);
 
   return { state, loading, reload: load, refreshCard, setTheme, runReview };
 }

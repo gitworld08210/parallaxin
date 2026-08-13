@@ -1,6 +1,8 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthProvider";
 
 export type AdSignalType = 'watch_25' | 'watch_50' | 'watch_90' | 'like' | 'save' | 'share' | 'follow' | 'interaction';
 
@@ -17,6 +19,7 @@ const SIGNAL_WEIGHTS: Record<AdSignalType, number> = {
 
 export const useAdInteraction = () => {
   const qc = useQueryClient();
+  const { user } = useAuth();
 
   return useMutation({
     mutationFn: async (input: {

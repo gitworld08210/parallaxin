@@ -85,8 +85,11 @@ export const VoiceRecorder = ({
   const start = async () => {
     try {
       chunksRef.current = [];
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const rec = new MediaRecorder(stream);
       rec.ondataavailable = (e) => { if (e.data.size > 0) chunksRef.current.push(e.data); };
       rec.onstop = () => {
+        const blob = new Blob(chunksRef.current, { type: "audio/webm" });
         blobRef.current = blob;
         setPreviewUrl(URL.createObjectURL(blob));
         stream.getTracks().forEach((t) => t.stop());

@@ -38,7 +38,7 @@ export interface OrganizationSettingsUpdate {
 
 export const settingsService = {
   async get(orgId: string): Promise<OrganizationSettings | null> {
-      supabase.from("organization_settings").select("*").eq("organization_id", orgId).maybeSingle();
+    const { data, error } = await supabase.from("organization_settings" as any).select("*").eq("organization_id", orgId).maybeSingle();
     if (error) throw error;
     return (data as OrganizationSettings | null) ?? null;
   },
@@ -69,9 +69,11 @@ export const settingsService = {
 
     if (Object.keys(j).length === 0) return; // Nothing to update.
 
+    const { error } = await supabase.rpc("org_update_settings" as never, {
       _organization_id: orgId,
       _patch: j as never,
-    });
+    } as never);
+
     if (error) throw error;
   },
 };

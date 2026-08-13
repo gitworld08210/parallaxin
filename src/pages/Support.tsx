@@ -85,7 +85,7 @@ const Support = () => {
       }
 
       // 2. Supabase Fallback.
-from("sup_tickets").select("id, ticket_number, subject, category, priority, status, created_at, owning_department_id").eq("requester_id", user!.id).order("created_at", { ascending: false }).limit(20);
+      const { data, error } = await supabase.from("sup_tickets" as any).select("id, ticket_number, subject, category, priority, status, created_at, owning_department_id").eq("requester_id", user!.id).order("created_at", { ascending: false }).limit(20);
       if (error) throw error;
       return data ?? [];
     },
@@ -103,7 +103,7 @@ from("sup_tickets").select("id, ticket_number, subject, category, priority, stat
         category: category.key,
         priority,
         source: "user",
-        requester_id: user.id,
+        requester_id: user.uid,
         requester_display: user.email ?? null,
       };
 
@@ -115,14 +115,17 @@ from("sup_tickets").select("id, ticket_number, subject, category, priority, stat
           ...payload,
           created_at: serverTimestamp(),
           status: "open",
-          ticket_number: `SUP-${Math.floor(1000 + Math.random() * 9000)}`
+          ticket_number: `SUP-${Math.floor(1000 + Math.random() * 9000)}`,
+        });
       } catch (e) {
         console.warn("Firestore ticket creation failed", e);
       }
 
       // 2. Supabase Insert (Legacy/Back-office)
+      const { data, error } = await supabase.rpc("create_support_ticket" as any, payload as any);
       if (error) throw error;
-      return data as { ticket_number: string };
+      return data as unknown as { ticket_number: string };
+
     },
     onSuccess: (d) => {
       toast.success(`Sent to ${category?.team}. Ticket #${d?.ticket_number}`);

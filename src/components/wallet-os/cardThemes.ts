@@ -106,6 +106,9 @@ export const CARD_THEMES: Record<CardTheme, ThemeSkin> = {
     accent: "#fdba74",
     finish: "metal"
   },
+};
+
+
 
 export const CARD_TYPE_LABEL: Record<CardType, string> = {
   standard: "Standard Wallet",

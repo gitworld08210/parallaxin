@@ -24,10 +24,12 @@ const PostInsights = () => {
     if (!postId || !user) return;
     (async () => {
       setLoading(true);
-        supabase.select("content, media_url, media_type, like_count, comment_count, created_at, user_id, authenticity_score, authenticity_breakdown").eq("id", postId).maybeSingle();
+      const { data: p } = await supabase.from("posts").select("content, media_url, media_type, like_count, comment_count, created_at, user_id, authenticity_score, authenticity_breakdown").eq("id", postId).maybeSingle();
       if (!p || p.user_id !== user.id) { setDenied(true); setLoading(false); return; }
       setPost(p as any);
       const [{ data: views }, { count: saves }] = await Promise.all([
+        supabase.from("post_views").select("viewer_id").eq("post_id", postId),
+        supabase.from("collection_items").select("*", { count: "exact", head: true }).eq("post_id", postId),
       ]);
       const viewers = views ?? [];
       const reach = new Set(viewers.map((v: any) => v.viewer_id || "anon")).size;
@@ -88,6 +90,7 @@ const PostInsights = () => {
             disabled={scoring}
             onClick={async () => {
               setScoring(true);
+              const { data, error } = await supabase.functions.invoke("score-authenticity", { body: { postId } });
               setScoring(false);
               if (error) { toast.error("Couldn't score: " + error.message); return; }
               setPost((prev) => prev ? { ...prev, authenticity_score: data?.score ?? null, authenticity_breakdown: data?.breakdown ?? null } : prev);

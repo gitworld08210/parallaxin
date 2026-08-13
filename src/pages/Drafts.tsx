@@ -27,22 +27,24 @@ const Drafts = () => {
   const load = async () => {
     if (!user) return;
     setLoading(true);
-      supabase.select("id, content, media_url, media_type, status, scheduled_for, created_at").eq("user_id", user.id).in("status", ["draft", "scheduled"]).order("created_at", { ascending: false }) as any);
+    const { data } = await supabase.from("posts").select("id, content, media_url, media_type, status, scheduled_for, created_at").eq("user_id", user.uid).in("status", ["draft", "scheduled"]).order("created_at", { ascending: false });
     setItems((data ?? []) as Draft[]);
     setLoading(false);
   };
 
-  useEffect(() => { load(); /* eslint-disable-next-line */ }, [user?.id]);
+  useEffect(() => { load(); /* eslint-disable-next-line */ }, [user?.uid]);
 
   const publishNow = async (id: string) => {
-      supabase.update({ status: "published" as any, scheduled_for: null }).eq("id", id);
+    const { error } = await supabase.from("posts").update({ status: "published" as any, scheduled_for: null }).eq("id", id);
     if (error) return toast.error(error.message);
+
     toast.success("Published");
     load();
   };
 
   const remove = async (id: string) => {
     if (!confirm("Delete this draft?")) return;
+    const { error } = await supabase.from("posts").delete().eq("id", id);
     if (error) return toast.error(error.message);
     setItems((arr) => arr.filter((i) => i.id !== id));
   };

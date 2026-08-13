@@ -52,8 +52,7 @@ export function useWalletOS() {
     }
 
     // 2. Legacy RPC Fallback
-    if (!data) {
-    }
+    const { data } = await supabase.rpc("wallet_overview" as never, { _user_id: user.id } as never);
     setWallet((data as unknown as WalletOverview) ?? null);
     setLoading(false);
   }, [user?.id]);
@@ -107,7 +106,7 @@ export function useWalletLedgerOS(limit = 50) {
     }
 
     // 2. Supabase Fallback.
-from("wallet_ledger" as any).select("id, txn_id, direction, bucket, source, amount, fee, balance_after, status, label, created_at").order("created_at", { ascending: false }).limit(limit);
+    const { data } = await supabase.from("wallet_ledger" as any).select("id, txn_id, direction, bucket, source, amount, fee, balance_after, status, label, created_at").eq("user_id", user.id).order("created_at", { ascending: false }).limit(limit);
     setRows((data as unknown as WalletTxn[]) ?? []);
     setLoading(false);
   }, [user?.id, limit]);
@@ -145,6 +144,7 @@ export function useWalletAnalytics(days = 30) {
       }
 
       if (!alive) return;
+      const { data } = await supabase.rpc("wallet_analytics" as never, { _user_id: user.id, _days: days } as never);
       setRows((data as unknown as WalletDay[]) ?? []);
       setLoading(false);
     })();

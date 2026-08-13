@@ -15,6 +15,7 @@ import {
 import { toast } from "sonner";
 
 import { useAuth } from "@/contexts/AuthProvider";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -77,12 +78,13 @@ const VirtualWorld = () => {
     setSubmitting(true);
     try {
       const [frontPath, backPath, selfiePath] = await Promise.all([
-        uploadKycFile(user.id, "aadhaar-front", front),
-        back ? uploadKycFile(user.id, "aadhaar-back", back) : Promise.resolve(null),
-        uploadKycFile(user.id, "selfie", selfie),
+        uploadKycFile(user.uid, "aadhaar-front", front),
+        back ? uploadKycFile(user.uid, "aadhaar-back", back) : Promise.resolve(null),
+        uploadKycFile(user.uid, "selfie", selfie),
       ]);
 
-        user_id: user.id,
+      const { error } = await supabase.from("virtual_world_applications" as any).insert({
+        user_id: user.uid,
         full_name: fullName.trim(),
         aadhaar_number: digits,
         aadhaar_front_path: frontPath,
@@ -91,7 +93,9 @@ const VirtualWorld = () => {
         contact_phone: phone.trim(),
         purpose: purpose.trim(),
         status: "pending",
+      } as any);
       if (error) throw error;
+
       toast.success("Request sent to the Verification department");
       await refresh();
     } catch (e: any) { toast.error(e.message || "Action failed"); } finally {
@@ -104,13 +108,17 @@ const VirtualWorld = () => {
     if (channel !== "voice" && message.trim().length < 1) return toast.error("Write a message first");
     setSending(true);
     try {
+      const { data, error } = await supabase.functions.invoke("virtual-world-send", {
+        body: {
           channel,
           to: to.trim(),
           message: message.trim(),
           callerPhone: application?.contact_phone ?? undefined,
         },
+      });
 
       if (error) {
+
         console.error("Virtual World invocation error:", error);
         throw error;
       }

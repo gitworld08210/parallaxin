@@ -153,8 +153,8 @@ const Profile = () => {
         let liked = new Set<string>();
         const allIds = [...(pdata ?? []), ...(rdata ?? [])].map((d: any) => d.id);
         if (user && allIds.length) {
-            supabase.from("likes").select("post_id").eq("user_id", user.id).in("post_id", allIds);
-          liked = new Set((l ?? []).map((x) => x.post_id));
+          const { data: l } = await supabase.from("likes").select("post_id").eq("user_id", user.id).in("post_id", allIds);
+          liked = new Set((l ?? []).map((x: any) => x.post_id));
         }
         setPosts(
           ((pdata ?? []) as any[])
@@ -167,26 +167,28 @@ const Profile = () => {
             .map((d: any) => ({ ...d, liked: liked.has(d.id) })));
         setReels((rdata ?? []).map((d: any) => ({ ...d, liked: liked.has(d.id) })));
 
-        if (user && p.user_id !== user.id) {
-            supabase.from("follows").select("follower_id").eq("follower_id", user.id).eq("following_id", p.user_id).maybeSingle();
+        if (user && p.user_id !== user.uid) {
+          const { data: f } = await supabase.from("follows").select("follower_id").eq("follower_id", user.uid).eq("following_id", p.user_id).maybeSingle();
           setIsFollowing(!!f);
-            supabase.from("blocks" as any).select("blocker_id").eq("blocker_id", user.id).eq("blocked_id", p.user_id).maybeSingle() as any);
+          const { data: b } = await supabase.from("blocks" as any).select("blocker_id").eq("blocker_id", user.uid).eq("blocked_id", p.user_id).maybeSingle();
           setIsBlocked(!!b);
-            supabase.from("mutes" as any).select("muter_id").eq("muter_id", user.id).eq("muted_id", p.user_id).maybeSingle() as any);
+          const { data: mu } = await supabase.from("mutes" as any).select("muter_id").eq("muter_id", user.uid).eq("muted_id", p.user_id).maybeSingle();
           setIsMuted(!!mu);
         }
       }
     })();
-  }, [username, me?.username, user?.id]);
+  }, [username, me?.username, user?.uid]);
 
   // ============ Mutations ============
   const toggleBlock = async () => {
     if (!user || !profile) return;
     if (isBlocked) {
+      await supabase.from("blocks" as any).delete().eq("blocker_id", user.uid).eq("blocked_id", profile.user_id);
       setIsBlocked(false);
       toast.success("Unblocked");
     } else {
       setIsBlocked(true);
+      const { error } = await supabase.from("blocks" as any).insert({ blocker_id: user.uid, blocked_id: profile.user_id } as any);
       if (error) {
         setIsBlocked(false);
         toast.error(error.message);
@@ -198,10 +200,12 @@ const Profile = () => {
   const toggleMute = async () => {
     if (!user || !profile) return;
     if (isMuted) {
+      await supabase.from("mutes" as any).delete().eq("muter_id", user.uid).eq("muted_id", profile.user_id);
       setIsMuted(false);
       toast.success("Unmuted");
     } else {
       setIsMuted(true);
+      const { error } = await supabase.from("mutes" as any).insert({ muter_id: user.uid, muted_id: profile.user_id } as any);
       if (error) {
         setIsMuted(false);
         toast.error(error.message);
@@ -212,8 +216,10 @@ const Profile = () => {
     if (!user || !profile) return;
     if (isFollowing) {
       setIsFollowing(false);
+      await supabase.from("follows").delete().eq("follower_id", user.uid).eq("following_id", profile.user_id);
     } else {
       setIsFollowing(true);
+      const { error } = await supabase.from("follows").insert({ follower_id: user.uid, following_id: profile.user_id } as any);
       if (error) {
         setIsFollowing(false);
         toast.error(error.message);
@@ -222,6 +228,7 @@ const Profile = () => {
   };
   const openDM = async () => {
     if (!user || !profile) return;
+    const { data, error } = await supabase.rpc("get_or_create_dm" as any, { _user1: user.uid, _user2: profile.user_id } as any);
     if (error) {
       toast.error(error.message || "Could not start chat");
       return;
@@ -231,7 +238,9 @@ const Profile = () => {
   const shareProfile = async () => {
     const url = `${window.location.origin}/u/${profile?.username}`;
     try {
-      else {
+      if (navigator.share) {
+        await navigator.share({ title: profile?.username, url });
+      } else {
         await navigator.clipboard.writeText(url);
         toast.success("Profile link copied");
       }
@@ -239,6 +248,7 @@ const Profile = () => {
       /* ignore */
     }
   };
+
 
   // ============ Render ============
   if (loading) {

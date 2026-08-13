@@ -5,6 +5,7 @@ import { ChevronLeft, Shield, Copy } from "lucide-react";
 import { TopBar } from "@/components/vibe/TopBar";
 
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function TwoFactorSetup() {
   const nav = useNavigate();
@@ -16,6 +17,7 @@ export default function TwoFactorSetup() {
   const [busy, setBusy] = useState(false);
 
   useEffect(() => { (async () => {
+    const { data } = await supabase.auth.mfa.listFactors();
     const totp = data?.totp?.find((f: any) => f.status === "verified");
     if (totp) { setFactorId(totp.id); setPhase("active"); return; }
     setPhase("enrolled");
@@ -23,6 +25,7 @@ export default function TwoFactorSetup() {
 
   const begin = async () => {
     setBusy(true);
+    const { data, error } = await supabase.auth.mfa.enroll({ factorType: "totp" });
     setBusy(false);
     if (error) return toast.error(error.message);
     setFactorId(data.id);
@@ -34,7 +37,9 @@ export default function TwoFactorSetup() {
 
   const verify = async () => {
     setBusy(true);
+    const challenge = await supabase.auth.mfa.challenge({ factorId });
     if (challenge.error) { setBusy(false); return toast.error(challenge.error.message); }
+    const verifyRes = await supabase.auth.mfa.verify({ factorId, challengeId: challenge.data.id, code });
     setBusy(false);
     if (verifyRes.error) return toast.error(verifyRes.error.message);
     setPhase("active");
@@ -44,6 +49,7 @@ export default function TwoFactorSetup() {
   const disable = async () => {
     if (!confirm("Disable two-factor authentication?")) return;
     setBusy(true);
+    const { error } = await supabase.auth.mfa.unenroll({ factorId });
     setBusy(false);
     if (error) return toast.error(error.message);
     toast.success("Two-factor disabled");

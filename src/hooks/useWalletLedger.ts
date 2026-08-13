@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 
 import { useAuth } from "@/contexts/AuthProvider";
+import { supabase } from "@/integrations/supabase/client";
 
 export type LedgerRow = {
   id: string;
@@ -23,6 +24,13 @@ export function useWalletLedger(limit = 40) {
     const uid = user.id;
 
     const [coinTxns, tipsSent, tipsRecv, giftsSent, unlocks, payouts, topups] = await Promise.all([
+      supabase.from("coin_transactions" as any).select("*").eq("user_id", uid).order("created_at", { ascending: false }).limit(limit),
+      supabase.from("tips" as any).select("*").eq("sender_id", uid).order("created_at", { ascending: false }).limit(limit),
+      supabase.from("tips" as any).select("*").eq("recipient_id", uid).order("created_at", { ascending: false }).limit(limit),
+      supabase.from("live_gifts" as any).select("*").eq("sender_id", uid).order("created_at", { ascending: false }).limit(limit),
+      supabase.from("post_unlocks" as any).select("*").eq("user_id", uid).order("created_at", { ascending: false }).limit(limit),
+      supabase.from("creator_payout_requests" as any).select("*").eq("user_id", uid).order("created_at", { ascending: false }).limit(limit),
+      supabase.from("coin_topups" as any).select("*").eq("user_id", uid).order("created_at", { ascending: false }).limit(limit),
     ]);
 
     const out: LedgerRow[] = [];

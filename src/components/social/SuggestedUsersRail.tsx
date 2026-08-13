@@ -7,6 +7,7 @@ import { AuraAvatar } from "@/components/vibe/AuraAvatar";
 import { VerificationBadge } from "@/components/vibe/VerificationBadge";
 import { gradientFor, initialsOf } from "@/lib/format";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 type SuggestedUser = {
   user_id: string;
@@ -28,6 +29,7 @@ export const SuggestedUsersRail = () => {
     if (!user) return;
     (async () => {
       setLoading(true);
+      const { data, error } = await supabase.functions.invoke("suggested-users", { body: { user_id: user.id } });
       if (!error && data?.users) setUsers(data.users as SuggestedUser[]);
       setLoading(false);
     })();
@@ -41,6 +43,7 @@ export const SuggestedUsersRail = () => {
       next.delete(target); setFollowing(next);
     } else {
       next.add(target); setFollowing(next);
+      const { error } = await supabase.from("follows").insert({ follower_id: user.id, following_id: target });
       if (error) { const x = new Set(next); x.delete(target); setFollowing(x); toast.error(error.message); }
     }
   };
