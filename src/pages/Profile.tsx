@@ -30,7 +30,8 @@ import { ReportSheet } from "@/components/social/ReportSheet";
 import { BecomeCreatorSheet } from "@/components/creator/BecomeCreatorSheet";
 import { SubscribeButton } from "@/components/creator/SubscribeButton";
 import { EmptyState } from "@/components/empty/EmptyState";
-
+import { SideMenu } from "@/components/layout/SideMenu";
+import { AuraAvatar } from "@/components/vibe/AuraAvatar";
 import { VerificationBadge } from "@/components/vibe/VerificationBadge";
 import {
   DropdownMenu,
@@ -440,6 +441,17 @@ const Profile = () => {
           </div>
         </div>
         <div className="flex items-center gap-3">
+          <SideMenu 
+            trigger={
+              <button className="h-8 w-8 rounded-full overflow-hidden ring-1 ring-white/10">
+                {profile.avatar_url ? (
+                  <img src={profile.avatar_url} alt="" className="h-full w-full object-cover" />
+                ) : (
+                  <AuraAvatar gradient={gradientFor(profile.username)} initials={initialsOf(displayName)} />
+                )}
+              </button>
+            }
+          />
           <IconBtn label="Share" onClick={shareProfile}>
             <Share2 className="h-6 w-6" />
           </IconBtn>
