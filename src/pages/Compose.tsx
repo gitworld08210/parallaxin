@@ -74,6 +74,8 @@ const Compose = () => {
     setSuggestOpen(true);
     try {
       const { data, error } = await supabase.functions.invoke("suggest-post-tags", {
+        body: { content, media_type: file ? (file.type.startsWith("video") ? "video" : "image") : null },
+      });
       if (error) throw error;
       setSuggestedTags(data?.hashtags ?? []);
       setBestTimeIso(data?.best_time_iso ?? "");
