@@ -59,9 +59,8 @@ subscribe();
 
   return (
     <div className="min-h-screen bg-black text-foreground flex justify-center overflow-hidden">
-      <div className="w-full h-screen max-w-[440px] aspect-[9/16] relative flex bg-background shadow-2xl border-x border-white/10">
-        {isDesktop && <SideMenu unreadNotif={unreadNotif} unreadDm={unreadDm} />}
-        <main className="flex-1 overflow-y-auto pb-20 lg:pb-0 relative outline-none">
+      <div className="w-full h-screen max-w-[440px] relative flex flex-col bg-background shadow-2xl border-x border-white/5">
+        <main className="flex-1 overflow-y-auto relative outline-none no-scrollbar">
           <Outlet />
         </main>
         {!isDesktop && <MobileNav unreadNotif={unreadNotif} unreadDm={unreadDm} />}
