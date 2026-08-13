@@ -159,8 +159,8 @@ const Profile = () => {
         let liked = new Set<string>();
         const allIds = [...(pdata ?? []), ...(rdata ?? [])].map((d: any) => d.id);
         if (user && allIds.length) {
-          const { data: l } = await supabase.from("likes").select("post_id").eq("user_id", user.id).in("post_id", allIds);
-          liked = new Set((l ?? []).map((x: any) => x.post_id));
+          const lSnap = await getDocs(query(collection(db, "likes"), where("user_id", "==", user.uid), where("post_id", "in", allIds)));
+          liked = new Set(lSnap.docs.map(doc => doc.data().post_id));
         }
         setPosts(
           ((pdata ?? []) as any[])
@@ -174,12 +174,14 @@ const Profile = () => {
         setReels((rdata ?? []).map((d: any) => ({ ...d, liked: liked.has(d.id) })));
 
         if (user && p.user_id !== user.uid) {
-          const { data: f } = await supabase.from("follows").select("follower_id").eq("follower_id", user.uid).eq("following_id", p.user_id).maybeSingle();
-          setIsFollowing(!!f);
-          const { data: b } = await supabase.from("blocks" as any).select("blocker_id").eq("blocker_id", user.uid).eq("blocked_id", p.user_id).maybeSingle();
-          setIsBlocked(!!b);
-          const { data: mu } = await supabase.from("mutes" as any).select("muter_id").eq("muter_id", user.uid).eq("muted_id", p.user_id).maybeSingle();
-          setIsMuted(!!mu);
+          const followSnap = await getDocs(query(collection(db, "follows"), where("follower_id", "==", user.uid), where("following_id", "==", p.user_id), limit(1)));
+          setIsFollowing(!followSnap.empty);
+          
+          const blockSnap = await getDocs(query(collection(db, "blocks"), where("blocker_id", "==", user.uid), where("blocked_id", "==", p.user_id), limit(1)));
+          setIsBlocked(!blockSnap.empty);
+
+          const muteSnap = await getDocs(query(collection(db, "mutes"), where("muter_id", "==", user.uid), where("muted_id", "==", p.user_id), limit(1)));
+          setIsMuted(!muteSnap.empty);
         }
       }
     })();
@@ -188,47 +190,68 @@ const Profile = () => {
   // ============ Mutations ============
   const toggleBlock = async () => {
     if (!user || !profile) return;
+    const { doc, setDoc, deleteDoc } = await import("firebase/firestore");
+    const blockId = `${user.uid}_${profile.user_id}`;
     if (isBlocked) {
-      await supabase.from("blocks" as any).delete().eq("blocker_id", user.uid).eq("blocked_id", profile.user_id);
+      await deleteDoc(doc(db, "blocks", blockId));
       setIsBlocked(false);
       toast.success("Unblocked");
     } else {
       setIsBlocked(true);
-      const { error } = await supabase.from("blocks" as any).insert({ blocker_id: user.uid, blocked_id: profile.user_id } as any);
-      if (error) {
-        setIsBlocked(false);
-        toast.error(error.message);
-      } else {
+      try {
+        await setDoc(doc(db, "blocks", blockId), {
+          blocker_id: user.uid,
+          blocked_id: profile.user_id,
+          created_at: new Date().toISOString()
+        });
         toast.success("Blocked");
+      } catch (e: any) {
+        setIsBlocked(false);
+        toast.error(e.message);
       }
     }
   };
   const toggleMute = async () => {
     if (!user || !profile) return;
+    const { doc, setDoc, deleteDoc } = await import("firebase/firestore");
+    const muteId = `${user.uid}_${profile.user_id}`;
     if (isMuted) {
-      await supabase.from("mutes" as any).delete().eq("muter_id", user.uid).eq("muted_id", profile.user_id);
+      await deleteDoc(doc(db, "mutes", muteId));
       setIsMuted(false);
       toast.success("Unmuted");
     } else {
       setIsMuted(true);
-      const { error } = await supabase.from("mutes" as any).insert({ muter_id: user.uid, muted_id: profile.user_id } as any);
-      if (error) {
+      try {
+        await setDoc(doc(db, "mutes", muteId), {
+          muter_id: user.uid,
+          muted_id: profile.user_id,
+          created_at: new Date().toISOString()
+        });
+        toast.success("Muted");
+      } catch (e: any) {
         setIsMuted(false);
-        toast.error(error.message);
-      } else toast.success("Muted");
+        toast.error(e.message);
+      }
     }
   };
   const toggleFollow = async () => {
     if (!user || !profile) return;
+    const { doc, setDoc, deleteDoc, serverTimestamp } = await import("firebase/firestore");
+    const followId = `${user.uid}_${profile.user_id}`;
     if (isFollowing) {
       setIsFollowing(false);
-      await supabase.from("follows").delete().eq("follower_id", user.uid).eq("following_id", profile.user_id);
+      await deleteDoc(doc(db, "follows", followId));
     } else {
       setIsFollowing(true);
-      const { error } = await supabase.from("follows").insert({ follower_id: user.uid, following_id: profile.user_id } as any);
-      if (error) {
+      try {
+        await setDoc(doc(db, "follows", followId), {
+          follower_id: user.uid,
+          following_id: profile.user_id,
+          created_at: serverTimestamp()
+        });
+      } catch (e: any) {
         setIsFollowing(false);
-        toast.error(error.message);
+        toast.error(e.message);
       }
     }
   };
