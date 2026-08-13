@@ -53,8 +53,9 @@ export const useVirtualWorld = () => {
       return;
     }
     const [appRes, accessRes, logRes] = await Promise.all([
-        supabase.from("virtual_world_applications").select("*").eq("user_id", user.id).order("created_at", { ascending: false }).limit(1).maybeSingle(),
-        supabase.from("virtual_world_logs").select("id,channel,to_number,body,status,error,created_at").order("created_at", { ascending: false }).limit(30),
+      supabase.from("virtual_world_applications").select("*").eq("user_id", user.id).order("created_at", { ascending: false }).limit(1).maybeSingle(),
+      supabase.from("virtual_world_access").select("*").eq("user_id", user.id).maybeSingle(),
+      supabase.from("virtual_world_logs").select("id,channel,to_number,body,status,error,created_at").order("created_at", { ascending: false }).limit(30),
     ]);
     setApplication((appRes.data as VwApplication) ?? null);
     setAccess((accessRes.data as VwAccess) ?? null);
