@@ -172,10 +172,15 @@ const Auth = () => {
           verified: false
         });
 
-        await setDoc(doc(db, "usernames", finalUsername), {
-          user_id: uid,
-          updated_at: serverTimestamp()
-        });
+        try {
+          await setDoc(doc(db, "usernames", finalUsername), {
+            user_id: uid,
+            uid,
+            updated_at: serverTimestamp()
+          }, { merge: true });
+        } catch (idxErr) {
+          console.warn("Username index skipped:", idxErr);
+        }
 
         try {
           await supabase.from("profiles").insert({
