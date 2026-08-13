@@ -72,6 +72,7 @@ export default function LiveViewer() {
     if (!stream || access !== "granted" || ended) return;
     let mounted = true;
     (async () => {
+      const { data, error: tErr } = await supabase.functions.invoke("livekit-token", {
         body: { room: stream.livekit_room, role: "viewer" },
       });
       if (tErr || !data?.token) { toast.error("Could not join"); return; }
@@ -84,7 +85,9 @@ export default function LiveViewer() {
       await room.connect(data.wsUrl, data.token);
       roomRef.current = room;
 
-      if (history && mounted) setChat(history as ChatRow[]);
+      const { data: history } = await supabase.from("live_chat" as any).select("*").eq("stream_id", stream.id).order("created_at", { ascending: true }).limit(100);
+      if (history && mounted) setChat(history as unknown as ChatRow[]);
+
     })();
     return () => { mounted = false; roomRef.current?.disconnect(); roomRef.current = null; };
   }, [access, stream?.id, ended]);

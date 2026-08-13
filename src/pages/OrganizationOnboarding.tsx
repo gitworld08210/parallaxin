@@ -51,13 +51,16 @@ const OrganizationOnboarding = () => {
     }
     setBusy(true);
     try {
+      const { error } = await supabase.rpc("create_organization" as any, {
         p_name: form.name.trim(),
         p_username: form.username.trim().toLowerCase(),
         p_org_type: form.org_type,
         p_description: form.description?.trim() || null,
         p_logo_url: logoUrl || null,
         p_cover_url: null,
+      } as any);
       if (error) throw error;
+
       toast.success("Organization created ✦");
       nav(`/organization/dashboard`, { replace: true });
     } catch (e: any) { toast.error(e.message || "Action failed"); } finally {

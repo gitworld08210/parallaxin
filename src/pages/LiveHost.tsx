@@ -128,8 +128,10 @@ export default function LiveHost() {
       setTips((stream as any).total_tips_coins ?? 0);
 
       // 3) Get LiveKit token & connect
+      const { data, error } = await supabase.functions.invoke("livekit-token", {
         body: { room: roomName, role: "host" },
       });
+
       if (error || !data?.token) throw new Error(data?.error || error?.message || "token failed");
 
       const room = new Room({ adaptiveStream: true, dynacast: true });

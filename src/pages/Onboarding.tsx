@@ -60,27 +60,31 @@ const Onboarding = () => {
       const { doc, setDoc } = await import("firebase/firestore");
       const { db: firestoreDb } = await import("@/lib/firebase");
       
-      await setDoc(doc(firestoreDb, "profiles", user.id), {
+      await setDoc(doc(firestoreDb, "profiles", user.uid), {
         interests,
         onboarded_at: new Date().toISOString(),
+      }, { merge: true });
 
       // 2. Update Supabase (Secondary/Admin OS)
       try {
-          supabase.from("profiles").update({
-            interests,
-            onboarded_at: new Date().toISOString(),
-          } as any).eq("user_id", user.id);
+        await supabase.from("profiles").update({
+          interests,
+          onboarded_at: new Date().toISOString(),
+        } as any).eq("user_id", user.uid);
       } catch (e) {
         console.warn("Supabase profile sync failed, non-critical for social", e);
       }
 
       if (dob || gender) {
         try {
+          await supabase.rpc("upsert_private_profile" as any, {
             _dob: dob || null,
             _gender: gender || null,
+          } as any);
         } catch (e) {
           console.warn("Supabase private profile sync failed", e);
         }
+
         
         // Also save to Firestore private if needed (implementation varies)
       }
