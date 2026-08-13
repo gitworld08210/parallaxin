@@ -461,8 +461,6 @@ const App = () => (
                   <Route path="/wallet/qr" element={<WalletQR />} />
                   <Route path="/wallet/security" element={<WalletSecurity />} />
                   <Route path="/wallet/card" element={<WalletCardPage />} />
-                  <Route path="/wallet/payslips" element={<MyPayslips />} />
-                  <Route path="/wallet/payslips/:itemId" element={<PayslipDetail />} />
                   <Route path="/profile" element={<Profile />} />
                   <Route path="/profile/edit" element={<EditProfile />} />
                   <Route path="/u/:username" element={<Profile />} />
