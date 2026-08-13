@@ -25,7 +25,7 @@ const ProfileCreation = () => {
     const checkProfile = async () => {
       if (!user) return;
       const snap = await getDoc(doc(db, "profiles", user.uid));
-      if (snap.exists() && snap.data().username) {
+      if (snap.exists() && (snap.data().display_name || snap.data().username)) {
         nav("/", { replace: true });
       }
     };
