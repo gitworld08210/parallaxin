@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { Plus } from "lucide-react";
 import { collection, query, where, orderBy, getDocs } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { supabase } from "@/integrations/supabase/client";
+// Supabase removed
 import { useAuth } from "@/contexts/AuthProvider";
 import { gradientFor, initialsOf } from "@/lib/format";
 import { StoryViewer } from "./StoryViewer";
@@ -30,7 +30,6 @@ export const StoriesRail = () => {
 
   const load = async () => {
     if (!user?.id) { setGroups([]); return; }
-    const { data: f } = await supabase
       .from("follows")
       .select("following_id")
       .eq("follower_id", user.id);

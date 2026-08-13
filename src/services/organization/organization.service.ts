@@ -6,7 +6,7 @@ import type {
   OrganizationMembership,
   OrganizationVerificationKind,
 } from "@/types/organization/organization";
-import { supabase } from "@/integrations/supabase/client";
+// Supabase removed
 
 /**
  * Map an organization to its canonical verification "kind" for
@@ -46,7 +46,6 @@ export const organizationService = {
 
   /** Load the signed-in user's membership for a given org. Null if not a member. */
   async getMembership(orgId: string, userId: string): Promise<OrganizationMembership | null> {
-    const { data: memberRow, error } = await supabase
       .from("organization_members")
       .select("id, organization_id, user_id, department_id, status, joined_at, invited_by")
       .eq("organization_id", orgId)
@@ -54,7 +53,6 @@ export const organizationService = {
       .maybeSingle();
     if (error) throw error;
     if (!memberRow) {
-      const { data: ownerCheck } = await supabase
         .from("organizations")
         .select("owner_user_id")
         .eq("id", orgId)
@@ -73,7 +71,6 @@ export const organizationService = {
       }
       return null;
     }
-    const { data: org } = await supabase
       .from("organizations")
       .select("owner_user_id")
       .eq("id", orgId)

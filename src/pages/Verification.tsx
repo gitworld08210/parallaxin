@@ -4,7 +4,7 @@ import { ChevronLeft, Upload, BadgeCheck, Clock, XCircle } from "lucide-react";
 import { TopBar } from "@/components/vibe/TopBar";
 import { GlassCard } from "@/components/vibe/GlassCard";
 import { VerificationBadge } from "@/components/vibe/VerificationBadge";
-import { supabase } from "@/integrations/supabase/client";
+// Supabase removed
 import { useAuth } from "@/contexts/AuthProvider";
 import { toast } from "sonner";
 
@@ -54,7 +54,6 @@ const Verification = () => {
       }
 
       // 2. Supabase Fallback
-      const { data } = await supabase.from("verification_requests").select("id, status, category, created_at").eq("user_id", user.id).maybeSingle();
       setExisting((data as VR) ?? null);
       setLoading(false);
     })();
@@ -63,7 +62,6 @@ const Verification = () => {
   const uploadDoc = async (f: File) => {
     const ext = f.name.split(".").pop() || "jpg";
     const path = `${user!.id}/${crypto.randomUUID()}.${ext}`;
-    const { error } = await supabase.storage.from("verification-docs").upload(path, f, { upsert: false });
     if (error) throw error;
     return path;
   };
@@ -106,7 +104,6 @@ const Verification = () => {
       }
 
       // 2. Supabase Insert (Legacy/Admin OS trigger)
-      const { data: inserted, error } = await supabase.from("verification_requests").insert(payload as any).select("id").single();
       if (error) throw error;
       
       toast.success("Submitted · review within 48h");

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+// Supabase removed
 import { useAuth } from "@/contexts/AuthProvider";
 
 export type SubSettings = {
@@ -29,9 +29,7 @@ export function useCreatorSubscription(creatorId: string | null | undefined) {
     if (!creatorId) { setLoading(false); return; }
     setLoading(true);
     const [s, sub] = await Promise.all([
-      supabase.from("creator_subscription_settings" as any).select("*").eq("creator_id", creatorId).maybeSingle(),
       user
-        ? supabase.from("creator_subscriptions" as any).select("*").eq("subscriber_id", user.id).eq("creator_id", creatorId).maybeSingle()
         : Promise.resolve({ data: null }),
     ]);
     setSettings((s.data as any) ?? null);
@@ -53,7 +51,6 @@ export function useMySubscriptions() {
 
   const load = useCallback(async () => {
     if (!user) { setSubs([]); setLoading(false); return; }
-    const { data } = await supabase
       .from("creator_subscriptions" as any)
       .select("*, creator:profiles!creator_subscriptions_creator_id_fkey(username, display_name, avatar_url)")
       .eq("subscriber_id", user.id)

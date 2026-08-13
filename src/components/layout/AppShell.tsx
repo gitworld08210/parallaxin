@@ -2,7 +2,7 @@ import { Home, Film, MessageCircle, Plus, ImageIcon, Sparkles, User, Radio, Came
 import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
-import { supabase } from "@/integrations/supabase/client";
+// Supabase removed
 import { useAuth } from "@/contexts/AuthProvider";
 import { RealtimeToaster } from "@/components/social/RealtimeToaster";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -27,27 +27,22 @@ export const AppShell = () => {
   useEffect(() => {
     if (!user) return;
     const refresh = async () => {
-      const { count } = await supabase
         .from("notifications")
         .select("*", { count: "exact", head: true })
         .eq("user_id", user.id).eq("read", false);
       setUnreadNotif(count ?? 0);
     };
     refresh();
-    const ch = supabase.channel(`notif-badge:${user.id}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "notifications", filter: `user_id=eq.${user.id}` }, refresh)
       .subscribe();
-    return () => { supabase.removeChannel(ch); };
   }, [user?.id]);
 
   useEffect(() => {
     if (!user) return;
     const refresh = async () => {
-      const { data: parts } = await supabase
         .from("conversation_participants").select("conversation_id").eq("user_id", user.id);
       const ids = (parts ?? []).map((p) => p.conversation_id);
       if (!ids.length) { setUnreadDm(0); return; }
-      const { count } = await supabase
         .from("messages")
         .select("*", { count: "exact", head: true })
         .in("conversation_id", ids)
@@ -56,10 +51,8 @@ export const AppShell = () => {
       setUnreadDm(count ?? 0);
     };
     refresh();
-    const ch = supabase.channel(`dm-badge:${user.id}`)
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages" }, refresh)
       .subscribe();
-    return () => { supabase.removeChannel(ch); };
   }, [user?.id]);
 
   // Activity heartbeat — tick last_seen_at every 60s while the tab is visible
@@ -67,7 +60,6 @@ export const AppShell = () => {
     if (!user) return;
     const tick = () => {
       if (document.visibilityState !== "visible") return;
-      supabase.from("profiles").update({ last_seen_at: new Date().toISOString() } as any).eq("user_id", user.id).then(() => {});
     };
     tick();
     const iv = setInterval(tick, 60_000);

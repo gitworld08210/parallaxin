@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+// Supabase removed
 import { useAuth } from "@/contexts/AuthProvider";
 
 export function useCoinBalance() {
@@ -25,7 +25,6 @@ export function useCoinBalance() {
     }
 
     // 2. Legacy Supabase Fallback
-    const { data } = await supabase
       .from("profiles_private")
       .select("coin_balance")
       .eq("user_id", user.id)
@@ -38,11 +37,9 @@ export function useCoinBalance() {
 
   useEffect(() => {
     if (!user) return;
-    const ch = supabase
       .channel(`coin-balance:${user.id}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "profiles_private", filter: `user_id=eq.${user.id}` }, refresh)
       .subscribe();
-    return () => { supabase.removeChannel(ch); };
   }, [user?.id, refresh]);
 
   return { balance, loading, refresh };

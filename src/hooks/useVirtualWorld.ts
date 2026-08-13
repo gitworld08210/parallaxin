@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
+// Supabase removed
 import { useAuth } from "@/contexts/AuthProvider";
 import { uploadToCloudinary } from "@/lib/cloudinary";
 
@@ -52,15 +52,12 @@ export const useVirtualWorld = () => {
       return;
     }
     const [appRes, accessRes, logRes] = await Promise.all([
-      supabase
         .from("virtual_world_applications")
         .select("*")
         .eq("user_id", user.id)
         .order("created_at", { ascending: false })
         .limit(1)
         .maybeSingle(),
-      supabase.from("virtual_world_access").select("user_id,is_active,daily_limit").eq("user_id", user.id).maybeSingle(),
-      supabase
         .from("virtual_world_logs")
         .select("id,channel,to_number,body,status,error,created_at")
         .order("created_at", { ascending: false })

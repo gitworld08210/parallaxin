@@ -3,7 +3,7 @@
  */
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+// Supabase removed
 import {
   approvals,
   workflows,
@@ -99,7 +99,6 @@ export const useActivity = (filter?: {
 
 export const useActivityRealtime = (onChange: () => void) => {
   useEffect(() => {
-    const channel = supabase
       .channel("platform-activity")
       .on(
         "postgres_changes",
@@ -108,7 +107,6 @@ export const useActivityRealtime = (onChange: () => void) => {
       )
       .subscribe();
     return () => {
-      supabase.removeChannel(channel);
     };
   }, [onChange]);
 };

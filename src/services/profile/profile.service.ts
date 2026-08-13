@@ -1,7 +1,7 @@
 // ProfileService — thin read layer for public.profiles. Kept tiny on purpose;
 // this is the single place organization hooks look up profile fields such as
 // the canonical username.
-import { supabase } from "@/integrations/supabase/client";
+// Supabase removed
 
 export interface ProfileBasics {
   user_id: string;
@@ -12,7 +12,6 @@ export interface ProfileBasics {
 
 export const profileService = {
   async getByUserId(userId: string): Promise<ProfileBasics | null> {
-    const { data, error } = await supabase
       .from("profiles")
       .select("user_id, username, display_name, avatar_url")
       .eq("user_id", userId)

@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+// Supabase removed
 import { useAuth } from "@/contexts/AuthProvider";
 import { useCall } from "@/contexts/CallProvider";
 
@@ -10,7 +10,6 @@ export const IncomingCallListener = () => {
 
   useEffect(() => {
     if (!user) return;
-    const ch = supabase
       .channel(`incoming-calls:${user.id}`)
       .on(
         "postgres_changes",
@@ -20,11 +19,9 @@ export const IncomingCallListener = () => {
           if (row.status !== "ringing") return;
           // Auto-decline if already busy
           if (status !== "idle" || incoming) {
-            await supabase.from("calls").update({ status: "busy", ended_at: new Date().toISOString() } as any).eq("id", row.id);
             return;
           }
           // Load caller profile
-          const { data: prof } = await supabase
             .from("profiles")
             .select("user_id, username, display_name, avatar_url")
             .eq("user_id", row.caller_id)
@@ -44,7 +41,6 @@ export const IncomingCallListener = () => {
         },
       )
       .subscribe();
-    return () => { supabase.removeChannel(ch); };
   }, [user?.id, status, incoming, setIncoming]);
 
   return null;

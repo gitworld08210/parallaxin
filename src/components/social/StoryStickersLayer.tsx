@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+// Supabase removed
 import { useAuth } from "@/contexts/AuthProvider";
 import { Send } from "lucide-react";
 import { toast } from "sonner";
@@ -22,34 +22,28 @@ export const StoryStickersLayer = ({ storyId, isOwner, onPauseChange }: { storyI
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const { data: st } = await supabase.from("story_stickers" as any).select("id, kind, position, payload").eq("story_id", storyId);
       if (cancelled) return;
       setStickers((st ?? []) as any);
       const ids = ((st ?? []) as any[]).map((s) => s.id);
       if (ids.length) {
-        const { data: rs } = await supabase.from("story_sticker_responses" as any).select("id, sticker_id, user_id, response").in("sticker_id", ids);
         if (!cancelled) setResponses((rs ?? []) as any);
       }
     })();
-    const ch = supabase.channel(`story-stk:${storyId}`)
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "story_sticker_responses" }, (p) => {
         const r = p.new as any;
         setResponses((prev) => prev.some((x) => x.id === r.id) ? prev : [...prev, r]);
       })
       .subscribe();
-    return () => { cancelled = true; supabase.removeChannel(ch); };
   }, [storyId]);
 
   const respondPoll = async (stickerId: string, option: string) => {
     if (!user) return toast.error("Sign in");
     const existing = responses.find((r) => r.sticker_id === stickerId && r.user_id === user.id);
     if (existing) {
-      const { error } = await supabase.from("story_sticker_responses" as any)
         .update({ response: { option } } as any).eq("id", existing.id);
       if (error) return toast.error(error.message);
       setResponses((prev) => prev.map((r) => r.id === existing.id ? { ...r, response: { option } } : r));
     } else {
-      const { data, error } = await supabase.from("story_sticker_responses" as any)
         .insert({ sticker_id: stickerId, user_id: user.id, response: { option } } as any)
         .select().single();
       if (error) return toast.error(error.message);
@@ -59,7 +53,6 @@ export const StoryStickersLayer = ({ storyId, isOwner, onPauseChange }: { storyI
 
   const respondQA = async (stickerId: string, text: string) => {
     if (!user || !text.trim()) return;
-    const { data, error } = await supabase.from("story_sticker_responses" as any)
       .insert({ sticker_id: stickerId, user_id: user.id, response: { text: text.trim().slice(0, 300) } } as any)
       .select().single();
     if (error) return toast.error(error.message);

@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
+// Supabase removed
 import { useAuth } from "@/contexts/AuthProvider";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -23,8 +23,6 @@ export function CreatorEarnings() {
     if (!user) return;
     setLoading(true);
     const [b, k] = await Promise.all([
-      supabase.from("creator_balance").select("available_cents, pending_cents, lifetime_earned_cents").eq("user_id", user.id).eq("environment", "live").maybeSingle(),
-      supabase.from("kyc_submissions").select("id, status, review_note").eq("user_id", user.id).order("created_at", { ascending: false }).limit(1).maybeSingle(),
     ]);
     if (b.data) setBal(b.data as any);
     setKyc((k.data as any) ?? null);
@@ -117,12 +115,10 @@ function KycModal({ onClose }: { onClose: () => void }) {
       const upload = async (f: File, label: string) => {
         const ext = f.name.split(".").pop() || "jpg";
         const path = `${user.id}/${label}-${Date.now()}.${ext}`;
-        const { error } = await supabase.storage.from("kyc-docs").upload(path, f, { upsert: true });
         if (error) throw error;
         return path;
       };
       const [idPath, pbPath] = await Promise.all([upload(idFile, "id"), upload(pbFile, "passbook")]);
-      const { data: inserted, error } = await supabase.from("kyc_submissions").insert({
         user_id: user.id,
         full_name: fullName.trim(),
         pan_number: pan.trim().toUpperCase(),
@@ -202,7 +198,6 @@ function PayoutModal({ available, onClose }: { available: number; onClose: () =>
       detail = { account_number: acct.trim(), ifsc: ifsc.trim().toUpperCase(), name: name.trim() };
     }
     setSaving(true);
-    const { error } = await supabase.rpc("request_payout", { _amount_cents: cents, _method: method, _payout_detail: detail, _environment: "live" });
     setSaving(false);
     if (error) return toast.error(error.message);
     toast.success("Withdrawal requested — we'll process within 1–3 business days");

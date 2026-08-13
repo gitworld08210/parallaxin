@@ -1,4 +1,4 @@
-import { supabase } from "@/integrations/supabase/client";
+// Supabase removed
 import { useQuery } from "@tanstack/react-query";
 import { ContentContext, ContentTaxonomy } from "../types";
 
@@ -7,7 +7,6 @@ export const useContentContext = (contentId?: string) => {
     queryKey: ['content-context', contentId],
     queryFn: async () => {
       if (!contentId) return null;
-      const { data, error } = await (supabase as any)
         .from('content_context')
         .select('*')
         .eq('content_id', contentId)
@@ -24,7 +23,6 @@ export const useTaxonomy = () => {
   return useQuery({
     queryKey: ['content-taxonomy'],
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
         .from('content_taxonomy')
         .select('*')
         .order('level', { ascending: true })

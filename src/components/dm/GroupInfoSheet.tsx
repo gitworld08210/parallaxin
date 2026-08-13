@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { LogOut, UserMinus, Users, Crown } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+// Supabase removed
 import { useAuth } from "@/contexts/AuthProvider";
 import { AuraAvatar } from "@/components/vibe/AuraAvatar";
 import { gradientFor, initialsOf } from "@/lib/format";
@@ -24,7 +24,6 @@ export const GroupInfoSheet = ({
   useEffect(() => {
     if (!open) return;
     (async () => {
-      const { data } = await supabase
         .from("conversation_participants")
         .select("user_id, role, profile:profiles!conv_participants_user_profile_fkey(username, display_name, avatar_url)")
         .eq("conversation_id", conversationId);
@@ -34,14 +33,12 @@ export const GroupInfoSheet = ({
 
   const remove = async (uid: string) => {
     if (!confirm("Remove this member?")) return;
-    const { error } = await supabase.rpc("remove_group_member", { _conv: conversationId, _user: uid });
     if (error) toast.error(error.message);
     else { setMembers((m) => m.filter((x) => x.user_id !== uid)); toast.success("Removed"); }
   };
 
   const leave = async () => {
     if (!confirm("Leave this group?")) return;
-    const { error } = await supabase.rpc("leave_group", { _conv: conversationId });
     if (error) toast.error(error.message);
     else { onOpenChange(false); nav("/messages"); }
   };

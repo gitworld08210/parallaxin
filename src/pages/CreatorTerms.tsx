@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { PageHeader } from "@/components/layout/PageHeader";
-import { supabase } from "@/integrations/supabase/client";
+// Supabase removed
 
 export default function CreatorTerms() {
   const [split, setSplit] = useState({ creator: 85, platform: 15 });
@@ -8,7 +8,6 @@ export default function CreatorTerms() {
 
   useEffect(() => {
     (async () => {
-      const { data } = await supabase.from("app_config").select("key, value")
         .in("key", ["creator_revenue_split", "creator_terms_version"]);
       for (const row of data ?? []) {
         if (row.key === "creator_revenue_split" && row.value) {

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+// Supabase removed
 import { useAuth } from "@/contexts/AuthProvider";
 
 export type WalletBuckets = {
@@ -51,10 +51,7 @@ export function useWalletOS() {
     }
 
     // 2. Legacy RPC Fallback
-    let { data } = await supabase.rpc("wallet_overview" as any, { _user: user.id });
     if (!data) {
-      await supabase.rpc("wallet_ensure" as any, { _user: user.id });
-      ({ data } = await supabase.rpc("wallet_overview" as any, { _user: user.id }));
     }
     setWallet((data as unknown as WalletOverview) ?? null);
     setLoading(false);
@@ -109,7 +106,6 @@ export function useWalletLedgerOS(limit = 50) {
     }
 
     // 2. Supabase Fallback
-    const { data } = await supabase
       .from("wallet_ledger" as any)
       .select("id, txn_id, direction, bucket, source, amount, fee, balance_after, status, label, created_at")
       .order("created_at", { ascending: false })
@@ -150,7 +146,6 @@ export function useWalletAnalytics(days = 30) {
         console.warn("Firestore analytics fetch failed", e);
       }
 
-      const { data } = await supabase.rpc("wallet_analytics" as any, { _user: user.id, _days: days });
       if (!alive) return;
       setRows((data as unknown as WalletDay[]) ?? []);
       setLoading(false);

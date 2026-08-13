@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft, TrendingUp, Users, Eye, DollarSign, Sparkles, Play, Heart, MessageCircle, Wallet, Crown, Video, Loader2, Lightbulb } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+// Supabase removed
 import { useAuth } from "@/contexts/AuthProvider";
 import { useIsCreator } from "@/hooks/useIsCreator";
 import { useCoinBalance } from "@/hooks/useCoinBalance";
@@ -39,12 +39,10 @@ const CreatorStudio = () => {
     (async () => {
       setLoading(true);
       const [{ data: p }, { count: subs }] = await Promise.all([
-        supabase.from("posts")
           .select("id, content, is_reel, media_url, like_count, comment_count, created_at")
           .eq("user_id", user.id)
           .order("created_at", { ascending: false })
           .limit(60),
-        supabase.from("creator_subscriptions" as any)
           .select("*", { count: "exact", head: true })
           .eq("creator_id", user.id)
           .eq("status", "active") as any,
@@ -324,7 +322,6 @@ const CoachTab = () => {
     setBusy(true);
     setCoach(null);
     try {
-      const { data, error } = await supabase.functions.invoke("ai-creator-coach", { body: {} });
       if (error) throw error;
       setCoach(data as Coach);
     } catch (e: any) {

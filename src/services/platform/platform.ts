@@ -5,7 +5,7 @@
  * All writes go through Supabase RLS; every mutation also emits an
  * admin audit log and an activity event where applicable.
  */
-import { supabase } from "@/integrations/supabase/client";
+// Supabase removed
 
 // -------- shared helpers --------
 
@@ -17,10 +17,8 @@ export async function logAdminAction(input: {
   before?: unknown;
   after?: unknown;
 }) {
-  const { data: userData } = await supabase.auth.getUser();
   const uid = userData.user?.id;
   if (!uid) return;
-  await supabase.from("admin_audit_logs").insert({
     actor_user_id: uid,
     module: input.module,
     action: input.action,
@@ -40,10 +38,8 @@ export async function emitActivity(input: {
   summary: string;
   metadata?: Record<string, unknown>;
 }) {
-  const { data: userData } = await supabase.auth.getUser();
   const uid = userData.user?.id;
   if (!uid) return;
-  await supabase.from("platform_activity_events").insert({
     actor_user_id: uid,
     verb: input.verb,
     object_type: input.object_type,
@@ -71,10 +67,8 @@ export interface CreateApprovalInput {
 
 export const approvals = {
   async create(input: CreateApprovalInput) {
-    const { data: userData } = await supabase.auth.getUser();
     const uid = userData.user?.id;
     if (!uid) throw new Error("Not authenticated");
-    const { data, error } = await supabase
       .from("platform_approval_requests")
       .insert({
         module: input.module,
@@ -108,7 +102,6 @@ export const approvals = {
     return data;
   },
   async list(filter?: { status?: string; module?: string }) {
-    let q = supabase
       .from("platform_approval_requests")
       .select("*")
       .order("created_at", { ascending: false });
@@ -119,21 +112,17 @@ export const approvals = {
     return data;
   },
   async decide(id: string, decision: "approved" | "rejected", reason?: string) {
-    const { data: userData } = await supabase.auth.getUser();
     const uid = userData.user?.id;
     if (!uid) throw new Error("Not authenticated");
     const status = decision === "approved" ? "approved" : "rejected";
-    const { data: before } = await supabase
       .from("platform_approval_requests")
       .select("*")
       .eq("id", id)
       .single();
-    const { error: upErr } = await supabase
       .from("platform_approval_requests")
       .update({ status, completed_at: new Date().toISOString() })
       .eq("id", id);
     if (upErr) throw upErr;
-    const { error: decErr } = await supabase
       .from("platform_approval_decisions")
       .insert({
         request_id: id,
@@ -158,7 +147,6 @@ export const approvals = {
     });
   },
   async decisions(id: string) {
-    const { data, error } = await supabase
       .from("platform_approval_decisions")
       .select("*")
       .eq("request_id", id)
@@ -172,7 +160,6 @@ export const approvals = {
 
 export const workflows = {
   async list() {
-    const { data, error } = await supabase
       .from("platform_workflows")
       .select("*")
       .is("deleted_at", null)
@@ -181,7 +168,6 @@ export const workflows = {
     return data;
   },
   async get(id: string) {
-    const { data, error } = await supabase
       .from("platform_workflows")
       .select("*")
       .eq("id", id)
@@ -197,8 +183,6 @@ export const workflows = {
     trigger?: string;
     steps?: unknown[];
   }) {
-    const { data: userData } = await supabase.auth.getUser();
-    const { data, error } = await supabase
       .from("platform_workflows")
       .insert({
         key: input.key,
@@ -222,7 +206,6 @@ export const workflows = {
     return data;
   },
   async runs(workflow_id?: string) {
-    let q = supabase
       .from("platform_workflow_runs")
       .select("*")
       .order("created_at", { ascending: false })
@@ -258,7 +241,6 @@ export const notifications = {
       } as never,
       sent_at: channel === "in_app" ? new Date().toISOString() : null,
     }));
-    const { data, error } = await supabase
       .from("platform_notification_deliveries")
       .insert(rows)
       .select();
@@ -266,7 +248,6 @@ export const notifications = {
     return data;
   },
   async deliveries(user_id: string, limit = 30) {
-    const { data, error } = await supabase
       .from("platform_notification_deliveries")
       .select("*")
       .eq("recipient_user_id", user_id)
@@ -276,7 +257,6 @@ export const notifications = {
     return data;
   },
   async templates() {
-    const { data, error } = await supabase
       .from("platform_notification_templates")
       .select("*")
       .order("key");
@@ -284,7 +264,6 @@ export const notifications = {
     return data;
   },
   async getPreferences(user_id: string) {
-    const { data } = await supabase
       .from("platform_notification_preferences")
       .select("*")
       .eq("user_id", user_id)
@@ -292,7 +271,6 @@ export const notifications = {
     return data;
   },
   async savePreferences(user_id: string, prefs: Record<string, unknown>) {
-    const { data, error } = await supabase
       .from("platform_notification_preferences")
       .upsert({ user_id, ...prefs })
       .select()
@@ -310,7 +288,6 @@ export const activity = {
     object_type?: string;
     limit?: number;
   }) {
-    let q = supabase
       .from("platform_activity_events")
       .select("*")
       .order("created_at", { ascending: false })
@@ -327,7 +304,6 @@ export const activity = {
 
 export const assignments = {
   async list(filter?: { status?: string; assignee_user_id?: string }) {
-    let q = supabase
       .from("platform_assignments")
       .select("*")
       .order("created_at", { ascending: false })
@@ -348,9 +324,7 @@ export const assignments = {
     method?: "manual" | "auto" | "rule";
     priority?: "low" | "normal" | "high" | "urgent";
   }) {
-    const { data: userData } = await supabase.auth.getUser();
     const uid = userData.user?.id;
-    const { data, error } = await supabase
       .from("platform_assignments")
       .insert({
         module: input.module,
@@ -392,7 +366,6 @@ export const assignments = {
     } = { status };
     if (status === "accepted") patch.accepted_at = new Date().toISOString();
     if (status === "completed") patch.completed_at = new Date().toISOString();
-    const { error } = await supabase
       .from("platform_assignments")
       .update(patch)
       .eq("id", id);
@@ -411,7 +384,6 @@ export const assignments = {
 export const search = {
   async query(q: string, limit = 25) {
     if (!q.trim()) return [];
-    const { data, error } = await supabase.rpc("platform_search", {
       _q: q,
       _limit: limit,
     });
@@ -424,7 +396,6 @@ export const search = {
 
 export const documents = {
   async list() {
-    const { data, error } = await supabase
       .from("platform_documents")
       .select("*")
       .is("deleted_at", null)
@@ -433,7 +404,6 @@ export const documents = {
     return data;
   },
   async get(id: string) {
-    const { data, error } = await supabase
       .from("platform_documents")
       .select("*")
       .eq("id", id)
@@ -442,7 +412,6 @@ export const documents = {
     return data;
   },
   async versions(id: string) {
-    const { data, error } = await supabase
       .from("platform_document_versions")
       .select("*")
       .eq("document_id", id)
@@ -456,15 +425,12 @@ export const documents = {
     file: File;
     department?: string;
   }) {
-    const { data: userData } = await supabase.auth.getUser();
     const uid = userData.user?.id;
     if (!uid) throw new Error("Not authenticated");
     const path = `${uid}/${crypto.randomUUID()}-${input.file.name}`;
-    const { error: upErr } = await supabase.storage
       .from("platform-documents")
       .upload(path, input.file);
     if (upErr) throw upErr;
-    const { data, error } = await supabase
       .from("platform_documents")
       .insert({
         name: input.name,
@@ -479,7 +445,6 @@ export const documents = {
       .select()
       .single();
     if (error) throw error;
-    await supabase.from("platform_document_versions").insert({
       document_id: data.id,
       version: 1,
       storage_path: path,
@@ -496,7 +461,6 @@ export const documents = {
     return data;
   },
   async signedUrl(path: string) {
-    const { data, error } = await supabase.storage
       .from("platform-documents")
       .createSignedUrl(path, 60);
     if (error) throw error;
@@ -508,7 +472,6 @@ export const documents = {
 
 export const reports = {
   async definitions() {
-    const { data, error } = await supabase
       .from("platform_report_definitions")
       .select("*")
       .order("name");
@@ -516,7 +479,6 @@ export const reports = {
     return data;
   },
   async runs(definition_id?: string) {
-    let q = supabase
       .from("platform_report_runs")
       .select("*")
       .order("created_at", { ascending: false })
@@ -527,8 +489,6 @@ export const reports = {
     return data;
   },
   async run(definition_id: string, parameters: Record<string, unknown> = {}) {
-    const { data: userData } = await supabase.auth.getUser();
-    const { data, error } = await supabase
       .from("platform_report_runs")
       .insert({
         definition_id,
@@ -547,7 +507,6 @@ export const reports = {
 
 export const dashboards = {
   async list() {
-    const { data, error } = await supabase
       .from("platform_dashboards")
       .select("*")
       .order("name");
@@ -555,7 +514,6 @@ export const dashboards = {
     return data;
   },
   async widgets(dashboard_id: string) {
-    const { data, error } = await supabase
       .from("platform_dashboard_widgets")
       .select("*")
       .eq("dashboard_id", dashboard_id)
@@ -569,7 +527,6 @@ export const dashboards = {
 
 export const scheduler = {
   async jobs() {
-    const { data, error } = await supabase
       .from("platform_scheduled_jobs")
       .select("*")
       .order("name");
@@ -577,7 +534,6 @@ export const scheduler = {
     return data;
   },
   async runs(job_id?: string) {
-    let q = supabase
       .from("platform_scheduled_job_runs")
       .select("*")
       .order("created_at", { ascending: false })

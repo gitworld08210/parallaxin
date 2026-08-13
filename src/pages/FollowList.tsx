@@ -4,7 +4,7 @@ import { ChevronLeft } from "lucide-react";
 import { TopBar } from "@/components/vibe/TopBar";
 import { AuraAvatar } from "@/components/vibe/AuraAvatar";
 import { VerificationBadge } from "@/components/vibe/VerificationBadge";
-import { supabase } from "@/integrations/supabase/client";
+// Supabase removed
 import { gradientFor, initialsOf, fmt } from "@/lib/format";
 
 type P = { user_id: string; username: string; display_name: string; avatar_url: string | null; verified: boolean; verification_kind?: string | null; followers_count: number };
@@ -17,14 +17,11 @@ const FollowList = () => {
   useEffect(() => {
     (async () => {
       if (!username) return;
-      const { data: prof } = await supabase.from("profiles").select("user_id").eq("username", username).maybeSingle();
       if (!prof) return;
       const col = kind === "following" ? "follower_id" : "following_id";
       const sel = kind === "following" ? "following_id" : "follower_id";
-      const { data } = await supabase.from("follows").select(sel).eq(col, prof.user_id);
       const ids = (data ?? []).map((r: any) => r[sel]);
       if (ids.length === 0) { setItems([]); return; }
-      const { data: profs } = await supabase
         .from("profiles")
         .select("user_id, username, display_name, avatar_url, verified, verification_kind, followers_count")
         .in("user_id", ids);

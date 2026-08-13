@@ -2,7 +2,7 @@ import { reliableInvoke } from "@/lib/reliableInvoke";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Film, Sparkles, X, ShieldCheck, Music, Wand2, Camera, ImagePlus } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+// Supabase removed
 import { useAuth } from "@/contexts/AuthProvider";
 import { toast } from "sonner";
 import { FilterStrip, FilterKey, filterCss } from "@/components/compose/FilterStrip";
@@ -53,7 +53,6 @@ const ReelCompose = () => {
   const aiCaption = async () => {
     setAiBusy(true);
     try {
-      const { data, error } = await supabase.functions.invoke("ai-caption", { body: { hint: content || "short reel video" } });
       if (error) throw error;
       if (data?.caption) setContent(data.caption);
     } catch (e: any) { toast.error(e.message || "AI failed"); } finally { setAiBusy(false); }
@@ -65,11 +64,9 @@ const ReelCompose = () => {
     setBusy(true);
     try {
       if (content.trim()) {
-        const { data: mod } = await supabase.functions.invoke("ai-moderate", { body: { text: content } });
         if (mod?.flagged) throw new Error(mod.reason || "Caption flagged");
       }
       const url = await uploadToCloudinary(file);
-      const { data: inserted, error } = await supabase.from("posts").insert({
         user_id: user.id,
         content: content.trim() + (music ? `\n\n🎵 ${music}` : ""),
         media_url: url,

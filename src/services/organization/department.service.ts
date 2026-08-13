@@ -1,6 +1,6 @@
 // DepartmentService — organization department reads + mutations.
 // UI components must go through the hook layer; hooks call this service.
-import { supabase } from "@/integrations/supabase/client";
+// Supabase removed
 import { organizationDepartmentApi } from "./organizationDepartment.api";
 import type {
   CreateDepartmentInput,
@@ -52,7 +52,6 @@ export const departmentService = {
    * Uses a server-side aggregate RPC so we never download raw member rows.
    */
   async memberCountsByDepartment(orgId: string): Promise<Record<string, number>> {
-    const { data, error } = await supabase.rpc("org_department_member_counts", {
       _organization_id: orgId,
     });
     if (error) throw error;

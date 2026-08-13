@@ -3,7 +3,7 @@
 // can attach a consistent audit trail without duplicating the invocation.
 //
 // Phase 1 provides the utility only. Mutation logging arrives with Phase 2+.
-import { supabase } from "@/integrations/supabase/client";
+// Supabase removed
 
 export interface AuditLogInput {
   organizationId: string;
@@ -16,7 +16,6 @@ export interface AuditLogInput {
 
 export const auditService = {
   async record(input: AuditLogInput): Promise<void> {
-    const { error } = await supabase.rpc("write_org_audit_log", {
       _organization_id: input.organizationId,
       _action: input.action,
       _entity_type: input.entityType,

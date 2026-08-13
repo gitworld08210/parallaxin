@@ -1,11 +1,10 @@
 // organizationDepartment.api — thin Supabase adapter for departments.
 // All UI/hook code must go through department.service.ts, not this file.
-import { supabase } from "@/integrations/supabase/client";
+// Supabase removed
 import type { Department } from "@/types/organization/department";
 
 export const organizationDepartmentApi = {
   async list(orgId: string): Promise<Department[]> {
-    const { data, error } = await supabase
       .from("organization_departments")
       .select("*")
       .eq("organization_id", orgId)
@@ -15,7 +14,6 @@ export const organizationDepartmentApi = {
   },
 
   async getById(id: string): Promise<Department | null> {
-    const { data, error } = await supabase
       .from("organization_departments")
       .select("*")
       .eq("id", id)
@@ -31,7 +29,6 @@ export const organizationDepartmentApi = {
     icon?: string | null;
     parentDepartmentId?: string | null;
   }): Promise<string> {
-    const { data, error } = await supabase.rpc("org_create_department", {
       _organization_id: orgId,
       _name: input.name,
       _description: input.description ?? null,
@@ -49,7 +46,6 @@ export const organizationDepartmentApi = {
    *   - key absent   → preserve current value
    */
   async update(id: string, patch: Record<string, unknown>): Promise<void> {
-    const { error } = await supabase.rpc("org_update_department", {
       _department_id: id,
       _patch: patch as never,
     });
@@ -57,12 +53,10 @@ export const organizationDepartmentApi = {
   },
 
   async remove(id: string): Promise<void> {
-    const { error } = await supabase.rpc("org_delete_department", { _department_id: id });
     if (error) throw error;
   },
 
   async assignMember(memberId: string, departmentId: string): Promise<void> {
-    const { error } = await supabase.rpc("org_assign_member_department", {
       _member_id: memberId,
       _department_id: departmentId,
     });
@@ -70,7 +64,6 @@ export const organizationDepartmentApi = {
   },
 
   async removeMember(memberId: string): Promise<void> {
-    const { error } = await supabase.rpc("org_remove_member_department", { _member_id: memberId });
     if (error) throw error;
   },
 };

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { ChevronLeft } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+// Supabase removed
 import { AuraFrame } from "@/components/founders/AuraFrame";
 import { FounderBadge } from "@/components/founders/FounderBadge";
 import { initialsOf } from "@/lib/format";
@@ -31,12 +31,10 @@ const FounderChronicle = () => {
   useEffect(() => {
     if (!username) return;
     (async () => {
-      const { data } = await supabase.from("profiles")
         .select("user_id, username, display_name, avatar_url, bio, founder_title, aura_rank, join_era, council_role, chronicle, signature_aura")
         .eq("username", username).maybeSingle();
       setP(data as FounderProfile | null);
       if (data) {
-        const { data: ws } = await supabase.from("posts")
           .select("id, media_url, media_type, content")
           .eq("user_id", (data as any).user_id)
           .eq("status", "published")

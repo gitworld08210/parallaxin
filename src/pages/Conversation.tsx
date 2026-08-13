@@ -5,7 +5,7 @@ import { AuraAvatar } from "@/components/vibe/AuraAvatar";
 import { VerificationBadge } from "@/components/vibe/VerificationBadge";
 import { collection, query, where, orderBy, onSnapshot, addDoc, serverTimestamp, updateDoc, doc, getDoc, getDocs, limit, arrayUnion } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { supabase } from "@/integrations/supabase/client";
+// Supabase removed
 import { useAuth } from "@/contexts/AuthProvider";
 import { gradientFor, initialsOf } from "@/lib/format";
 import { VoiceBubble, VoiceRecorder } from "@/components/dm/VoiceMessage";
@@ -170,7 +170,6 @@ const Conversation = () => {
     if (!last || last.sender_id === user?.id) { setAiSuggestions([]); return; }
     setAiBusy(true);
     try {
-      const { data } = await supabase.functions.invoke("ai-dm-suggest", { body: { conversation_id: id } });
       setAiSuggestions(Array.isArray(data?.suggestions) ? data.suggestions : []);
     } catch { /* silent */ }
     finally { setAiBusy(false); }

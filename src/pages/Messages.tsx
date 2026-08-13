@@ -8,7 +8,7 @@ import { VerificationBadge } from "@/components/vibe/VerificationBadge";
 import { EmptyState } from "@/components/empty/EmptyState";
 import { collection, query as firestoreQuery, where, orderBy, limit, onSnapshot, getDocs, addDoc, serverTimestamp, Timestamp } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { supabase } from "@/integrations/supabase/client";
+// Supabase removed
 import { useAuth } from "@/contexts/AuthProvider";
 import { gradientFor, initialsOf } from "@/lib/format";
 import { toast } from "sonner";
@@ -108,7 +108,6 @@ const Messages = () => {
     if (!q) { setResults([]); return; }
     let cancelled = false;
     const t = setTimeout(async () => {
-      const { data } = await supabase
         .from("profiles")
         .select("user_id, username, display_name, avatar_url, verification_kind")
         .or(`username.ilike.%${q}%,display_name.ilike.%${q}%`)

@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { ChevronLeft, Upload, Sparkles } from "lucide-react";
 import { TopBar } from "@/components/vibe/TopBar";
 import { AuraAvatar } from "@/components/vibe/AuraAvatar";
-import { supabase } from "@/integrations/supabase/client";
+// Supabase removed
 import { useAuth } from "@/contexts/AuthProvider";
 import { gradientFor, initialsOf } from "@/lib/format";
 import { toast } from "sonner";
@@ -27,7 +27,6 @@ const EditProfile = () => {
     setBioAiBusy(true);
     setBioVariants([]);
     try {
-      const { data, error } = await supabase.functions.invoke("ai-bio-rewrite", {
         body: { bio, display_name: displayName, niche: "" },
       });
       if (error) throw error;
@@ -85,7 +84,6 @@ const EditProfile = () => {
     }
 
     // 2. Update Supabase (Legacy)
-    const { error } = await supabase.from("profiles").update({
       display_name: displayName, username, bio, avatar_url: avatar, cover_url: cover,
     } as any).eq("user_id", user.id);
     

@@ -3,7 +3,7 @@ import { Sparkles, Check, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useCreatorSubscription } from "@/hooks/useCreatorSubscription";
 import { SubscribeSheet } from "./SubscribeSheet";
-import { supabase } from "@/integrations/supabase/client";
+// Supabase removed
 import { toast } from "sonner";
 import {
   DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem,
@@ -20,7 +20,6 @@ export function SubscribeButton({ creatorId, creatorName, className }: Props) {
 
   const cancel = async () => {
     setCanceling(true);
-    const { error } = await supabase.rpc("cancel_creator_subscription" as any, { _creator_id: creatorId });
     setCanceling(false);
     if (error) return toast.error(error.message);
     toast.success("Auto-renew off — access ends on period end");

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+// Supabase removed
 import { useAuth } from "@/contexts/AuthProvider";
 import { Clock, CheckCircle2, XCircle, Banknote } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -23,7 +23,6 @@ export function PayoutHistory() {
   useEffect(() => {
     if (!user) return;
     (async () => {
-      const { data } = await supabase.from("payout_requests")
         .select("id, amount_cents, status, method, created_at, admin_note, processed_at")
         .eq("user_id", user.id).order("created_at", { ascending: false }).limit(10);
       setRows((data as any) ?? []);

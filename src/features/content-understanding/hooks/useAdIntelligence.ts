@@ -1,4 +1,4 @@
-import { supabase } from "@/integrations/supabase/client";
+// Supabase removed
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
@@ -24,13 +24,11 @@ export const useAdInteraction = () => {
       topicIds: string[];
       signalType: AdSignalType;
     }) => {
-      const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
       const weight = SIGNAL_WEIGHTS[input.signalType];
 
       // 1. Record the raw signal
-      const { error: signalError } = await (supabase as any).from('ads_interest_signals').insert({
         user_id: user.id,
         content_id: input.contentId,
         topic_ids: input.topicIds,

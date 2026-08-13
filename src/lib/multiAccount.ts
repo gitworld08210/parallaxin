@@ -4,9 +4,8 @@
 //
 // Security notes:
 // - Tokens live only in this device's localStorage, scoped to the origin.
-// - `switchToAccount` calls supabase.auth.setSession, which refreshes an
 //   expired access token via the stored refresh token.
-import { supabase } from "@/integrations/supabase/client";
+// Supabase removed
 
 const KEY = "aurelix.savedAccounts.v2";
 // Reduced from 5 → 2 to shrink the XSS blast radius of cached refresh tokens.
@@ -56,7 +55,6 @@ export const removeSavedAccount = (userId: string) => {
 };
 
 export const switchToAccount = async (acc: SavedAccount) => {
-  const { error } = await supabase.auth.setSession({
     access_token: acc.accessToken,
     refresh_token: acc.refreshToken,
   });

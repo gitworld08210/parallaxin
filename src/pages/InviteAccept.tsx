@@ -17,7 +17,7 @@ import {
   Users,
   X,
 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+// Supabase removed
 import { useAuth } from "@/contexts/AuthProvider";
 import { useIncomingInviteActions } from "@/hooks/organization/useOrganizationInvites";
 import { toast } from "sonner";
@@ -68,7 +68,6 @@ const InviteAccept = () => {
       setLoading(true);
       // Uses a SECURITY DEFINER RPC so invitees (who aren't yet org members)
       // can still read their invitation despite table-level RLS.
-      const { data, error } = await supabase.rpc(
         "get_organization_invite_by_token" as any,
         { _token: token },
       );

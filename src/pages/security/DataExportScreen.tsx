@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ChevronLeft, Download, Sparkles } from "lucide-react";
 import { TopBar } from "@/components/vibe/TopBar";
-import { supabase } from "@/integrations/supabase/client";
+// Supabase removed
 import { toast } from "sonner";
 
 export default function DataExportScreen() {
@@ -12,7 +12,6 @@ export default function DataExportScreen() {
   const exportNow = async () => {
     setBusy(true);
     try {
-      const { data, error } = await supabase.functions.invoke("export-user-data");
       if (error) throw error;
       const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
       const a = document.createElement("a");

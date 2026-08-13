@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Sparkles, Check, ArrowRight, Bell } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { supabase } from "@/integrations/supabase/client";
+// Supabase removed
 import { useAuth } from "@/contexts/AuthProvider";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -28,7 +28,6 @@ const Onboarding = () => {
 
   useEffect(() => {
     (async () => {
-      const { data } = await supabase
         .from("profiles")
         .select("user_id, username, display_name, avatar_url")
         .eq("is_founder", true)
@@ -74,7 +73,6 @@ const Onboarding = () => {
 
       // 2. Update Supabase (Secondary/Admin OS)
       try {
-        await supabase
           .from("profiles")
           .update({
             interests,
@@ -87,7 +85,6 @@ const Onboarding = () => {
 
       if (dob || gender) {
         try {
-          await supabase.rpc("upsert_profile_private" as any, {
             _dob: dob || null,
             _gender: gender || null,
           });
@@ -101,7 +98,6 @@ const Onboarding = () => {
       if (followed.size > 0) {
         try {
           const rows = Array.from(followed).map((following_id) => ({ follower_id: user.id, following_id }));
-          await supabase.from("follows").insert(rows);
         } catch (e) {
           console.warn("Supabase follow sync failed", e);
         }

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+// Supabase removed
 import { useAuth } from "@/contexts/AuthProvider";
 import { toast } from "sonner";
 import { Building2, Upload, Sparkles } from "lucide-react";
@@ -37,9 +37,7 @@ const OrganizationOnboarding = () => {
     try {
       const ext = file.name.split(".").pop() || "png";
       const path = `org-logos/${user.id}/${Date.now()}.${ext}`;
-      const { error } = await supabase.storage.from("avatars").upload(path, file, { upsert: true });
       if (error) throw error;
-      const { data } = supabase.storage.from("avatars").getPublicUrl(path);
       setLogoUrl(data.publicUrl);
     } catch (e: any) {
       toast.error(e?.message || "Logo upload failed");
@@ -55,7 +53,6 @@ const OrganizationOnboarding = () => {
     }
     setBusy(true);
     try {
-      const { data, error } = await supabase.rpc("create_organization_workspace", {
         p_name: form.name.trim(),
         p_username: form.username.trim().toLowerCase(),
         p_org_type: form.org_type,

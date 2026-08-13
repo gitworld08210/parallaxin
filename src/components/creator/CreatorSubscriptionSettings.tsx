@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+// Supabase removed
 import { useAuth } from "@/contexts/AuthProvider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,7 +19,6 @@ export function CreatorSubscriptionSettings() {
   useEffect(() => {
     if (!user) return;
     (async () => {
-      const { data } = await supabase.from("creator_subscription_settings" as any)
         .select("*").eq("creator_id", user.id).maybeSingle();
       const r: any = data;
       if (r) {
@@ -37,7 +36,6 @@ export function CreatorSubscriptionSettings() {
     if (coins < 50 || coins > 100000) return toast.error("Price must be between 50 and 100,000 coins");
     if (inr < 49) return toast.error("INR fallback must be at least ₹49");
     setSaving(true);
-    const { error } = await supabase.from("creator_subscription_settings" as any).upsert({
       creator_id: user.id,
       enabled,
       monthly_price_coins: coins,

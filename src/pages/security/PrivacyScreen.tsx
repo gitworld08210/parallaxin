@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ChevronLeft } from "lucide-react";
 import { TopBar } from "@/components/vibe/TopBar";
-import { supabase } from "@/integrations/supabase/client";
+// Supabase removed
 import { useAuth } from "@/contexts/AuthProvider";
 import { toast } from "sonner";
 
@@ -31,7 +31,6 @@ export default function PrivacyScreen() {
 
   useEffect(() => { (async () => {
     if (!user) return;
-    const { data } = await supabase.from("profiles").select("is_private, show_read_receipts, show_activity").eq("user_id", user.id).maybeSingle();
     if (data) {
       setIsPrivate((data as any).is_private ?? false);
       setShowRead((data as any).show_read_receipts ?? true);
@@ -41,7 +40,6 @@ export default function PrivacyScreen() {
 
   const save = async (patch: any) => {
     if (!user) return;
-    const { error } = await (supabase.from("profiles") as any).update(patch).eq("user_id", user.id);
     if (error) toast.error(error.message);
   };
 

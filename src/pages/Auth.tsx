@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { supabase } from "@/integrations/supabase/client";
+// Supabase removed
 import { auth, db, googleProvider } from "@/lib/firebase";
 import { 
   signInWithEmailAndPassword, 
@@ -48,7 +48,6 @@ const Auth = () => {
     // block routing after a successful Firebase sign-in.
     let emp: any = null;
     try {
-      const res = await supabase
         .from("employees")
         .select("id, employment_status, department:admin_departments!employees_department_id_fkey(key)")
         .eq("user_id", uid)
@@ -99,7 +98,6 @@ const Auth = () => {
     const mail = email.trim();
     let data: any = null;
     try {
-      const res = await supabase.auth.signInWithPassword({ email: mail, password });
       if (res.error || !res.data?.user) return null;
       data = res.data;
     } catch (err) {
@@ -129,7 +127,6 @@ const Auth = () => {
         created_at: new Date().toISOString(),
       }, { merge: true });
     }
-    await supabase.auth.signOut().catch(() => {});
     return { cred };
   };
 
@@ -158,10 +155,8 @@ const Auth = () => {
       
       // Background sync with Supabase for legacy staff features
       if (idToken) {
-        supabase.functions.invoke("firebase-bridge", { body: { idToken } })
           .then(async (res) => {
             if (res.data?.user_id) {
-              const { data: emp, error: empErr } = await supabase
                 .from("employees")
                 .select("employment_status")
                 .eq("user_id", res.data.user_id)
@@ -201,7 +196,6 @@ const Auth = () => {
 
       // Background sync with Supabase
       if (idToken) {
-        supabase.functions.invoke("firebase-bridge", { body: { idToken } })
           .catch(err => console.warn("Background bridge sync skipped", err));
       }
       
@@ -230,10 +224,8 @@ const Auth = () => {
       
       // Background sync with Supabase
       if (idToken) {
-        supabase.functions.invoke("firebase-bridge", { body: { idToken } })
           .then(async (res) => {
             if (res.data?.user_id) {
-              const { data: emp, error: empErr } = await supabase
                 .from("employees")
                 .select("employment_status")
                 .eq("user_id", res.data.user_id)

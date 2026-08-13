@@ -3,7 +3,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Coins, Copy, Check, ExternalLink, Loader2, ShieldCheck } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+// Supabase removed
 import { useAuth } from "@/contexts/AuthProvider";
 import { toast } from "sonner";
 
@@ -31,7 +31,6 @@ export function BuyCoinsSheet({ open, onOpenChange }: Props) {
   useEffect(() => {
     if (!open) return;
     (async () => {
-      const { data } = await supabase.rpc("get_platform_pay_config" as any);
       const row: any = Array.isArray(data) ? data[0] : data;
       setPay({ upi: row?.upi_id || "", qr: row?.qr_url || "", payee: row?.payee_name || "Aurelix" });
     })();
@@ -44,7 +43,6 @@ export function BuyCoinsSheet({ open, onOpenChange }: Props) {
     if (!user) return toast.error("Sign in first");
     if (!pay?.upi && !pay?.qr) return toast.error("Payments not configured yet");
     setLoading(true);
-    const { data, error } = await supabase.rpc("create_coin_topup" as any, { _coins: pack.coins });
     setLoading(false);
     if (error || !data) return toast.error(error?.message || "Failed");
     setTopupId(String(data));
@@ -56,7 +54,6 @@ export function BuyCoinsSheet({ open, onOpenChange }: Props) {
     const cleaned = utr.trim().replace(/\s+/g, "");
     if (!/^[0-9]{12}$/.test(cleaned)) return toast.error("Enter your 12-digit UPI UTR");
     setLoading(true);
-    const { error } = await supabase.rpc("verify_coin_topup_with_utr" as any, { _topup_id: topupId, _utr: cleaned });
     setLoading(false);
     if (error) return toast.error(error.message);
     setStep("done");

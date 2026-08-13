@@ -11,7 +11,7 @@ import {
   Check, X, AlertCircle, Info, Brain, Sparkles
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+// Supabase removed
 import { useReviewContent } from "../hooks/useContentQueue";
 import { useTaxonomy } from "../hooks/useContentContext";
 import {
@@ -31,7 +31,6 @@ export const ReviewerWorkspace = () => {
   const { data: item, isLoading } = useQuery({
     queryKey: ['content-context-detail', id],
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
         .from('content_context')
         .select('*')
         .eq('id', id)

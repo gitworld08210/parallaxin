@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ChevronLeft, Trash2 } from "lucide-react";
 import { TopBar } from "@/components/vibe/TopBar";
-import { supabase } from "@/integrations/supabase/client";
+// Supabase removed
 import { useAuth } from "@/contexts/AuthProvider";
 import { toast } from "sonner";
 
@@ -19,9 +19,7 @@ export default function DeleteAccountScreen() {
     if (!user) return;
     setBusy(true);
     try {
-      const { error: reauth } = await supabase.auth.signInWithPassword({ email: user.email!, password });
       if (reauth) throw reauth;
-      const { error } = await supabase.functions.invoke("delete-account", { body: { reason } });
       if (error) throw error;
       toast.success("Your account is scheduled for erasure. You have 7 days to undo by signing back in.");
       await signOut();

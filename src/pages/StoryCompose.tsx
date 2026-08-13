@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { ImagePlus, X, Globe, Star, BarChart3, MessageSquare, Plus, Trash2, Music, Wand2 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+// Supabase removed
 import { useAuth } from "@/contexts/AuthProvider";
 import { TopBar } from "@/components/vibe/TopBar";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
@@ -75,7 +75,6 @@ const StoryCompose = () => {
     setBusy(true);
     try {
       const url = await uploadToCloudinary(file);
-      const { data: storyRow, error } = await supabase.from("stories").insert({
         user_id: user.id,
         media_url: url,
         media_type: file.type.startsWith("video") ? "video" : "image",
@@ -89,7 +88,6 @@ const StoryCompose = () => {
           position: { x: s.x, y: s.y },
           payload: s.kind === "poll" ? { question: s.question, options: s.options } : s.kind === "qa" ? { prompt: s.prompt } : { title: s.title },
         }));
-        await supabase.from("story_stickers" as any).insert(rows as any);
       }
       toast.success("Story added ✦ · expires in 24h");
       nav("/");

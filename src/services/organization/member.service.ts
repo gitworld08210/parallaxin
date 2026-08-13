@@ -1,5 +1,5 @@
 // MemberService — organization member reads + mutations (via RPC).
-import { supabase } from "@/integrations/supabase/client";
+// Supabase removed
 import type { Member, MemberWithProfile } from "@/types/organization/member";
 import { organizationApi } from "./organization.api";
 
@@ -29,11 +29,9 @@ async function hydrateMembers(members: Member[]): Promise<MemberWithProfile[]> {
   const userIds = members.map((m) => m.user_id);
   const memberIds = members.map((m) => m.id);
   const [{ data: profiles }, { data: roleLinks }] = await Promise.all([
-    supabase
       .from("profiles")
       .select("user_id, username, display_name, avatar_url, verified")
       .in("user_id", userIds),
-    supabase
       .from("organization_member_roles")
       .select("member_id, organization_roles(id, name)")
       .in("member_id", memberIds),
@@ -59,7 +57,6 @@ async function hydrateMembers(members: Member[]): Promise<MemberWithProfile[]> {
 export const memberService = {
   /** Full (unpaginated) list — retained for callers that need everyone. */
   async list(orgId: string): Promise<MemberWithProfile[]> {
-    const { data: rows, error } = await supabase
       .from("organization_members")
       .select(
         "id, organization_id, user_id, department_id, status, joined_at, invited_by, created_at, updated_at",
@@ -85,7 +82,6 @@ export const memberService = {
       data: rows,
       error,
       count,
-    } = await supabase
       .from("organization_members")
       .select(
         "id, organization_id, user_id, department_id, status, joined_at, invited_by, created_at, updated_at",
@@ -110,7 +106,6 @@ export const memberService = {
   },
 
   async recent(orgId: string, limit = 4): Promise<MemberWithProfile[]> {
-    const { data: rows, error } = await supabase
       .from("organization_members")
       .select(
         "id, organization_id, user_id, department_id, status, joined_at, invited_by, created_at, updated_at",
@@ -124,7 +119,6 @@ export const memberService = {
   },
 
   async getById(orgId: string, memberId: string): Promise<MemberWithProfile | null> {
-    const { data, error } = await supabase
       .from("organization_members")
       .select(
         "id, organization_id, user_id, department_id, status, joined_at, invited_by, created_at, updated_at",
@@ -155,7 +149,6 @@ export const memberService = {
   // ---------- Mutations (permission-checked RPCs) ----------
 
   async changeRole(orgId: string, memberId: string, roleId: string): Promise<void> {
-    const { error } = await supabase.rpc("org_change_member_role", {
       _organization_id: orgId,
       _member_id: memberId,
       _role_id: roleId,
@@ -164,7 +157,6 @@ export const memberService = {
   },
 
   async remove(orgId: string, memberId: string): Promise<void> {
-    const { error } = await supabase.rpc("org_remove_member", {
       _organization_id: orgId,
       _member_id: memberId,
     });
@@ -172,7 +164,6 @@ export const memberService = {
   },
 
   async transferOwnership(orgId: string, newOwnerUserId: string): Promise<void> {
-    const { error } = await supabase.rpc("org_transfer_ownership", {
       _organization_id: orgId,
       _new_owner_user_id: newOwnerUserId,
     });

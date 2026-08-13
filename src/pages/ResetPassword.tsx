@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+// Supabase removed
 import { toast } from "sonner";
 import { ChevronLeft } from "lucide-react";
 
@@ -12,7 +12,6 @@ const ResetPassword = () => {
 
   useEffect(() => {
     if (window.location.hash.includes("type=recovery")) setRecovery(true);
-    const { data } = supabase.auth.onAuthStateChange((evt) => {
       if (evt === "PASSWORD_RECOVERY") setRecovery(true);
     });
     return () => data.subscription.unsubscribe();
@@ -21,7 +20,6 @@ const ResetPassword = () => {
   const sendLink = async (e: React.FormEvent) => {
     e.preventDefault();
     setBusy(true);
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/reset-password`,
     });
     setBusy(false);
@@ -32,7 +30,6 @@ const ResetPassword = () => {
   const setNewPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     setBusy(true);
-    const { error } = await supabase.auth.updateUser({ password });
     setBusy(false);
     if (error) toast.error(error.message);
     else toast.success("Password updated. Sign in again.");

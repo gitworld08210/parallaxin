@@ -4,7 +4,7 @@ import { Heart, MessageCircle, UserPlus, Mail, Bell, BadgeCheck, Crown, SlidersH
 import { CollabInviteSheet } from "@/components/social/CollabInviteSheet";
 import { AuraAvatar } from "@/components/vibe/AuraAvatar";
 import { EmptyState } from "@/components/empty/EmptyState";
-import { supabase } from "@/integrations/supabase/client";
+// Supabase removed
 import { useAuth } from "@/contexts/AuthProvider";
 import { gradientFor, initialsOf, timeAgo } from "@/lib/format";
 import { toast } from "sonner";
@@ -89,7 +89,6 @@ const Notifications = () => {
     if (!token) {
       // Fall back to the SECURITY DEFINER RPC — works for invitees who aren't
       // yet org members (base-table SELECT is scoped to members).
-      const { data } = await supabase.rpc(
         "list_incoming_organization_invites" as any,
       );
       const rows = (data ?? []) as any[];
@@ -123,7 +122,6 @@ const Notifications = () => {
   useEffect(() => {
     if (!user) return;
     (async () => {
-      const { data } = await supabase
         .from("notifications")
         .select("id, type, read, created_at, actor_id, post_id, organization_id, actor:profiles!notifications_actor_profile_fkey(username, display_name, avatar_url)")
         .eq("user_id", user.id).order("created_at", { ascending: false }).limit(80);
@@ -131,19 +129,16 @@ const Notifications = () => {
       // Incoming organization invites are loaded via useIncomingInvites().
     })();
 
-    const ch = supabase.channel(`notif:${user.id}`)
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "notifications", filter: `user_id=eq.${user.id}` },
         async (payload) => {
           const n = payload.new as any;
           let actor = null;
           if (n.actor_id) {
-            const { data } = await supabase.from("profiles").select("username, display_name, avatar_url").eq("user_id", n.actor_id).maybeSingle();
             actor = data;
           }
           setItems((prev) => [{ ...n, actor }, ...prev]);
         })
       .subscribe();
-    return () => { supabase.removeChannel(ch); };
   }, [user?.id]);
 
   const visibleItems = useMemo(

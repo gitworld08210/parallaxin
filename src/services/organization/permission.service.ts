@@ -1,6 +1,6 @@
 // PermissionService — catalogue, per-role permissions, and effective
 // permissions for a user in an org.
-import { supabase } from "@/integrations/supabase/client";
+// Supabase removed
 import type { Permission } from "@/types/organization/permission";
 
 interface RolePermRow {
@@ -20,7 +20,6 @@ interface MemberRolesPermRow {
 export const permissionService = {
   /** Full permission catalogue (module + key). */
   async listCatalogue(): Promise<Permission[]> {
-    const { data, error } = await supabase
       .from("organization_permissions")
       .select("*")
       .order("module", { ascending: true })
@@ -31,7 +30,6 @@ export const permissionService = {
 
   /** Permission keys attached to a role. */
   async listForRole(roleId: string): Promise<string[]> {
-    const { data, error } = await supabase
       .from("organization_role_permissions")
       .select("role_id, organization_permissions(permission_key)")
       .eq("role_id", roleId);
@@ -46,7 +44,6 @@ export const permissionService = {
    * the whole permission matrix (no per-row queries).
    */
   async matrixForOrg(orgId: string): Promise<Record<string, string[]>> {
-    const { data, error } = await supabase
       .from("organization_role_permissions")
       .select("role_id, organization_permissions(permission_key), organization_roles!inner(organization_id)")
       .eq("organization_roles.organization_id", orgId);
@@ -62,7 +59,6 @@ export const permissionService = {
   },
 
   async listForMember(orgId: string, userId: string): Promise<string[]> {
-    const { data: orgRow } = await supabase
       .from("organizations")
       .select("owner_user_id")
       .eq("id", orgId)
@@ -73,7 +69,6 @@ export const permissionService = {
       return catalogue.map((p) => p.permission_key);
     }
 
-    const { data: memberRow, error: memberErr } = await supabase
       .from("organization_members")
       .select("id, status")
       .eq("organization_id", orgId)
@@ -82,7 +77,6 @@ export const permissionService = {
     if (memberErr) throw memberErr;
     if (!memberRow || memberRow.status !== "active") return [];
 
-    const { data: rolePerms, error: rpErr } = await supabase
       .from("organization_member_roles")
       .select(
         "organization_roles!inner(id, organization_role_permissions(organization_permissions(permission_key)))",

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Search, AtSign } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+// Supabase removed
 import { useAuth } from "@/contexts/AuthProvider";
 import { AuraAvatar } from "@/components/vibe/AuraAvatar";
 import { gradientFor, initialsOf } from "@/lib/format";
@@ -18,13 +18,11 @@ export const MentionPickerSheet = ({
   useEffect(() => {
     if (!open || !user) return;
     (async () => {
-      let query = supabase.from("profiles")
         .select("user_id, username, display_name, avatar_url")
         .neq("user_id", user.id).limit(30);
       const term = q.trim();
       if (term) query = query.or(`username.ilike.%${term}%,display_name.ilike.%${term}%`);
       else {
-        const { data: follows } = await supabase.from("follows").select("following_id").eq("follower_id", user.id).limit(40);
         const ids = (follows ?? []).map((f) => f.following_id);
         if (ids.length) query = query.in("user_id", ids);
       }

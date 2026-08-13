@@ -5,7 +5,7 @@ import remarkGfm from "remark-gfm";
 import { TopBar } from "@/components/vibe/TopBar";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { supabase } from "@/integrations/supabase/client";
+// Supabase removed
 
 type Msg = { role: "user" | "assistant"; content: string };
 
@@ -35,8 +35,6 @@ const Assistant = () => {
     setStreaming(true);
 
     try {
-      const url = `https://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.supabase.co/functions/v1/ai-assistant`;
-      const { data: { session } } = await supabase.auth.getSession();
       if (!session?.access_token) {
         toast.error("Please sign in to use the assistant.");
         setStreaming(false);

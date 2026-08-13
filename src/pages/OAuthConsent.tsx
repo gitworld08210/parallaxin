@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+// Supabase removed
 import { Sparkles, ShieldCheck } from "lucide-react";
 
 type AuthorizationDetails = {
@@ -10,8 +10,6 @@ type AuthorizationDetails = {
   scopes?: string[];
 };
 
-// Typed shim for the beta supabase.auth.oauth namespace.
-const oauth = (supabase.auth as any).oauth as {
   getAuthorizationDetails: (id: string) => Promise<{ data: AuthorizationDetails | null; error: any }>;
   approveAuthorization: (id: string) => Promise<{ data: { redirect_url?: string; redirect_to?: string } | null; error: any }>;
   denyAuthorization: (id: string) => Promise<{ data: { redirect_url?: string; redirect_to?: string } | null; error: any }>;
@@ -28,14 +26,12 @@ export default function OAuthConsent() {
     let active = true;
     (async () => {
       if (!authorizationId) { setError("Missing authorization_id"); return; }
-      const { data: sess } = await supabase.auth.getSession();
       if (!sess.session) {
         const next = window.location.pathname + window.location.search;
         window.location.href = "/auth?next=" + encodeURIComponent(next);
         return;
       }
       if (!oauth?.getAuthorizationDetails) {
-        setError("This build of the auth client does not expose supabase.auth.oauth. Please update @supabase/supabase-js.");
         return;
       }
       const { data, error } = await oauth.getAuthorizationDetails(authorizationId);

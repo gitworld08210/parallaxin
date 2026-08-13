@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Calendar, FileText, ChevronLeft, Trash2, Send } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+// Supabase removed
 import { useAuth } from "@/contexts/AuthProvider";
 import { toast } from "sonner";
 import { timeAgo } from "@/lib/format";
@@ -26,7 +26,6 @@ const Drafts = () => {
   const load = async () => {
     if (!user) return;
     setLoading(true);
-    const { data } = await (supabase.from("posts")
       .select("id, content, media_url, media_type, status, scheduled_for, created_at")
       .eq("user_id", user.id)
       .in("status", ["draft", "scheduled"])
@@ -38,7 +37,6 @@ const Drafts = () => {
   useEffect(() => { load(); /* eslint-disable-next-line */ }, [user?.id]);
 
   const publishNow = async (id: string) => {
-    const { error } = await supabase.from("posts")
       .update({ status: "published" as any, scheduled_for: null })
       .eq("id", id);
     if (error) return toast.error(error.message);
@@ -48,7 +46,6 @@ const Drafts = () => {
 
   const remove = async (id: string) => {
     if (!confirm("Delete this draft?")) return;
-    const { error } = await supabase.from("posts").delete().eq("id", id);
     if (error) return toast.error(error.message);
     setItems((arr) => arr.filter((i) => i.id !== id));
   };

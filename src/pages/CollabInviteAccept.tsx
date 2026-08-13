@@ -13,7 +13,7 @@ import {
   Sparkles,
   X,
 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+// Supabase removed
 import { useAuth } from "@/contexts/AuthProvider";
 import { toast } from "sonner";
 
@@ -57,12 +57,10 @@ const CollabInviteAccept = () => {
       if (!user) return;
       setLoading(true);
       const [{ data: postData }, { data: rowData }] = await Promise.all([
-        supabase
           .from("posts")
           .select("id, content, media_url, user_id, created_at")
           .eq("id", postId)
           .maybeSingle(),
-        supabase
           .from("post_collaborators" as any)
           .select("status, invited_at, responded_at")
           .eq("post_id", postId)
@@ -77,7 +75,6 @@ const CollabInviteAccept = () => {
       }
       setPost(postData as any);
       setRow((rowData as any) ?? null);
-      const { data: authorData } = await supabase
         .from("profiles")
         .select("user_id, username, display_name, avatar_url, bio, verified, verification_kind")
         .eq("user_id", (postData as any).user_id)
@@ -93,7 +90,6 @@ const CollabInviteAccept = () => {
   const respond = async (status: "accepted" | "declined") => {
     if (!user) return;
     setBusy(status === "accepted" ? "accept" : "decline");
-    const { error } = await supabase
       .from("post_collaborators" as any)
       .update({ status, responded_at: new Date().toISOString() } as any)
       .eq("post_id", postId)

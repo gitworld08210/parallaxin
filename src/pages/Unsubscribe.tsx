@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+// Supabase removed
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Loader2, CheckCircle2, AlertCircle } from "lucide-react";
@@ -58,7 +58,6 @@ export default function Unsubscribe() {
     if (!token) return;
     setState({ kind: "submitting" });
     try {
-      const { data, error } = await supabase.functions.invoke(
         "handle-email-unsubscribe",
         { body: { token } },
       );

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ChevronLeft, Mail } from "lucide-react";
 import { TopBar } from "@/components/vibe/TopBar";
-import { supabase } from "@/integrations/supabase/client";
+// Supabase removed
 import { useAuth } from "@/contexts/AuthProvider";
 import { toast } from "sonner";
 
@@ -18,7 +18,6 @@ export default function ChangeEmailScreen() {
       return toast.error("Enter a valid email");
     }
     setBusy(true);
-    const { error } = await supabase.auth.updateUser(
       { email: email.trim() },
       { emailRedirectTo: `${window.location.origin}/` },
     );
@@ -31,7 +30,6 @@ export default function ChangeEmailScreen() {
   const resend = async () => {
     if (!pending) return;
     setBusy(true);
-    const { error } = await supabase.auth.resend({ type: "email_change" as any, email: pending } as any);
     setBusy(false);
     if (error) return toast.error(error.message);
     toast.success("Verification link re-sent");

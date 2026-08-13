@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { supabase } from "@/integrations/supabase/client";
+// Supabase removed
 import { useAuth } from "@/contexts/AuthProvider";
 import { toast } from "sonner";
 import { Flag } from "lucide-react";
@@ -33,7 +33,6 @@ export const ReportSheet = ({
   const submit = async () => {
     if (!user || !targetId || !reason) return;
     setBusy(true);
-    const { data: inserted, error } = await (supabase.from("reports" as any).insert({
       reporter_id: user.id,
       target_kind: targetKind,
       target_id: targetId,

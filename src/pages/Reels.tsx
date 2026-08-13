@@ -4,7 +4,7 @@ import { Heart, MessageCircle, Send, Plus, Volume2, VolumeX, Pause, Camera, Sear
 import { motion, AnimatePresence } from "framer-motion";
 import { collection, query, where, orderBy, limit, getDocs } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { supabase } from "@/integrations/supabase/client";
+// Supabase removed
 import { useAuth } from "@/contexts/AuthProvider";
 import { useAdInteraction } from "@/features/content-understanding/hooks/useAdIntelligence";
 import { useAdRanking } from "@/features/content-understanding/hooks/useAdRanking";
@@ -56,7 +56,6 @@ const Reels = () => {
 
       let liked = new Set<string>();
       if (user && data.length) {
-        const { data: l } = await supabase.from("likes").select("post_id").eq("user_id", user.id).in("post_id", data.map((d: any) => d.id));
         liked = new Set((l ?? []).map((x) => x.post_id));
       }
       setReels((data as any[]).map((d: any) => ({ ...d, liked: liked.has(d.id) })));
@@ -96,8 +95,6 @@ const Reels = () => {
     if (!user) return toast.error("Sign in to like");
     const next = !r.liked;
     setReels((arr) => arr.map((x) => x.id === r.id ? { ...x, liked: next, like_count: x.like_count + (next ? 1 : -1) } : x));
-    if (next) await supabase.from("likes").insert({ user_id: user.id, post_id: r.id });
-    else await supabase.from("likes").delete().eq("user_id", user.id).eq("post_id", r.id);
   };
 
   const toggleBookmark = (r: Reel) => {

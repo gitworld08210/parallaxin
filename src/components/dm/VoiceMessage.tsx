@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Play, Pause, Mic, Send, X } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+// Supabase removed
 import { toast } from "sonner";
 
 /** Inline audio player with stylized waveform bars. */
@@ -121,10 +121,8 @@ export const VoiceRecorder = ({
     setUploading(true);
     try {
       const path = `voice/${userId}/${crypto.randomUUID()}.webm`;
-      const { error: upErr } = await supabase.storage.from("post-media")
         .upload(path, blobRef.current, { contentType: "audio/webm", cacheControl: "3600", upsert: false });
       if (upErr) throw upErr;
-      const { data } = supabase.storage.from("post-media").getPublicUrl(path);
       await onSend(data.publicUrl);
       cancel();
     } catch (e: any) {

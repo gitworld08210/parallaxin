@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Room, createLocalTracks, Track, LocalVideoTrack, LocalAudioTrack } from "livekit-client";
-import { supabase } from "@/integrations/supabase/client";
+// Supabase removed
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
@@ -35,7 +35,6 @@ export default function LiveHost() {
 
   useEffect(() => {
     (async () => {
-      const { data } = await supabase.from("live_gifts_catalog").select("id, icon, name");
       const map: Record<string, { icon: string; name: string }> = {};
       (data ?? []).forEach((g: any) => { map[g.id] = { icon: g.icon, name: g.name }; });
       setCatalog(map);
@@ -93,7 +92,6 @@ export default function LiveHost() {
     if (starting) return;
     setStarting(true);
     try {
-      const { data: userData } = await supabase.auth.getUser();
       const user = userData.user;
       if (!user) { toast.error("Please sign in"); return; }
 
@@ -117,7 +115,6 @@ export default function LiveHost() {
 
       // 2) Create the stream record
       const roomName = `live_${user.id}_${Date.now()}`;
-      const { data: stream, error: insErr } = await supabase
         .from("live_streams")
         .insert({
           host_id: user.id,
@@ -134,7 +131,6 @@ export default function LiveHost() {
       setTips((stream as any).total_tips_coins ?? 0);
 
       // 3) Get LiveKit token & connect
-      const { data, error } = await supabase.functions.invoke("livekit-token", {
         body: { room: roomName, role: "host" },
       });
       if (error || !data?.token) throw new Error(data?.error || error?.message || "token failed");
@@ -166,7 +162,6 @@ export default function LiveHost() {
       roomRef.current?.disconnect();
       roomRef.current = null;
       if (streamId) {
-        await supabase
           .from("live_streams")
           .update({ status: "ended", ended_at: new Date().toISOString() })
           .eq("id", streamId);
@@ -178,7 +173,6 @@ export default function LiveHost() {
 
   useEffect(() => {
     if (!streamId) return;
-    const ch = supabase
       .channel(`live:${streamId}`)
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "live_chat", filter: `stream_id=eq.${streamId}` },
         (p) => setChat((c) => [...c.slice(-50), p.new as ChatRow]))
@@ -191,7 +185,6 @@ export default function LiveHost() {
           setRecentGifts((arr) => [g, ...arr].slice(0, 6));
         })
       .subscribe();
-    return () => { supabase.removeChannel(ch); };
   }, [streamId]);
 
   useEffect(() => {

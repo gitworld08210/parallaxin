@@ -1,7 +1,7 @@
 // Thin API layer for organizations. All Supabase queries live in the service files;
 // this barrel is retained for compatibility and re-exports the read primitives
 // used by the OrganizationProvider.
-import { supabase } from "@/integrations/supabase/client";
+// Supabase removed
 import type {
   Organization,
   OrgType,
@@ -16,7 +16,6 @@ interface RoleLinkRow {
 export const organizationApi = {
   /** Resolve org UUID + membership flags from a URL slug (RPC — server-authoritative). */
   async resolveBySlug(slug: string) {
-    const { data, error } = await supabase.rpc("resolve_organization_by_slug", { _slug: slug });
     if (error) throw error;
     return (Array.isArray(data) ? data[0] : data) as
       | {
@@ -35,7 +34,6 @@ export const organizationApi = {
 
   /** Full organization row by id. */
   async getById(id: string): Promise<Organization | null> {
-    const { data, error } = await supabase.from("organizations").select("*").eq("id", id).maybeSingle();
     if (error) throw error;
     return (data as Organization | null) ?? null;
   },
@@ -52,14 +50,12 @@ export const organizationApi = {
    */
   async listWorkspacesForUser(userId: string): Promise<WorkspaceSummary[]> {
     const [memberRes, ownerRes] = await Promise.all([
-      supabase
         .from("organization_members")
         .select(
           "id, joined_at, organization_id, organizations(id, slug, name, logo_url, verified, org_type, owner_user_id)",
         )
         .eq("user_id", userId)
         .eq("status", "active"),
-      supabase
         .from("organizations")
         .select("id, slug, name, logo_url, verified, org_type, owner_user_id")
         .eq("owner_user_id", userId),
@@ -86,7 +82,6 @@ export const organizationApi = {
     const memberIds = memberRows.map((r) => r.id);
     let roleMap = new Map<string, string[]>();
     if (memberIds.length > 0) {
-      const { data: roleRows, error: roleErr } = await supabase
         .from("organization_member_roles")
         .select("member_id, organization_roles(id, name)")
         .in("member_id", memberIds);

@@ -1,6 +1,6 @@
 // DashboardService — aggregates data displayed on the org dashboard.
 // Every dashboard widget must read through this service (no direct queries in UI).
-import { supabase } from "@/integrations/supabase/client";
+// Supabase removed
 import type { MemberWithProfile } from "@/types/organization/member";
 import { memberService } from "./member.service";
 
@@ -26,26 +26,21 @@ export interface DashboardActivityItem {
 export const dashboardService = {
   async stats(orgId: string): Promise<DashboardStats> {
     const [orgRow, memberActive, memberPending, deptCount, roleCount] = await Promise.all([
-      supabase
         .from("organizations")
         .select("member_count, follower_count, post_count")
         .eq("id", orgId)
         .maybeSingle(),
-      supabase
         .from("organization_members")
         .select("id", { count: "exact", head: true })
         .eq("organization_id", orgId)
         .eq("status", "active"),
-      supabase
         .from("organization_members")
         .select("id", { count: "exact", head: true })
         .eq("organization_id", orgId)
         .eq("status", "pending"),
-      supabase
         .from("organization_departments")
         .select("id", { count: "exact", head: true })
         .eq("organization_id", orgId),
-      supabase
         .from("organization_roles")
         .select("id", { count: "exact", head: true })
         .eq("organization_id", orgId),
@@ -66,7 +61,6 @@ export const dashboardService = {
   },
 
   async recentActivity(orgId: string, limit = 6): Promise<DashboardActivityItem[]> {
-    const { data, error } = await supabase
       .from("organization_activity")
       .select("id, activity_type, title, description, created_at, actor_id")
       .eq("organization_id", orgId)

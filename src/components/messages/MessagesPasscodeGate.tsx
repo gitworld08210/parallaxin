@@ -15,7 +15,7 @@ import { useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Delete, ArrowLeft, ShieldCheck, KeyRound, Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthProvider";
-import { supabase } from "@/integrations/supabase/client";
+// Supabase removed
 import { toast } from "sonner";
 
 const KEY = (uid: string) => `msg_passcode:${uid}`;
@@ -50,7 +50,6 @@ const writeCache = (uid: string, value: Stored) => {
 };
 
 const fetchRemote = async (uid: string): Promise<Stored | null> => {
-  const { data, error } = await supabase
     .from("message_passcodes" as any)
     .select("hash, question, answer_hash, created_at")
     .eq("user_id", uid)
@@ -66,7 +65,6 @@ const fetchRemote = async (uid: string): Promise<Stored | null> => {
 };
 
 const saveRemote = async (uid: string, value: Stored) => {
-  await supabase
     .from("message_passcodes" as any)
     .upsert(
       {

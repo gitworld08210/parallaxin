@@ -14,7 +14,7 @@ import {
   ChevronRight, ArrowLeft,
 } from "lucide-react";
 import { Link } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+// Supabase removed
 import { useAuth } from "@/contexts/AuthProvider";
 import { toast } from "sonner";
 
@@ -84,7 +84,6 @@ const Support = () => {
       }
 
       // 2. Supabase Fallback
-      const { data, error } = await supabase
         .from("sup_tickets")
         .select("id, ticket_number, subject, category, priority, status, created_at, owning_department_id")
         .eq("requester_id", user!.id)
@@ -126,7 +125,6 @@ const Support = () => {
       }
 
       // 2. Supabase Insert (Legacy/Back-office)
-      const { data, error } = await (supabase.from("sup_tickets") as any).insert(payload).select("ticket_number").single();
       if (error) throw error;
       return data as { ticket_number: string };
     },

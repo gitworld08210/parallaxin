@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Search, Send } from "lucide-react";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
-import { supabase } from "@/integrations/supabase/client";
+// Supabase removed
 import { useAuth } from "@/contexts/AuthProvider";
 import { AuraAvatar } from "@/components/vibe/AuraAvatar";
 import { gradientFor, initialsOf } from "@/lib/format";
@@ -25,9 +25,7 @@ export const ShareToDM = ({ postId, open, onOpenChange }: { postId: string | nul
     if (!open || !user) return;
     (async () => {
       // recent DM partners + suggestions
-      const { data: follows } = await supabase.from("follows").select("following_id").eq("follower_id", user.id).limit(40);
       const ids = (follows ?? []).map((f) => f.following_id);
-      let query = supabase.from("profiles").select("user_id, username, display_name, avatar_url").neq("user_id", user.id).limit(30);
       if (q.trim()) {
         const term = `%${q.trim()}%`;
         query = query.or(`username.ilike.${term},display_name.ilike.${term}`);
@@ -42,10 +40,8 @@ export const ShareToDM = ({ postId, open, onOpenChange }: { postId: string | nul
   const sendTo = async (target: Person) => {
     if (!user || !postId) return;
     setSending(target.user_id);
-    const { data: convId, error: rpcErr } = await supabase.rpc("start_dm", { other_user_id: target.user_id });
     if (rpcErr || !convId) { setSending(null); toast.error("Couldn't start chat"); return; }
     const content = note.trim() || "Check this out";
-    const { error } = await supabase.from("messages").insert({
       conversation_id: convId, sender_id: user.id, content, shared_post_id: postId,
     });
     setSending(null);

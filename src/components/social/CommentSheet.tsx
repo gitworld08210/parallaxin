@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { supabase } from "@/integrations/supabase/client";
+// Supabase removed
 import { useAuth } from "@/contexts/AuthProvider";
 import { AuraAvatar } from "@/components/vibe/AuraAvatar";
 import { gradientFor, initialsOf, timeAgo } from "@/lib/format";
@@ -25,7 +25,6 @@ export const CommentSheet = ({ postId, open, onOpenChange }: { postId: string | 
     if (!postId || !open) return;
     setLoading(true);
     (async () => {
-      const { data } = await supabase
         .from("comments")
         .select("id, content, created_at, user_id, profile:profiles!comments_user_profile_fkey(username, display_name, avatar_url)")
         .eq("post_id", postId)
@@ -40,7 +39,6 @@ export const CommentSheet = ({ postId, open, onOpenChange }: { postId: string | 
     if (!user || !postId || !text.trim()) return;
     const content = text.trim().slice(0, 500);
     setText("");
-    const { data, error } = await supabase
       .from("comments")
       .insert({ user_id: user.id, post_id: postId, content })
       .select("id, content, created_at, user_id, profile:profiles!comments_user_profile_fkey(username, display_name, avatar_url)")
