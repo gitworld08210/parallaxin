@@ -78,7 +78,7 @@ const ProfileCreation = () => {
         className="w-full max-w-[440px] relative z-10"
       >
         <div className="text-center mb-10">
-          <h1 className="text-3xl font-bold tracking-tight mb-2">Create your profile</h1>
+          <h1 className="text-3xl font-bold tracking-tight mb-2">Create profile</h1>
           <p className="text-muted-foreground">This is how others will see you on Aurelix</p>
         </div>
 
@@ -114,8 +114,8 @@ const ProfileCreation = () => {
                 required
                 value={displayName}
                 onChange={e => setDisplayName(e.target.value)}
-                placeholder="Display Name"
-                className="w-full bg-[#111] border border-white/5 rounded-2xl pl-12 pr-4 py-4 text-[15px] outline-none focus:border-primary/50 transition-colors"
+                placeholder="Full Name"
+                className="w-full bg-[#111] border border-white/5 rounded-lg pl-12 pr-4 py-3 text-[14px] outline-none focus:ring-1 focus:ring-primary/50 transition-all"
               />
             </div>
 
@@ -128,7 +128,7 @@ const ProfileCreation = () => {
                 value={username}
                 onChange={e => setUsername(e.target.value)}
                 placeholder="Username"
-                className="w-full bg-[#111] border border-white/5 rounded-2xl pl-12 pr-4 py-4 text-[15px] outline-none focus:border-primary/50 transition-colors"
+                className="w-full bg-[#111] border border-white/5 rounded-lg pl-12 pr-4 py-3 text-[14px] outline-none focus:ring-1 focus:ring-primary/50 transition-all"
               />
             </div>
 
@@ -137,7 +137,7 @@ const ProfileCreation = () => {
                 value={bio}
                 onChange={e => setBio(e.target.value)}
                 placeholder="Bio (optional)"
-                className="w-full bg-[#111] border border-white/5 rounded-2xl px-4 py-4 text-[15px] outline-none focus:border-primary/50 transition-colors min-h-[100px] resize-none"
+                className="w-full bg-[#111] border border-white/5 rounded-lg px-4 py-3 text-[14px] outline-none focus:ring-1 focus:ring-primary/50 transition-all min-h-[80px] resize-none"
               />
             </div>
 
@@ -149,7 +149,7 @@ const ProfileCreation = () => {
                 value={location}
                 onChange={e => setLocation(e.target.value)}
                 placeholder="Location (optional)"
-                className="w-full bg-[#111] border border-white/5 rounded-2xl pl-12 pr-4 py-4 text-[15px] outline-none focus:border-primary/50 transition-colors"
+                className="w-full bg-[#111] border border-white/5 rounded-lg pl-12 pr-4 py-3 text-[14px] outline-none focus:ring-1 focus:ring-primary/50 transition-all"
               />
             </div>
 
@@ -161,7 +161,7 @@ const ProfileCreation = () => {
                 value={website}
                 onChange={e => setWebsite(e.target.value)}
                 placeholder="Website (optional)"
-                className="w-full bg-[#111] border border-white/5 rounded-2xl pl-12 pr-4 py-4 text-[15px] outline-none focus:border-primary/50 transition-colors"
+                className="w-full bg-[#111] border border-white/5 rounded-lg pl-12 pr-4 py-3 text-[14px] outline-none focus:ring-1 focus:ring-primary/50 transition-all"
               />
             </div>
           </div>
@@ -169,10 +169,9 @@ const ProfileCreation = () => {
           <button 
             type="submit"
             disabled={busy || !username || !displayName}
-            className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-4 rounded-2xl shadow-glow transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2"
+            className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-2.5 rounded-lg transition-all active:scale-[0.98] disabled:opacity-50 text-sm"
           >
-            {busy ? "Saving..." : "Create Profile"}
-            {!busy && <ChevronRight className="h-5 w-5" />}
+            {busy ? "Please wait..." : "Continue"}
           </button>
         </form>
       </motion.div>
