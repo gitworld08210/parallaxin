@@ -48,13 +48,13 @@ const Discover = () => {
       getDocs(query(
         collection(db, "profiles"),
         orderBy("followers_count", "desc"),
-        limit(60)
+        limit(20)
       )),
       getDocs(query(
         collection(db, "posts"),
         where("is_reel", "==", false),
         orderBy("like_count", "desc"),
-        limit(12)
+        limit(6)
       )),
       Promise.resolve({ data: [] }),
     ]).then(([pSnap, tRes, fRes]) => {
