@@ -28,7 +28,7 @@ export const permissionService = {
 
   /** Permission keys attached to a role. */
   async listForRole(roleId: string): Promise<string[]> {
-    const { data, error } = await supabase.from("organization_role_permissions").select("role_id, organization_permissions(permission_key)").eq("role_id", roleId);
+    const { data, error } = await supabase.from("organization_role_permissions").select("role_id, organization_permissions(permission_key)").eq("role_id", roleId) as any;
     if (error) throw error;
     return ((data ?? []) as RolePermRow[])
       .map((r) => r.organization_permissions?.permission_key).filter((v): v is string => !!v);
@@ -39,7 +39,7 @@ export const permissionService = {
    * the whole permission matrix (no per-row queries).
    */
   async matrixForOrg(orgId: string): Promise<Record<string, string[]>> {
-    const { data, error } = await supabase.from("organization_role_permissions").select("role_id, organization_permissions(permission_key), organization_roles!inner(organization_id)").eq("organization_roles.organization_id", orgId);
+    const { data, error } = await supabase.from("organization_role_permissions").select("role_id, organization_permissions(permission_key), organization_roles!inner(organization_id)").eq("organization_roles.organization_id", orgId) as any;
     if (error) throw error;
 
     const map: Record<string, string[]> = {};
@@ -65,7 +65,8 @@ export const permissionService = {
 
     const { data: rolePerms, error: rpErr } = await supabase.from("organization_member_roles").select(
         "organization_roles!inner(id, organization_role_permissions(organization_permissions(permission_key)))",
-      ).eq("member_id", memberRow.id);
+      ).eq("member_id", memberRow.id) as any;
+
     if (rpErr) throw rpErr;
 
     const keys = new Set<string>();

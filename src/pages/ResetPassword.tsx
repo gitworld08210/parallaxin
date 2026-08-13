@@ -12,9 +12,10 @@ const ResetPassword = () => {
 
   useEffect(() => {
     if (window.location.hash.includes("type=recovery")) setRecovery(true);
-    const { data } = supabase.auth.onAuthStateChanged((evt) => {
+    const { data } = supabase.auth.onAuthStateChange((evt) => {
       if (evt === "PASSWORD_RECOVERY") setRecovery(true);
     });
+
     return () => {};
   }, []);
 
