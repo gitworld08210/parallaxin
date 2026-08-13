@@ -1,7 +1,7 @@
 // ProfileService — thin read layer for public.profiles. Kept tiny on purpose;
 // this is the single place organization hooks look up profile fields such as
 // the canonical username.
-// Supabase removed
+
 
 export interface ProfileBasics {
   user_id: string;

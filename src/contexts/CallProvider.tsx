@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
-// Supabase removed
+
 import { useAuth } from "@/contexts/AuthProvider";
 import { createPeer, getUserMedia, stopStream } from "@/lib/webrtc";
 import { toast } from "sonner";

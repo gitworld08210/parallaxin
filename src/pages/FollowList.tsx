@@ -4,7 +4,7 @@ import { ChevronLeft } from "lucide-react";
 import { TopBar } from "@/components/vibe/TopBar";
 import { AuraAvatar } from "@/components/vibe/AuraAvatar";
 import { VerificationBadge } from "@/components/vibe/VerificationBadge";
-// Supabase removed
+
 import { gradientFor, initialsOf, fmt } from "@/lib/format";
 
 type P = { user_id: string; username: string; display_name: string; avatar_url: string | null; verified: boolean; verification_kind?: string | null; followers_count: number };

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-// Supabase removed
+
 import { useAuth } from "@/contexts/AuthProvider";
 import { Clock, CheckCircle2, XCircle, Banknote } from "lucide-react";
 import { cn } from "@/lib/utils";

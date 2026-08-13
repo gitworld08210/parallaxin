@@ -13,7 +13,7 @@ import {
   Clock, CheckCircle2, XCircle, Loader2, Lock,
 } from "lucide-react";
 import { toast } from "sonner";
-// Supabase removed
+
 import { useAuth } from "@/contexts/AuthProvider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

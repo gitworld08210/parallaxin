@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Plus } from "lucide-react";
-// Supabase removed
+
 import { NewHighlightSheet } from "./NewHighlightSheet";
 
 type Highlight = { id: string; title: string; cover_url: string | null };

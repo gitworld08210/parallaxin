@@ -1,6 +1,6 @@
 // DashboardService — aggregates data displayed on the org dashboard.
 // Every dashboard widget must read through this service (no direct queries in UI).
-// Supabase removed
+
 import type { MemberWithProfile } from "@/types/organization/member";
 import { memberService } from "./member.service";
 

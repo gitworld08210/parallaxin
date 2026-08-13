@@ -4,7 +4,7 @@ import { ChevronLeft, Upload, BadgeCheck, Clock, XCircle } from "lucide-react";
 import { TopBar } from "@/components/vibe/TopBar";
 import { GlassCard } from "@/components/vibe/GlassCard";
 import { VerificationBadge } from "@/components/vibe/VerificationBadge";
-// Supabase removed
+
 import { useAuth } from "@/contexts/AuthProvider";
 import { toast } from "sonner";
 

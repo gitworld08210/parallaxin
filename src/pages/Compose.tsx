@@ -2,7 +2,7 @@ import { reliableInvoke } from "@/lib/reliableInvoke";
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ImagePlus, Sparkles, X, FileText, Calendar, Users, Hash, Clock, ShieldCheck } from "lucide-react";
-// Supabase removed
+
 import { useAuth } from "@/contexts/AuthProvider";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "@/lib/firebase";

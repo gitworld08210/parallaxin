@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ChevronLeft, Download, Sparkles } from "lucide-react";
 import { TopBar } from "@/components/vibe/TopBar";
-// Supabase removed
+
 import { toast } from "sonner";
 
 export default function DataExportScreen() {

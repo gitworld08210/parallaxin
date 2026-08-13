@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-// Supabase removed
+
 
 interface SubscriptionRow {
   status: string;

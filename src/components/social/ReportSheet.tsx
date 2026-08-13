@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-// Supabase removed
+
 import { useAuth } from "@/contexts/AuthProvider";
 import { toast } from "sonner";
 import { Flag } from "lucide-react";

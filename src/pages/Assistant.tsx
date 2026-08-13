@@ -5,7 +5,7 @@ import remarkGfm from "remark-gfm";
 import { TopBar } from "@/components/vibe/TopBar";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-// Supabase removed
+
 
 type Msg = { role: "user" | "assistant"; content: string };
 

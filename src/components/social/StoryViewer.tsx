@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { X, Send } from "lucide-react";
 import { timeAgo } from "@/lib/format";
-// Supabase removed
+
 import { useAuth } from "@/contexts/AuthProvider";
 import { StoryStickersLayer } from "@/components/social/StoryStickersLayer";
 import { toast } from "sonner";

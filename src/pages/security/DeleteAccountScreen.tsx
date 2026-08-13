@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ChevronLeft, Trash2 } from "lucide-react";
 import { TopBar } from "@/components/vibe/TopBar";
-// Supabase removed
+
 import { useAuth } from "@/contexts/AuthProvider";
 import { toast } from "sonner";
 

@@ -4,7 +4,7 @@ import { Heart, MessageCircle, UserPlus, Mail, Bell, BadgeCheck, Crown, SlidersH
 import { CollabInviteSheet } from "@/components/social/CollabInviteSheet";
 import { AuraAvatar } from "@/components/vibe/AuraAvatar";
 import { EmptyState } from "@/components/empty/EmptyState";
-// Supabase removed
+
 import { useAuth } from "@/contexts/AuthProvider";
 import { gradientFor, initialsOf, timeAgo } from "@/lib/format";
 import { toast } from "sonner";

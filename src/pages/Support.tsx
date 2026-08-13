@@ -14,7 +14,7 @@ import {
   ChevronRight, ArrowLeft,
 } from "lucide-react";
 import { Link } from "react-router-dom";
-// Supabase removed
+
 import { useAuth } from "@/contexts/AuthProvider";
 import { toast } from "sonner";
 

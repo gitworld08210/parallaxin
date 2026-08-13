@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft, TrendingUp, Users, Eye, DollarSign, Sparkles, Play, Heart, MessageCircle, Wallet, Crown, Video, Loader2, Lightbulb } from "lucide-react";
-// Supabase removed
+
 import { useAuth } from "@/contexts/AuthProvider";
 import { useIsCreator } from "@/hooks/useIsCreator";
 import { useCoinBalance } from "@/hooks/useCoinBalance";

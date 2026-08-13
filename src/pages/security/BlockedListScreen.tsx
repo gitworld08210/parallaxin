@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ChevronLeft } from "lucide-react";
 import { TopBar } from "@/components/vibe/TopBar";
-// Supabase removed
+
 import { useAuth } from "@/contexts/AuthProvider";
 import { gradientFor, initialsOf } from "@/lib/format";
 import { AuraAvatar } from "@/components/vibe/AuraAvatar";

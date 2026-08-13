@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Search, Send } from "lucide-react";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
-// Supabase removed
+
 import { useAuth } from "@/contexts/AuthProvider";
 import { AuraAvatar } from "@/components/vibe/AuraAvatar";
 import { gradientFor, initialsOf } from "@/lib/format";

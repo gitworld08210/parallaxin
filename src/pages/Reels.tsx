@@ -4,7 +4,7 @@ import { Heart, MessageCircle, Send, Plus, Volume2, VolumeX, Pause, Camera, Sear
 import { motion, AnimatePresence } from "framer-motion";
 import { collection, query, where, orderBy, limit, getDocs } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-// Supabase removed
+
 import { useAuth } from "@/contexts/AuthProvider";
 import { useAdInteraction } from "@/features/content-understanding/hooks/useAdIntelligence";
 import { useAdRanking } from "@/features/content-understanding/hooks/useAdRanking";

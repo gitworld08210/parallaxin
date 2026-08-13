@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-// Supabase removed
+
 import { useAuth } from "@/contexts/AuthProvider";
 import { useCall } from "@/contexts/CallProvider";
 

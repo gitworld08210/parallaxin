@@ -3,7 +3,7 @@ import { Sparkles, Check, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useCreatorSubscription } from "@/hooks/useCreatorSubscription";
 import { SubscribeSheet } from "./SubscribeSheet";
-// Supabase removed
+
 import { toast } from "sonner";
 import {
   DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem,

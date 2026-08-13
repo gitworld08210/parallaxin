@@ -5,7 +5,7 @@
 // Security notes:
 // - Tokens live only in this device's localStorage, scoped to the origin.
 //   expired access token via the stored refresh token.
-// Supabase removed
+
 
 const KEY = "aurelix.savedAccounts.v2";
 // Reduced from 5 → 2 to shrink the XSS blast radius of cached refresh tokens.

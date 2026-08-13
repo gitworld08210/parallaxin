@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-// Supabase removed
+
 import { toast } from "sonner";
 import { ChevronLeft } from "lucide-react";
 

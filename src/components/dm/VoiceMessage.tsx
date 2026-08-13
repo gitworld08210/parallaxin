@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Play, Pause, Mic, Send, X } from "lucide-react";
-// Supabase removed
+
 import { toast } from "sonner";
 
 /** Inline audio player with stylized waveform bars. */

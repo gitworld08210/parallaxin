@@ -2,7 +2,7 @@ import { Home, Film, MessageCircle, Plus, ImageIcon, Sparkles, User, Radio, Came
 import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
-// Supabase removed
+
 import { useAuth } from "@/contexts/AuthProvider";
 import { RealtimeToaster } from "@/components/social/RealtimeToaster";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";

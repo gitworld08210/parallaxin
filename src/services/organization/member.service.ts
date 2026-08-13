@@ -1,5 +1,5 @@
 // MemberService — organization member reads + mutations (via RPC).
-// Supabase removed
+
 import type { Member, MemberWithProfile } from "@/types/organization/member";
 import { organizationApi } from "./organization.api";
 

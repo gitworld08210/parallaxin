@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { PageHeader } from "@/components/layout/PageHeader";
-// Supabase removed
+
 
 export default function CreatorTerms() {
   const [split, setSplit] = useState({ creator: 85, platform: 15 });

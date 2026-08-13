@@ -15,7 +15,7 @@ import { useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Delete, ArrowLeft, ShieldCheck, KeyRound, Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthProvider";
-// Supabase removed
+
 import { toast } from "sonner";
 
 const KEY = (uid: string) => `msg_passcode:${uid}`;

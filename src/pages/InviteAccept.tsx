@@ -17,7 +17,7 @@ import {
   Users,
   X,
 } from "lucide-react";
-// Supabase removed
+
 import { useAuth } from "@/contexts/AuthProvider";
 import { useIncomingInviteActions } from "@/hooks/organization/useOrganizationInvites";
 import { toast } from "sonner";

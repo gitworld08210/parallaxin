@@ -1,5 +1,5 @@
 // InviteService — organization invitation reads + mutations (via RPC).
-// Supabase removed
+
 import type { Invite, InviteWithMeta } from "@/types/organization/invite";
 
 interface InviterProfileRow {

@@ -5,7 +5,7 @@
  * All writes go through Supabase RLS; every mutation also emits an
  * admin audit log and an activity event where applicable.
  */
-// Supabase removed
+
 
 // -------- shared helpers --------
 

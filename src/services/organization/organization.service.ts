@@ -6,7 +6,7 @@ import type {
   OrganizationMembership,
   OrganizationVerificationKind,
 } from "@/types/organization/organization";
-// Supabase removed
+
 
 /**
  * Map an organization to its canonical verification "kind" for

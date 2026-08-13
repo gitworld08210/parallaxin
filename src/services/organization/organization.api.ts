@@ -1,7 +1,7 @@
 // Thin API layer for organizations. All Supabase queries live in the service files;
 // this barrel is retained for compatibility and re-exports the read primitives
 // used by the OrganizationProvider.
-// Supabase removed
+
 import type {
   Organization,
   OrgType,

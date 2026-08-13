@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-// Supabase removed
+
 import {
   ShieldCheck,
   Loader2,

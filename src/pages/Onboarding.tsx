@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Sparkles, Check, ArrowRight, Bell } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-// Supabase removed
+
 import { useAuth } from "@/contexts/AuthProvider";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";

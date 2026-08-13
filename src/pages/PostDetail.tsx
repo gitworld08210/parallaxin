@@ -5,7 +5,7 @@ import { PostCard, FeedPost } from "@/components/social/PostCard";
 import { CommentSheet } from "@/components/social/CommentSheet";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-// Supabase removed
+
 import { useAuth } from "@/contexts/AuthProvider";
 
 const PostDetail = () => {

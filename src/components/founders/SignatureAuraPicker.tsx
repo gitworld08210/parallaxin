@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-// Supabase removed
+
 import { useAuth } from "@/contexts/AuthProvider";
 import { toast } from "sonner";
 import { Check } from "lucide-react";

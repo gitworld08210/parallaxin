@@ -1,6 +1,6 @@
 // PermissionService — catalogue, per-role permissions, and effective
 // permissions for a user in an org.
-// Supabase removed
+
 import type { Permission } from "@/types/organization/permission";
 
 interface RolePermRow {

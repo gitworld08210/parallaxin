@@ -1,5 +1,5 @@
 // RoleService — organization role reads + mutations (permission-checked RPCs).
-// Supabase removed
+
 import type { Role } from "@/types/organization/role";
 
 interface RoleLinkRow {

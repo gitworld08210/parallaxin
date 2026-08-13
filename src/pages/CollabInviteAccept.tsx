@@ -13,7 +13,7 @@ import {
   Sparkles,
   X,
 } from "lucide-react";
-// Supabase removed
+
 import { useAuth } from "@/contexts/AuthProvider";
 import { toast } from "sonner";
 

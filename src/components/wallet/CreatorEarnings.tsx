@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-// Supabase removed
+
 import { useAuth } from "@/contexts/AuthProvider";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";

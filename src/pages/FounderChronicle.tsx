@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { ChevronLeft } from "lucide-react";
-// Supabase removed
+
 import { AuraFrame } from "@/components/founders/AuraFrame";
 import { FounderBadge } from "@/components/founders/FounderBadge";
 import { initialsOf } from "@/lib/format";

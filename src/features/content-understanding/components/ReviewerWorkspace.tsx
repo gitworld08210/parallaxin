@@ -11,7 +11,7 @@ import {
   Check, X, AlertCircle, Info, Brain, Sparkles
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-// Supabase removed
+
 import { useReviewContent } from "../hooks/useContentQueue";
 import { useTaxonomy } from "../hooks/useContentContext";
 import {

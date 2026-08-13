@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-// Supabase removed
+
 import { toast } from "sonner";
 import { Coins, Check, Sparkles, Loader2 } from "lucide-react";
 import { useCoinBalance } from "@/hooks/useCoinBalance";

@@ -2,7 +2,7 @@ import { reliableInvoke } from "@/lib/reliableInvoke";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Film, Sparkles, X, ShieldCheck, Music, Wand2, Camera, ImagePlus } from "lucide-react";
-// Supabase removed
+
 import { useAuth } from "@/contexts/AuthProvider";
 import { toast } from "sonner";
 import { FilterStrip, FilterKey, filterCss } from "@/components/compose/FilterStrip";

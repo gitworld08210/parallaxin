@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-// Supabase removed
+
 import { useAuth } from "@/contexts/AuthProvider";
 import { uploadToCloudinary } from "@/lib/cloudinary";
 

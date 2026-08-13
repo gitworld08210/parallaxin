@@ -43,7 +43,7 @@ import { VerificationSheet } from "@/components/profile/VerificationSheet";
 
 import { collection, query, where, orderBy, getDocs, limit, getDoc, doc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-// Supabase removed
+
 import { useAuth } from "@/contexts/AuthProvider";
 import { useUserOrganizations } from "@/hooks/organization/useUserOrganizations";
 import { toast } from "sonner";

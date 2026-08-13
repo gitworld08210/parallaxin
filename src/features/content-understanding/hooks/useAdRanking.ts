@@ -1,4 +1,4 @@
-// Supabase removed
+
 import { useQuery } from "@tanstack/react-query";
 
 export interface AdRankingResult {

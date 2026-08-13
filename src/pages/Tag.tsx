@@ -4,7 +4,7 @@ import { ChevronLeft, Hash } from "lucide-react";
 import { TopBar } from "@/components/vibe/TopBar";
 import { PostCard, FeedPost } from "@/components/social/PostCard";
 import { CommentSheet } from "@/components/social/CommentSheet";
-// Supabase removed
+
 import { useAuth } from "@/contexts/AuthProvider";
 
 const Tag = () => {

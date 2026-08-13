@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ChevronLeft, Eye, Heart, MessageCircle, Bookmark, Users, Sparkles } from "lucide-react";
-// Supabase removed
+
 import { useAuth } from "@/contexts/AuthProvider";
 import { fmt, timeAgo } from "@/lib/format";
 import { AuthenticityMeter } from "@/components/social/AuthenticityMeter";

@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import QRCode from "qrcode";
 import { ChevronLeft, Shield, Copy } from "lucide-react";
 import { TopBar } from "@/components/vibe/TopBar";
-// Supabase removed
+
 import { toast } from "sonner";
 
 export default function TwoFactorSetup() {

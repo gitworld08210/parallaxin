@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-// Supabase removed
+
 import { Sparkles, ShieldCheck } from "lucide-react";
 
 type AuthorizationDetails = {

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-// Supabase removed
+
 import { Button } from "@/components/ui/button";
 import { Radio } from "lucide-react";
 

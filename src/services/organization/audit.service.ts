@@ -3,7 +3,7 @@
 // can attach a consistent audit trail without duplicating the invocation.
 //
 // Phase 1 provides the utility only. Mutation logging arrives with Phase 2+.
-// Supabase removed
+
 
 export interface AuditLogInput {
   organizationId: string;

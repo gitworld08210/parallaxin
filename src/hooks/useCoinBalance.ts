@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-// Supabase removed
+
 import { useAuth } from "@/contexts/AuthProvider";
 
 export function useCoinBalance() {
