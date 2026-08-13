@@ -33,12 +33,13 @@ export const ReportSheet = ({
   const submit = async () => {
     if (!user || !targetId || !reason) return;
     setBusy(true);
+    const { error } = await supabase.from("reports").insert({
       reporter_id: user.id,
       target_kind: targetKind,
       target_id: targetId,
       reason,
       details: details.trim() || null,
-    } as any).select("id").single() as any);
+    });
     if (error) { setBusy(false); return toast.error(error.message); }
     // Routing to ts_cases is handled by DB trigger (Phase 1).
     setBusy(false);
