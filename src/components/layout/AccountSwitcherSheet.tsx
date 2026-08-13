@@ -38,19 +38,19 @@ export const AccountSwitcherSheet = ({
   // Keep the current signed-in account persisted so it shows up in the
   // switcher after future sessions restore.
   useEffect(() => {
-    if (!user || !session?.access_token || !session?.refresh_token) return;
+    if (!user) return;
     upsertSavedAccount({
       userId: user.id,
       email: user.email ?? null,
       username: profile?.username ?? null,
       displayName: profile?.display_name ?? null,
       avatarUrl: profile?.avatar_url ?? null,
-      accessToken: session.access_token,
-      refreshToken: session.refresh_token,
+      accessToken: "managed-by-firebase",
+      refreshToken: "managed-by-firebase",
       updatedAt: Date.now(),
     });
     setAccounts(loadSavedAccounts());
-  }, [user?.id, profile?.username, profile?.display_name, profile?.avatar_url, session?.access_token, session?.refresh_token]);
+  }, [user?.id, profile?.username, profile?.display_name, profile?.avatar_url]);
 
   useEffect(() => {
     const refresh = () => setAccounts(loadSavedAccounts());
