@@ -51,13 +51,16 @@ const Reels = () => {
         where("is_reel", "==", true),
         where("status", "==", "published"),
         orderBy("created_at", "desc"),
-        limit(50)
+        limit(10) // Reduced from 50 to 10 for faster initial load
       );
       const snap = await getDocs(q);
-      const data = snap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as any[];
+      const data = snap.docs.map(doc => ({ 
+        id: doc.id, 
+        ...doc.data(),
+        liked: false 
+      })) as Reel[];
 
-      // Liked status handled by ReelItem/PostCard logic
-      setReels(data.map(d => ({ ...d, liked: false })));
+      setReels(data);
     })();
   }, [user?.id]);
 

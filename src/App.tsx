@@ -13,8 +13,8 @@ import { CallProvider } from "@/contexts/CallProvider";
 import MessagesPasscodeGate from "@/components/messages/MessagesPasscodeGate";
 
 // Eager: critical first-paint routes
-import Feed from "./pages/Feed";
-import Auth from "./pages/Auth";
+const Feed = lazy(() => import("./pages/Feed"));
+const Auth = lazy(() => import("./pages/Auth"));
 const OAuthConsent = lazy(() => import("./pages/OAuthConsent"));
 
 // Lazy: everything else streams in on demand
