@@ -87,7 +87,7 @@ const Feed = () => {
       {/* Instagram-style translucent top chrome */}
       <div
         className={cn(
-          "sticky top-0 z-30 bg-background/80 backdrop-blur-md border-b border-white/[0.08] transition-transform duration-300",
+          "sticky top-0 z-30 bg-black/80 backdrop-blur-xl border-b border-white/[0.05] transition-transform duration-300",
           chromeHidden ? "-translate-y-full" : "translate-y-0",
         )}
       >

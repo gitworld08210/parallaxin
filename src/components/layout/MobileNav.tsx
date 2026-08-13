@@ -24,7 +24,7 @@ export const MobileNav = ({ unreadNotif = 0, unreadDm = 0 }: Props) => {
   return (
     <nav
       aria-label="Primary"
-      className="absolute bottom-0 inset-x-0 z-50 border-t border-white/[0.08] bg-black/95 backdrop-blur-xl"
+      className="absolute bottom-0 inset-x-0 z-50 border-t border-white/[0.05] bg-black/90 backdrop-blur-2xl"
     >
       <ul className="flex items-stretch justify-around px-1 pb-[env(safe-area-inset-bottom)]">
         {items.map(({ to, icon: Icon, label, end, badgeKey }) => {

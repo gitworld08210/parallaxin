@@ -337,7 +337,7 @@ const Profile = () => {
   return (
     <div className="pb-24">
       {/* Top bar */}
-      <header className="sticky top-0 z-30 h-14 px-4 flex items-center justify-between bg-background/85 backdrop-blur-xl supports-[backdrop-filter]:bg-background/70 border-b border-white/5">
+      <header className="sticky top-0 z-30 h-14 px-4 flex items-center justify-between bg-black/80 backdrop-blur-xl border-b border-white/[0.05]">
         <div className="flex items-center gap-4">
           <button
             onClick={() => nav(-1)}
