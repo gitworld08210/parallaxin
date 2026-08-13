@@ -73,7 +73,7 @@ const Compose = () => {
     setSuggestBusy(true);
     setSuggestOpen(true);
     try {
-      const { data, error } = await supabase.functions.invoke("suggest-post-tags", {
+      const { data, error } = await.functions.invoke("suggest-post-tags", {
       if (error) throw error;
       setSuggestedTags(data?.hashtags ?? []);
       setBestTimeIso(data?.best_time_iso ?? "");

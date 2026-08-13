@@ -21,7 +21,7 @@ const ResetPassword = () => {
   const sendLink = async (e: React.FormEvent) => {
     e.preventDefault();
     setBusy(true);
-    const { error } = await supabase.auth.signInWithPassword({
+    const { error } = await.auth.signInWithPassword({
       email,
       password: "REQUIRED_BY_SHIM",
     });
@@ -35,7 +35,7 @@ const ResetPassword = () => {
     e.preventDefault();
     setBusy(true);
     // Supposed to be updatePassword but using shimmed method
-    const { error } = await supabase.auth.signInWithPassword({
+    const { error } = await.auth.signInWithPassword({
       email,
       password: password,
     });
