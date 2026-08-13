@@ -105,18 +105,22 @@ export const AccountSwitcherSheet = ({
     }
     setBusy("login");
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password: pw });
-      if (error) throw error;
-      if (data.session && data.user) {
-        // Persist immediately; profile fields will refresh on next open.
+      const userCredential = await signInWithEmailAndPassword(auth, email, pw);
+      const firebaseUser = userCredential.user;
+      
+      if (firebaseUser) {
+        // We'd ideally fetch profile here to populate username etc.
+        const profileSnap = await getDoc(doc(db, "profiles", firebaseUser.id));
+        const prof = profileSnap.exists() ? profileSnap.data() : null;
+
         upsertSavedAccount({
-          userId: data.user.id,
-          email: data.user.email ?? email,
-          username: null,
-          displayName: null,
-          avatarUrl: null,
-          accessToken: data.session.access_token,
-          refreshToken: data.session.refresh_token,
+          userId: firebaseUser.uid,
+          email: firebaseUser.email ?? email,
+          username: prof?.username ?? null,
+          displayName: prof?.display_name ?? null,
+          avatarUrl: prof?.avatar_url ?? null,
+          accessToken: "firebase-token", // handled by lib/multiAccount
+          refreshToken: "firebase-token",
           updatedAt: Date.now(),
         });
         toast.success("Account added ✦");

@@ -39,11 +39,15 @@ export const BecomeCreatorSheet = ({ open, onOpenChange }: Props) => {
   }, [open]);
 
   const submit = async () => {
-    if (!agreed) return;
+    if (!agreed || !user) return;
     setSubmitting(true);
-    const { error } = await supabase.rpc("become_creator" as any, { _terms_version: version });
-    setSubmitting(false);
-    if (error) { toast.error(error.message || "Could not enable creator mode"); return; }
+    try {
+      const profileRef = doc(db, "profiles", user.id);
+      await updateDoc(profileRef, {
+        is_creator: true,
+        creator_terms_version: version,
+        creator_activated_at: new Date().toISOString()
+      });
     toast.success("Welcome, Creator ✦");
     await refreshProfile();
     onOpenChange(false);
