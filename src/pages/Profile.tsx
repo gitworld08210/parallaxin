@@ -117,36 +117,72 @@ const Profile = () => {
       
       console.log("Resolving profile for:", target);
       
-      // Try resolving as UID first (most efficient)
-      let profDoc = await getDoc(doc(db, "profiles", target));
-      let p = profDoc.exists() ? ({ id: profDoc.id, ...profDoc.data() } as any) : null;
+      let p: any = null;
 
-      // If not UID, resolve as username
+      // 1. Try resolving as UID directly (most common for own profile or direct links)
+      try {
+        const profDoc = await getDoc(doc(db, "profiles", target));
+        if (profDoc.exists()) {
+          p = { id: profDoc.id, ...profDoc.data() };
+        }
+      } catch (err) {
+        console.warn("UID resolution failed:", err);
+      }
+
+      // 2. Try resolving via "usernames" mapping collection (most efficient for handle lookup)
       if (!p) {
-        const qProf = query(
-          collection(db, "profiles"),
-          where("username", "==", target),
-          limit(1)
-        );
-        const snapProf = await getDocs(qProf);
-        p = snapProf.docs.length > 0 ? ({ id: snapProf.docs[0].id, ...snapProf.docs[0].data() } as any) : null;
+        try {
+          const nameDoc = await getDoc(doc(db, "usernames", target.toLowerCase()));
+          if (nameDoc.exists()) {
+            const resolvedUid = nameDoc.data().user_id;
+            const profDoc = await getDoc(doc(db, "profiles", resolvedUid));
+            if (profDoc.exists()) {
+              p = { id: profDoc.id, ...profDoc.data() };
+            }
+          }
+        } catch (err) {
+          console.warn("Username mapping resolution failed:", err);
+        }
+      }
+
+      // 3. Fallback: query profiles collection by username field
+      if (!p) {
+        try {
+          const qProf = query(
+            collection(db, "profiles"),
+            where("username", "==", target),
+            limit(1)
+          );
+          const snapProf = await getDocs(qProf);
+          if (!snapProf.empty) {
+            p = { id: snapProf.docs[0].id, ...snapProf.docs[0].data() };
+          }
+        } catch (err) {
+          console.warn("Username query resolution failed:", err);
+        }
       }
       
-      // Fallback: search by user_id field just in case
+      // 4. Final Fallback: query by user_id field
       if (!p) {
-        const qId = query(
-          collection(db, "profiles"),
-          where("user_id", "==", target),
-          limit(1)
-        );
-        const snapId = await getDocs(qId);
-        p = snapId.docs.length > 0 ? ({ id: snapId.docs[0].id, ...snapId.docs[0].data() } as any) : null;
+        try {
+          const qId = query(
+            collection(db, "profiles"),
+            where("user_id", "==", target),
+            limit(1)
+          );
+          const snapId = await getDocs(qId);
+          if (!snapId.empty) {
+            p = { id: snapId.docs[0].id, ...snapId.docs[0].data() };
+          }
+        } catch (err) {
+          console.warn("ID field query resolution failed:", err);
+        }
       }
       
       if (p) {
         setProfile({
           ...p,
-          user_id: p.user_id || p.id // Ensure user_id exists
+          user_id: p.user_id || p.id
         } as ProfileRow);
       } else {
         setProfile(null);

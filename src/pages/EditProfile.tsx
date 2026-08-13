@@ -81,6 +81,11 @@ const EditProfile = () => {
       };
 
       await setDoc(doc(db, "profiles", user.uid), profileData, { merge: true });
+      
+      // Also try writing to username-indexed doc for resolution efficiency
+      if (username) {
+        await setDoc(doc(db, "usernames", username.toLowerCase()), { user_id: user.uid }, { merge: true });
+      }
 
       // 2. Sync to Supabase for backend triggers/legacy logic
       try {
