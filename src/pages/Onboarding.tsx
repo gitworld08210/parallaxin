@@ -67,14 +67,12 @@ const Onboarding = () => {
       const { doc, setDoc, serverTimestamp } = await import("firebase/firestore");
       const { db: firestoreDb } = await import("@/lib/firebase");
       
-      console.log("Starting Firestore update for user:", user.uid);
       const updateData = {
         interests,
         onboarded_at: serverTimestamp(),
       };
       
       await setDoc(doc(firestoreDb, "profiles", user.uid), updateData, { merge: true });
-      console.log("Firestore update success");
 
       // 2. Update Supabase (Secondary/Admin OS)
       try {
