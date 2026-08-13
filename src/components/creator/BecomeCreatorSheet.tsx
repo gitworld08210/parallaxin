@@ -42,7 +42,7 @@ export function BecomeCreatorSheet({ open, onOpenChange }: BecomeCreatorSheetPro
         creator_activated_at: new Date().toISOString()
       });
       toast.success("Welcome, Creator ✦");
-      await refreshProfile();
+      if (refreshProfile) await refreshProfile();
       onOpenChange(false);
     } catch (error: any) {
       toast.error(error.message || "Could not enable creator mode");

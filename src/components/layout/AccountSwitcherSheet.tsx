@@ -76,11 +76,10 @@ export const AccountSwitcherSheet = ({
       onOpenChange(false);
       return;
     }
-    setBusy(acc.userId);
-    try {
-      await switchToAccount(acc);
-      toast.success(`Switched to @${acc.username ?? acc.email ?? "account"}`);
-      onOpenChange(false);
+    // With Firebase, we show the login form for account switching
+    setEmail(acc.email || "");
+    setShowLogin(true);
+  };
     } catch (e) {
       toast.error((e as Error).message || "Couldn't switch account. Please sign in again.");
       removeSavedAccount(acc.userId);

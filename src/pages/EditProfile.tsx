@@ -95,7 +95,7 @@ const EditProfile = () => {
         console.warn("Supabase sync failed, continuing...", err);
       }
 
-      await refreshProfile();
+      if (refreshProfile) await refreshProfile();
       toast.success("Profile saved");
       nav("/profile");
     } catch (e: any) { 
