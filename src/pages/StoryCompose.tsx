@@ -97,7 +97,7 @@ const StoryCompose = () => {
       }
       toast.success("Story added ✦ · expires in 24h");
       nav("/");
-    } catch (e: any) { toast.error(e.message || "Failed"); } finally { setBusy(false); }
+    } catch (e: any) { toast.error(e.message || "Action failed"); } finally { setBusy(false); }
   };
 
   return (

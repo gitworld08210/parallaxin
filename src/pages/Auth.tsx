@@ -97,9 +97,7 @@ const Auth = () => {
 
       toast.success("Account created successfully");
       await routeForUser(userCredential.user.uid);
-    } catch (e: any) {
-      toast.error(e?.message || "Sign-up failed");
-    } finally { setBusy(false); }
+    } catch (e: any) { toast.error(e.message || "Action failed"); } finally { setBusy(false); }
   };
 
   const google = async () => {

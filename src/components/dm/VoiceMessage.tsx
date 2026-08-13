@@ -98,9 +98,7 @@ export const VoiceRecorder = ({
       setElapsed(0);
       setRecording(true);
       tickRef.current = setInterval(() => setElapsed((e) => e + 1), 1000);
-    } catch (e: any) {
-      toast.error("Microphone access needed");
-    }
+    } catch (e: any) { toast.error(e.message || "Action failed"); }
   };
 
   const stop = () => {
@@ -127,9 +125,7 @@ export const VoiceRecorder = ({
       const publicUrl = "https://example.com/audio.webm";
       await onSend(publicUrl);
       cancel();
-    } catch (e: any) {
-      toast.error(e.message || "Upload failed");
-    } finally {
+    } catch (e: any) { toast.error(e.message || "Action failed"); } finally {
       setUploading(false);
     }
   };

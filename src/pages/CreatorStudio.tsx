@@ -322,9 +322,7 @@ const CoachTab = () => {
       const { data, error } = await Promise.resolve({ data: null, error: null });
       if (error) throw error;
       setCoach(data as Coach);
-    } catch (e: any) {
-      toast.error(e?.message || "AI coach failed");
-    } finally {
+    } catch (e: any) { toast.error(e.message || "Action failed"); } finally {
       setBusy(false);
     }
   };

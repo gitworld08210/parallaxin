@@ -88,9 +88,7 @@ export default function LiveHost() {
         videoTrackRef.current.attach(el);
         setCameraReady(true);
       }
-    } catch (e: any) {
-      toast.error(e?.message || "Camera unavailable");
-    }
+    } catch (e: any) { toast.error(e.message || "Action failed"); }
   };
 
   const goLive = async () => {

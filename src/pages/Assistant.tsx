@@ -85,9 +85,7 @@ const Assistant = () => {
           } catch {}
         }
       }
-    } catch (e: any) {
-      toast.error(e?.message || "Network error");
-    } finally {
+    } catch (e: any) { toast.error(e.message || "Action failed"); } finally {
       setStreaming(false);
     }
   };

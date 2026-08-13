@@ -21,9 +21,7 @@ export default function DataExportScreen() {
       a.download = `aurelix-archive-${new Date().toISOString().slice(0,10)}.json`;
       a.click();
       toast.success("Archive prepared");
-    } catch (e: any) {
-      toast.error(e.message || "Could not prepare archive");
-    } finally { setBusy(false); }
+    } catch (e: any) { toast.error(e.message || "Action failed"); } finally { setBusy(false); }
   };
 
   return (

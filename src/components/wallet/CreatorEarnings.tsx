@@ -134,7 +134,7 @@ function KycModal({ onClose }: { onClose: () => void }) {
       // Routing to ver_applications is handled by DB trigger (Phase 1).
       toast.success("KYC submitted — we'll review shortly");
       onClose();
-    } catch (e: any) { toast.error(e.message); }
+    } catch (e: any) { toast.error(e.message || "Action failed"); }
     finally { setSaving(false); }
   };
 

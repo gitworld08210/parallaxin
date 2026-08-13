@@ -26,9 +26,7 @@ export default function DeleteAccountScreen() {
       toast.success("Your account is scheduled for erasure. You have 7 days to undo by signing back in.");
       await signOut();
       nav("/auth");
-    } catch (e: any) {
-      toast.error(e.message || "Could not delete account");
-    } finally { setBusy(false); }
+    } catch (e: any) { toast.error(e.message || "Action failed"); } finally { setBusy(false); }
   };
 
   return (

@@ -67,7 +67,7 @@ const Compose = () => {
       const { data, error } = await Promise.resolve({ data: null, error: null });
       if (error) throw error;
       if (data?.caption) setContent(data.caption);
-    } catch (e: any) { toast.error(e.message || "AI failed"); }
+    } catch (e: any) { toast.error(e.message || "Action failed"); }
     finally { setAiBusy(false); }
   };
 
@@ -81,7 +81,7 @@ const Compose = () => {
       if (error) throw error;
       setSuggestedTags(data?.hashtags ?? []);
       setBestTimeIso(data?.best_time_iso ?? "");
-    } catch (e: any) { toast.error(e.message || "Suggest failed"); setSuggestOpen(false); }
+    } catch (e: any) { toast.error(e.message || "Action failed"); }
     finally { setSuggestBusy(false); }
   };
 
@@ -111,7 +111,7 @@ const Compose = () => {
 
       if (data?.altText) setAltText(data.altText);
       else toast.error("No suggestion returned");
-    } catch (e: any) { toast.error(e.message || "Alt text failed"); }
+    } catch (e: any) { toast.error(e.message || "Action failed"); }
     finally { setAltBusy(false); }
   };
 
@@ -186,7 +186,7 @@ const Compose = () => {
       if (status === "published") { toast.success("Posted ✦"); nav("/"); }
       else if (status === "draft") { toast.success("Draft saved"); nav("/drafts"); }
       else { toast.success(`Scheduled for ${new Date(scheduled_for!).toLocaleString()}`); nav("/drafts"); }
-    } catch (e: any) { toast.error(e.message || "Failed"); }
+    } catch (e: any) { toast.error(e.message || "Action failed"); }
     finally { setBusy(false); }
   };
 

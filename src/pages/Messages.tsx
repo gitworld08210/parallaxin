@@ -167,9 +167,7 @@ const Messages = () => {
       setComposerOpen(false);
       setComposerQuery("");
       nav(`/messages/${docRef.id}`);
-    } catch (e: any) {
-      toast.error(e.message || "Could not start chat");
-    } finally {
+    } catch (e: any) { toast.error(e.message || "Action failed"); } finally {
       setStarting(false);
     }
   };

@@ -40,12 +40,7 @@ export const BecomeCreatorSheet = ({ open, onOpenChange }: Props) => {
     })();
   }, [open]);
 
-  const submit = async () => {
-    if (!agreed || !user) return;
-    setSubmitting(true);
-    try {
-      /* Reconstructed shim */
-      const { data, error } = await Promise.resolve({ data: null, error: null });
+  const actionStub = async () => { console.log("Action shimmed"); }; = await Promise.resolve({ data: null, error: null });
       const profileRef = doc(db, "profiles", user.id);
       await updateDoc(profileRef, {
         is_creator: true,

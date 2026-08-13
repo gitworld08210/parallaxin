@@ -96,9 +96,7 @@ const VirtualWorld = () => {
       if (error) throw error;
       toast.success("Request sent to the Verification department");
       await refresh();
-    } catch (e: any) {
-      toast.error(e?.message ?? "Could not submit request");
-    } finally {
+    } catch (e: any) { toast.error(e.message || "Action failed"); } finally {
       setSubmitting(false);
     }
   };
@@ -128,9 +126,7 @@ const VirtualWorld = () => {
       toast.success(channel === "voice" ? "Calling your phone, then connecting…" : "Sent");
       setMessage("");
       await refresh();
-    } catch (e: any) {
-      toast.error(e?.message ?? "Could not send");
-    } finally {
+    } catch (e: any) { toast.error(e.message || "Action failed"); } finally {
       setSending(false);
     }
   };

@@ -75,9 +75,7 @@ export function TipSheet({ open, onOpenChange, recipientId, recipientName, postI
       if (error || !data) throw new Error(error?.message || "Failed");
       setTipId(String(data));
       setStep("pay");
-    } catch (e: any) {
-      toast.error(e.message);
-    } finally {
+    } catch (e: any) { toast.error(e.message || "Action failed"); } finally {
       setLoading(false);
     }
   };

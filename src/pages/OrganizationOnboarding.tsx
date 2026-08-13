@@ -41,9 +41,7 @@ const OrganizationOnboarding = () => {
       const path = `org-logos/${user.id}/${Date.now()}.${ext}`;
       if (error) throw error;
       setLogoUrl(data.publicUrl);
-    } catch (e: any) {
-      toast.error(e?.message || "Logo upload failed");
-    } finally {
+    } catch (e: any) { toast.error(e.message || "Action failed"); } finally {
       setLogoUploading(false);
     }
   };
@@ -66,9 +64,7 @@ const OrganizationOnboarding = () => {
       if (error) throw error;
       toast.success("Organization created ✦");
       nav(`/organization/dashboard`, { replace: true });
-    } catch (e: any) {
-      toast.error(e?.message || "Could not create organization");
-    } finally {
+    } catch (e: any) { toast.error(e.message || "Action failed"); } finally {
       setBusy(false);
     }
   };

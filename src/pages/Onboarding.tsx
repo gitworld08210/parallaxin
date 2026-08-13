@@ -111,9 +111,7 @@ const Onboarding = () => {
       await refreshProfile();
       toast.success("Welcome to Aurelix");
       nav("/", { replace: true });
-    } catch (e: any) {
-      toast.error(e?.message || "Could not save");
-    } finally {
+    } catch (e: any) { toast.error(e.message || "Action failed"); } finally {
       setSaving(false);
     }
   };

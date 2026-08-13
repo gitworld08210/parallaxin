@@ -34,9 +34,7 @@ const EditProfile = () => {
       const variants = data?.variants ?? [];
       if (!variants.length) toast.error("No suggestions — try again.");
       setBioVariants(variants);
-    } catch (e: any) {
-      toast.error(e?.message || "AI failed");
-    } finally {
+    } catch (e: any) { toast.error(e.message || "Action failed"); } finally {
       setBioAiBusy(false);
     }
   };
@@ -62,7 +60,7 @@ const EditProfile = () => {
       if (kind === "avatar") setAvatar(url);
       else setCover(url);
 
-    } catch (e: any) { toast.error(e.message); }
+    } catch (e: any) { toast.error(e.message || "Action failed"); }
     finally { setBusy(false); }
   };
 

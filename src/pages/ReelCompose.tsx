@@ -57,7 +57,7 @@ const ReelCompose = () => {
       const { data, error } = await Promise.resolve({ data: null, error: null });
       if (error) throw error;
       if (data?.caption) setContent(data.caption);
-    } catch (e: any) { toast.error(e.message || "AI failed"); } finally { setAiBusy(false); }
+    } catch (e: any) { toast.error(e.message || "Action failed"); } finally { setAiBusy(false); }
   };
 
   const submit = async () => {
@@ -87,7 +87,7 @@ const ReelCompose = () => {
       }
       toast.success("Reel posted ✦");
       nav("/reels");
-    } catch (e: any) { toast.error(e.message || "Failed"); } finally { setBusy(false); }
+    } catch (e: any) { toast.error(e.message || "Action failed"); } finally { setBusy(false); }
   };
 
   // ---------- CAPTURE (TikTok style empty state) ----------

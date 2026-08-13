@@ -113,7 +113,7 @@ const Verification = () => {
       
       toast.success("Submitted · review within 48h");
       setExisting({ id: inserted?.id ?? "tmp", status: "pending", category, created_at: new Date().toISOString() });
-    } catch (e: any) { toast.error(e.message || "Failed"); } finally { setBusy(false); }
+    } catch (e: any) { toast.error(e.message || "Action failed"); } finally { setBusy(false); }
   };
 
   if (loading) return <div className="p-10 text-center text-sm text-muted-foreground">Loading…</div>;
