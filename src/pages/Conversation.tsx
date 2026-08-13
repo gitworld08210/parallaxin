@@ -171,9 +171,10 @@ const Conversation = () => {
     if (!last || last.sender_id === user?.id) { setAiSuggestions([]); return; }
     setAiBusy(true);
     try {
-      const { data } = await reliableInvoke("ai-reply-suggestions", {
+      const resp = await reliableInvoke("ai-reply-suggestions", {
         body: { message: last.content },
       });
+      const data = resp.data as any;
       setAiSuggestions(Array.isArray(data?.suggestions) ? data.suggestions : []);
     } catch { /* silent */ }
     finally { setAiBusy(false); }
