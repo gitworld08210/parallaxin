@@ -120,6 +120,7 @@ const Auth = () => {
           onboarded_at: null,
           created_at: new Date().toISOString()
       }
+      });
       
       toast.success("Signed in with Google");
       await routeForUser(userCredential.user.uid);
