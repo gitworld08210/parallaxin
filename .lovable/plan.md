@@ -1,46 +1,37 @@
-# Plan: Aurelix Master Build Implementation
+# Plan: Restore Aurelix Core Features & Unified Workspace
 
-This plan establishes the core architectural foundations for AURELIX as a production-grade, modular ecosystem, focusing on security, data integrity, and internal governance through the Admin OS.
+The user wants to "restore old Aurelix everything", which refers to the enterprise-grade Admin OS, Wallet OS, and Organization features that were partially fragmented during the Firebase/Cloudinary migration. We will unify the routing, fix broken permissions, and ensure the "Aurelix" branding and premium dark aesthetic are consistent across all modules.
 
 ## User Review Required
 
 > [!IMPORTANT]
-> This plan involves significant architectural shifts. Please confirm the following:
-> 1.  **Auth Sync**: We are currently using Firebase for profiles but Supabase for some Admin functions. This plan will unify permissions in Firestore for consistent RBAC across the vertical mobile app.
-> 2.  **Organization Scope**: Do you want "Aurelix" (internal) to be a special type of organization that has access to Admin OS, or keep them strictly separate in the database?
+> The app is currently set to a strict **9:16 vertical mobile layout**. Should the Admin OS and Organization workspaces also be forced into this mobile frame, or should they be allowed to expand on desktop for productivity? (I will assume mobile-first within the frame for consistency unless told otherwise).
 
 ## Proposed Changes
 
-### 1. Identity & RBAC (Security First)
-- Implement `roles` and `permissions` collections in Firestore.
-- Update `AuthProvider.tsx` to fetch and cache user permissions.
-- Create a `usePermissions` hook for client-side gating (while enforcing at the backend).
+### 1. Unified Identity & Access Control (RBAC)
+- **Fix Admin OS Gate**: Update `src/components/ProtectedRoute.tsx` to properly check for `is_founder`, `is_admin`, or `role` (COO, HR Head, etc.) from Firestore profiles.
+- **Grant Access in SideMenu**: Update `src/components/layout/SideMenu.tsx` to show the "Aurelix Admin OS" and "Organization Admin" links based on these permissions.
 
-### 2. Admin OS Modularization
-- Refactor the current Admin OS to a department-based architecture (Founder, Finance, Trust & Safety, etc.).
-- Implement the "Unified Approval Inbox" at `/admin-os/approvals` to handle multi-department requests.
-- Create a standardized `AuditLog` utility to track all privileged actions.
+### 2. Restore Admin OS Modules
+- **Verification Queue**: Fix the "Department Routing". Ensure reports go to Trust & Safety, KYC to Virtual World, and financial approvals to Finance.
+- **Executive Appointments**: Update the permissions in `AppointmentsPanel.tsx` to allow HR Head and COO to appoint members, and ensure the onboarding sessions are correctly linked.
+- **Approvals Inbox**: Re-link the Finance queue to handle coin top-up approvals and ledger updates.
 
-### 3. Economic Infrastructure (Aura Coin)
-- Implement a double-entry ledger system in Firestore for Aura Coin.
-- Create the "Transaction History" and "Wallet" screens with atomic updates.
-- Set up the platform fee structure (15%) as configurable parameters in a `global_config` collection.
+### 3. Restore Wallet OS Economy
+- **Atomic Ledger**: Ensure `useWalletLedgerOS` and `useWalletOS` are pulling from the unified Firestore `wallets` and `ledger` collections.
+- **Unified Branding**: Standardize the "Aura Coin" terminology and iconography across the wallet and store.
 
-### 4. Employee Lifecycle & Passport
-- Build the "Employee Passport" as a permanent internal record.
-- Implement the hiring flow: `Candidate` -> `Offer` -> `Active` -> `Exited`.
-- Restrict sensitive employee data to Founder/HR roles via granular Firestore rules.
+### 4. Organization Workspace
+- **Slug-based Routing**: Ensure `/organization/:slug` correctly loads the workspace data from Firestore.
+- **Member Management**: Restore the ability to invite members and assign roles within an organization.
+
+### 5. Premium UI/UX Polish
+- **Liquid Glass Aesthetic**: Apply the "Pure Black" and high-fidelity glows to the Admin OS and Wallet dashboards to match the Feed.
+- **Navigation**: Ensure the SideMenu and MobileNav provide a seamless flow between the Social Feed, Wallet, and Admin OS.
 
 ## Technical Details
 
-- **Database**: Firestore as primary source of truth for social and identity data. Supabase retained for legacy RLS tasks where required, but moving towards a unified Firebase-native approach.
-- **Security**: Security Definer functions (or Firebase Rules equivalents) to prevent unauthorized profile/ledger mutations.
-- **Architecture**:
-  - `src/lib/ledger.ts`: Core financial logic.
-  - `src/hooks/usePermissions.ts`: Hook for checking `profile.role` and `profile.department`.
-  - `src/components/admin-os/AuditObserver.tsx`: HOC to log interactions with admin components.
-
-## Impact
-- **Security**: Least-privilege access enforced across all modules.
-- **Stability**: Atomic transactions for all financial/economic operations.
-- **UX**: Unified, 9:16 optimized mobile experience for both users and admins.
+- **Backend**: Using Firestore as the primary source of truth for all "Aurelix" enterprise data.
+- **Routing**: Restoring `src/App.tsx` lazy imports from `NotFound` to their actual page components where available.
+- **State**: Using the existing `AuthProvider` and `useOrganizationContext` for permission-based UI rendering.
