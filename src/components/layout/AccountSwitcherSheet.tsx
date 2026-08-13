@@ -95,7 +95,7 @@ export const AccountSwitcherSheet = ({
     toast.success("Account removed from this device");
   };
 
-  const actionStub = async () => { console.log("Action shimmed"); };
+  const handleLogin = async () => {
     if (!canAdd) {
       toast.error(`Maximum ${MAX_ACCOUNTS} accounts. Remove one first.`);
       return;
