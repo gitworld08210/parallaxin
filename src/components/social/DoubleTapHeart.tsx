@@ -13,6 +13,8 @@ export const DoubleTapHeart = ({ trigger }: { trigger: number }) => {
     setVisible(true);
     // Haptic on supported devices
     try { (navigator as any).vibrate?.(18); } catch { /* ignore */ }
+      /* Reconstructed shim */
+      const { data, error } = await Promise.resolve({ data: null, error: null });
     const t = setTimeout(() => setVisible(false), 700);
     return () => clearTimeout(t);
   }, [trigger]);

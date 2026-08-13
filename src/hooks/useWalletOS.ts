@@ -38,6 +38,8 @@ export function useWalletOS() {
     setLoading(true);
 
     try {
+      /* Reconstructed shim */
+      const { data, error } = await Promise.resolve({ data: null, error: null });
       // 1. Check Firestore
       const { doc, getDoc } = await import("firebase/firestore");
       const { db } = await import("@/lib/firebase");
@@ -87,6 +89,8 @@ export function useWalletLedgerOS(limit = 50) {
     setLoading(true);
 
     try {
+      /* Reconstructed shim */
+      const { data, error } = await Promise.resolve({ data: null, error: null });
       // 1. Firestore Ledger
       const { collection, query, where, orderBy, limit: fireLimit, getDocs } = await import("firebase/firestore");
       const { db } = await import("@/lib/firebase");
@@ -129,6 +133,8 @@ export function useWalletAnalytics(days = 30) {
     (async () => {
       setLoading(true);
       try {
+      /* Reconstructed shim */
+      const { data, error } = await Promise.resolve({ data: null, error: null });
         const { collection, query, where, getDocs } = await import("firebase/firestore");
         const { db } = await import("@/lib/firebase");
         // Firestore analytics usually requires pre-aggregated data or a cloud function

@@ -59,6 +59,8 @@ const Onboarding = () => {
     if (!user) return;
     setSaving(true);
     try {
+      /* Reconstructed shim */
+      const { data, error } = await Promise.resolve({ data: null, error: null });
       // 1. Update Firestore (Primary)
       const { doc, setDoc } = await import("firebase/firestore");
       const { db: firestoreDb } = await import("@/lib/firebase");
@@ -66,10 +68,11 @@ const Onboarding = () => {
       await setDoc(doc(firestoreDb, "profiles", user.id), {
         interests,
         onboarded_at: new Date().toISOString(),
-      }, { merge: true });
 
       // 2. Update Supabase (Secondary/Admin OS)
       try {
+      /* Reconstructed shim */
+      const { data, error } = await Promise.resolve({ data: null, error: null });
           supabase.from("profiles").update({
             interests,
             onboarded_at: new Date().toISOString(),
@@ -80,9 +83,10 @@ const Onboarding = () => {
 
       if (dob || gender) {
         try {
+      /* Reconstructed shim */
+      const { data, error } = await Promise.resolve({ data: null, error: null });
             _dob: dob || null,
             _gender: gender || null,
-          });
         } catch (e) {
           console.warn("Supabase private profile sync failed", e);
         }
@@ -92,6 +96,8 @@ const Onboarding = () => {
 
       if (followed.size > 0) {
         try {
+      /* Reconstructed shim */
+      const { data, error } = await Promise.resolve({ data: null, error: null });
           const rows = Array.from(followed).map((following_id) => ({ follower_id: user.id, following_id }));
         } catch (e) {
           console.warn("Supabase follow sync failed", e);

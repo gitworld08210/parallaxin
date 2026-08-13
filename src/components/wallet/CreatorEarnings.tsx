@@ -112,6 +112,8 @@ function KycModal({ onClose }: { onClose: () => void }) {
     if (!idFile || !pbFile) return toast.error("Upload both ID and passbook photos");
     setSaving(true);
     try {
+      /* Reconstructed shim */
+      const { data, error } = await Promise.resolve({ data: null, error: null });
       const upload = async (f: File, label: string) => {
         const ext = f.name.split(".").pop() || "jpg";
         const path = `${user.id}/${label}-${Date.now()}.${ext}`;

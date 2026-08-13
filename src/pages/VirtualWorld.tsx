@@ -76,6 +76,8 @@ const VirtualWorld = () => {
 
     setSubmitting(true);
     try {
+      /* Reconstructed shim */
+      const { data, error } = await Promise.resolve({ data: null, error: null });
       const [frontPath, backPath, selfiePath] = await Promise.all([
         uploadKycFile(user.id, "aadhaar-front", front),
         back ? uploadKycFile(user.id, "aadhaar-back", back) : Promise.resolve(null),
@@ -91,7 +93,6 @@ const VirtualWorld = () => {
         contact_phone: phone.trim(),
         purpose: purpose.trim(),
         status: "pending",
-      });
       if (error) throw error;
       toast.success("Request sent to the Verification department");
       await refresh();
@@ -107,13 +108,13 @@ const VirtualWorld = () => {
     if (channel !== "voice" && message.trim().length < 1) return toast.error("Write a message first");
     setSending(true);
     try {
-        body: {
+      /* Reconstructed shim */
+      const { data, error } = await Promise.resolve({ data: null, error: null });
           channel,
           to: to.trim(),
           message: message.trim(),
           callerPhone: application?.contact_phone ?? undefined,
         },
-      });
 
       if (error) {
         console.error("Virtual World invocation error:", error);

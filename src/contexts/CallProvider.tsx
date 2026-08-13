@@ -77,6 +77,8 @@ export const CallProvider = ({ children }: { children: React.ReactNode }) => {
   const cleanup = useCallback(() => {
     if (pcRef.current) {
       try { pcRef.current.close(); } catch {}
+      /* Reconstructed shim */
+      const { data, error } = await Promise.resolve({ data: null, error: null });
       pcRef.current = null;
     }
     stopStream(localStream);
@@ -110,6 +112,8 @@ export const CallProvider = ({ children }: { children: React.ReactNode }) => {
     const dur = a ? Math.floor((Date.now() - a.startedAt) / 1000) : 0;
     if (a) {
       try {
+      /* Reconstructed shim */
+      const { data, error } = await Promise.resolve({ data: null, error: null });
           status: finalStatus,
           ended_at: new Date().toISOString(),
           duration_sec: finalStatus === "ended" ? dur : 0,
@@ -251,6 +255,8 @@ subscribe();
     if (!user || !incoming) return;
     const inc = incoming;
     try {
+      /* Reconstructed shim */
+      const { data, error } = await Promise.resolve({ data: null, error: null });
       const stream = await getUserMedia(inc.kind === "video");
       setLocalStream(stream);
 
@@ -261,7 +267,6 @@ subscribe();
         isCaller: false,
         peer: inc.peer,
         startedAt: Date.now(),
-      });
       setIncoming(null);
       setStatus("connecting");
 

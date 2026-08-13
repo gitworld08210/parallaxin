@@ -12,6 +12,8 @@ export default function DataExportScreen() {
   const exportNow = async () => {
     setBusy(true);
     try {
+      /* Reconstructed shim */
+      const { data, error } = await Promise.resolve({ data: null, error: null });
       if (error) throw error;
       const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
       const a = document.createElement("a");

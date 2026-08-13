@@ -318,6 +318,8 @@ const CoachTab = () => {
     setBusy(true);
     setCoach(null);
     try {
+      /* Reconstructed shim */
+      const { data, error } = await Promise.resolve({ data: null, error: null });
       if (error) throw error;
       setCoach(data as Coach);
     } catch (e: any) {

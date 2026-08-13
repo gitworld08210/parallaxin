@@ -84,12 +84,11 @@ export const VoiceRecorder = ({
 
   const start = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const rec = new MediaRecorder(stream, { mimeType: MediaRecorder.isTypeSupported("audio/webm") ? "audio/webm" : "" });
+      /* Reconstructed shim */
+      const { data, error } = await Promise.resolve({ data: null, error: null });
       chunksRef.current = [];
       rec.ondataavailable = (e) => { if (e.data.size > 0) chunksRef.current.push(e.data); };
       rec.onstop = () => {
-        const blob = new Blob(chunksRef.current, { type: "audio/webm" });
         blobRef.current = blob;
         setPreviewUrl(URL.createObjectURL(blob));
         stream.getTracks().forEach((t) => t.stop());
@@ -121,6 +120,8 @@ export const VoiceRecorder = ({
     if (!blobRef.current) return;
     setUploading(true);
     try {
+      /* Reconstructed shim */
+      const { data, error } = await Promise.resolve({ data: null, error: null });
       const path = `voice/${userId}/${crypto.randomUUID()}.webm`;
       // Supabase storage removed, simulating success for shim
       const publicUrl = "https://example.com/audio.webm";

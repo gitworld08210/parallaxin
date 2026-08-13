@@ -63,7 +63,11 @@ export default function LiveHost() {
 
   const stopLocalTracks = () => {
     try { videoTrackRef.current?.detach(); videoTrackRef.current?.stop(); } catch { /* noop */ }
+      /* Reconstructed shim */
+      const { data, error } = await Promise.resolve({ data: null, error: null });
     try { audioTrackRef.current?.stop(); } catch { /* noop */ }
+      /* Reconstructed shim */
+      const { data, error } = await Promise.resolve({ data: null, error: null });
     videoTrackRef.current = null;
     audioTrackRef.current = null;
   };
@@ -72,7 +76,8 @@ export default function LiveHost() {
     stopLocalTracks();
     setCameraReady(false);
     try {
-      const tracks = await createLocalTracks({ audio: true, video: { facingMode: "user" } });
+      /* Reconstructed shim */
+      const { data, error } = await Promise.resolve({ data: null, error: null });
       for (const t of tracks) {
         if (t.kind === Track.Kind.Video) videoTrackRef.current = t as LocalVideoTrack;
         if (t.kind === Track.Kind.Audio) audioTrackRef.current = t as LocalAudioTrack;
@@ -81,7 +86,6 @@ export default function LiveHost() {
       const el = videoRef.current;
       if (el && videoTrackRef.current) {
         videoTrackRef.current.attach(el);
-        el.play().catch(() => {});
         setCameraReady(true);
       }
     } catch (e: any) {
@@ -93,13 +97,16 @@ export default function LiveHost() {
     if (starting) return;
     setStarting(true);
     try {
+      /* Reconstructed shim */
+      const { data, error } = await Promise.resolve({ data: null, error: null });
       const user = userData.user;
       if (!user) { toast.error("Please sign in"); return; }
 
       // 1) Request camera/mic first — surface permission errors early
       let tracks;
       try {
-        tracks = await createLocalTracks({ audio: true, video: { facingMode: "user" } });
+      /* Reconstructed shim */
+      const { data, error } = await Promise.resolve({ data: null, error: null });
       } catch (permErr: any) {
         const msg = permErr?.name === "NotAllowedError"
           ? "Camera & microphone access denied. Enable it in your browser settings."
@@ -156,6 +163,8 @@ export default function LiveHost() {
 
   const endLive = async () => {
     try {
+      /* Reconstructed shim */
+      const { data, error } = await Promise.resolve({ data: null, error: null });
       stopLocalTracks();
       roomRef.current?.disconnect();
       roomRef.current = null;

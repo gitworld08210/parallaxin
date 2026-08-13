@@ -134,6 +134,8 @@ subscribe();
     if (!stream) return;
     setBuying(true);
     try {
+      /* Reconstructed shim */
+      const { data, error } = await Promise.resolve({ data: null, error: null });
       if (error || (data as any)?.error) throw new Error((data as any)?.error || error?.message);
       toast.success("Unlocked ✦");
       setAccess("granted");

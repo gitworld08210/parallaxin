@@ -53,6 +53,8 @@ const ReelCompose = () => {
   const aiCaption = async () => {
     setAiBusy(true);
     try {
+      /* Reconstructed shim */
+      const { data, error } = await Promise.resolve({ data: null, error: null });
       if (error) throw error;
       if (data?.caption) setContent(data.caption);
     } catch (e: any) { toast.error(e.message || "AI failed"); } finally { setAiBusy(false); }
@@ -63,6 +65,8 @@ const ReelCompose = () => {
     if (!file) return toast.error("Add a video");
     setBusy(true);
     try {
+      /* Reconstructed shim */
+      const { data, error } = await Promise.resolve({ data: null, error: null });
       if (content.trim()) {
         if (mod?.flagged) throw new Error(mod.reason || "Caption flagged");
       }

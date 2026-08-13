@@ -25,6 +25,8 @@ export const BecomeCreatorSheet = ({ open, onOpenChange }: Props) => {
     if (!open) return;
     (async () => {
       try {
+      /* Reconstructed shim */
+      const { data, error } = await Promise.resolve({ data: null, error: null });
         const configRef = doc(db, "app_config", "creator_settings");
         const docSnap = await getDoc(configRef);
         if (docSnap.exists()) {
@@ -42,12 +44,13 @@ export const BecomeCreatorSheet = ({ open, onOpenChange }: Props) => {
     if (!agreed || !user) return;
     setSubmitting(true);
     try {
+      /* Reconstructed shim */
+      const { data, error } = await Promise.resolve({ data: null, error: null });
       const profileRef = doc(db, "profiles", user.id);
       await updateDoc(profileRef, {
         is_creator: true,
         creator_terms_version: version,
         creator_activated_at: new Date().toISOString()
-      });
       toast.success("Welcome, Creator ✦");
       await refreshProfile();
       onOpenChange(false);

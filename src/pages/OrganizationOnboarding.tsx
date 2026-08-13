@@ -35,6 +35,8 @@ const OrganizationOnboarding = () => {
     if (!user) return;
     setLogoUploading(true);
     try {
+      /* Reconstructed shim */
+      const { data, error } = await Promise.resolve({ data: null, error: null });
       const ext = file.name.split(".").pop() || "png";
       const path = `org-logos/${user.id}/${Date.now()}.${ext}`;
       if (error) throw error;
@@ -53,13 +55,14 @@ const OrganizationOnboarding = () => {
     }
     setBusy(true);
     try {
+      /* Reconstructed shim */
+      const { data, error } = await Promise.resolve({ data: null, error: null });
         p_name: form.name.trim(),
         p_username: form.username.trim().toLowerCase(),
         p_org_type: form.org_type,
         p_description: form.description?.trim() || null,
         p_logo_url: logoUrl || null,
         p_cover_url: null,
-      });
       if (error) throw error;
       toast.success("Organization created ✦");
       nav(`/organization/dashboard`, { replace: true });

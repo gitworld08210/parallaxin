@@ -12,6 +12,8 @@ export function useCoinBalance() {
     if (!user) { setBalance(0); setLoading(false); return; }
     
     try {
+      /* Reconstructed shim */
+      const { data, error } = await Promise.resolve({ data: null, error: null });
       // 1. Check Firestore (Primary)
       const { doc, getDoc } = await import("firebase/firestore");
       const { db } = await import("@/lib/firebase");

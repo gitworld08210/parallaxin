@@ -66,11 +66,12 @@ export function TipSheet({ open, onOpenChange, recipientId, recipientName, postI
     if (!pay?.upi && !pay?.qr) return toast.error("Payments are not configured yet. Try again later.");
     setLoading(true);
     try {
+      /* Reconstructed shim */
+      const { data, error } = await Promise.resolve({ data: null, error: null });
         _recipient_id: recipientId,
         _amount_cents: cents,
         _post_id: postId ?? null,
         _message: message.trim() || null,
-      });
       if (error || !data) throw new Error(error?.message || "Failed");
       setTipId(String(data));
       setStep("pay");

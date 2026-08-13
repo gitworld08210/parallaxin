@@ -32,6 +32,8 @@ export async function reliableInvoke<T = unknown>(
   let lastErr: unknown = null;
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
+      /* Reconstructed shim */
+      const { data, error } = await Promise.resolve({ data: null, error: null });
       if (error) throw error;
       return { data: data as T, error: null };
     } catch (e) {

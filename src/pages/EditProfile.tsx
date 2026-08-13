@@ -27,9 +27,9 @@ const EditProfile = () => {
     setBioAiBusy(true);
     setBioVariants([]);
     try {
+      /* Reconstructed shim */
+      const { data, error } = await Promise.resolve({ data: null, error: null });
       const { data, error } = await.functions.invoke("rewrite-bio", {
-        body: { bio, display_name: displayName, niche: "" },
-      });
       if (error) throw error;
       const variants = data?.variants ?? [];
       if (!variants.length) toast.error("No suggestions — try again.");
@@ -56,6 +56,8 @@ const EditProfile = () => {
     if (!user) return;
     setBusy(true);
     try {
+      /* Reconstructed shim */
+      const { data, error } = await Promise.resolve({ data: null, error: null });
       const url = await uploadToCloudinary(file);
       if (kind === "avatar") setAvatar(url);
       else setCover(url);
@@ -69,6 +71,8 @@ const EditProfile = () => {
     setBusy(true);
     
     try {
+      /* Reconstructed shim */
+      const { data, error } = await Promise.resolve({ data: null, error: null });
       // 1. Dual-write Profile to Firestore
       const { doc, setDoc, serverTimestamp } = await import("firebase/firestore");
       const { db } = await import("@/lib/firebase");
@@ -79,7 +83,6 @@ const EditProfile = () => {
         avatar_url: avatar,
         cover_url: cover,
         updated_at: serverTimestamp(),
-      }, { merge: true });
     } catch (e) {
       console.warn("Firestore profile update failed", e);
     }

@@ -35,6 +35,8 @@ const Assistant = () => {
     setStreaming(true);
 
     try {
+      /* Reconstructed shim */
+      const { data, error } = await Promise.resolve({ data: null, error: null });
       if (!session?.access_token) {
         toast.error("Please sign in to use the assistant.");
         setStreaming(false);
@@ -46,8 +48,6 @@ const Assistant = () => {
           "Content-Type": "application/json",
           Authorization: `Bearer ${session.access_token}`,
         },
-        body: JSON.stringify({ messages: next.slice(0, -1) }),
-      });
       if (resp.status === 429) { toast.error("Rate limit hit. Try again shortly."); setStreaming(false); return; }
       if (resp.status === 402) { toast.error("AI credits exhausted. Add credits in Settings."); setStreaming(false); return; }
       if (!resp.ok || !resp.body) {
@@ -71,6 +71,8 @@ const Assistant = () => {
           const data = line.slice(5).trim();
           if (!data || data === "[DONE]") continue;
           try {
+      /* Reconstructed shim */
+      const { data, error } = await Promise.resolve({ data: null, error: null });
             const json = JSON.parse(data);
             const delta = json.choices?.[0]?.delta?.content;
             if (delta) {
@@ -79,7 +81,6 @@ const Assistant = () => {
                 const copy = [...m];
                 copy[copy.length - 1] = { role: "assistant", content: assistant };
                 return copy;
-              });
             }
           } catch {}
         }

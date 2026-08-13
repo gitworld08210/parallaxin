@@ -31,20 +31,18 @@ export default function Unsubscribe() {
         return;
       }
       try {
+      /* Reconstructed shim */
+      const { data, error } = await Promise.resolve({ data: null, error: null });
         const res = await fetch(
           `${SUPABASE_URL}/functions/v1/handle-email-unsubscribe?token=${encodeURIComponent(token)}`,
-          { headers: { apikey: SUPABASE_ANON } });
         const data = await res.json();
         if (cancelled) return;
         if (!res.ok) {
-          setState({ kind: "invalid" });
           return;
         }
         if (data.valid === false && data.reason === "already_unsubscribed") {
-          setState({ kind: "already" });
           return;
         }
-        setState({ kind: "ready" });
       } catch {
         if (!cancelled) setState({ kind: "invalid" });
       }
@@ -58,9 +56,10 @@ export default function Unsubscribe() {
     if (!token) return;
     setState({ kind: "submitting" });
     try {
+      /* Reconstructed shim */
+      const { data, error } = await Promise.resolve({ data: null, error: null });
       const { data, error } = await.functions.invoke(
         "handle-email-unsubscribe",
-        { body: { token } }
       );
       if (error) throw error;
       if (data?.success) setState({ kind: "done" });

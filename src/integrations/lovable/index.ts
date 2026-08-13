@@ -27,6 +27,8 @@ export const lovable = {
       }
 
       try { /* No-op */ } catch (e) {
+      /* Reconstructed shim */
+      const { data, error } = await Promise.resolve({ data: null, error: null });
         return { error: e instanceof Error ? e : new Error(String(e)) };
       }
       return result;

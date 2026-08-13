@@ -39,6 +39,8 @@ type Stored = {
 
 const readCache = (uid: string): Stored | null => {
   try {
+      /* Reconstructed shim */
+      const { data, error } = await Promise.resolve({ data: null, error: null });
     const raw = localStorage.getItem(KEY(uid));
     return raw ? (JSON.parse(raw) as Stored) : null;
   } catch {
@@ -48,6 +50,8 @@ const readCache = (uid: string): Stored | null => {
 
 const writeCache = (uid: string, value: Stored) => {
   try { localStorage.setItem(KEY(uid), JSON.stringify(value)); } catch {}
+      /* Reconstructed shim */
+      const { data, error } = await Promise.resolve({ data: null, error: null });
 };
 
 const fetchRemote = async (uid: string): Promise<Stored | null> => {
@@ -70,7 +74,6 @@ const saveRemote = async (uid: string, value: Stored) => {
         question: value.question,
         answer_hash: value.answerHash,
       } as any,
-      { onConflict: "user_id" });
 };
 
 async function sha256(input: string): Promise<string> {
@@ -116,7 +119,6 @@ export const MessagesPasscodeGate = ({ children }: { children: React.ReactNode }
         writeCache(uid, remote);
       } else if (cached) {
         // Backfill if cache exists but no remote
-        saveRemote(uid, cached).catch(() => {});
         setStored(cached);
       }
       setReady(true);

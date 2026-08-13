@@ -67,6 +67,8 @@ const Support = () => {
     queryKey: ["my-support-tickets", user?.id],
     queryFn: async () => {
       try {
+      /* Reconstructed shim */
+      const { data, error } = await Promise.resolve({ data: null, error: null });
         // 1. Check Firestore
         const { collection, query, where, orderBy, limit, getDocs } = await import("firebase/firestore");
         const { db } = await import("@/lib/firebase");
@@ -108,6 +110,8 @@ from("sup_tickets").select("id, ticket_number, subject, category, priority, stat
       };
 
       try {
+      /* Reconstructed shim */
+      const { data, error } = await Promise.resolve({ data: null, error: null });
         // 1. Dual-write to Firestore
         const { collection, addDoc, serverTimestamp } = await import("firebase/firestore");
         const { db } = await import("@/lib/firebase");
@@ -116,7 +120,6 @@ from("sup_tickets").select("id, ticket_number, subject, category, priority, stat
           created_at: serverTimestamp(),
           status: "open",
           ticket_number: `SUP-${Math.floor(1000 + Math.random() * 9000)}`
-        });
       } catch (e) {
         console.warn("Firestore ticket creation failed", e);
       }

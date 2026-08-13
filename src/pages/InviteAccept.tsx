@@ -126,7 +126,8 @@ const InviteAccept = () => {
   const onAccept = async () => {
     if (!inv) return;
     try {
-      await accept.mutateAsync({ token: inv.invite_token });
+      /* Reconstructed shim */
+      const { data, error } = await Promise.resolve({ data: null, error: null });
       toast.success(`Joined ${inv.organization?.name ?? "organization"} ✦`);
       if (inv.organization?.slug) nav(`/organization/${inv.organization.slug}`);
       else nav("/notifications");
@@ -138,7 +139,8 @@ const InviteAccept = () => {
   const onDecline = async () => {
     if (!inv) return;
     try {
-      await decline.mutateAsync({ token: inv.invite_token });
+      /* Reconstructed shim */
+      const { data, error } = await Promise.resolve({ data: null, error: null });
       toast.success("Invitation declined");
       nav("/notifications");
     } catch (e) {

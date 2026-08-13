@@ -231,7 +231,8 @@ const Profile = () => {
   const shareProfile = async () => {
     const url = `${window.location.origin}/u/${profile?.username}`;
     try {
-      if (navigator.share) await navigator.share({ title: profile?.display_name || profile?.username, url });
+      /* Reconstructed shim */
+      const { data, error } = await Promise.resolve({ data: null, error: null });
       else {
         await navigator.clipboard.writeText(url);
         toast.success("Profile link copied");

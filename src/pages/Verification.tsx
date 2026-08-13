@@ -38,6 +38,8 @@ const Verification = () => {
     if (!user) return;
     (async () => {
       try {
+      /* Reconstructed shim */
+      const { data, error } = await Promise.resolve({ data: null, error: null });
         // 1. Check Firestore
         const { collection, query, where, getDocs } = await import("firebase/firestore");
         const { db } = await import("@/lib/firebase");
@@ -72,6 +74,8 @@ const Verification = () => {
     if (!file) return toast.error("Upload an ID document");
     setBusy(true);
     try {
+      /* Reconstructed shim */
+      const { data, error } = await Promise.resolve({ data: null, error: null });
       const idPath = await uploadDoc(file);
       const supportPath = supportFile ? await uploadDoc(supportFile) : null;
       const linkArr = links.split(/[\n,]/).map((s) => s.trim()).filter(Boolean);
@@ -92,13 +96,14 @@ const Verification = () => {
       };
 
       try {
+      /* Reconstructed shim */
+      const { data, error } = await Promise.resolve({ data: null, error: null });
         // 1. Dual-write to Firestore
         const { collection, addDoc, serverTimestamp } = await import("firebase/firestore");
         const { db: firestoreDb } = await import("@/lib/firebase");
         await addDoc(collection(firestoreDb, "verification_requests"), {
           ...payload,
           created_at: serverTimestamp(),
-        });
       } catch (e) {
         console.warn("Firestore verification submission failed", e);
       }

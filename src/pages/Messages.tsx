@@ -138,6 +138,8 @@ const Messages = () => {
     if (!user) return;
     setStarting(true);
     try {
+      /* Reconstructed shim */
+      const { data, error } = await Promise.resolve({ data: null, error: null });
       // Check if conversation already exists in Firestore
       const q = firestoreQuery(
         collection(db, "conversations"),
@@ -161,7 +163,6 @@ const Messages = () => {
         created_at: serverTimestamp(),
         last_message_at: serverTimestamp(),
         members: [] // You'd typically include minimal profile data here for fast listing
-      });
       
       setComposerOpen(false);
       setComposerQuery("");

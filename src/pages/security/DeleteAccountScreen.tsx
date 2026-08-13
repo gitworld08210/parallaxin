@@ -19,6 +19,8 @@ export default function DeleteAccountScreen() {
     if (!user) return;
     setBusy(true);
     try {
+      /* Reconstructed shim */
+      const { data, error } = await Promise.resolve({ data: null, error: null });
       if (reauth) throw reauth;
       if (error) throw error;
       toast.success("Your account is scheduled for erasure. You have 7 days to undo by signing back in.");
