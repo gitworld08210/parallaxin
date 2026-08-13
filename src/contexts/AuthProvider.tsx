@@ -1,7 +1,7 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { createContext, useContext, useEffect, useState, ReactNode, useCallback } from "react";
 import { auth, db } from "@/lib/firebase";
 import { onAuthStateChanged, signOut as firebaseSignOut } from "firebase/auth";
-import { doc, onSnapshot } from "firebase/firestore";
+import { doc, onSnapshot, getDoc } from "firebase/firestore";
 
 type Profile = {
   id: string;
@@ -20,6 +20,13 @@ type Profile = {
   interests?: string[] | null;
   account_type?: "personal" | "organization";
   organization_id?: string | null;
+  is_creator?: boolean;
+};
+
+type Session = {
+  access_token: string;
+  refresh_token: string;
+  user: any;
 };
 
 type User = {
@@ -37,8 +44,10 @@ type User = {
 type Ctx = {
   user: User | null;
   profile: Profile | null;
+  session: Session | null;
   loading: boolean;
   signOut: () => Promise<void>;
+  refreshProfile: () => Promise<void>;
 };
 
 const AuthCtx = createContext<Ctx | undefined>(undefined);
@@ -46,7 +55,25 @@ const AuthCtx = createContext<Ctx | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const refreshProfile = useCallback(async () => {
+    if (!user) return;
+    try {
+      const snap = await getDoc(doc(db, "profiles", user.id));
+      if (snap.exists()) {
+        const data = snap.data();
+        setProfile({ 
+          id: snap.id, 
+          ...data,
+          user_id: data.user_id || snap.id 
+        } as Profile);
+      }
+    } catch (err) {
+      console.error("Refresh profile error:", err);
+    }
+  }, [user]);
 
   useEffect(() => {
     let profileUnsub: (() => void) | null = null;
@@ -58,6 +85,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
 
       if (fbUser) {
+        const token = await fbUser.getIdToken();
         setUser({
           id: fbUser.uid,
           uid: fbUser.uid,
@@ -73,6 +101,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           last_sign_in_at: fbUser.metadata.lastSignInTime || new Date().toISOString(),
         });
         
+        setSession({
+          access_token: token,
+          refresh_token: "firebase-managed",
+          user: fbUser
+        });
+
         profileUnsub = onSnapshot(doc(db, "profiles", fbUser.uid), (snap) => {
           if (snap.exists()) {
             const data = snap.data();
@@ -92,6 +126,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       } else {
         setUser(null);
         setProfile(null);
+        setSession(null);
         setLoading(false);
       }
     });
@@ -114,7 +149,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <AuthCtx.Provider value={{ user, profile, loading, signOut }}>
+    <AuthCtx.Provider value={{ user, profile, session, loading, signOut, refreshProfile }}>
       {children}
     </AuthCtx.Provider>
   );
