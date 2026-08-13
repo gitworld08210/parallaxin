@@ -195,9 +195,9 @@ const ExecutivePlaceholders = () => import("./pages/NotFound");
 const ExecutiveInbox = lazy(() => import("./pages/NotFound"));
 const ExecutiveApprovalDetail = lazy(() => import("./pages/NotFound"));
 
-const ExecutiveDepartments = lazy(() => ExecutivePlaceholders().then((m) => ({ default: m.ExecutiveDepartments })));
-const ExecutiveEmployees = lazy(() => ExecutivePlaceholders().then((m) => ({ default: m.ExecutiveEmployees })));
-const ExecutiveReports = lazy(() => ExecutivePlaceholders().then((m) => ({ default: m.ExecutiveReports })));
+const ExecutiveDepartments = lazy(() => import("./pages/NotFound"));
+const ExecutiveEmployees = lazy(() => import("./pages/NotFound"));
+const ExecutiveReports = lazy(() => import("./pages/NotFound"));
 const DecisionLogPage = lazy(() => import("./pages/NotFound"));
 // Phase 3.8 — Company Configuration & Global Settings
 const CompanyShell = lazy(() => import("./pages/NotFound"));
@@ -249,7 +249,7 @@ const KipCollectionDetail = lazy(() => import("./pages/NotFound"));
 const KipKnowledgeSearch = lazy(() => import("./pages/NotFound"));
 const KipBookmarksPage = lazy(() => import("./pages/NotFound"));
 const KipConversationHistory = lazy(() => import("./pages/NotFound"));
-const ExecutiveNotificationsPage = lazy(() => ExecutivePlaceholders().then((m) => ({ default: m.ExecutiveNotifications })));
+const ExecutiveNotificationsPage = lazy(() => import("./pages/NotFound"));
 // Phase 3.4 — Governance
 const GovernanceIndex = lazy(() => import("./pages/NotFound"));
 const PolicyCenter = lazy(() => import("./pages/NotFound"));
@@ -696,12 +696,12 @@ const App = () => (
                   <Route path="people-ops" element={<PeopleOpsIndex />} />
                   <Route
                     path="people-ops/new"
-                    element={<EmployeeForm mode="create" />}
+                    element={<NotFound />}
                   />
                   <Route path="people-ops/:id" element={<EmployeeDetailPage />} />
                   <Route
                     path="people-ops/:id/edit"
-                    element={<EmployeeForm mode="edit" />}
+                    element={<NotFound />}
                   />
                   <Route path="people-ops/onboarding" element={<OnboardingQueue />} />
                   <Route path="people-ops/onboarding/new" element={<OnboardingWizard />} />
