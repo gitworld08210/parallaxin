@@ -304,7 +304,7 @@ export const PostCard = ({ post, onOpenComments }: { post: FeedPost; onOpenComme
           {post.media_url && (
             <div
               onClick={onMediaTap}
-              className="relative mt-2 rounded-2xl overflow-hidden border border-white/10 bg-muted select-none"
+              className="relative mt-2 rounded-xl overflow-hidden border border-white/5 bg-muted select-none"
             >
               {post.media_type === "video" ? (
                 <video src={post.media_url} controls playsInline className="w-full max-h-[560px] object-cover" />
