@@ -65,7 +65,7 @@ const Auth = () => {
   const signIn = async () => {
     if (!validEmail() || password.length < 6) { toast.error("Enter a valid email and password"); return; }
     setBusy(true);
-    try { /* shimmed */ }
+    try {
       const userCredential = await signInWithEmailAndPassword(auth, email.trim(), password);
       toast.success("Welcome back");
       if (userCredential.user) await routeForUser(userCredential.user.uid);
