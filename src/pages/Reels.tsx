@@ -124,7 +124,7 @@ const Reels = () => {
       <header
         className={cn(
           "absolute top-0 inset-x-0 z-30 pt-3 pb-4 px-4 flex items-center justify-between transition-opacity duration-500",
-          "bg-gradient-to-b from-black/70 via-black/30 to-transparent",
+          "bg-gradient-to-b from-black/80 via-black/40 to-transparent",
           chromeDim ? "opacity-0 pointer-events-none" : "opacity-100"
         )}
       >
@@ -154,9 +154,7 @@ const Reels = () => {
           ))}
         </div>
 
-        <Link to="/compose/reel" className="p-2 -mr-2" aria-label="Create reel">
-          <Camera className="h-5 w-5" strokeWidth={2} />
-        </Link>
+        <div className="p-2 -mr-2 w-9 h-9" /> {/* Placeholder to balance search icon */}
       </header>
 
       <div ref={containerRef} className="h-full w-full overflow-y-scroll snap-y snap-mandatory scrollbar-hide">
@@ -335,7 +333,7 @@ const ReelItem = ({
       <button
         onClick={onToggleMute}
         className={cn(
-          "absolute top-16 right-4 h-9 w-9 rounded-full bg-black/40 backdrop-blur-xl grid place-items-center transition-opacity duration-500 z-20",
+          "absolute top-4 right-4 h-9 w-9 rounded-full bg-black/20 backdrop-blur-md border border-white/10 grid place-items-center transition-opacity duration-500 z-20",
           chromeDim ? "opacity-0 pointer-events-none" : "opacity-100"
         )}
       >

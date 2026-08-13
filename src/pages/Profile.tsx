@@ -115,9 +115,13 @@ const Profile = () => {
         return;
       }
       
+      console.log("Resolving profile for:", target);
+      
+      // Try resolving as UID first (most efficient)
       let profDoc = await getDoc(doc(db, "profiles", target));
       let p = profDoc.exists() ? ({ id: profDoc.id, ...profDoc.data() } as any) : null;
 
+      // If not UID, resolve as username
       if (!p) {
         const qProf = query(
           collection(db, "profiles"),
@@ -128,7 +132,25 @@ const Profile = () => {
         p = snapProf.docs.length > 0 ? ({ id: snapProf.docs[0].id, ...snapProf.docs[0].data() } as any) : null;
       }
       
-      setProfile(p as ProfileRow | null);
+      // Fallback: search by user_id field just in case
+      if (!p) {
+        const qId = query(
+          collection(db, "profiles"),
+          where("user_id", "==", target),
+          limit(1)
+        );
+        const snapId = await getDocs(qId);
+        p = snapId.docs.length > 0 ? ({ id: snapId.docs[0].id, ...snapId.docs[0].data() } as any) : null;
+      }
+      
+      if (p) {
+        setProfile({
+          ...p,
+          user_id: p.user_id || p.id // Ensure user_id exists
+        } as ProfileRow);
+      } else {
+        setProfile(null);
+      }
       setLoading(false);
 
       if (p) {
@@ -350,8 +372,29 @@ const Profile = () => {
           </div>
         </div>
         <div className="flex items-center gap-3">
-          <button className="p-1"><Share2 className="h-6 w-6" /></button>
-          <button className="p-1"><MoreHorizontal className="h-6 w-6" /></button>
+          <IconBtn label="Share" onClick={shareProfile}>
+            <Share2 className="h-6 w-6" />
+          </IconBtn>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="p-1"><MoreHorizontal className="h-6 w-6" /></button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48 bg-[#111] border-white/10">
+              <DropdownMenuItem onClick={shareProfile} className="gap-2">
+                <Share2 className="h-4 w-4" /> Share profile
+              </DropdownMenuItem>
+              {!isMe && (
+                <>
+                  <DropdownMenuItem onClick={toggleMute} className="gap-2">
+                    <VolumeX className="h-4 w-4" /> {isMuted ? "Unmute" : "Mute"}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={toggleBlock} className="gap-2 text-rose-500 focus:text-rose-500">
+                    <Ban className="h-4 w-4" /> {isBlocked ? "Unblock" : "Block"}
+                  </DropdownMenuItem>
+                </>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </header>
 
