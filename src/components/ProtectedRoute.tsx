@@ -8,13 +8,13 @@ export const ProtectedRoute = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen grid place-items-center">
-        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      <div className="min-h-screen bg-[#050505] grid place-items-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
 
-  if (!user && !loading) {
+  if (!user) {
     return <Navigate to={`/auth?next=${encodeURIComponent(location.pathname)}`} replace />;
   }
 

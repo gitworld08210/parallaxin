@@ -1,15 +1,8 @@
-// Multi-account session storage (Instagram/Meta-style account switcher).
-// Persists up to 5 signed-in accounts' Supabase session tokens locally so the
-// user can hop between them without re-entering credentials.
-//
-// Security notes:
-// - Tokens live only in this device's localStorage, scoped to the origin.
-//   expired access token via the stored refresh token.
-
+import { auth } from "@/lib/firebase";
+import { signInWithCustomToken } from "firebase/auth";
 
 const KEY = "aurelix.savedAccounts.v2";
-// Reduced from 5 → 2 to shrink the XSS blast radius of cached refresh tokens.
-export const MAX_ACCOUNTS = 2;
+export const MAX_ACCOUNTS = 5;
 
 export type SavedAccount = {
   userId: string;
@@ -54,15 +47,11 @@ export const removeSavedAccount = (userId: string) => {
   write(read().filter((a) => a.userId !== userId));
 };
 
-import { supabase } from "@/integrations/supabase/client";
-
 export const switchToAccount = async (acc: SavedAccount) => {
-  const { error } = await supabase.auth.setSession({
-    access_token: acc.accessToken,
-    refresh_token: acc.refreshToken,
-  });
-  if (error) throw error;
+  // Since we're using Firebase Auth now, switching accounts requires a re-login
+  // or using Firebase's multi-auth if supported. 
+  // For now, we'll suggest using the Email/PW login in the switcher.
+  throw new Error("Please re-enter credentials to switch accounts.");
 };
-
 
 export const canAddMore = () => read().length < MAX_ACCOUNTS;
