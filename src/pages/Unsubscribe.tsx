@@ -31,10 +31,9 @@ export default function Unsubscribe() {
         return;
       }
       try {
-      /* Reconstructed shim */
-      const { data, error } = await Promise.resolve({ data: null, error: null });
         const res = await fetch(
-          `${SUPABASE_URL}/functions/v1/handle-email-unsubscribe?token=${encodeURIComponent(token)}`,
+          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/handle-email-unsubscribe?token=${encodeURIComponent(token)}`
+        );
         const data = await res.json();
         if (cancelled) return;
         if (!res.ok) {
