@@ -78,7 +78,7 @@ const Notifications = () => {
             Mark all read
           </button>
         )}
-      </div>
+      </header>
 
       <div className="px-4 space-y-4 my-6">
         <IncomingInvitesList />
