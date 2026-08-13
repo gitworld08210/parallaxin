@@ -4,7 +4,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { Check, Loader2, LogIn, Plus, X, Eye, EyeOff } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { supabase } from "@/integrations/supabase/client";
+import { auth, db } from "@/lib/firebase";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
 import { useAuth } from "@/contexts/AuthProvider";
 import {
   MAX_ACCOUNTS,
@@ -104,18 +106,21 @@ export const AccountSwitcherSheet = ({
     }
     setBusy("login");
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password: pw });
-      if (error) throw error;
-      if (data.session && data.user) {
-        // Persist immediately; profile fields will refresh on next open.
+      const userCredential = await signInWithEmailAndPassword(auth, email, pw);
+      const firebaseUser = userCredential.user;
+      
+      if (firebaseUser) {
+        const profileSnap = await getDoc(doc(db, "profiles", firebaseUser.uid));
+        const prof = profileSnap.exists() ? profileSnap.data() : null;
+
         upsertSavedAccount({
-          userId: data.user.id,
-          email: data.user.email ?? email,
-          username: null,
-          displayName: null,
-          avatarUrl: null,
-          accessToken: data.session.access_token,
-          refreshToken: data.session.refresh_token,
+          userId: firebaseUser.uid,
+          email: firebaseUser.email ?? email,
+          username: prof?.username ?? null,
+          displayName: prof?.display_name ?? null,
+          avatarUrl: prof?.avatar_url ?? null,
+          accessToken: "firebase-token",
+          refreshToken: "firebase-token",
           updatedAt: Date.now(),
         });
         toast.success("Account added ✦");

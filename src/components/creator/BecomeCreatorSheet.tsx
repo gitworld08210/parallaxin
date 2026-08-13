@@ -2,10 +2,11 @@ import { useEffect, useState } from "react";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { supabase } from "@/integrations/supabase/client";
+import { doc, updateDoc, getDoc } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 import { useAuth } from "@/contexts/AuthProvider";
 import { toast } from "sonner";
-import { Sparkles, DollarSign, BarChart3, ShieldCheck, Loader2 } from "lucide-react";
+import { Sparkles, DollarSign, BarChart3, ShieldCheck, Loader2, ChevronRight } from "lucide-react";
 import { Link } from "react-router-dom";
 
 type Props = { open: boolean; onOpenChange: (b: boolean) => void };
@@ -14,7 +15,7 @@ const FALLBACK_VERSION = "2026-06-13";
 const FALLBACK_SPLIT = { creator: 85, platform: 15 };
 
 export const BecomeCreatorSheet = ({ open, onOpenChange }: Props) => {
-  const { refreshProfile } = useAuth();
+  const { user, refreshProfile } = useAuth();
   const [agreed, setAgreed] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [split, setSplit] = useState(FALLBACK_SPLIT);
@@ -23,31 +24,38 @@ export const BecomeCreatorSheet = ({ open, onOpenChange }: Props) => {
   useEffect(() => {
     if (!open) return;
     (async () => {
-      const { data } = await supabase
-        .from("app_config")
-        .select("key, value")
-        .in("key", ["creator_revenue_split", "creator_terms_version"]);
-      for (const row of data ?? []) {
-        if (row.key === "creator_revenue_split" && row.value) {
-          const v: any = row.value;
-          if (typeof v?.creator === "number" && typeof v?.platform === "number") setSplit(v);
+      try {
+        const configRef = doc(db, "app_config", "creator_settings");
+        const docSnap = await getDoc(configRef);
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          if (data.revenue_split) setSplit(data.revenue_split);
+          if (data.terms_version) setVersion(data.terms_version);
         }
-        if (row.key === "creator_terms_version" && typeof row.value === "string") {
-          setVersion(row.value as string);
-        }
+      } catch (err) {
+        console.error("Error fetching creator config:", err);
       }
     })();
   }, [open]);
 
   const submit = async () => {
-    if (!agreed) return;
+    if (!agreed || !user) return;
     setSubmitting(true);
-    const { error } = await supabase.rpc("become_creator" as any, { _terms_version: version });
-    setSubmitting(false);
-    if (error) { toast.error(error.message || "Could not enable creator mode"); return; }
-    toast.success("Welcome, Creator ✦");
-    await refreshProfile();
-    onOpenChange(false);
+    try {
+      const profileRef = doc(db, "profiles", user.id);
+      await updateDoc(profileRef, {
+        is_creator: true,
+        creator_terms_version: version,
+        creator_activated_at: new Date().toISOString()
+      });
+      toast.success("Welcome, Creator ✦");
+      await refreshProfile();
+      onOpenChange(false);
+    } catch (error: any) {
+      toast.error(error.message || "Could not enable creator mode");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (

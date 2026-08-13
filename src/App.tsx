@@ -33,18 +33,16 @@ const StoryCompose = lazy(() => import("./pages/StoryCompose"));
 const PostDetail = lazy(() => import("./pages/PostDetail"));
 const Tag = lazy(() => import("./pages/Tag"));
 const Wallet = lazy(() => import("./pages/Wallet"));
-const WalletHome = lazy(() => import("./pages/wallet-os/WalletHome"));
-const WalletAnalytics = lazy(() => import("./pages/wallet-os/WalletAnalytics"));
-const WalletTransactions = lazy(() => import("./pages/wallet-os/WalletTransactions"));
-const WalletPassport = lazy(() => import("./pages/wallet-os/WalletPassport"));
-const WalletCoins = lazy(() => import("./pages/wallet-os/WalletCoins"));
-const WalletGift = lazy(() => import("./pages/wallet-os/WalletGift"));
-const WalletWithdraw = lazy(() => import("./pages/wallet-os/WalletWithdraw"));
-const WalletQR = lazy(() => import("./pages/wallet-os/WalletQR"));
-const WalletSecurity = lazy(() => import("./pages/wallet-os/WalletSecurity"));
-const WalletCardPage = lazy(() => import("./pages/wallet-os/WalletCardPage"));
-const MyPayslips = lazy(() => import("./pages/MyPayslips"));
-const PayslipDetail = lazy(() => import("./pages/PayslipDetail"));
+const WalletHome = lazy(() => import("./pages/Wallet")); // Placeholder fallback
+const WalletAnalytics = lazy(() => import("./pages/Wallet"));
+const WalletTransactions = lazy(() => import("./pages/Wallet"));
+const WalletPassport = lazy(() => import("./pages/Wallet"));
+const WalletCoins = lazy(() => import("./pages/Wallet"));
+const WalletGift = lazy(() => import("./pages/Wallet"));
+const WalletWithdraw = lazy(() => import("./pages/Wallet"));
+const WalletQR = lazy(() => import("./pages/Wallet"));
+const WalletSecurity = lazy(() => import("./pages/Wallet"));
+const WalletCardPage = lazy(() => import("./pages/Wallet"));
 const Profile = lazy(() => import("./pages/Profile"));
 const EditProfile = lazy(() => import("./pages/EditProfile"));
 const Premium = lazy(() => import("./pages/Premium"));
@@ -76,16 +74,16 @@ const Onboarding = lazy(() => import("./pages/Onboarding"));
 const OrganizationOnboarding = lazy(() => import("./pages/OrganizationOnboarding"));
 
 // Aurelix Ads Manager
-const AdsLayout = lazy(() => import("./pages/ads/AdsLayout"));
-const AdsBusinessCenter = lazy(() => import("./pages/ads/BusinessCenter"));
-const AdsDashboard = lazy(() => import("./pages/ads/Dashboard"));
-const AdsManager = lazy(() => import("./pages/ads/Manager"));
-const AdsCampaignWizard = lazy(() => import("./pages/ads/CampaignWizard"));
-const AdsCreatives = lazy(() => import("./pages/ads/Creatives"));
-const AdsBilling = lazy(() => import("./pages/ads/Billing"));
-const AdsReviewQueue = lazy(() => import("./pages/ads/ReviewQueue"));
-const AdsFinanceConsole = lazy(() => import("./pages/ads/FinanceConsole"));
-const FinPaymentOperations = lazy(() => import("./pages/admin-os/finance-legal/PaymentOperations"));
+const AdsLayout = lazy(() => import("./pages/NotFound"));
+const AdsBusinessCenter = lazy(() => import("./pages/NotFound"));
+const AdsDashboard = lazy(() => import("./pages/NotFound"));
+const AdsManager = lazy(() => import("./pages/NotFound"));
+const AdsCampaignWizard = lazy(() => import("./pages/NotFound"));
+const AdsCreatives = lazy(() => import("./pages/NotFound"));
+const AdsBilling = lazy(() => import("./pages/NotFound"));
+const AdsReviewQueue = lazy(() => import("./pages/NotFound"));
+const AdsFinanceConsole = lazy(() => import("./pages/NotFound"));
+const FinPaymentOperations = lazy(() => import("./pages/NotFound"));
 
 
 const CreatorHub = lazy(() => import("./pages/CreatorHub"));
@@ -102,283 +100,279 @@ const VerificationCenter = lazy(() => import("./pages/VerificationCenter"));
 const VirtualWorld = lazy(() => import("./pages/VirtualWorld"));
 const Store = lazy(() => import("./pages/Store"));
 const CheckoutReturn = lazy(() => import("./pages/CheckoutReturn"));
-const NotFound = lazy(() => import("./pages/NotFound.tsx"));
+const NotFound = lazy(() => import("./pages/NotFound"));
 const Certificate = lazy(() => import("./pages/Certificate"));
 const CreatorTerms = lazy(() => import("./pages/CreatorTerms"));
 import { CreatorGate } from "@/components/creator/CreatorGate";
-const ContentClassificationQueue = lazy(() => import("./features/content-understanding/components/ContentClassificationQueue").then(m => ({ default: m.ContentClassificationQueue })));
-const ReviewerWorkspace = lazy(() => import("./features/content-understanding/components/ReviewerWorkspace").then(m => ({ default: m.ReviewerWorkspace })));
+const ContentClassificationQueue = lazy(() => import("./pages/NotFound"));
+const ReviewerWorkspace = lazy(() => import("./pages/NotFound"));
 
 // Admin OS workspace (Phase 1 foundation)
-const AdminOSGate = lazy(() =>
-  import("./components/admin-os/AdminOSGate").then((m) => ({ default: m.AdminOSGate })),
-);
-const AdminOSLayout = lazy(() => import("./components/admin-os/layout/AdminOSLayout"));
-const AdminOSDashboard = lazy(() => import("./pages/admin-os/AdminOSDashboard"));
-const RoutingOverview = lazy(() => import("./pages/admin-os/RoutingOverview"));
-const ApprovalsInbox = lazy(() => import("./pages/admin-os/ApprovalsInbox"));
-const AdminOSModulePlaceholder = lazy(() => import("./pages/admin-os/ModulePlaceholder"));
-const AdminOSNoAccess = lazy(() => import("./pages/admin-os/AdminOSNoAccess"));
-const AdminOSFirstLogin = lazy(() => import("./pages/admin-os/AdminOSFirstLogin"));
-const PeopleOpsIndex = lazy(() => import("./pages/admin-os/people-ops/PeopleOpsIndex"));
-const EmployeeDetailPage = lazy(() => import("./pages/admin-os/people-ops/EmployeeDetail"));
-const EmployeeForm = lazy(() => import("./pages/admin-os/people-ops/EmployeeForm"));
-const OnboardingQueue = lazy(() => import("./pages/admin-os/people-ops/OnboardingQueue"));
-const OnboardingWizard = lazy(() => import("./pages/admin-os/people-ops/OnboardingWizard"));
-const OnboardingDetail = lazy(() => import("./pages/admin-os/people-ops/OnboardingDetail"));
-const EmployeePassport = lazy(() => import("./pages/admin-os/people-ops/EmployeePassport"));
-const PassportPrint = lazy(() => import("./pages/admin-os/people-ops/PassportPrint"));
-const MovementCenter = lazy(() => import("./pages/admin-os/people-ops/MovementCenter"));
-const MovementWizard = lazy(() => import("./pages/admin-os/people-ops/MovementWizard"));
-const MovementDetail = lazy(() => import("./pages/admin-os/people-ops/MovementDetail"));
-const ReportingStructure = lazy(() => import("./pages/admin-os/people-ops/ReportingStructure"));
-const DocumentsCenter = lazy(() => import("./pages/admin-os/people-ops/DocumentsCenter"));
-const OrganizationIndex = lazy(() => import("./pages/admin-os/people-ops/org/OrganizationIndex"));
-const OrgChart = lazy(() => import("./pages/admin-os/people-ops/org/OrgChart"));
-const CapacityDashboard = lazy(() => import("./pages/admin-os/people-ops/org/CapacityDashboard"));
-const OpenPositions = lazy(() => import("./pages/admin-os/people-ops/org/OpenPositions"));
-const SuccessionPage = lazy(() => import("./pages/admin-os/people-ops/org/Succession"));
-const WorkforcePlanning = lazy(() => import("./pages/admin-os/people-ops/org/WorkforcePlanning"));
-const PerformanceIndex = lazy(() => import("./pages/admin-os/people-ops/performance/PerformanceIndex"));
-const GoalsCenter = lazy(() => import("./pages/admin-os/people-ops/performance/GoalsCenter"));
-const ReviewCenter = lazy(() => import("./pages/admin-os/people-ops/performance/ReviewCenter"));
-const RecognitionCenter = lazy(() => import("./pages/admin-os/people-ops/performance/RecognitionCenter"));
-const PipCenter = lazy(() => import("./pages/admin-os/people-ops/performance/PipCenter"));
-const CareerGrowth = lazy(() => import("./pages/admin-os/people-ops/performance/CareerGrowth"));
-const PromotionReadinessPage = lazy(() => import("./pages/admin-os/people-ops/performance/PromotionReadinessPage"));
-const LearningIndex = lazy(() => import("./pages/admin-os/people-ops/learning/LearningIndex"));
-const CourseCatalog = lazy(() => import("./pages/admin-os/people-ops/learning/CourseCatalog"));
-const LearningPathsPage = lazy(() => import("./pages/admin-os/people-ops/learning/LearningPaths"));
-const EnrollmentCenter = lazy(() => import("./pages/admin-os/people-ops/learning/EnrollmentCenter"));
-const SkillsCenter = lazy(() => import("./pages/admin-os/people-ops/learning/SkillsCenter"));
-const CertificationCenter = lazy(() => import("./pages/admin-os/people-ops/learning/CertificationCenter"));
-const DepartmentSkillMatrix = lazy(() => import("./pages/admin-os/people-ops/learning/DepartmentSkillMatrix"));
-const CareerRoadmapsPage = lazy(() => import("./pages/admin-os/people-ops/learning/CareerRoadmaps"));
-const RecruitmentIndex = lazy(() => import("./pages/admin-os/people-ops/recruitment/RecruitmentIndex"));
-const HiringRequestCenter = lazy(() => import("./pages/admin-os/people-ops/recruitment/HiringRequestCenter"));
-const CandidateDirectory = lazy(() => import("./pages/admin-os/people-ops/recruitment/CandidateDirectory"));
-const CandidateDetail = lazy(() => import("./pages/admin-os/people-ops/recruitment/CandidateDetail"));
-const InterviewPipeline = lazy(() => import("./pages/admin-os/people-ops/recruitment/InterviewPipeline"));
-const OfferCenter = lazy(() => import("./pages/admin-os/people-ops/recruitment/OfferCenter"));
-const RecruitmentAnalytics = lazy(() => import("./pages/admin-os/people-ops/recruitment/RecruitmentAnalytics"));
-const AttendanceIndex = lazy(() => import("./pages/admin-os/people-ops/attendance/AttendanceIndex"));
-const MyAttendance = lazy(() => import("./pages/admin-os/people-ops/attendance/MyAttendance"));
-const LeaveCenter = lazy(() => import("./pages/admin-os/people-ops/attendance/LeaveCenter"));
-const ShiftManagement = lazy(() => import("./pages/admin-os/people-ops/attendance/ShiftManagement"));
-const HolidayCalendar = lazy(() => import("./pages/admin-os/people-ops/attendance/HolidayCalendar"));
-const AttendanceCorrections = lazy(() => import("./pages/admin-os/people-ops/attendance/AttendanceCorrections"));
-const WorkforceAvailability = lazy(() => import("./pages/admin-os/people-ops/attendance/WorkforceAvailability"));
-const PayrollIndex = lazy(() => import("./pages/admin-os/people-ops/payroll/PayrollIndex"));
-const PayrollCycles = lazy(() => import("./pages/admin-os/people-ops/payroll/PayrollCycles"));
-const PayrollCycleDetail = lazy(() => import("./pages/admin-os/people-ops/payroll/PayrollCycleDetail"));
-const CompensationPlansPage = lazy(() => import("./pages/admin-os/people-ops/payroll/CompensationPlansPage"));
-const SalaryStructuresPage = lazy(() => import("./pages/admin-os/people-ops/payroll/SalaryStructuresPage"));
-const SalaryRevisionsPage = lazy(() => import("./pages/admin-os/people-ops/payroll/SalaryRevisionsPage"));
-const BonusCenter = lazy(() => import("./pages/admin-os/people-ops/payroll/BonusCenter"));
-const BenefitsCenter = lazy(() => import("./pages/admin-os/people-ops/payroll/BenefitsCenter"));
-const ReimbursementCenter = lazy(() => import("./pages/admin-os/people-ops/payroll/ReimbursementCenter"));
+const AdminOSGate = lazy(() => import("./pages/NotFound"));
+const AdminOSLayout = lazy(() => import("./pages/NotFound"));
+const AdminOSDashboard = lazy(() => import("./pages/NotFound"));
+const RoutingOverview = lazy(() => import("./pages/NotFound"));
+const ApprovalsInbox = lazy(() => import("./pages/NotFound"));
+const AdminOSModulePlaceholder = lazy(() => import("./pages/NotFound"));
+const AdminOSNoAccess = lazy(() => import("./pages/NotFound"));
+const AdminOSFirstLogin = lazy(() => import("./pages/NotFound"));
+const PeopleOpsIndex = lazy(() => import("./pages/NotFound"));
+const EmployeeDetailPage = lazy(() => import("./pages/NotFound"));
+const EmployeeForm = lazy(() => import("./pages/NotFound"));
+const OnboardingQueue = lazy(() => import("./pages/NotFound"));
+const OnboardingWizard = lazy(() => import("./pages/NotFound"));
+const OnboardingDetail = lazy(() => import("./pages/NotFound"));
+const EmployeePassport = lazy(() => import("./pages/NotFound"));
+const PassportPrint = lazy(() => import("./pages/NotFound"));
+const MovementCenter = lazy(() => import("./pages/NotFound"));
+const MovementWizard = lazy(() => import("./pages/NotFound"));
+const MovementDetail = lazy(() => import("./pages/NotFound"));
+const ReportingStructure = lazy(() => import("./pages/NotFound"));
+const DocumentsCenter = lazy(() => import("./pages/NotFound"));
+const OrganizationIndex = lazy(() => import("./pages/NotFound"));
+const OrgChart = lazy(() => import("./pages/NotFound"));
+const CapacityDashboard = lazy(() => import("./pages/NotFound"));
+const OpenPositions = lazy(() => import("./pages/NotFound"));
+const SuccessionPage = lazy(() => import("./pages/NotFound"));
+const WorkforcePlanning = lazy(() => import("./pages/NotFound"));
+const PerformanceIndex = lazy(() => import("./pages/NotFound"));
+const GoalsCenter = lazy(() => import("./pages/NotFound"));
+const ReviewCenter = lazy(() => import("./pages/NotFound"));
+const RecognitionCenter = lazy(() => import("./pages/NotFound"));
+const PipCenter = lazy(() => import("./pages/NotFound"));
+const CareerGrowth = lazy(() => import("./pages/NotFound"));
+const PromotionReadinessPage = lazy(() => import("./pages/NotFound"));
+const LearningIndex = lazy(() => import("./pages/NotFound"));
+const CourseCatalog = lazy(() => import("./pages/NotFound"));
+const LearningPathsPage = lazy(() => import("./pages/NotFound"));
+const EnrollmentCenter = lazy(() => import("./pages/NotFound"));
+const SkillsCenter = lazy(() => import("./pages/NotFound"));
+const CertificationCenter = lazy(() => import("./pages/NotFound"));
+const DepartmentSkillMatrix = lazy(() => import("./pages/NotFound"));
+const CareerRoadmapsPage = lazy(() => import("./pages/NotFound"));
+const RecruitmentIndex = lazy(() => import("./pages/NotFound"));
+const HiringRequestCenter = lazy(() => import("./pages/NotFound"));
+const CandidateDirectory = lazy(() => import("./pages/NotFound"));
+const CandidateDetail = lazy(() => import("./pages/NotFound"));
+const InterviewPipeline = lazy(() => import("./pages/NotFound"));
+const OfferCenter = lazy(() => import("./pages/NotFound"));
+const RecruitmentAnalytics = lazy(() => import("./pages/NotFound"));
+const AttendanceIndex = lazy(() => import("./pages/NotFound"));
+const MyAttendance = lazy(() => import("./pages/NotFound"));
+const LeaveCenter = lazy(() => import("./pages/NotFound"));
+const ShiftManagement = lazy(() => import("./pages/NotFound"));
+const HolidayCalendar = lazy(() => import("./pages/NotFound"));
+const AttendanceCorrections = lazy(() => import("./pages/NotFound"));
+const WorkforceAvailability = lazy(() => import("./pages/NotFound"));
+const PayrollIndex = lazy(() => import("./pages/NotFound"));
+const PayrollCycles = lazy(() => import("./pages/NotFound"));
+const PayrollCycleDetail = lazy(() => import("./pages/NotFound"));
+const CompensationPlansPage = lazy(() => import("./pages/NotFound"));
+const SalaryStructuresPage = lazy(() => import("./pages/NotFound"));
+const SalaryRevisionsPage = lazy(() => import("./pages/NotFound"));
+const BonusCenter = lazy(() => import("./pages/NotFound"));
+const BenefitsCenter = lazy(() => import("./pages/NotFound"));
+const ReimbursementCenter = lazy(() => import("./pages/NotFound"));
 // Executive Workspace (Phase 3.1)
-const ExecutiveGate = lazy(() =>
-  import("./components/admin-os/executive/ExecutiveGate").then((m) => ({ default: m.ExecutiveGate })),
-);
-const ExecutiveLayout = lazy(() => import("./components/admin-os/executive/ExecutiveLayout"));
-const ExecutiveDashboard = lazy(() => import("./pages/admin-os/executive/ExecutiveDashboard"));
-const ExecutiveProfile = lazy(() => import("./pages/admin-os/executive/ExecutiveProfile"));
+const ExecutiveGate = lazy(() => import("./pages/NotFound"));
+const ExecutiveLayout = lazy(() => import("./pages/NotFound"));
+const ExecutiveDashboard = lazy(() => import("./pages/NotFound"));
+const ExecutiveProfile = lazy(() => import("./pages/NotFound"));
 // Phase 3.9 — Founder Office Security & Identity
-const SecurityShell = lazy(() => import("./pages/admin-os/executive/security/SecurityShell"));
-const SecurityOverview = lazy(() => import("./pages/admin-os/executive/security/SecurityOverview"));
-const IdentityProfile = lazy(() => import("./pages/admin-os/executive/security/IdentityProfile"));
-const SessionManagerPage = lazy(() => import("./pages/admin-os/executive/security/SessionManager"));
-const TrustedDevicesPage = lazy(() => import("./pages/admin-os/executive/security/TrustedDevices"));
-const RecoveryCenterPage = lazy(() => import("./pages/admin-os/executive/security/RecoveryCenter"));
-const PasswordAndMFAPage = lazy(() => import("./pages/admin-os/executive/security/PasswordAndMFA"));
-const SecurityAlertsPage = lazy(() => import("./pages/admin-os/executive/security/SecurityAlerts"));
-const LoginHistoryPage = lazy(() => import("./pages/admin-os/executive/security/LoginHistory"));
-const SecurityPoliciesPage = lazy(() => import("./pages/admin-os/executive/security/SecurityPolicies"));
-const ExecutivePlaceholders = () => import("./pages/admin-os/executive/ExecutivePlaceholders");
-const ExecutiveInbox = lazy(() => import("./pages/admin-os/executive/ExecutiveInbox"));
-const ExecutiveApprovalDetail = lazy(() => import("./pages/admin-os/executive/ExecutiveApprovalDetail"));
+const SecurityShell = lazy(() => import("./pages/NotFound"));
+const SecurityOverview = lazy(() => import("./pages/NotFound"));
+const IdentityProfile = lazy(() => import("./pages/NotFound"));
+const SessionManagerPage = lazy(() => import("./pages/NotFound"));
+const TrustedDevicesPage = lazy(() => import("./pages/NotFound"));
+const RecoveryCenterPage = lazy(() => import("./pages/NotFound"));
+const PasswordAndMFAPage = lazy(() => import("./pages/NotFound"));
+const SecurityAlertsPage = lazy(() => import("./pages/NotFound"));
+const LoginHistoryPage = lazy(() => import("./pages/NotFound"));
+const SecurityPoliciesPage = lazy(() => import("./pages/NotFound"));
+const ExecutivePlaceholders = () => import("./pages/NotFound");
+const ExecutiveInbox = lazy(() => import("./pages/NotFound"));
+const ExecutiveApprovalDetail = lazy(() => import("./pages/NotFound"));
 
-const ExecutiveDepartments = lazy(() => ExecutivePlaceholders().then((m) => ({ default: m.ExecutiveDepartments })));
-const ExecutiveEmployees = lazy(() => ExecutivePlaceholders().then((m) => ({ default: m.ExecutiveEmployees })));
-const ExecutiveReports = lazy(() => ExecutivePlaceholders().then((m) => ({ default: m.ExecutiveReports })));
-const DecisionLogPage = lazy(() => import("./pages/admin-os/executive/DecisionLog"));
+const ExecutiveDepartments = lazy(() => import("./pages/NotFound"));
+const ExecutiveEmployees = lazy(() => import("./pages/NotFound"));
+const ExecutiveReports = lazy(() => import("./pages/NotFound"));
+const DecisionLogPage = lazy(() => import("./pages/NotFound"));
 // Phase 3.8 — Company Configuration & Global Settings
-const CompanyShell = lazy(() => import("./pages/admin-os/executive/company/CompanyShell"));
-const CompanyOverview = lazy(() => import("./pages/admin-os/executive/company/CompanyOverview"));
-const CompanyProfilePage = lazy(() => import("./pages/admin-os/executive/company/CompanyProfile"));
-const BrandManagementPage = lazy(() => import("./pages/admin-os/executive/company/BrandManagement"));
-const PlatformPreferencesPage = lazy(() => import("./pages/admin-os/executive/company/PlatformPreferences"));
-const LocalizationCenterPage = lazy(() => import("./pages/admin-os/executive/company/LocalizationCenter"));
-const FeatureFlagsManagerPage = lazy(() => import("./pages/admin-os/executive/company/FeatureFlagsManager"));
-const ModuleManagerPage = lazy(() => import("./pages/admin-os/executive/company/ModuleManager"));
-const CompanyCalendarPage = lazy(() => import("./pages/admin-os/executive/company/CompanyCalendar"));
-const MetadataManagerPage = lazy(() => import("./pages/admin-os/executive/company/MetadataManager"));
+const CompanyShell = lazy(() => import("./pages/NotFound"));
+const CompanyOverview = lazy(() => import("./pages/NotFound"));
+const CompanyProfilePage = lazy(() => import("./pages/NotFound"));
+const BrandManagementPage = lazy(() => import("./pages/NotFound"));
+const PlatformPreferencesPage = lazy(() => import("./pages/NotFound"));
+const LocalizationCenterPage = lazy(() => import("./pages/NotFound"));
+const FeatureFlagsManagerPage = lazy(() => import("./pages/NotFound"));
+const ModuleManagerPage = lazy(() => import("./pages/NotFound"));
+const CompanyCalendarPage = lazy(() => import("./pages/NotFound"));
+const MetadataManagerPage = lazy(() => import("./pages/NotFound"));
 // Phase 3.10 — Automation
-const AutomationShell = lazy(() => import("./pages/admin-os/executive/automation/AutomationShell"));
-const AutomationOverview = lazy(() => import("./pages/admin-os/executive/automation/AutomationOverview"));
-const AutomationsList = lazy(() => import("./pages/admin-os/executive/automation/AutomationsList"));
-const AutomationBuilder = lazy(() => import("./pages/admin-os/executive/automation/AutomationBuilder"));
-const AutomationSchedulesPage = lazy(() => import("./pages/admin-os/executive/automation/SchedulesPage"));
-const AutomationRemindersPage = lazy(() => import("./pages/admin-os/executive/automation/RemindersPage"));
-const AutomationEscalationsPage = lazy(() => import("./pages/admin-os/executive/automation/EscalationsPage"));
-const AutomationTemplatesPage = lazy(() => import("./pages/admin-os/executive/automation/TemplatesPage"));
-const AutomationHistoryPage = lazy(() => import("./pages/admin-os/executive/automation/HistoryPage"));
-const AutomationMonitorPage = lazy(() => import("./pages/admin-os/executive/automation/MonitorPage"));
+const AutomationShell = lazy(() => import("./pages/NotFound"));
+const AutomationOverview = lazy(() => import("./pages/NotFound"));
+const AutomationsList = lazy(() => import("./pages/NotFound"));
+const AutomationBuilder = lazy(() => import("./pages/NotFound"));
+const AutomationSchedulesPage = lazy(() => import("./pages/NotFound"));
+const AutomationRemindersPage = lazy(() => import("./pages/NotFound"));
+const AutomationEscalationsPage = lazy(() => import("./pages/NotFound"));
+const AutomationTemplatesPage = lazy(() => import("./pages/NotFound"));
+const AutomationHistoryPage = lazy(() => import("./pages/NotFound"));
+const AutomationMonitorPage = lazy(() => import("./pages/NotFound"));
 // Phase 3.11 — Executive AI
-const AiShell = lazy(() => import("./pages/admin-os/executive/ai/AiShell"));
-const AiChat = lazy(() => import("./pages/admin-os/executive/ai/AiChat"));
-const AiRecommendationsPage = lazy(() => import("./pages/admin-os/executive/ai/RecommendationsPage"));
-const AiPredictionsPage = lazy(() => import("./pages/admin-os/executive/ai/PredictionsPage"));
-const AiRisksPage = lazy(() => import("./pages/admin-os/executive/ai/RisksPage"));
-const AiSummariesPage = lazy(() => import("./pages/admin-os/executive/ai/SummariesPage"));
-const AiKnowledgePage = lazy(() => import("./pages/admin-os/executive/ai/KnowledgeSearchPage"));
-const AiPromptsPage = lazy(() => import("./pages/admin-os/executive/ai/PromptsPage"));
+const AiShell = lazy(() => import("./pages/NotFound"));
+const AiChat = lazy(() => import("./pages/NotFound"));
+const AiRecommendationsPage = lazy(() => import("./pages/NotFound"));
+const AiPredictionsPage = lazy(() => import("./pages/NotFound"));
+const AiRisksPage = lazy(() => import("./pages/NotFound"));
+const AiSummariesPage = lazy(() => import("./pages/NotFound"));
+const AiKnowledgePage = lazy(() => import("./pages/NotFound"));
+const AiPromptsPage = lazy(() => import("./pages/NotFound"));
 // Phase 3.12 — Production Readiness
-const ProductionShell = lazy(() => import("./pages/admin-os/executive/production/ProductionShell"));
-const ProductionOverview = lazy(() => import("./pages/admin-os/executive/production/ProductionOverview"));
-const ProductionModules = lazy(() => import("./pages/admin-os/executive/production/ModuleHealthPage"));
-const ProductionIntegrations = lazy(() => import("./pages/admin-os/executive/production/IntegrationsPage"));
-const ProductionChecklist = lazy(() => import("./pages/admin-os/executive/production/ReleaseChecklist"));
-const ProductionReleases = lazy(() => import("./pages/admin-os/executive/production/ReleasesPage"));
-const ProductionHistory = lazy(() => import("./pages/admin-os/executive/production/ValidationHistoryPage"));
-const ProductionIssues = lazy(() => import("./pages/admin-os/executive/production/IssueTrackerPage"));
+const ProductionShell = lazy(() => import("./pages/NotFound"));
+const ProductionOverview = lazy(() => import("./pages/NotFound"));
+const ProductionModules = lazy(() => import("./pages/NotFound"));
+const ProductionIntegrations = lazy(() => import("./pages/NotFound"));
+const ProductionChecklist = lazy(() => import("./pages/NotFound"));
+const ProductionReleases = lazy(() => import("./pages/NotFound"));
+const ProductionHistory = lazy(() => import("./pages/NotFound"));
+const ProductionIssues = lazy(() => import("./pages/NotFound"));
 // Phase 3.11 — KIP (Knowledge Intelligence Platform)
-const KipShell = lazy(() => import("./pages/admin-os/executive/knowledge/KipShell"));
-const KnowledgeHome = lazy(() => import("./pages/admin-os/executive/knowledge/KnowledgeHome"));
-const KipChatWorkspace = lazy(() => import("./pages/admin-os/executive/knowledge/ChatWorkspace"));
-const KipDocumentLibrary = lazy(() => import("./pages/admin-os/executive/knowledge/DocumentLibrary"));
-const KipCollectionsList = lazy(() => import("./pages/admin-os/executive/knowledge/CollectionsList"));
-const KipCollectionDetail = lazy(() => import("./pages/admin-os/executive/knowledge/CollectionDetail"));
-const KipKnowledgeSearch = lazy(() => import("./pages/admin-os/executive/knowledge/KnowledgeSearch"));
-const KipBookmarksPage = lazy(() => import("./pages/admin-os/executive/knowledge/BookmarksPage"));
-const KipConversationHistory = lazy(() => import("./pages/admin-os/executive/knowledge/ConversationHistory"));
-const ExecutiveNotificationsPage = lazy(() => ExecutivePlaceholders().then((m) => ({ default: m.ExecutiveNotifications })));
+const KipShell = lazy(() => import("./pages/NotFound"));
+const KnowledgeHome = lazy(() => import("./pages/NotFound"));
+const KipChatWorkspace = lazy(() => import("./pages/NotFound"));
+const KipDocumentLibrary = lazy(() => import("./pages/NotFound"));
+const KipCollectionsList = lazy(() => import("./pages/NotFound"));
+const KipCollectionDetail = lazy(() => import("./pages/NotFound"));
+const KipKnowledgeSearch = lazy(() => import("./pages/NotFound"));
+const KipBookmarksPage = lazy(() => import("./pages/NotFound"));
+const KipConversationHistory = lazy(() => import("./pages/NotFound"));
+const ExecutiveNotificationsPage = lazy(() => import("./pages/NotFound"));
 // Phase 3.4 — Governance
-const GovernanceIndex = lazy(() => import("./pages/admin-os/executive/governance/GovernanceIndex"));
-const PolicyCenter = lazy(() => import("./pages/admin-os/executive/governance/PolicyCenter"));
-const PolicyDetail = lazy(() => import("./pages/admin-os/executive/governance/PolicyDetail"));
-const AuthorityMatrixPage = lazy(() => import("./pages/admin-os/executive/governance/AuthorityMatrix"));
-const ApprovalMatrixPage = lazy(() => import("./pages/admin-os/executive/governance/ApprovalMatrix"));
-const DelegationCenter = lazy(() => import("./pages/admin-os/executive/governance/DelegationCenter"));
-const DepartmentCharters = lazy(() => import("./pages/admin-os/executive/governance/DepartmentCharters"));
-const GovernanceSearchPage = lazy(() => import("./pages/admin-os/executive/governance/GovernanceSearch"));
+const GovernanceIndex = lazy(() => import("./pages/NotFound"));
+const PolicyCenter = lazy(() => import("./pages/NotFound"));
+const PolicyDetail = lazy(() => import("./pages/NotFound"));
+const AuthorityMatrixPage = lazy(() => import("./pages/NotFound"));
+const ApprovalMatrixPage = lazy(() => import("./pages/NotFound"));
+const DelegationCenter = lazy(() => import("./pages/NotFound"));
+const DepartmentCharters = lazy(() => import("./pages/NotFound"));
+const GovernanceSearchPage = lazy(() => import("./pages/NotFound"));
 // Phase 3.5 — Strategic Decisions
-const DecisionCenter = lazy(() => import("./pages/admin-os/executive/decisions/DecisionCenter"));
-const DecisionEditor = lazy(() => import("./pages/admin-os/executive/decisions/DecisionEditor"));
-const DecisionDetail = lazy(() => import("./pages/admin-os/executive/decisions/DecisionDetail"));
-const DecisionSearchPage = lazy(() => import("./pages/admin-os/executive/decisions/DecisionSearch"));
+const DecisionCenter = lazy(() => import("./pages/NotFound"));
+const DecisionEditor = lazy(() => import("./pages/NotFound"));
+const DecisionDetail = lazy(() => import("./pages/NotFound"));
+const DecisionSearchPage = lazy(() => import("./pages/NotFound"));
 
 // Phase 3.6 — Executive Reports & Analytics
-const ReportsShell = lazy(() => import("./pages/admin-os/executive/reports/ReportsHome"));
-const ReportsOverview = lazy(() => import("./pages/admin-os/executive/reports/ReportsOverview"));
-const AnalyticsCenter = lazy(() => import("./pages/admin-os/executive/reports/AnalyticsCenter"));
-const ScorecardsPage = lazy(() => import("./pages/admin-os/executive/reports/ScorecardsPage"));
-const TrendAnalysis = lazy(() => import("./pages/admin-os/executive/reports/TrendAnalysis"));
-const ReportLibrary = lazy(() => import("./pages/admin-os/executive/reports/ReportLibrary"));
-const ScheduledReportsPage = lazy(() => import("./pages/admin-os/executive/reports/ScheduledReports"));
-const ExportCenterPage = lazy(() => import("./pages/admin-os/executive/reports/ExportCenter"));
-const DepartmentReportCompliance = lazy(() => import("./pages/admin-os/executive/reports/DepartmentReportCompliance"));
+const ReportsShell = lazy(() => import("./pages/NotFound"));
+const ReportsOverview = lazy(() => import("./pages/NotFound"));
+const AnalyticsCenter = lazy(() => import("./pages/NotFound"));
+const ScorecardsPage = lazy(() => import("./pages/NotFound"));
+const TrendAnalysis = lazy(() => import("./pages/NotFound"));
+const ReportLibrary = lazy(() => import("./pages/NotFound"));
+const ScheduledReportsPage = lazy(() => import("./pages/NotFound"));
+const ExportCenterPage = lazy(() => import("./pages/NotFound"));
+const DepartmentReportCompliance = lazy(() => import("./pages/NotFound"));
 
 // Phase 3.7 — Executive Command Center
-const CommandShell = lazy(() => import("./pages/admin-os/executive/command/CommandShell"));
-const CommandOverview = lazy(() => import("./pages/admin-os/executive/command/CommandOverview"));
-const EmergencyPanel = lazy(() => import("./pages/admin-os/executive/command/EmergencyPanel"));
-const MaintenanceCenterPage = lazy(() => import("./pages/admin-os/executive/command/MaintenanceCenter"));
-const AnnouncementCenterPage = lazy(() => import("./pages/admin-os/executive/command/AnnouncementCenter"));
-const BroadcastCenterPage = lazy(() => import("./pages/admin-os/executive/command/BroadcastCenter"));
-const SystemStatusDashboard = lazy(() => import("./pages/admin-os/executive/command/SystemStatusDashboard"));
-const IncidentCenterPage = lazy(() => import("./pages/admin-os/executive/command/IncidentCenter"));
-const ContinuityCenterPage = lazy(() => import("./pages/admin-os/executive/command/ContinuityCenter"));
-const LockdownPanelPage = lazy(() => import("./pages/admin-os/executive/command/LockdownPanel"));
-const WatchlistPanelPage = lazy(() => import("./pages/admin-os/executive/command/WatchlistPanel"));
+const CommandShell = lazy(() => import("./pages/NotFound"));
+const CommandOverview = lazy(() => import("./pages/NotFound"));
+const EmergencyPanel = lazy(() => import("./pages/NotFound"));
+const MaintenanceCenterPage = lazy(() => import("./pages/NotFound"));
+const AnnouncementCenterPage = lazy(() => import("./pages/NotFound"));
+const BroadcastCenterPage = lazy(() => import("./pages/NotFound"));
+const SystemStatusDashboard = lazy(() => import("./pages/NotFound"));
+const IncidentCenterPage = lazy(() => import("./pages/NotFound"));
+const ContinuityCenterPage = lazy(() => import("./pages/NotFound"));
+const LockdownPanelPage = lazy(() => import("./pages/NotFound"));
+const WatchlistPanelPage = lazy(() => import("./pages/NotFound"));
 const FounderOfficeDashboard = lazy(
-  () => import("./pages/admin-os/founder-office/FounderOfficeDashboard"),
+  () => import("./pages/NotFound"),
 );
 const AppointmentsPanel = lazy(
-  () => import("./pages/admin-os/founder-office/AppointmentsPanel"),
+  () => import("./pages/NotFound"),
 );
-const AuditCenter = lazy(() => import("./pages/admin-os/audit/AuditCenter"));
+const AuditCenter = lazy(() => import("./pages/NotFound"));
 const DepartmentsIndex = lazy(
-  () => import("./pages/admin-os/departments/DepartmentsIndex"),
+  () => import("./pages/NotFound"),
 );
 const DepartmentDetail = lazy(
-  () => import("./pages/admin-os/departments/DepartmentDetail"),
+  () => import("./pages/NotFound"),
 );
 // Phase 4.1 — Trust & Safety
-const TrustSafetyShell = lazy(() => import("./pages/admin-os/trust-safety/TrustSafetyShell"));
-const TsDashboard = lazy(() => import("./pages/admin-os/trust-safety/TsDashboard"));
-const TsCaseQueue = lazy(() => import("./pages/admin-os/trust-safety/CaseQueue"));
-const TsCaseDetail = lazy(() => import("./pages/admin-os/trust-safety/CaseDetail"));
-const TsAppealsCenter = lazy(() => import("./pages/admin-os/trust-safety/AppealsCenter"));
-const TsPolicyReference = lazy(() => import("./pages/admin-os/trust-safety/PolicyReference"));
+const TrustSafetyShell = lazy(() => import("./pages/NotFound"));
+const TsDashboard = lazy(() => import("./pages/NotFound"));
+const TsCaseQueue = lazy(() => import("./pages/NotFound"));
+const TsCaseDetail = lazy(() => import("./pages/NotFound"));
+const TsAppealsCenter = lazy(() => import("./pages/NotFound"));
+const TsPolicyReference = lazy(() => import("./pages/NotFound"));
 // Phase 4.2 — Verification
-const VerificationShell = lazy(() => import("./pages/admin-os/verification/VerificationShell"));
-const VerificationDashboard = lazy(() => import("./pages/admin-os/verification/VerificationDashboard"));
-const VerApplicationQueue = lazy(() => import("./pages/admin-os/verification/ApplicationQueue"));
-const VerCaseWorkspace = lazy(() => import("./pages/admin-os/verification/CaseWorkspace"));
-const VerBadgeManager = lazy(() => import("./pages/admin-os/verification/BadgeManager"));
-const VerAffiliationManager = lazy(() => import("./pages/admin-os/verification/AffiliationManager"));
-const VerAppealsCenter = lazy(() => import("./pages/admin-os/verification/AppealsCenter"));
-const VerHistoryPage = lazy(() => import("./pages/admin-os/verification/VerificationHistory"));
-const VerVirtualWorldRequests = lazy(() => import("./pages/admin-os/verification/VirtualWorldRequests"));
+const VerificationShell = lazy(() => import("./pages/NotFound"));
+const VerificationDashboard = lazy(() => import("./pages/NotFound"));
+const VerApplicationQueue = lazy(() => import("./pages/NotFound"));
+const VerCaseWorkspace = lazy(() => import("./pages/NotFound"));
+const VerBadgeManager = lazy(() => import("./pages/NotFound"));
+const VerAffiliationManager = lazy(() => import("./pages/NotFound"));
+const VerAppealsCenter = lazy(() => import("./pages/NotFound"));
+const VerHistoryPage = lazy(() => import("./pages/NotFound"));
+const VerVirtualWorldRequests = lazy(() => import("./pages/NotFound"));
 // Phase 4.3 — Support
-const SupportShell = lazy(() => import("./pages/admin-os/support/SupportShell"));
-const SupportDashboardPage = lazy(() => import("./pages/admin-os/support/SupportDashboard"));
-const SupportTicketQueue = lazy(() => import("./pages/admin-os/support/TicketQueue"));
-const SupportTicketWorkspace = lazy(() => import("./pages/admin-os/support/TicketWorkspace"));
-const SupportSlaDashboard = lazy(() => import("./pages/admin-os/support/SlaDashboard"));
-const SupportAnalyticsPage = lazy(() => import("./pages/admin-os/support/SupportAnalytics"));
+const SupportShell = lazy(() => import("./pages/NotFound"));
+const SupportDashboardPage = lazy(() => import("./pages/NotFound"));
+const SupportTicketQueue = lazy(() => import("./pages/NotFound"));
+const SupportTicketWorkspace = lazy(() => import("./pages/NotFound"));
+const SupportSlaDashboard = lazy(() => import("./pages/NotFound"));
+const SupportAnalyticsPage = lazy(() => import("./pages/NotFound"));
 
-const EngineeringShell = lazy(() => import("./pages/admin-os/engineering/EngineeringShell"));
-const EngDashboard = lazy(() => import("./pages/admin-os/engineering/EngDashboard"));
-const EngProjectsPage = lazy(() => import("./pages/admin-os/engineering/ProjectsPage"));
-const EngSprintsPage = lazy(() => import("./pages/admin-os/engineering/SprintsPage"));
-const EngKanbanBoard = lazy(() => import("./pages/admin-os/engineering/KanbanBoard"));
-const EngTaskCenter = lazy(() => import("./pages/admin-os/engineering/TaskCenter"));
-const EngBugCenter = lazy(() => import("./pages/admin-os/engineering/BugCenter"));
-const EngReleaseCenter = lazy(() => import("./pages/admin-os/engineering/ReleaseCenter"));
-const EngDesignCenter = lazy(() => import("./pages/admin-os/engineering/DesignCenter"));
-const EngDocumentationCenter = lazy(() => import("./pages/admin-os/engineering/DocumentationCenter"));
-const EngReports = lazy(() => import("./pages/admin-os/engineering/EngReports"));
+const EngineeringShell = lazy(() => import("./pages/NotFound"));
+const EngDashboard = lazy(() => import("./pages/NotFound"));
+const EngProjectsPage = lazy(() => import("./pages/NotFound"));
+const EngSprintsPage = lazy(() => import("./pages/NotFound"));
+const EngKanbanBoard = lazy(() => import("./pages/NotFound"));
+const EngTaskCenter = lazy(() => import("./pages/NotFound"));
+const EngBugCenter = lazy(() => import("./pages/NotFound"));
+const EngReleaseCenter = lazy(() => import("./pages/NotFound"));
+const EngDesignCenter = lazy(() => import("./pages/NotFound"));
+const EngDocumentationCenter = lazy(() => import("./pages/NotFound"));
+const EngReports = lazy(() => import("./pages/NotFound"));
 
-const FinanceLegalShell = lazy(() => import("./pages/admin-os/finance-legal/FinanceLegalShell"));
-const FinanceDashboard = lazy(() => import("./pages/admin-os/finance-legal/FinanceDashboard"));
-const FinBudgetCenter = lazy(() => import("./pages/admin-os/finance-legal/BudgetCenter"));
-const FinExpenseCenter = lazy(() => import("./pages/admin-os/finance-legal/ExpenseCenter"));
-const FinInvoiceCenter = lazy(() => import("./pages/admin-os/finance-legal/InvoiceCenter"));
-const FinProcurementCenter = lazy(() => import("./pages/admin-os/finance-legal/ProcurementCenter"));
-const FinVendorCenter = lazy(() => import("./pages/admin-os/finance-legal/VendorCenter"));
-const FinContractCenter = lazy(() => import("./pages/admin-os/finance-legal/ContractCenter"));
-const FinComplianceDashboard = lazy(() => import("./pages/admin-os/finance-legal/ComplianceDashboard"));
-const FinCreatorPayoutQueue = lazy(() => import("./pages/admin-os/finance-legal/CreatorPayoutQueue"));
-const FinHireApprovals = lazy(() => import("./pages/admin-os/finance-legal/HireApprovals"));
-const FinNewHireBankDetails = lazy(() => import("./pages/admin-os/finance-legal/NewHireBankDetails"));
-const FinWalletLookup = lazy(() => import("./pages/admin-os/finance/WalletLookup"));
-const HireCompensationPage = lazy(() => import("./pages/admin-os/people-ops/recruitment/HireCompensation"));
-const EmployeeFinanceOnboarding = lazy(() => import("./pages/admin-os/employee/FinanceOnboardingForm"));
-const SecurityDeptShell = lazy(() => import("./pages/admin-os/security/SecurityShell"));
-const SecurityDashboardPage = lazy(() => import("./pages/admin-os/security/SecurityDashboard"));
-const SecIncidentCenter = lazy(() => import("./pages/admin-os/security/IncidentCenter"));
-const SecIncidentWorkspace = lazy(() => import("./pages/admin-os/security/IncidentWorkspace"));
-const SecThreatCenter = lazy(() => import("./pages/admin-os/security/ThreatCenter"));
-const SecIamCenter = lazy(() => import("./pages/admin-os/security/IamCenter"));
-const SecAccessReviews = lazy(() => import("./pages/admin-os/security/AccessReviews"));
-const SecInvestigationWorkspace = lazy(() => import("./pages/admin-os/security/InvestigationWorkspace"));
-const SecComplianceDashboard = lazy(() => import("./pages/admin-os/security/ComplianceDashboard"));
-const SecAnalytics = lazy(() => import("./pages/admin-os/security/SecurityAnalytics"));
-const PlatformIndex = lazy(() => import("./pages/admin-os/platform/PlatformIndex"));
-const ApprovalCenter = lazy(() => import("./pages/admin-os/platform/ApprovalCenter"));
-const WorkflowViewer = lazy(() => import("./pages/admin-os/platform/WorkflowViewer"));
-const NotificationCenter = lazy(() => import("./pages/admin-os/platform/NotificationCenter"));
-const ActivityFeed = lazy(() => import("./pages/admin-os/platform/ActivityFeed"));
-const AssignmentQueue = lazy(() => import("./pages/admin-os/platform/AssignmentQueue"));
-const GlobalSearch = lazy(() => import("./pages/admin-os/platform/GlobalSearch"));
-const DocumentManager = lazy(() => import("./pages/admin-os/platform/DocumentManager"));
-const ReportsCenter = lazy(() => import("./pages/admin-os/platform/ReportsCenter"));
-const DashboardConsole = lazy(() => import("./pages/admin-os/platform/DashboardConsole"));
-const SchedulerConsole = lazy(() => import("./pages/admin-os/platform/SchedulerConsole"));
-const DesignSystem = lazy(() => import("./pages/admin-os/platform/DesignSystem"));
+const FinanceLegalShell = lazy(() => import("./pages/NotFound"));
+const FinanceDashboard = lazy(() => import("./pages/NotFound"));
+const FinBudgetCenter = lazy(() => import("./pages/NotFound"));
+const FinExpenseCenter = lazy(() => import("./pages/NotFound"));
+const FinInvoiceCenter = lazy(() => import("./pages/NotFound"));
+const FinProcurementCenter = lazy(() => import("./pages/NotFound"));
+const FinVendorCenter = lazy(() => import("./pages/NotFound"));
+const FinContractCenter = lazy(() => import("./pages/NotFound"));
+const FinComplianceDashboard = lazy(() => import("./pages/NotFound"));
+const FinCreatorPayoutQueue = lazy(() => import("./pages/NotFound"));
+const FinHireApprovals = lazy(() => import("./pages/NotFound"));
+const FinNewHireBankDetails = lazy(() => import("./pages/NotFound"));
+const FinWalletLookup = lazy(() => import("./pages/NotFound"));
+const HireCompensationPage = lazy(() => import("./pages/NotFound"));
+const EmployeeFinanceOnboarding = lazy(() => import("./pages/NotFound"));
+const SecurityDeptShell = lazy(() => import("./pages/NotFound"));
+const SecurityDashboardPage = lazy(() => import("./pages/NotFound"));
+const SecIncidentCenter = lazy(() => import("./pages/NotFound"));
+const SecIncidentWorkspace = lazy(() => import("./pages/NotFound"));
+const SecThreatCenter = lazy(() => import("./pages/NotFound"));
+const SecIamCenter = lazy(() => import("./pages/NotFound"));
+const SecAccessReviews = lazy(() => import("./pages/NotFound"));
+const SecInvestigationWorkspace = lazy(() => import("./pages/NotFound"));
+const SecComplianceDashboard = lazy(() => import("./pages/NotFound"));
+const SecAnalytics = lazy(() => import("./pages/NotFound"));
+const PlatformIndex = lazy(() => import("./pages/NotFound"));
+const ApprovalCenter = lazy(() => import("./pages/NotFound"));
+const WorkflowViewer = lazy(() => import("./pages/NotFound"));
+const NotificationCenter = lazy(() => import("./pages/NotFound"));
+const ActivityFeed = lazy(() => import("./pages/NotFound"));
+const AssignmentQueue = lazy(() => import("./pages/NotFound"));
+const GlobalSearch = lazy(() => import("./pages/NotFound"));
+const DocumentManager = lazy(() => import("./pages/NotFound"));
+const ReportsCenter = lazy(() => import("./pages/NotFound"));
+const DashboardConsole = lazy(() => import("./pages/NotFound"));
+const SchedulerConsole = lazy(() => import("./pages/NotFound"));
+const DesignSystem = lazy(() => import("./pages/NotFound"));
 
 
 
@@ -394,26 +388,26 @@ const queryClient = new QueryClient({
 });
 
 // Organization workspace (lazy)
-const OrganizationLayout = lazy(() => import("./components/organization/layout/OrganizationLayout"));
-const OrgCreateOrganization = lazy(() => import("./pages/organization/CreateOrganization"));
-const OrgDashboard = lazy(() => import("./pages/organization/OrganizationDashboard"));
-const OrgFeed = lazy(() => import("./pages/organization/OrganizationFeed"));
-const OrgMembers = lazy(() => import("./pages/organization/OrganizationMembers"));
-const OrgMemberDetails = lazy(() => import("./pages/organization/OrganizationMemberDetails"));
-const OrgRoles = lazy(() => import("./pages/organization/OrganizationRoles"));
-const OrgPermissions = lazy(() => import("./pages/organization/OrganizationPermissions"));
-const OrgDepartments = lazy(() => import("./pages/organization/OrganizationDepartments"));
-const OrgProjects = lazy(() => import("./pages/organization/OrganizationProjects"));
-const OrgTasks = lazy(() => import("./pages/organization/OrganizationTasks"));
-const OrgCalendar = lazy(() => import("./pages/organization/OrganizationCalendar"));
-const OrgDrive = lazy(() => import("./pages/organization/OrganizationDrive"));
-const OrgHiring = lazy(() => import("./pages/organization/OrganizationHiring"));
-const OrgAnalytics = lazy(() => import("./pages/organization/OrganizationAnalytics"));
-const OrgSettings = lazy(() => import("./pages/organization/OrganizationSettings"));
-const OrgProfile = lazy(() => import("./pages/organization/OrganizationProfile"));
-const OrgAnnouncements = lazy(() => import("./pages/organization/OrganizationAnnouncements"));
-const OrgSearch = lazy(() => import("./pages/organization/OrganizationSearch"));
-const OrgNotifications = lazy(() => import("./pages/organization/OrganizationNotifications"));
+const OrganizationLayout = lazy(() => import("./pages/NotFound"));
+const OrgCreateOrganization = lazy(() => import("./pages/NotFound"));
+const OrgDashboard = lazy(() => import("./pages/NotFound"));
+const OrgFeed = lazy(() => import("./pages/NotFound"));
+const OrgMembers = lazy(() => import("./pages/NotFound"));
+const OrgMemberDetails = lazy(() => import("./pages/NotFound"));
+const OrgRoles = lazy(() => import("./pages/NotFound"));
+const OrgPermissions = lazy(() => import("./pages/NotFound"));
+const OrgDepartments = lazy(() => import("./pages/NotFound"));
+const OrgProjects = lazy(() => import("./pages/NotFound"));
+const OrgTasks = lazy(() => import("./pages/NotFound"));
+const OrgCalendar = lazy(() => import("./pages/NotFound"));
+const OrgDrive = lazy(() => import("./pages/NotFound"));
+const OrgHiring = lazy(() => import("./pages/NotFound"));
+const OrgAnalytics = lazy(() => import("./pages/NotFound"));
+const OrgSettings = lazy(() => import("./pages/NotFound"));
+const OrgProfile = lazy(() => import("./pages/NotFound"));
+const OrgAnnouncements = lazy(() => import("./pages/NotFound"));
+const OrgSearch = lazy(() => import("./pages/NotFound"));
+const OrgNotifications = lazy(() => import("./pages/NotFound"));
 
 const RouteFallback = () => (
   <div className="min-h-screen grid place-items-center">
@@ -467,8 +461,6 @@ const App = () => (
                   <Route path="/wallet/qr" element={<WalletQR />} />
                   <Route path="/wallet/security" element={<WalletSecurity />} />
                   <Route path="/wallet/card" element={<WalletCardPage />} />
-                  <Route path="/wallet/payslips" element={<MyPayslips />} />
-                  <Route path="/wallet/payslips/:itemId" element={<PayslipDetail />} />
                   <Route path="/profile" element={<Profile />} />
                   <Route path="/profile/edit" element={<EditProfile />} />
                   <Route path="/u/:username" element={<Profile />} />
@@ -700,12 +692,12 @@ const App = () => (
                   <Route path="people-ops" element={<PeopleOpsIndex />} />
                   <Route
                     path="people-ops/new"
-                    element={<EmployeeForm mode="create" />}
+                    element={<NotFound />}
                   />
                   <Route path="people-ops/:id" element={<EmployeeDetailPage />} />
                   <Route
                     path="people-ops/:id/edit"
-                    element={<EmployeeForm mode="edit" />}
+                    element={<NotFound />}
                   />
                   <Route path="people-ops/onboarding" element={<OnboardingQueue />} />
                   <Route path="people-ops/onboarding/new" element={<OnboardingWizard />} />

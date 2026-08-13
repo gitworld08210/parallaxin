@@ -18,8 +18,7 @@ import { AppearanceSheet } from "@/components/layout/AppearanceSheet";
 import { useMyWorkspaces } from "@/hooks/organization/useMyWorkspaces";
 import { VerificationBadge } from "@/components/vibe/VerificationBadge";
 import { AccountSwitcherSheet } from "@/components/layout/AccountSwitcherSheet";
-import { useEmployee } from "@/hooks/admin-os/useEmployee";
-import { ADMIN_PERMISSIONS, ACTIVE_EMPLOYMENT_STATUSES } from "@/features/admin-os/permissions";
+// useEmployee removed for Supabase migration fallback
 
 
 
@@ -78,11 +77,7 @@ export const SideMenu = ({ trigger }: { trigger: React.ReactNode }) => {
     { to: "/premium", icon: Crown, label: "Aurelix Premium", badge: "PRO" },
   ];
 
-  const { employee, hasPermission } = useEmployee();
-  const canAdminOS =
-    !!employee &&
-    ACTIVE_EMPLOYMENT_STATUSES.has(employee.employment_status) &&
-    hasPermission(ADMIN_PERMISSIONS.ADMIN_OS_ACCESS);
+  const canAdminOS = false;
 
   const community: Row[] = [
     { to: "/verification-center", icon: BadgeCheck, label: "Verification center", badge: "NEW" },

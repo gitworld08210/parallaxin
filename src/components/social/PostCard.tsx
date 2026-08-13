@@ -6,7 +6,8 @@ import {
 } from "lucide-react";
 import { TipSheet } from "@/components/social/TipSheet";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { supabase } from "@/integrations/supabase/client";
+import { doc, getDoc, setDoc, deleteDoc, updateDoc, increment, arrayUnion, arrayRemove, collection, addDoc, query, where, getDocs } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 import { useAuth } from "@/contexts/AuthProvider";
 import { AuraAvatar } from "@/components/vibe/AuraAvatar";
 import { VerificationBadge } from "@/components/vibe/VerificationBadge";
@@ -80,26 +81,21 @@ export const PostCard = ({ post, onOpenComments }: { post: FeedPost; onOpenComme
 
   useEffect(() => {
     if (!user) return;
-    supabase.from("saves").select("post_id").eq("user_id", user.id).eq("post_id", post.id).maybeSingle()
-      .then(({ data }) => setSaved(!!data));
+    (async () => {
+      try {
+        const saveRef = doc(db, "saves", `${user.id}_${post.id}`);
+        const snap = await getDoc(saveRef);
+        setSaved(snap.exists());
+      } catch (err) {
+        console.error("Error checking save:", err);
+      }
+    })();
   }, [user?.id, post.id]);
 
   useEffect(() => {
-    // Collaborators list should be stored in Firestore 'posts' collection or a subcollection
-    // Keeping this for now, but in Phase 2 it moves to Firestore.
-    if (post.collaborators) return;
-    (async () => {
-      const { data } = await supabase
-        .from("post_collaborators" as any)
-        .select("user_id")
-        .eq("post_id", post.id).eq("status", "accepted");
-      const ids = (data ?? []).map((r: any) => r.user_id);
-      if (!ids.length) { setCollabs([]); return; }
-      const { data: profs } = await supabase.from("profiles")
-        .select("user_id, username, display_name, avatar_url").in("user_id", ids);
-      setCollabs((profs ?? []) as any);
-    })();
-  }, [post.id]);
+    // Collaborators logic - currently mocked or skipped for Phase 2
+    setCollabs(post.collaborators ?? []);
+  }, [post.id, post.collaborators]);
 
   useEffect(() => {
     if (!user || !articleRef.current || viewedThisSession.has(post.id)) return;
@@ -108,7 +104,8 @@ export const PostCard = ({ post, onOpenComments }: { post: FeedPost; onOpenComme
       for (const e of entries) {
         if (e.isIntersecting && e.intersectionRatio >= 0.6 && !viewedThisSession.has(post.id)) {
           viewedThisSession.add(post.id);
-          (supabase.from("post_views" as any).insert({ post_id: post.id, viewer_id: user.id } as any) as any).then(() => {});
+          // Increment views in Firestore
+          updateDoc(doc(db, "posts", post.id), { view_count: increment(1) }).catch(() => {});
           obs.disconnect();
         }
       }
@@ -121,11 +118,22 @@ export const PostCard = ({ post, onOpenComments }: { post: FeedPost; onOpenComme
     if (!user) return toast.error("Sign in to like");
     const next = !liked;
     setLiked(next); setLikes((c) => c + (next ? 1 : -1));
-    if (next) {
-      const { error } = await supabase.from("likes").insert({ user_id: user.id, post_id: post.id });
-      if (error) { setLiked(false); setLikes((c) => c - 1); }
-    } else {
-      await supabase.from("likes").delete().eq("user_id", user.id).eq("post_id", post.id);
+    try {
+      const likeId = `${user.id}_${post.id}`;
+      const likeRef = doc(db, "likes", likeId);
+      const postRef = doc(db, "posts", post.id);
+
+      if (next) {
+        await setDoc(likeRef, { user_id: user.id, post_id: post.id, created_at: new Date().toISOString() });
+        await updateDoc(postRef, { like_count: increment(1) });
+      } else {
+        await deleteDoc(likeRef);
+        await updateDoc(postRef, { like_count: increment(-1) });
+      }
+    } catch (error: any) {
+      console.error("Error toggling like:", error);
+      setLiked(!next); setLikes((c) => c + (next ? -1 : 1));
+      toast.error("Could not update like");
     }
   };
 
@@ -133,11 +141,19 @@ export const PostCard = ({ post, onOpenComments }: { post: FeedPost; onOpenComme
     if (!user) return toast.error("Sign in to save");
     const next = !saved;
     setSaved(next);
-    if (next) {
-      const { error } = await supabase.from("saves").insert({ user_id: user.id, post_id: post.id });
-      if (error) setSaved(false); else toast.success("Saved");
-    } else {
-      await supabase.from("saves").delete().eq("user_id", user.id).eq("post_id", post.id);
+    try {
+      const saveId = `${user.id}_${post.id}`;
+      const saveRef = doc(db, "saves", saveId);
+      if (next) {
+        await setDoc(saveRef, { user_id: user.id, post_id: post.id, created_at: new Date().toISOString() });
+        toast.success("Saved");
+      } else {
+        await deleteDoc(saveRef);
+      }
+    } catch (error: any) {
+      console.error("Error toggling save:", error);
+      setSaved(!next);
+      toast.error("Could not update save");
     }
   };
 
@@ -152,8 +168,12 @@ export const PostCard = ({ post, onOpenComments }: { post: FeedPost; onOpenComme
 
   const remove = async () => {
     if (!confirm("Delete this post?")) return;
-    const { error } = await supabase.from("posts").delete().eq("id", post.id);
-    if (error) toast.error(error.message); else toast.success("Deleted");
+    try {
+      await deleteDoc(doc(db, "posts", post.id));
+      toast.success("Deleted");
+    } catch (error: any) {
+      toast.error(error.message);
+    }
   };
 
   const handle = post.profile?.username ?? "unknown";
@@ -222,9 +242,9 @@ export const PostCard = ({ post, onOpenComments }: { post: FeedPost; onOpenComme
                 {isOwner && !post.has_certificate && post.media_url && (
                   <DropdownMenuItem onSelect={async () => {
                     toast.loading("Generating certificate…", { id: "cert" });
-                    const { data, error } = await supabase.functions.invoke("ownership-certify", { body: { post_id: post.id } });
-                    if (error) toast.error(error.message, { id: "cert" });
-                    else { toast.success("Certificate created", { id: "cert" }); window.location.href = `/certificate/${post.id}`; }
+                    // Certificate generation will be moved to a Firebase Cloud Function.
+                    // For now, we simulate success or show coming soon.
+                    toast.error("Certificate generation coming soon to Firebase");
                   }}>
                     <ShieldCheck className="h-4 w-4 mr-2" /> Generate certificate
                   </DropdownMenuItem>
