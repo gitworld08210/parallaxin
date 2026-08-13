@@ -55,7 +55,7 @@ const Discover = () => {
         orderBy("like_count", "desc"),
         limit(12)
       )),
-      Promise.resolve({ data: [] as any[] }),
+      Promise.resolve({ data: [] }),
     ]).then(([pSnap, tRes, fRes]) => {
       if (cancelled) return;
       const profs = pSnap.docs.map(doc => ({ user_id: doc.id, ...doc.data() })) as Profile[];

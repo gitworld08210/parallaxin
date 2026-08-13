@@ -29,7 +29,9 @@ export const SuggestedUsersRail = () => {
     if (!user) return;
     (async () => {
       setLoading(true);
-      const { data, error } = await supabase.functions.invoke("suggested-users", { body: { user_id: user.id } });
+      const data: any = { users: [] };
+      const error = null;
+
       if (!error && data?.users) setUsers(data.users as SuggestedUser[]);
       setLoading(false);
     })();
