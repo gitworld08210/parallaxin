@@ -121,6 +121,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           setLoading(false);
         }, (err) => {
           console.error("Profile snapshot error:", err);
+          if (fbUser) {
+            console.log("Setting fallback profile for authenticated user:", fbUser.uid);
+            setProfile({
+              id: fbUser.uid,
+              user_id: fbUser.uid,
+              username: fbUser.email?.split('@')[0] || fbUser.uid.slice(0, 8),
+              display_name: fbUser.displayName || fbUser.email?.split('@')[0] || "User",
+              avatar_url: fbUser.photoURL,
+              onboarded_at: null,
+              verified: false,
+              followers_count: 0,
+              following_count: 0,
+              posts_count: 0,
+            } as any);
+          }
           setLoading(false);
         });
       } else {

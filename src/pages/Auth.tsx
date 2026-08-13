@@ -37,15 +37,24 @@ const Auth = () => {
   const routeForUser = async (uid: string) => {
     if (nextPath) { nav(nextPath, { replace: true }); return; }
     
-    const profSnap = await getDoc(doc(db, "profiles", uid));
-    const prof = profSnap.exists() ? profSnap.data() : null;
+    let prof: any = null;
+    try {
+      const profSnap = await getDoc(doc(db, "profiles", uid));
+      prof = profSnap.exists() ? profSnap.data() : null;
+    } catch (e) {
+      console.error("Error fetching profile during routing:", e);
+    }
 
     const intent = (localStorage.getItem(ORG_INTENT_KEY) as AccountKind | null) || null;
     const wantsOrg = intent === "organization" || prof?.account_type === "organization";
 
     if (wantsOrg && !prof?.organization_id) {
       if (prof && prof.account_type !== "organization") {
-        await setDoc(doc(db, "profiles", uid), { account_type: "organization" }, { merge: true });
+        try {
+          await setDoc(doc(db, "profiles", uid), { account_type: "organization" }, { merge: true });
+        } catch (e) {
+          console.error("Error updating profile to organization:", e);
+        }
       }
       localStorage.removeItem(ORG_INTENT_KEY);
       nav("/onboarding/organization", { replace: true });
@@ -76,14 +85,25 @@ const Auth = () => {
         if (kind === "organization") localStorage.setItem(ORG_INTENT_KEY, "organization");
         const res = await createUserWithEmailAndPassword(auth, email.trim(), password);
         
-        await setDoc(doc(db, "profiles", res.user.uid), {
+        const initialProfile = {
           id: res.user.uid,
           user_id: res.user.uid,
           email: email.trim(),
+          display_name: email.trim().split('@')[0],
+          username: email.trim().split('@')[0],
           account_type: kind,
           onboarded_at: null,
           created_at: serverTimestamp()
-        });
+        };
+
+        // Try Firestore write first
+        try {
+          await setDoc(doc(db, "profiles", res.user.uid), initialProfile);
+        } catch (e: any) {
+          console.error("Firestore initial profile write failed:", e);
+          // If Firestore fails due to permissions, the toast will show it below
+          throw e; 
+        }
 
         try {
           await supabase.from("profiles").insert({
@@ -121,7 +141,10 @@ const Auth = () => {
           id: uid,
           user_id: uid,
           email,
+          display_name: name,
+          username: email?.split('@')[0] || uid.slice(0, 8),
           account_type: kind,
+          avatar_url: res.user.photoURL,
           onboarded_at: null,
           created_at: serverTimestamp()
         });
