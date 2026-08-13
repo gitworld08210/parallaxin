@@ -176,22 +176,16 @@ const Auth = () => {
         animate={{ opacity: 1, y: 0 }}
         className="w-full max-w-[440px] relative z-10"
       >
-        <div className="text-center mb-10">
-          <div className="inline-flex items-center gap-2 mb-6">
-            <div className="h-12 w-12 rounded-2xl bg-gradient-primary grid place-items-center shadow-glow">
-              <Sparkles className="h-6 w-6 text-white" />
-            </div>
-            <span className="text-2xl font-black tracking-[0.2em]">AURELIX</span>
+        <div className="text-center mb-8 border border-white/10 p-8 rounded-none bg-black/40 backdrop-blur-md">
+          <div className="flex justify-center mb-8">
+            <span className="text-5xl font-serif italic tracking-tighter">Parallax</span>
           </div>
-          <h1 className="text-4xl font-bold tracking-tight mb-2">
-            {tab === "signin" ? "Welcome back" : "Create account"}
+          <h1 className="sr-only">
+            {tab === "signin" ? "Log in" : "Sign up"}
           </h1>
-          <p className="text-muted-foreground">
-            {tab === "signin" ? "Enter your details to sign in" : "Join the new creator universe"}
-          </p>
         </div>
 
-        <div className="space-y-6">
+        <div className="space-y-4 border border-white/10 p-8 rounded-none bg-black/40 backdrop-blur-md">
           {tab === "signup" && (
             <div className="grid grid-cols-2 gap-3 p-1 bg-[#111] border border-white/5 rounded-2xl">
               <button 
@@ -218,20 +212,17 @@ const Auth = () => {
                 type="email" 
                 value={email}
                 onChange={e => setEmail(e.target.value)}
-                placeholder="Email address"
-                className="w-full bg-[#111] border border-white/5 rounded-2xl pl-12 pr-4 py-4 text-[15px] outline-none focus:border-primary/50 transition-colors"
+                placeholder="Phone number, username, or email"
+                className="w-full bg-[#111] border border-white/5 rounded-lg pl-4 pr-4 py-3 text-[14px] outline-none focus:ring-1 focus:ring-primary/50 transition-all"
               />
             </div>
             <div className="relative">
-              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground">
-                <Lock className="h-5 w-5" />
-              </div>
               <input 
                 type="password" 
                 value={password}
                 onChange={e => setPassword(e.target.value)}
                 placeholder="Password"
-                className="w-full bg-[#111] border border-white/5 rounded-2xl pl-12 pr-4 py-4 text-[15px] outline-none focus:border-primary/50 transition-colors"
+                className="w-full bg-[#111] border border-white/5 rounded-lg pl-4 pr-4 py-3 text-[14px] outline-none focus:ring-1 focus:ring-primary/50 transition-all"
               />
             </div>
           </div>
@@ -239,10 +230,9 @@ const Auth = () => {
           <button 
             onClick={handleAuth}
             disabled={busy}
-            className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-4 rounded-2xl shadow-glow transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2"
+            className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-2.5 rounded-lg transition-all active:scale-[0.98] disabled:opacity-50 text-sm"
           >
-            {busy ? "Please wait..." : tab === "signin" ? "Sign In" : "Get Started"}
-            {!busy && <ChevronRight className="h-5 w-5" />}
+            {busy ? "Please wait..." : tab === "signin" ? "Log in" : "Sign up"}
           </button>
 
           <div className="flex items-center gap-4">
@@ -286,6 +276,24 @@ const Auth = () => {
           </div>
         </div>
       </motion.div>
+      <div className="mt-8 text-center text-xs text-muted-foreground/60 w-full max-w-[440px]">
+        <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 mb-6 uppercase tracking-tight">
+          <span>Meta</span>
+          <span>About</span>
+          <span>Blog</span>
+          <span>Jobs</span>
+          <span>Help</span>
+          <span>API</span>
+          <span>Privacy</span>
+          <span>Terms</span>
+          <span>Locations</span>
+          <span>Instagram Lite</span>
+          <span>Threads</span>
+          <span>Contact Uploading & Non-Users</span>
+          <span>Meta Verified</span>
+        </div>
+        <p>© 2026 Parallax from Aurelix</p>
+      </div>
     </div>
   );
 };
