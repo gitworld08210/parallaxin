@@ -6,7 +6,7 @@
 import { auth, defineMcp } from "npm:@lovable.dev/mcp-js@0.20.0";
 
 // src/lib/mcp/tools/whoami.ts
-import { createClient } from "npm:@supabase/supabase-js@^2.106.2";
+import { createClient } from "npm:@supabase/supabase-js";
 import { defineTool } from "npm:@lovable.dev/mcp-js@0.20.0";
 function supabaseForUser(ctx) {
   return createClient(process.env.SUPABASE_URL, process.env.SUPABASE_PUBLISHABLE_KEY, {
@@ -35,7 +35,7 @@ var whoami_default = defineTool({
 });
 
 // src/lib/mcp/tools/list-my-posts.ts
-import { createClient as createClient2 } from "npm:@supabase/supabase-js@^2.106.2";
+import { createClient as createClient2 } from "npm:@supabase/supabase-js";
 import { defineTool as defineTool2 } from "npm:@lovable.dev/mcp-js@0.20.0";
 import { z } from "npm:zod@^4.4.3";
 function supabaseForUser2(ctx) {
@@ -67,7 +67,7 @@ var list_my_posts_default = defineTool2({
 });
 
 // src/lib/mcp/tools/list-notifications.ts
-import { createClient as createClient3 } from "npm:@supabase/supabase-js@^2.106.2";
+import { createClient as createClient3 } from "npm:@supabase/supabase-js";
 import { defineTool as defineTool3 } from "npm:@lovable.dev/mcp-js@0.20.0";
 import { z as z2 } from "npm:zod@^4.4.3";
 function supabaseForUser3(ctx) {
@@ -99,7 +99,7 @@ var list_notifications_default = defineTool3({
 });
 
 // src/lib/mcp/tools/create-post.ts
-import { createClient as createClient4 } from "npm:@supabase/supabase-js@^2.106.2";
+import { createClient as createClient4 } from "npm:@supabase/supabase-js";
 import { defineTool as defineTool4 } from "npm:@lovable.dev/mcp-js@0.20.0";
 import { z as z3 } from "npm:zod@^4.4.3";
 function supabaseForUser4(ctx) {
