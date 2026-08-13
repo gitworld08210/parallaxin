@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
-
 import { useAuth } from "@/contexts/AuthProvider";
-import { supabase } from "@/integrations/supabase/client";
+import { collection, query, where, orderBy, limit as firestoreLimit, getDocs } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 
 export type LedgerRow = {
   id: string;
