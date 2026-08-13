@@ -36,7 +36,7 @@ const Feed = () => {
         where("status", "==", "published"),
         where("is_reel", "==", false),
         orderBy("created_at", "desc"),
-        limit(15) // Reduced from 30 to 15 for faster initial load
+        limit(10)
       );
       const snap = await getDocs(q);
       const postsData = snap.docs.map(doc => ({ 
@@ -146,7 +146,7 @@ const Feed = () => {
       <StoriesRail />
 
       <section className="pb-24">
-        {loading && <FeedSkeleton count={3} />}
+        {loading && <FeedSkeleton count={2} />}
         {!loading && posts.length === 0 && (
           tab === "following" ? (
             <EmptyState
@@ -168,7 +168,7 @@ const Feed = () => {
         )}
         <div className="divide-y divide-border flex flex-col">
           {posts.map((p, idx) => (
-            <div key={p.id} className="min-h-[400px]">
+            <div key={p.id} className="min-h-[200px]">
               <PostCard post={p} onOpenComments={setCommentPost} />
               {idx === 2 && <SuggestedUsersRail />}
             </div>
