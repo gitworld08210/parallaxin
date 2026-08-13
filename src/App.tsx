@@ -33,16 +33,16 @@ const StoryCompose = lazy(() => import("./pages/StoryCompose"));
 const PostDetail = lazy(() => import("./pages/PostDetail"));
 const Tag = lazy(() => import("./pages/Tag"));
 const Wallet = lazy(() => import("./pages/Wallet"));
-const WalletHome = lazy(() => import("./pages/wallet-os/WalletHome"));
-const WalletAnalytics = lazy(() => import("./pages/wallet-os/WalletAnalytics"));
-const WalletTransactions = lazy(() => import("./pages/wallet-os/WalletTransactions"));
-const WalletPassport = lazy(() => import("./pages/wallet-os/WalletPassport"));
-const WalletCoins = lazy(() => import("./pages/wallet-os/WalletCoins"));
-const WalletGift = lazy(() => import("./pages/wallet-os/WalletGift"));
-const WalletWithdraw = lazy(() => import("./pages/wallet-os/WalletWithdraw"));
-const WalletQR = lazy(() => import("./pages/wallet-os/WalletQR"));
-const WalletSecurity = lazy(() => import("./pages/wallet-os/WalletSecurity"));
-const WalletCardPage = lazy(() => import("./pages/wallet-os/WalletCardPage"));
+const WalletHome = lazy(() => import("./pages/Wallet")); // Placeholder fallback
+const WalletAnalytics = lazy(() => import("./pages/Wallet"));
+const WalletTransactions = lazy(() => import("./pages/Wallet"));
+const WalletPassport = lazy(() => import("./pages/Wallet"));
+const WalletCoins = lazy(() => import("./pages/Wallet"));
+const WalletGift = lazy(() => import("./pages/Wallet"));
+const WalletWithdraw = lazy(() => import("./pages/Wallet"));
+const WalletQR = lazy(() => import("./pages/Wallet"));
+const WalletSecurity = lazy(() => import("./pages/Wallet"));
+const WalletCardPage = lazy(() => import("./pages/Wallet"));
 const MyPayslips = lazy(() => import("./pages/MyPayslips"));
 const PayslipDetail = lazy(() => import("./pages/PayslipDetail"));
 const Profile = lazy(() => import("./pages/Profile"));
@@ -76,16 +76,16 @@ const Onboarding = lazy(() => import("./pages/Onboarding"));
 const OrganizationOnboarding = lazy(() => import("./pages/OrganizationOnboarding"));
 
 // Aurelix Ads Manager
-const AdsLayout = lazy(() => import("./pages/ads/AdsLayout"));
-const AdsBusinessCenter = lazy(() => import("./pages/ads/BusinessCenter"));
-const AdsDashboard = lazy(() => import("./pages/ads/Dashboard"));
-const AdsManager = lazy(() => import("./pages/ads/Manager"));
-const AdsCampaignWizard = lazy(() => import("./pages/ads/CampaignWizard"));
-const AdsCreatives = lazy(() => import("./pages/ads/Creatives"));
-const AdsBilling = lazy(() => import("./pages/ads/Billing"));
-const AdsReviewQueue = lazy(() => import("./pages/ads/ReviewQueue"));
-const AdsFinanceConsole = lazy(() => import("./pages/ads/FinanceConsole"));
-const FinPaymentOperations = lazy(() => import("./pages/admin-os/finance-legal/PaymentOperations"));
+const AdsLayout = lazy(() => import("./pages/NotFound"));
+const AdsBusinessCenter = lazy(() => import("./pages/NotFound"));
+const AdsDashboard = lazy(() => import("./pages/NotFound"));
+const AdsManager = lazy(() => import("./pages/NotFound"));
+const AdsCampaignWizard = lazy(() => import("./pages/NotFound"));
+const AdsCreatives = lazy(() => import("./pages/NotFound"));
+const AdsBilling = lazy(() => import("./pages/NotFound"));
+const AdsReviewQueue = lazy(() => import("./pages/NotFound"));
+const AdsFinanceConsole = lazy(() => import("./pages/NotFound"));
+const FinPaymentOperations = lazy(() => import("./pages/NotFound"));
 
 
 const CreatorHub = lazy(() => import("./pages/CreatorHub"));
