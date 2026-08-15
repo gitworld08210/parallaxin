@@ -87,7 +87,12 @@ const Conversation = () => {
       orderBy("created_at", "asc")
     );
     const unsubMsgs = onSnapshot(qMessages, async (snap) => {
-      const msgs = snap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as any[];
+      const msgs = snap.docs.map(d => {
+        const data = d.data();
+        const createdAt = data.created_at?.toDate?.() ? data.created_at.toDate().toISOString() : (data.created_at || new Date().toISOString());
+        const readAt = data.read_at?.toDate?.() ? data.read_at.toDate().toISOString() : (data.read_at || null);
+        return { id: d.id, ...data, created_at: createdAt, read_at: readAt } as Msg;
+      });
       setMessages(msgs);
 
       // Fetch shared posts if any

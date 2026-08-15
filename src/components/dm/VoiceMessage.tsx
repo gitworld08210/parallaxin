@@ -1,7 +1,7 @@
-import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useRef, useState } from "react";
 import { Play, Pause, Mic, Send, X } from "lucide-react";
 
+import { uploadToCloudinary } from "@/lib/cloudinary";
 import { toast } from "sonner";
 
 /** Inline audio player with stylized waveform bars. */
@@ -119,9 +119,7 @@ export const VoiceRecorder = ({
     if (!blobRef.current) return;
     setUploading(true);
     try {
-      const path = `voice/${userId}/${crypto.randomUUID()}.webm`;
-      // Supabase storage removed, simulating success for shim
-      const publicUrl = "https://example.com/audio.webm";
+      const publicUrl = await uploadToCloudinary(blobRef.current);
       await onSend(publicUrl);
       cancel();
     } catch (e: any) { toast.error(e.message || "Action failed"); } finally {

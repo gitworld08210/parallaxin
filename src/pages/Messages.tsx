@@ -1,4 +1,3 @@
-import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
@@ -166,10 +165,11 @@ const Messages = () => {
 
       // Create new DM
       const docRef = await addDoc(collection(db, "conversations"), {
-        member_ids: [user.uid, otherId],
+        member_ids: [user.id, otherId],
         is_group: false,
         created_at: serverTimestamp(),
         last_message_at: serverTimestamp(),
+        last_message_text: null,
         members: [] 
       });
       

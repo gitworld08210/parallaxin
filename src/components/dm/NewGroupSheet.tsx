@@ -1,8 +1,9 @@
-import { supabase } from '@/integrations/supabase/client';
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Search, X, Users, Check } from "lucide-react";
+import { collection, query as firestoreQuery, where, orderBy, limit, getDocs, addDoc, serverTimestamp } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 
 import { useAuth } from "@/contexts/AuthProvider";
 import { AuraAvatar } from "@/components/vibe/AuraAvatar";
@@ -22,18 +23,41 @@ export const NewGroupSheet = ({ open, onOpenChange }: { open: boolean; onOpenCha
 
   useEffect(() => {
     if (!open || !user) return;
+    let cancelled = false;
     (async () => {
-      let query = supabase.from("profiles").select("user_id, username, display_name, avatar_url").neq("user_id", user.id).limit(40);
-      const term = q.trim();
-      if (term) query = query.or(`username.ilike.%${term}%,display_name.ilike.%${term}%`);
-      else {
-        const { data: follows } = await supabase.from("follows").select("following_id").eq("follower_id", user.id);
-        const ids = (follows ?? []).map((f) => f.following_id);
-        if (ids.length) query = query.in("user_id", ids);
+      const term = q.trim().toLowerCase();
+      if (!term) {
+        // No search term: show recent profiles (limited set)
+        const profQ = firestoreQuery(
+          collection(db, "profiles"),
+          orderBy("username"),
+          limit(20)
+        );
+        const snap = await getDocs(profQ);
+        if (!cancelled) {
+          setPeople(snap.docs
+            .map(doc => doc.data() as P)
+            .filter(p => p.user_id !== user.id)
+          );
+        }
+      } else {
+        // Search by username prefix
+        const profQ = firestoreQuery(
+          collection(db, "profiles"),
+          where("username", ">=", term),
+          where("username", "<=", term + "\uf8ff"),
+          limit(40)
+        );
+        const snap = await getDocs(profQ);
+        if (!cancelled) {
+          setPeople(snap.docs
+            .map(doc => doc.data() as P)
+            .filter(p => p.user_id !== user.id)
+          );
+        }
       }
-      const { data } = await query;
-      setPeople((data ?? []) as P[]);
     })();
+    return () => { cancelled = true; };
   }, [open, q, user?.id]);
 
   const toggle = (p: P) => setSelected((s) => {
@@ -46,17 +70,25 @@ export const NewGroupSheet = ({ open, onOpenChange }: { open: boolean; onOpenCha
   const selectedArr = useMemo(() => Object.values(selected), [selected]);
 
   const createGroup = async () => {
-    if (selectedArr.length === 0) return;
+    if (selectedArr.length === 0 || !user) return;
     setCreating(true);
     try {
-      const { data, error } = await supabase.rpc("create_group_conversation", {
-        _title: title.trim() || `Group with ${selectedArr.map((p) => p.username).slice(0, 3).join(", ")}`,
-        _member_ids: selectedArr.map((p) => p.user_id),
+      const docRef = await addDoc(collection(db, "conversations"), {
+        member_ids: [...selectedArr.map(p => p.user_id), user.id],
+        is_group: true,
+        title: title.trim() || `Group with ${selectedArr.map(p => p.username).slice(0, 3).join(", ")}`,
+        created_at: serverTimestamp(),
+        last_message_at: serverTimestamp(),
+        members: selectedArr.map(p => ({
+          user_id: p.user_id,
+          username: p.username,
+          display_name: p.display_name,
+          avatar_url: p.avatar_url,
+        })),
       });
-      if (error) throw error;
       onOpenChange(false);
       setSelected({}); setTitle(""); setQ("");
-      nav(`/messages/${data}`);
+      nav(`/messages/${docRef.id}`);
     } catch (e: any) { 
       toast.error(e.message || "Action failed"); 
     } finally { 
