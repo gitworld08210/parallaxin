@@ -310,9 +310,37 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    // Stories are composed in the client, so the author must be able to create
+    // them. Expiry is advisory metadata: a client can set any value, so reads
+    // must still filter on `expires_at` and cleanup belongs to a scheduled job.
     match /stories/{storyId} {
       allow read: if true;
-      allow write: if false;
+      allow create: if signedIn()
+        && request.resource.data.user_id == request.auth.uid
+        && request.resource.data.media_url is string;
+      allow update: if false;
+      allow delete: if signedIn() && resource.data.user_id == request.auth.uid;
+    }
+
+    match /story_reactions/{reactionId} {
+      allow read: if signedIn() && (
+        resource.data.user_id == request.auth.uid ||
+        get(/databases/$(database)/documents/stories/$(resource.data.story_id)).data.user_id == request.auth.uid
+      );
+      allow create: if signedIn()
+        && request.resource.data.user_id == request.auth.uid
+        && request.resource.data.emoji is string
+        && request.resource.data.emoji.size() <= 8;
+      allow update, delete: if false;
+    }
+
+    // Stickers are attached to a story, so authorship is derived from the parent
+    // story rather than trusted from the payload.
+    match /story_stickers/{stickerId} {
+      allow read: if signedIn();
+      allow create: if signedIn()
+        && get(/databases/$(database)/documents/stories/$(request.resource.data.story_id)).data.user_id == request.auth.uid;
+      allow update, delete: if false;
     }
 
     // Canonical coin balance. Credited only by privileged server code, so no
@@ -343,6 +371,53 @@ service cloud.firestore {
     match /live_gifts/{giftId} {
       allow read: if signedIn() && resource.data.sender_id == request.auth.uid;
       allow write: if false;
+    }
+
+    // A host creates and ends their own broadcast. Tip totals are money-adjacent
+    // and are written by privileged code, so the host cannot set them.
+    match /live_streams/{streamId} {
+      allow read: if signedIn();
+      allow create: if signedIn()
+        && request.resource.data.host_id == request.auth.uid
+        && request.resource.data.get('total_tips_coins', 0) == 0;
+      allow update: if signedIn()
+        && resource.data.host_id == request.auth.uid
+        && request.resource.data.host_id == resource.data.host_id
+        && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['total_tips_coins']);
+      allow delete: if false;
+    }
+
+    // Viewers post chat and reactions from the client, so authorship is pinned
+    // to the caller and messages are immutable once sent.
+    match /live_chat/{messageId} {
+      allow read: if signedIn();
+      allow create: if signedIn()
+        && request.resource.data.user_id == request.auth.uid
+        && request.resource.data.stream_id is string
+        && request.resource.data.body is string
+        && request.resource.data.body.size() > 0
+        && request.resource.data.body.size() <= 2000;
+      allow update, delete: if false;
+    }
+
+    match /live_reactions/{reactionId} {
+      allow read: if signedIn();
+      allow create: if signedIn()
+        && request.resource.data.user_id == request.auth.uid
+        && request.resource.data.stream_id is string;
+      allow update, delete: if false;
+    }
+
+    // Gift catalogues are presentation data managed by staff. `gifts` is the
+    // legacy collection name still read as a fallback.
+    match /gift_catalog/{giftId} {
+      allow read: if signedIn();
+      allow write: if isAdmin();
+    }
+
+    match /gifts/{giftId} {
+      allow read: if signedIn();
+      allow write: if isAdmin();
     }
 
     match /post_unlocks/{unlockId} {
