@@ -281,6 +281,41 @@ export async function verifyFirebaseIdToken(
 }
 
 // ---------------------------------------------------------------------------
+// Webhook signature verification
+// ---------------------------------------------------------------------------
+
+export async function hmacSha256Hex(secret: string, message: string): Promise<string> {
+  const key = await crypto.subtle.importKey(
+    "raw",
+    new TextEncoder().encode(secret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"],
+  );
+  const sig = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(message));
+  return Array.from(new Uint8Array(sig))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+/**
+ * Compares two strings without leaking where they diverge.
+ *
+ * A plain `===` on a signature returns as soon as it finds a mismatched byte,
+ * which in principle lets an attacker discover a valid signature one byte at a
+ * time. The length check is not sensitive because signature length is fixed and
+ * public.
+ */
+export function timingSafeEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i++) {
+    diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  }
+  return diff === 0;
+}
+
+// ---------------------------------------------------------------------------
 // Firestore REST value encoding
 // ---------------------------------------------------------------------------
 
@@ -367,6 +402,30 @@ export interface FirestoreWrite {
 /** Thrown when a transaction loses a race and the caller may retry. */
 export class TransactionContention extends Error {}
 
+/**
+ * Thrown when retrying cannot possibly help.
+ *
+ * Webhook handlers use this to decide between "ask the provider to redeliver"
+ * and "acknowledge and escalate to a human". Returning 5xx for a permanent
+ * fault burns the provider's retry budget and records nothing.
+ */
+export class PermanentFailure extends Error {}
+
+const PERMANENT_STATUSES = [
+  "INVALID_ARGUMENT",
+  "PERMISSION_DENIED",
+  "UNAUTHENTICATED",
+  "NOT_FOUND",
+  "FAILED_PRECONDITION",
+];
+
+function throwClassified(message: string, status?: string): never {
+  if (status && PERMANENT_STATUSES.includes(status)) {
+    throw new PermanentFailure(`${status}: ${message}`);
+  }
+  throw new Error(message);
+}
+
 export class Firestore {
   private readonly base: string;
 
@@ -426,7 +485,10 @@ export class Firestore {
       ...(transaction ? { transaction } : {}),
     });
     const json = await res.json();
-    if (!res.ok) throw new Error(`batchGet failed: ${JSON.stringify(json)}`);
+    if (!res.ok) {
+      const status = (json as { error?: { status?: string } }).error?.status;
+      throwClassified(`batchGet failed: ${JSON.stringify(json)}`, status);
+    }
 
     const out = new Map<string, Record<string, unknown> | null>();
     for (const entry of json as Array<Record<string, unknown>>) {
@@ -449,6 +511,16 @@ export class Firestore {
     return out;
   }
 
+  /** Commits writes without a transaction, for single-document operations. */
+  async commitWrites(writes: FirestoreWrite[]): Promise<void> {
+    const res = await this.call(":commit", { writes });
+    if (res.ok) return;
+
+    const json = await res.json().catch(() => ({}));
+    const status = (json as { error?: { status?: string } }).error?.status;
+    throwClassified(`commit failed: ${JSON.stringify(json)}`, status);
+  }
+
   async commit(transaction: string, writes: FirestoreWrite[]): Promise<void> {
     const res = await this.call(":commit", { transaction, writes });
     if (res.ok) return;
@@ -465,7 +537,7 @@ export class Firestore {
     if (status === "ABORTED" || status === "FAILED_PRECONDITION" || res.status === 409) {
       throw new TransactionContention(message);
     }
-    throw new Error(`commit failed: ${message}`);
+    throwClassified(`commit failed: ${message}`, status);
   }
 }
 

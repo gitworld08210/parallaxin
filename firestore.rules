@@ -196,9 +196,9 @@ service cloud.firestore {
       allow write: if false;
     }
 
-    // Idempotency claim on a UPI reference, keyed by UTR so one payment cannot
-    // be credited twice. Written only by the finance-review-topup function.
-    match /payment_receipts/{utr} {
+    // Idempotency claim on a payment, keyed by UPI reference or provider payment
+    // id so one payment cannot be credited twice. Written only by server code.
+    match /payment_receipts/{reference} {
       allow read: if canReviewFinance();
       allow write: if false;
     }
@@ -206,6 +206,20 @@ service cloud.firestore {
     // Internal reviewer notes. Deliberately separate from coin_topups, which
     // the payer can read.
     match /topup_review_notes/{topupId} {
+      allow read: if canReviewFinance();
+      allow write: if false;
+    }
+
+    // Maps a Razorpay order to its top-up. This is the trusted attribution path
+    // for the webhook, so no client may write it.
+    match /razorpay_orders/{orderId} {
+      allow read: if canReviewFinance();
+      allow write: if false;
+    }
+
+    // Payments that arrived but could not be credited. Finance reads these to
+    // reconcile; a payer being charged without coins must not be log-only.
+    match /payment_exceptions/{paymentId} {
       allow read: if canReviewFinance();
       allow write: if false;
     }

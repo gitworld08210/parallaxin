@@ -1,22 +1,23 @@
-// Privileged coin top-up review.
+// Manual UPI top-up review.
 //
 // Coin crediting used to run in the browser, which meant the only thing
-// standing between a signed-in user and an arbitrary balance was client-side
-// UI gating. This endpoint moves the decision behind a verified identity and a
-// server-side authority check, and makes crediting idempotent so a replay or a
-// second reviewer cannot double-credit.
+// standing between a signed-in user and an arbitrary balance was client-side UI
+// gating. This endpoint moves the decision behind a verified identity and a
+// server-side authority check, and credits through the shared atomic path so a
+// replay or a second reviewer cannot double-credit.
 //
 // Scope boundary: this proves *who* approved a top-up and that each approval is
-// applied exactly once. It does NOT prove the money arrived. A UPI UTR typed by
-// the payer cannot be verified against a static VPA without a payment provider
-// or bank reconciliation, so a human reviewer is still the authenticity check.
+// applied exactly once. It does NOT prove the money arrived — a UPI reference
+// typed by the payer cannot be checked against a static VPA. The Razorpay flow
+// in `razorpay-webhook` is the verified alternative; this path remains for
+// manual reconciliation.
 //
 // Required secrets:
 //   FIREBASE_SERVICE_ACCOUNT_JSON  service account with Firestore access
 //   FIREBASE_PROJECT_ID            optional if present in the service account
 
 import {
-  createWrite,
+  corsHeaders,
   Firestore,
   fsTimestamp,
   getAccessToken,
@@ -26,17 +27,8 @@ import {
   resolveProjectId,
   TransactionContention,
   verifyFirebaseIdToken,
-  corsHeaders,
 } from "../_shared/google.ts";
-
-// Source of truth for pricing. The client's package list is display-only; a
-// tampered client cannot invent a coins/amount pair that is not listed here.
-const COIN_PACKAGES: ReadonlyArray<{ coins: number; amountInr: number }> = [
-  { coins: 100, amountInr: 49 },
-  { coins: 500, amountInr: 199 },
-  { coins: 1500, amountInr: 499 },
-  { coins: 5000, amountInr: 1499 },
-];
+import { closeTopupWithoutCredit, creditTopup } from "../_shared/credit.ts";
 
 const FINANCE_ROLES = ["COO", "CEO", "Finance Head"];
 const MAX_ATTEMPTS = 3;
@@ -89,20 +81,22 @@ function parseBody(raw: unknown): ReviewRequest | string {
  * own top-up. A note is where a reviewer records a fraud suspicion, so it goes
  * to a collection only finance can read.
  */
-function reviewNoteWrite(
-  db: Firestore,
+function reviewNoteWrites(
   topupId: string,
   decision: string,
   reviewerUid: string,
-  note: string,
+  note?: string,
 ) {
-  return mergeWrite(db.docName("topup_review_notes", topupId), {
-    topup_id: topupId,
-    decision,
-    note,
-    reviewer_id: reviewerUid,
-    created_at: fsTimestamp(),
-  });
+  if (!note) return () => [];
+  return (db: Firestore) => [
+    mergeWrite(db.docName("topup_review_notes", topupId), {
+      topup_id: topupId,
+      decision,
+      note,
+      reviewer_id: reviewerUid,
+      created_at: fsTimestamp(),
+    }),
+  ];
 }
 
 /**
@@ -120,179 +114,66 @@ async function hasFinanceAuthority(
   if (claims.admin === true || claims.finance === true) return true;
 
   const name = db.docName("profiles", uid);
-  const profiles = await db.batchGet([name]);
-  const profile = profiles.get(name);
+  const profile = (await db.batchGet([name])).get(name);
   if (!profile) return false;
 
   if (profile.is_admin === true || profile.is_founder === true) return true;
   return typeof profile.role === "string" && FINANCE_ROLES.includes(profile.role);
 }
 
-async function approve(
+async function review(
   db: Firestore,
-  topupId: string,
+  request: ReviewRequest,
   reviewerUid: string,
-  note?: string,
 ): Promise<Response> {
-  const transaction = await db.beginTransaction();
-  try {
-    const topupName = db.docName("coin_topups", topupId);
-    const topup = (await db.batchGet([topupName], transaction)).get(topupName);
+  const { topup_id: topupId, decision, note } = request;
+  const extraWrites = reviewNoteWrites(topupId, decision, reviewerUid, note);
 
-    if (!topup) {
-      await db.rollback(transaction);
+  const outcome = decision === "approved"
+    ? await creditTopup(db, {
+      topupId,
+      expectedStatus: "submitted",
+      terminalStatus: "approved",
+      reference: { kind: "upi_utr" },
+      actorId: reviewerUid,
+      source: "topup",
+      topupFields: { approved_at: fsTimestamp(), reviewer_id: reviewerUid },
+      extraWrites,
+    })
+    : await closeTopupWithoutCredit(db, {
+      topupId,
+      expectedStatus: "submitted",
+      terminalStatus: "rejected",
+      fields: { reviewed_at: fsTimestamp(), reviewer_id: reviewerUid },
+      extraWrites,
+    });
+
+  switch (outcome.kind) {
+    case "credited":
+      return jsonResponse({
+        ok: true,
+        decision,
+        coins: outcome.coins,
+        balance: outcome.balance,
+      });
+    case "closed":
+      return jsonResponse({ ok: true, decision });
+    case "not_found":
       return jsonResponse({ error: "Top-up request not found" }, 404);
-    }
-    if (topup.status !== "submitted") {
-      await db.rollback(transaction);
+    case "wrong_status":
       return jsonResponse(
-        { error: "This top-up has already been processed", status: topup.status },
+        { error: "This top-up has already been processed", status: outcome.status },
         409,
       );
-    }
-
-    const utr = String(topup.utr ?? "").trim();
-    if (!/^[0-9]{12}$/.test(utr)) {
-      await db.rollback(transaction);
-      return jsonResponse({ error: "Top-up payment reference is invalid" }, 422);
-    }
-
-    const coins = Number(topup.coins);
-    const amountInr = Number(topup.amount_inr);
-    const validPackage = COIN_PACKAGES.some(
-      (p) => p.coins === coins && p.amountInr === amountInr,
-    );
-    if (!validPackage) {
-      await db.rollback(transaction);
-      return jsonResponse(
-        { error: "Top-up package does not match any offered package" },
-        422,
-      );
-    }
-
-    const userId = String(topup.user_id ?? "");
-    if (!userId) {
-      await db.rollback(transaction);
-      return jsonResponse({ error: "Top-up has no associated user" }, 422);
-    }
-
-    // The ledger entry is keyed by top-up id and the receipt by payment
-    // reference. Together they make crediting idempotent per request *and*
-    // per payment, so a user cannot reuse one UTR across two requests.
-    const walletName = db.docName("wallets", userId);
-    const ledgerName = db.docName("ledger", topupId);
-    const receiptName = db.docName("payment_receipts", utr);
-
-    const existing = await db.batchGet(
-      [walletName, ledgerName, receiptName],
-      transaction,
-    );
-
-    if (existing.get(ledgerName)) {
-      await db.rollback(transaction);
+    case "already_credited":
       return jsonResponse({ error: "This top-up has already been credited" }, 409);
-    }
-    const receipt = existing.get(receiptName);
-    if (receipt) {
-      await db.rollback(transaction);
-      return jsonResponse(
-        {
-          error: "This payment reference has already been credited",
-          existing_topup_id: receipt.topup_id ?? null,
-        },
-        409,
-      );
-    }
-
-    const wallet = existing.get(walletName);
-    const currentTotal = Number(wallet?.total ?? 0);
-    const newTotal = currentTotal + coins;
-    const now = fsTimestamp();
-
-    await db.commit(transaction, [
-      mergeWrite(topupName, {
-        status: "approved",
-        approved_at: now,
-        reviewer_id: reviewerUid,
-      }, { mustExist: true }),
-
-      mergeWrite(walletName, {
-        user_id: userId,
-        total: newTotal,
-        updated_at: now,
-        last_transaction_id: topupId,
-      }),
-
-      createWrite(ledgerName, {
-        user_id: userId,
-        type: "credit",
-        amount: coins,
-        source: "topup",
-        reference_id: topupId,
-        reviewer_id: reviewerUid,
-        label: "Coin Purchase Approved",
-        balance_before: currentTotal,
-        balance_after: newTotal,
-        created_at: now,
-      }),
-
-      createWrite(receiptName, {
-        utr,
-        topup_id: topupId,
-        user_id: userId,
-        coins,
-        amount_inr: amountInr,
-        reviewer_id: reviewerUid,
-        created_at: now,
-      }),
-
-      ...(note ? [reviewNoteWrite(db, topupId, "approved", reviewerUid, note)] : []),
-    ]);
-
-    return jsonResponse({ ok: true, decision: "approved", coins, balance: newTotal });
-  } catch (error) {
-    await db.rollback(transaction);
-    throw error;
-  }
-}
-
-async function reject(
-  db: Firestore,
-  topupId: string,
-  reviewerUid: string,
-  note?: string,
-): Promise<Response> {
-  const transaction = await db.beginTransaction();
-  try {
-    const topupName = db.docName("coin_topups", topupId);
-    const topup = (await db.batchGet([topupName], transaction)).get(topupName);
-
-    if (!topup) {
-      await db.rollback(transaction);
-      return jsonResponse({ error: "Top-up request not found" }, 404);
-    }
-    if (topup.status !== "submitted") {
-      await db.rollback(transaction);
-      return jsonResponse(
-        { error: "This top-up has already been processed", status: topup.status },
-        409,
-      );
-    }
-
-    await db.commit(transaction, [
-      mergeWrite(topupName, {
-        status: "rejected",
-        reviewed_at: fsTimestamp(),
-        reviewer_id: reviewerUid,
-      }, { mustExist: true }),
-
-      ...(note ? [reviewNoteWrite(db, topupId, "rejected", reviewerUid, note)] : []),
-    ]);
-
-    return jsonResponse({ ok: true, decision: "rejected" });
-  } catch (error) {
-    await db.rollback(transaction);
-    throw error;
+    case "duplicate_payment":
+      return jsonResponse({
+        error: "This payment reference has already been credited",
+        existing_topup_id: outcome.existingTopupId,
+      }, 409);
+    case "invalid":
+      return jsonResponse({ error: outcome.reason }, 422);
   }
 }
 
@@ -350,9 +231,7 @@ Deno.serve(async (req) => {
     try {
       for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
         try {
-          return parsed.decision === "approved"
-            ? await approve(db, parsed.topup_id, reviewer.uid, parsed.note)
-            : await reject(db, parsed.topup_id, reviewer.uid, parsed.note);
+          return await review(db, parsed, reviewer.uid);
         } catch (error) {
           if (error instanceof TransactionContention && attempt < MAX_ATTEMPTS) {
             // Another reviewer touched the same documents. Retrying is safe:
