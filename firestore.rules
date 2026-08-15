@@ -170,8 +170,12 @@ service cloud.firestore {
         && request.resource.data.user_id == request.auth.uid
         && request.resource.data.status == 'pending'
         && validCoinPackage(request.resource.data.coins, request.resource.data.amount_inr);
-      allow update: if (
-        signedIn()
+      // A payer may only attach their UPI reference and submit for review.
+      // Approval and rejection are performed by the finance-review-topup
+      // function using a service account, which bypasses these rules, so no
+      // client — including finance staff — can move a top-up to a terminal
+      // state or touch the amount.
+      allow update: if signedIn()
         && resource.data.user_id == request.auth.uid
         && resource.data.status == 'pending'
         && request.resource.data.status == 'submitted'
@@ -182,62 +186,28 @@ service cloud.firestore {
         && request.resource.data.utr.matches('^[0-9]{12}$')
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
           'utr', 'status', 'updated_at'
-        ])
-      ) || (
-        canReviewFinance()
-        && resource.data.status == 'submitted'
-        && request.resource.data.status == 'approved'
-        && request.resource.data.user_id == resource.data.user_id
-        && request.resource.data.coins == resource.data.coins
-        && request.resource.data.amount_inr == resource.data.amount_inr
-        && request.resource.data.utr == resource.data.utr
-        && request.resource.data.reviewer_id == request.auth.uid
-        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
-          'status', 'approved_at', 'reviewer_id'
-        ])
-        && getAfter(/databases/$(database)/documents/wallets/$(resource.data.user_id)).data.last_transaction_id == topupId
-        && getAfter(/databases/$(database)/documents/ledger/$(topupId)).data.reference_id == topupId
-        && getAfter(/databases/$(database)/documents/payment_receipts/$(resource.data.utr)).data.topup_id == topupId
-      ) || (
-        canReviewFinance()
-        && resource.data.status == 'submitted'
-        && request.resource.data.status == 'rejected'
-        && request.resource.data.user_id == resource.data.user_id
-        && request.resource.data.coins == resource.data.coins
-        && request.resource.data.amount_inr == resource.data.amount_inr
-        && request.resource.data.utr == resource.data.utr
-        && request.resource.data.reviewer_id == request.auth.uid
-        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
-          'status', 'reviewed_at', 'reviewer_id'
-        ])
-      );
+        ]);
       allow delete: if false;
     }
 
     match /ledger/{ledgerId} {
       allow read: if canReviewFinance() || (signedIn() && resource.data.user_id == request.auth.uid);
-      allow create: if canReviewFinance()
-        && request.resource.data.source == 'topup'
-        && ledgerId == request.resource.data.reference_id
-        && get(/databases/$(database)/documents/coin_topups/$(request.resource.data.reference_id)).data.status == 'submitted'
-        && getAfter(/databases/$(database)/documents/coin_topups/$(request.resource.data.reference_id)).data.status == 'approved'
-        && request.resource.data.user_id == getAfter(/databases/$(database)/documents/coin_topups/$(request.resource.data.reference_id)).data.user_id
-        && request.resource.data.amount == getAfter(/databases/$(database)/documents/coin_topups/$(request.resource.data.reference_id)).data.coins;
-      allow update, delete: if false;
+      // Written only by the finance-review-topup function.
+      allow write: if false;
     }
 
+    // Idempotency claim on a UPI reference, keyed by UTR so one payment cannot
+    // be credited twice. Written only by the finance-review-topup function.
     match /payment_receipts/{utr} {
       allow read: if canReviewFinance();
-      allow create: if canReviewFinance()
-        && request.resource.data.utr == utr
-        && request.resource.data.reviewer_id == request.auth.uid
-        && request.resource.data.utr == getAfter(/databases/$(database)/documents/coin_topups/$(request.resource.data.topup_id)).data.utr
-        && get(/databases/$(database)/documents/coin_topups/$(request.resource.data.topup_id)).data.status == 'submitted'
-        && getAfter(/databases/$(database)/documents/coin_topups/$(request.resource.data.topup_id)).data.status == 'approved'
-        && request.resource.data.user_id == getAfter(/databases/$(database)/documents/coin_topups/$(request.resource.data.topup_id)).data.user_id
-        && request.resource.data.amount_inr == getAfter(/databases/$(database)/documents/coin_topups/$(request.resource.data.topup_id)).data.amount_inr
-        && request.resource.data.coins == getAfter(/databases/$(database)/documents/coin_topups/$(request.resource.data.topup_id)).data.coins;
-      allow update, delete: if false;
+      allow write: if false;
+    }
+
+    // Internal reviewer notes. Deliberately separate from coin_topups, which
+    // the payer can read.
+    match /topup_review_notes/{topupId} {
+      allow read: if canReviewFinance();
+      allow write: if false;
     }
 
     match /verification_requests/{requestId} {
@@ -331,29 +301,11 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // Canonical coin balance. Credited only by privileged server code, so no
+    // client can alter a balance even with finance authority.
     match /wallets/{userId} {
       allow read: if isOwner(userId) || canReviewFinance();
-      allow create: if canReviewFinance()
-        && request.resource.data.user_id == userId
-        && request.resource.data.last_transaction_id is string
-        && get(/databases/$(database)/documents/coin_topups/$(request.resource.data.last_transaction_id)).data.status == 'submitted'
-        && getAfter(/databases/$(database)/documents/coin_topups/$(request.resource.data.last_transaction_id)).data.status == 'approved'
-        && getAfter(/databases/$(database)/documents/coin_topups/$(request.resource.data.last_transaction_id)).data.user_id == userId
-        && request.resource.data.total == getAfter(/databases/$(database)/documents/coin_topups/$(request.resource.data.last_transaction_id)).data.coins
-        && getAfter(/databases/$(database)/documents/ledger/$(request.resource.data.last_transaction_id)).data.user_id == userId;
-      allow update: if canReviewFinance()
-        && request.resource.data.user_id == userId
-        && request.resource.data.last_transaction_id is string
-        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
-          'total', 'updated_at', 'last_transaction_id'
-        ])
-        && get(/databases/$(database)/documents/coin_topups/$(request.resource.data.last_transaction_id)).data.status == 'submitted'
-        && getAfter(/databases/$(database)/documents/coin_topups/$(request.resource.data.last_transaction_id)).data.status == 'approved'
-        && getAfter(/databases/$(database)/documents/coin_topups/$(request.resource.data.last_transaction_id)).data.user_id == userId
-        && request.resource.data.total == resource.data.get('total', 0)
-          + getAfter(/databases/$(database)/documents/coin_topups/$(request.resource.data.last_transaction_id)).data.coins
-        && getAfter(/databases/$(database)/documents/ledger/$(request.resource.data.last_transaction_id)).data.user_id == userId;
-      allow delete: if false;
+      allow write: if false;
     }
 
     match /wallet_analytics/{analyticsId} {

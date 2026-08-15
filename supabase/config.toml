@@ -1,1 +1,8 @@
 project_id = "xmztbdaupkvezhhokmwx"
+
+# This function authenticates callers with Firebase ID tokens, which the
+# Supabase gateway cannot validate on its own. It performs full signature and
+# claim verification internally against Google's JWKS, so gateway verification
+# is disabled rather than depending on third-party auth being configured.
+[functions.finance-review-topup]
+verify_jwt = false

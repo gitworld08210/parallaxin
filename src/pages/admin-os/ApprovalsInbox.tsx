@@ -3,7 +3,8 @@ import { TopBar } from "@/components/vibe/TopBar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/contexts/AuthProvider";
 import { collection, query, orderBy, onSnapshot, updateDoc, doc, serverTimestamp, runTransaction } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { auth, db } from "@/lib/firebase";
+import { supabase } from "@/integrations/supabase/client";
 import { 
   ShieldCheck, 
   Coins, 
@@ -45,86 +46,47 @@ const ApprovalsInbox = () => {
     return () => { unsubFinance(); unsubVerif(); unsubKyc(); };
   }, []);
 
-  const handleApproveTopup = async (topup: any) => {
-    if (!user) return toast.error("You must be signed in to review top-ups");
+  /**
+   * Coin crediting is performed by the finance-review-topup function under a
+   * service account. The client cannot write wallets, ledger or top-up status,
+   * so this only reports the outcome — it never computes a balance.
+   */
+  const reviewTopup = async (topup: any, decision: "approved" | "rejected") => {
+    if (!auth.currentUser) return toast.error("You must be signed in to review top-ups");
 
     setProcessingId(topup.id);
     try {
-      const approvedCoins = await runTransaction(db, async (transaction) => {
-        const topupRef = doc(db, "coin_topups", topup.id);
-        const ledgerRef = doc(db, "ledger", topup.id);
-
-        const topupSnap = await transaction.get(topupRef);
-        if (!topupSnap.exists()) throw new Error("Top-up request not found");
-
-        const currentTopup = topupSnap.data();
-        if (currentTopup.status !== "submitted") {
-          throw new Error("This top-up has already been processed");
-        }
-
-        const utr = String(currentTopup.utr || "").trim();
-        if (!/^[0-9]{12}$/.test(utr)) throw new Error("Top-up payment reference is invalid");
-
-        const walletRef = doc(db, "wallets", currentTopup.user_id);
-        const receiptRef = doc(db, "payment_receipts", utr);
-        const walletSnap = await transaction.get(walletRef);
-        const ledgerSnap = await transaction.get(ledgerRef);
-        const receiptSnap = await transaction.get(receiptRef);
-
-        if (ledgerSnap.exists()) throw new Error("This top-up has already been credited");
-        if (receiptSnap.exists()) throw new Error("This payment reference has already been used");
-
-        const coins = Number(currentTopup.coins);
-        const amount = Number(currentTopup.amount_inr);
-        const validPackage = (coins === 100 && amount === 49)
-          || (coins === 500 && amount === 199)
-          || (coins === 1500 && amount === 499)
-          || (coins === 5000 && amount === 1499);
-        if (!validPackage) throw new Error("Top-up package is invalid");
-
-        const currentBalance = Number(walletSnap.data()?.total) || 0;
-
-        transaction.update(topupRef, {
-          status: "approved",
-          approved_at: serverTimestamp(),
-          reviewer_id: user.id,
-        });
-
-        transaction.set(walletRef, {
-          user_id: currentTopup.user_id,
-          total: currentBalance + coins,
-          updated_at: serverTimestamp(),
-          last_transaction_id: topup.id,
-        }, { merge: true });
-
-        // The deterministic ID and status guard make approval idempotent.
-        transaction.set(ledgerRef, {
-          user_id: currentTopup.user_id,
-          type: "credit",
-          amount: coins,
-          source: "topup",
-          reference_id: topup.id,
-          reviewer_id: user.id,
-          label: "Coin Purchase Approved",
-          created_at: serverTimestamp(),
-        });
-
-        transaction.set(receiptRef, {
-          utr,
-          topup_id: topup.id,
-          user_id: currentTopup.user_id,
-          amount_inr: amount,
-          coins,
-          reviewer_id: user.id,
-          created_at: serverTimestamp(),
-        });
-
-        return coins;
+      const idToken = await auth.currentUser.getIdToken();
+      const { data, error } = await supabase.functions.invoke("finance-review-topup", {
+        body: { topup_id: topup.id, decision },
+        headers: { Authorization: `Bearer ${idToken}` },
       });
 
-      toast.success(`Approved ${approvedCoins} coins for user`);
+      if (error) {
+        // On a non-2xx response supabase-js leaves `data` null and exposes the
+        // body through the error context, so reach for the specific reason
+        // ("already processed", "duplicate reference") before the generic one.
+        let message = error.message || "Review failed";
+        const context = (error as any)?.context;
+        if (context && typeof context.json === "function") {
+          try {
+            const body = await context.json();
+            if (body?.error) message = body.error;
+          } catch {
+            // Body was not JSON; keep the transport-level message.
+          }
+        }
+        throw new Error(message);
+      }
+      if ((data as any)?.error) throw new Error((data as any).error);
+
+      toast.success(
+        decision === "approved"
+          ? `Approved ${(data as any)?.coins ?? topup.coins} coins for user`
+          : "Top-up rejected",
+      );
     } catch (e: any) {
-      toast.error(e.message || "Could not approve top-up");
+      toast.error(e.message || "Could not review top-up");
     } finally {
       setProcessingId(null);
     }
@@ -210,7 +172,7 @@ const ApprovalsInbox = () => {
                   </div>
                   <div className="flex items-center gap-2">
                     <button 
-                      onClick={() => handleReject("coin_topups", topup.id)}
+                      onClick={() => reviewTopup(topup, "rejected")}
                       disabled={processingId === topup.id}
                       aria-label="Reject top-up"
                       className="h-8 w-8 rounded-full bg-rose-500/10 text-rose-500 grid place-items-center hover:bg-rose-500/20 disabled:opacity-50"
@@ -218,7 +180,7 @@ const ApprovalsInbox = () => {
                       <XCircle className="h-4 w-4" />
                     </button>
                     <button 
-                      onClick={() => handleApproveTopup(topup)}
+                      onClick={() => reviewTopup(topup, "approved")}
                       disabled={processingId === topup.id}
                       aria-label="Approve top-up"
                       className="h-8 w-8 rounded-full bg-emerald-500/10 text-emerald-500 grid place-items-center hover:bg-emerald-500/20 disabled:opacity-50"
