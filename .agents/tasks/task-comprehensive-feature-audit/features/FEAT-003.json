@@ -1,0 +1,25 @@
+{
+  "id": "FEAT-003",
+  "type": "fix",
+  "description": "Fix Live Streaming bugs - empty send/sendHeart functions in LiveViewer, and LiveList/LiveHost Supabase queries that won't work without proper env vars. Migrate LiveList to Firestore for consistency, and implement send/sendHeart in LiveViewer.",
+  "status": "completed",
+  "steps": [
+    "In src/pages/LiveViewer.tsx: Implement the send() function to actually send a chat message. Add a Firestore addDoc to the 'live_chat' subcollection or top-level collection with stream_id, user_id (me), body, and created_at (serverTimestamp). Import the necessary Firestore functions.",
+    "In src/pages/LiveViewer.tsx: Implement the sendHeart() function to add a reaction. Add a Firestore addDoc to the 'live_reactions' collection with stream_id, user_id (me), and created_at (serverTimestamp).",
+    "In src/pages/LiveList.tsx: Migrate from Supabase query to Firestore. Query a 'live_streams' collection where status == 'live', ordered by started_at desc. For each stream, fetch the host's profile from Firestore 'profiles' collection. Import Firestore functions from firebase/firestore and db from @/lib/firebase.",
+    "In src/pages/LiveHost.tsx: Migrate the stream creation from Supabase insert to Firestore addDoc in the 'live_streams' collection. Migrate the stream status update (endLive) to Firestore updateDoc. Keep the supabase.functions.invoke calls for LiveKit token (those need edge functions). Keep the Supabase realtime channels for chat/reactions/gifts as they may still work through the Supabase project.",
+    "In src/pages/LiveViewer.tsx: Migrate the stream fetch from Supabase query to Firestore getDoc from 'live_streams' collection. Keep supabase.functions.invoke for token/ticket/gift operations as they require edge functions. Migrate the gift_catalog query to Firestore."
+  ],
+  "acceptance_criteria": [
+    "LiveViewer.send() actually writes chat messages to Firestore",
+    "LiveViewer.sendHeart() actually writes reactions to Firestore",
+    "LiveList fetches active streams from Firestore",
+    "LiveHost creates stream records in Firestore",
+    "TypeScript compiles without errors"
+  ],
+  "verification": [
+    "Run NODE_OPTIONS='' npx tsc --noEmit and confirm zero errors"
+  ],
+  "blocked_reason": null,
+  "findings": "All 5 bugs fixed. LiveList fully migrated to Firestore (removed supabase import). LiveViewer send() and sendHeart() now write to Firestore. Stream fetch and gift_catalog in LiveViewer use Firestore getDoc/getDocs. LiveHost stream creation uses Firestore addDoc, endLive uses updateDoc, gift catalog uses getDocs. Both LiveViewer and LiveHost now use useAuth() hook instead of supabase.auth.getUser(). Supabase retained only for functions.invoke (livekit-token, buy-live-ticket, send-live-gift) and realtime channel subscriptions. TypeScript compiles cleanly with zero errors."
+}
