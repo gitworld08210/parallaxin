@@ -191,7 +191,6 @@ const PasswordAndMFAPage = lazy(() => import("./pages/NotFound"));
 const SecurityAlertsPage = lazy(() => import("./pages/NotFound"));
 const LoginHistoryPage = lazy(() => import("./pages/NotFound"));
 const SecurityPoliciesPage = lazy(() => import("./pages/NotFound"));
-const ExecutivePlaceholders = () => import("./pages/NotFound");
 const ExecutiveInbox = lazy(() => import("./pages/NotFound"));
 const ExecutiveApprovalDetail = lazy(() => import("./pages/NotFound"));
 

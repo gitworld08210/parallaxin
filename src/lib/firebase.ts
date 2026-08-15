@@ -4,12 +4,12 @@ import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCKWXHKPhXwTJoIuLqLV7NlfKCJ-SMmWTw",
-  authDomain: "social-claud.firebaseapp.com",
-  projectId: "social-claud",
-  storageBucket: "social-claud.firebasestorage.app",
-  messagingSenderId: "611057820540",
-  appId: "1:611057820540:web:8bef290ee0f88bac79baf9" // Fixed appId for web
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyCKWXHKPhXwTJoIuLqLV7NlfKCJ-SMmWTw",
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "social-claud.firebaseapp.com",
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "social-claud",
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "social-claud.firebasestorage.app",
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "611057820540",
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:611057820540:web:8bef290ee0f88bac79baf9"
 };
 
 const app = initializeApp(firebaseConfig);
