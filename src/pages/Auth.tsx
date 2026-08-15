@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { auth, db, googleProvider } from "@/lib/firebase";
@@ -36,6 +36,11 @@ const Auth = () => {
   const [handle, setHandle] = useState("");
   const [busy, setBusy] = useState(false);
 
+  // Suppress the auth-state useEffect from calling routeForUser during active
+  // form submission (signup/signin). This prevents the race condition where
+  // onAuthStateChanged fires before the profile write completes.
+  const inProgress = useRef(false);
+
   const routeForUser = async (uid: string) => {
     if (nextPath) { nav(nextPath, { replace: true }); return; }
 
@@ -59,7 +64,7 @@ const Auth = () => {
   };
 
   useEffect(() => { 
-    if (!loading && user) routeForUser(user.id); 
+    if (!loading && user && !inProgress.current) routeForUser(user.id); 
   }, [user, loading]);
 
   const validEmail = () => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
@@ -90,6 +95,7 @@ const Auth = () => {
       return;
     }
     setBusy(true);
+    inProgress.current = true;
     try {
       if (tab === "signin") {
         const res = await signInWithEmailAndPassword(auth, email.trim(), password);
@@ -139,11 +145,15 @@ const Auth = () => {
       }
     } catch (e: any) {
       toast.error(e?.message || "Authentication failed");
-    } finally { setBusy(false); }
+    } finally {
+      inProgress.current = false;
+      setBusy(false);
+    }
   };
 
   const handleGoogle = async () => {
     setBusy(true);
+    inProgress.current = true;
     try {
       if (tab === "signup" && kind === "organization") localStorage.setItem(ORG_INTENT_KEY, "organization");
       const res = await signInWithPopup(auth, googleProvider);
@@ -199,7 +209,10 @@ const Auth = () => {
       await routeForUser(res.user.uid);
     } catch (e: any) {
       toast.error(e?.message || "Google sign-in failed");
-    } finally { setBusy(false); }
+    } finally {
+      inProgress.current = false;
+      setBusy(false);
+    }
   };
 
   return (
