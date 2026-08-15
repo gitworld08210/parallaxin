@@ -2,7 +2,7 @@
   "id": "FEAT-001",
   "type": "fix",
   "description": "Fix Stories feature - StoryCompose writes to Supabase but StoriesRail reads from Firestore, causing stories to never appear. Also fix missing expires_at field, reaction storage, and story reply user ID inconsistency.",
-  "status": "in_progress",
+  "status": "completed",
   "steps": [
     "In src/pages/StoryCompose.tsx: Replace the Supabase insert for stories with a Firestore addDoc to the 'stories' collection. Include user_id, media_url, media_type, audience, created_at (serverTimestamp), expires_at (24 hours from now as ISO string), and a profile object with username/display_name/avatar_url from the auth context profile.",
     "In src/pages/StoryCompose.tsx: Replace the Supabase insert for story_stickers with a Firestore addDoc to a 'story_stickers' collection (or subcollection under the story doc).",
@@ -20,5 +20,5 @@
     "Run NODE_OPTIONS='' npx tsc --noEmit and confirm zero errors"
   ],
   "blocked_reason": null,
-  "findings": ""
+  "findings": "All changes verified with tsc --noEmit (zero errors). StoryCompose now writes to Firestore stories collection with expires_at as ISO string and embedded profile object. StoryViewer reactions migrated to Firestore story_reactions collection. All user.uid references in StoryViewer normalized to user.id. StoriesRail required no changes as it already reads from Firestore with ISO string comparison on expires_at."
 }
