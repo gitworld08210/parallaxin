@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Plus } from "lucide-react";
@@ -31,17 +30,14 @@ export const StoriesRail = () => {
 
   const load = async () => {
     if (!user?.id) { setGroups([]); return; }
-    
     try {
-      // Fetch stories from Firestore
-      // For now, since social graph is not fully in Firestore, we show all active stories
       const q = query(
         collection(db, "stories"),
         where("expires_at", ">", new Date().toISOString()),
-        orderBy("created_at", "asc")
+        orderBy("created_at", "asc"),
       );
       const snap = await getDocs(q);
-      const data = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      const data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
       const map = new Map<string, Group>();
       (data ?? []).forEach((s: any) => {
         const g = map.get(s.user_id) ?? { user_id: s.user_id, profile: s.profile, stories: [] };
@@ -54,50 +50,71 @@ export const StoriesRail = () => {
     }
   };
 
-
   useEffect(() => { load(); }, [user?.id]);
 
   const flatStories = groups.flatMap((g) => g.stories);
 
   return (
     <>
-      <div className="px-3 py-3 flex gap-4 overflow-x-auto no-scrollbar border-b border-border">
-        <Link to="/compose/story" className="flex flex-col items-center gap-1 shrink-0 w-16">
-          <div className="relative h-16 w-16 rounded-full bg-muted grid place-items-center overflow-hidden border border-border">
-            {me?.avatar_url ? (
-              <img src={me.avatar_url} className="h-full w-full object-cover" alt="" />
-            ) : (
-              <div className="h-full w-full bg-muted grid place-items-center text-foreground font-semibold text-sm">
-                {initialsOf(me?.display_name || me?.username || "Y")}
-              </div>
-            )}
-            <span className="absolute bottom-0 right-0 h-5 w-5 rounded-full bg-primary grid place-items-center ring-2 ring-background">
-              <Plus className="h-3 w-3 text-primary-foreground" strokeWidth={3} />
+      <div className="px-3 py-2.5 flex gap-4 overflow-x-auto no-scrollbar border-b border-white/[0.06]">
+        {/* Your Story — always first */}
+        <Link to="/compose/story" className="flex flex-col items-center gap-1 shrink-0 w-[68px]">
+          <div className="relative">
+            <div className="h-[62px] w-[62px] rounded-full overflow-hidden border-[2px] border-zinc-700">
+              {me?.avatar_url ? (
+                <img src={me.avatar_url} className="h-full w-full object-cover" alt="" />
+              ) : (
+                <div className="h-full w-full bg-zinc-800 grid place-items-center text-white text-sm font-semibold">
+                  {initialsOf(me?.display_name || me?.username || "Y")}
+                </div>
+              )}
+            </div>
+            <span className="absolute -bottom-0.5 -right-0.5 h-[18px] w-[18px] rounded-full bg-blue-500 grid place-items-center ring-[2px] ring-black">
+              <Plus className="h-2.5 w-2.5 text-white" strokeWidth={3} />
             </span>
           </div>
-          <span className="text-[11px] text-foreground truncate w-full text-center">Your story</span>
+          <span className="text-[11px] text-zinc-400 truncate w-full text-center">Your Story</span>
         </Link>
 
+        {/* Other users' stories */}
         {groups.filter((g) => g.user_id !== user?.id).map((g) => {
           const startIdx = flatStories.findIndex((s) => s.user_id === g.user_id);
+          const hasLive = false; // Future: check if user is live
           return (
             <button
               key={g.user_id}
               onClick={() => setViewingIdx(startIdx)}
-              className="flex flex-col items-center gap-1 shrink-0 w-16"
+              className="flex flex-col items-center gap-1 shrink-0 w-[68px]"
             >
-              <div className="h-16 w-16 rounded-full p-[2px]" style={{ background: "conic-gradient(from 180deg, hsl(244 80% 60%), hsl(262 85% 68%), hsl(300 85% 65%), hsl(244 80% 60%))" }}>
-                <div className="h-full w-full rounded-full bg-background p-[2px]">
+              <div
+                className="h-[66px] w-[66px] rounded-full p-[2.5px]"
+                style={{
+                  background: hasLive
+                    ? "linear-gradient(135deg, #ff0066, #ff6633)"
+                    : "linear-gradient(135deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888)",
+                }}
+              >
+                <div className="h-full w-full rounded-full bg-black p-[2px]">
                   {g.profile?.avatar_url ? (
                     <img src={g.profile.avatar_url} className="h-full w-full rounded-full object-cover" alt="" />
                   ) : (
-                    <div className="h-full w-full rounded-full grid place-items-center text-xs font-semibold text-primary-foreground" style={{ backgroundImage: gradientFor(g.profile?.username) }}>
+                    <div
+                      className="h-full w-full rounded-full grid place-items-center text-[11px] font-bold text-white"
+                      style={{ backgroundImage: gradientFor(g.profile?.username) }}
+                    >
                       {initialsOf(g.profile?.display_name || g.profile?.username || "?")}
                     </div>
                   )}
                 </div>
               </div>
-              <span className="text-[11px] truncate w-full text-center text-foreground">{g.profile?.username ?? "user"}</span>
+              {hasLive && (
+                <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 text-[9px] font-bold uppercase bg-gradient-to-r from-rose-500 to-orange-500 text-white px-1.5 py-[1px] rounded-sm">
+                  Live
+                </span>
+              )}
+              <span className="text-[11px] text-zinc-300 truncate w-full text-center">
+                {g.profile?.username ?? "user"}
+              </span>
             </button>
           );
         })}
