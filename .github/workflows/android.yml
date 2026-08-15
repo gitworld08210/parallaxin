@@ -115,22 +115,29 @@ jobs:
           profile: pixel_5
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
-          script: |
-            echo "--- contents of apk/ ---"
-            find apk -type f
-            APK=$(find apk -type f -name "*.apk" | head -1)
-            if [ -z "$APK" ]; then echo "No .apk file found under apk/"; exit 1; fi
-            echo "Installing $APK"
-            adb install -r "$APK"
-            adb logcat -c
-            adb shell monkey -p com.aurelix.parallax -c android.intent.category.LAUNCHER 1
-            sleep 12
-            echo "--- screenshot ---"
-            adb exec-out screencap -p > app-render.png
-            echo "--- logcat since launch (Capacitor/Chromium/AndroidRuntime/System.err) ---"
-            adb logcat -d | grep -iE "Capacitor|chromium|AndroidRuntime|System\.err|FATAL|WebView|CONSOLE" | tail -300 > app-logcat.txt || true
-            adb logcat -d > app-logcat-full.txt
+          # Each line of `script` under android-emulator-runner is invoked as
+          # its own `sh -c`, so shell variables set on one line do not survive
+          # to the next. Everything that depends on $APK has to run inside a
+          # single `sh -c '...; ...; ...'` line.
+          script: >
+            sh -c '
+            set -e;
+            echo "--- contents of apk/ ---";
+            find apk -type f;
+            APK=$(find apk -type f -name "*.apk" | head -1);
+            if [ -z "$APK" ]; then echo "No .apk file found under apk/"; exit 1; fi;
+            echo "Installing $APK";
+            adb install -r "$APK";
+            adb logcat -c;
+            adb shell monkey -p com.aurelix.parallax -c android.intent.category.LAUNCHER 1;
+            sleep 12;
+            echo "--- screenshot ---";
+            adb exec-out screencap -p > app-render.png;
+            echo "--- logcat since launch (Capacitor/Chromium/AndroidRuntime/System.err) ---";
+            adb logcat -d | grep -iE "Capacitor|chromium|AndroidRuntime|System\.err|FATAL|WebView|CONSOLE" | tail -300 > app-logcat.txt || true;
+            adb logcat -d > app-logcat-full.txt;
             cat app-logcat.txt
+            '
 
       - name: Upload screenshot and logcat
         if: always()
