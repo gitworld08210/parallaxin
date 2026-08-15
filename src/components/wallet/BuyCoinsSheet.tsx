@@ -7,6 +7,7 @@ import { Coins, Copy, Check, ExternalLink, Loader2, ShieldCheck } from "lucide-r
 import { useAuth } from "@/contexts/AuthProvider";
 import { collection, query, limit, getDocs, addDoc, doc, updateDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import { openExternalUrl } from "@/lib/native";
 import { toast } from "sonner";
 
 interface Pack { coins: number; inr: number; badge?: string }
@@ -94,6 +95,14 @@ export function BuyCoinsSheet({ open, onOpenChange }: Props) {
 
   const copyUpi = async () => { if (!pay?.upi) return; await navigator.clipboard.writeText(pay.upi); setCopied(true); setTimeout(() => setCopied(false), 1500); };
 
+  // An anchor to a `upi://` URL is dropped by the Android WebView, so tapping
+  // the button appeared to do nothing in the app. Hand the URL to the OS.
+  const openUpiApp = async () => {
+    if (!upiLink) return;
+    const opened = await openExternalUrl(upiLink);
+    if (!opened) toast.error("No UPI app found on this device");
+  };
+
   return (
     <Sheet open={open} onOpenChange={handleClose}>
       <SheetContent side="bottom" className="rounded-t-3xl max-h-[92vh] overflow-y-auto">
@@ -154,9 +163,9 @@ export function BuyCoinsSheet({ open, onOpenChange }: Props) {
             )}
 
             {upiLink && (
-              <a href={upiLink} className="w-full">
-                <Button variant="outline" className="w-full"><ExternalLink className="h-4 w-4 mr-2" />Open UPI app</Button>
-              </a>
+              <Button variant="outline" className="w-full" onClick={openUpiApp}>
+                <ExternalLink className="h-4 w-4 mr-2" />Open UPI app
+              </Button>
             )}
 
             <div className="pt-2">

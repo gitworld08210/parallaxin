@@ -1,0 +1,30 @@
+{
+  "appId": "com.aurelix.parallax",
+  "appName": "Aurelix",
+  "webDir": "dist",
+  "server": {
+    "androidScheme": "https"
+  },
+  "android": {
+    "allowMixedContent": true,
+    "captureInput": true,
+    "webContentsDebuggingEnabled": true
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchAutoHide": true,
+      "launchShowDuration": 1500,
+      "backgroundColor": "#08070fff",
+      "androidSpinnerStyle": "small",
+      "showSpinner": false
+    },
+    "StatusBar": {
+      "style": "DARK",
+      "backgroundColor": "#08070f",
+      "overlaysWebView": false
+    },
+    "Keyboard": {
+      "resize": "body"
+    }
+  }
+}

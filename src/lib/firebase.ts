@@ -4,12 +4,13 @@ import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCKWXHKPhXwTJoIuLqLV7NlfKCJ-SMmWTw",
+  apiKey: "AIzaSyCDFm516Yy7E82He3xaZp5jYtIUJLkiPtI",
   authDomain: "social-claud.firebaseapp.com",
   projectId: "social-claud",
   storageBucket: "social-claud.firebasestorage.app",
   messagingSenderId: "611057820540",
-  appId: "1:611057820540:web:8bef290ee0f88bac79baf9" // Fixed appId for web
+  appId: "1:611057820540:web:7d0462c6bd7628a679baf9",
+  measurementId: "G-8LJJMQ1DJ5"
 };
 
 const app = initializeApp(firebaseConfig);

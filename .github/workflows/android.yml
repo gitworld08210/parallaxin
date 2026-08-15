@@ -1,0 +1,152 @@
+name: Android build
+
+# Produces an installable debug APK. The native Android project is not
+# committed, so it is generated here on every run.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  apk:
+    name: Debug APK
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      # Capacitor 6 and the Android Gradle Plugin require JDK 17. Newer JDKs
+      # fail the Gradle toolchain check.
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      # `npm ci` cannot be used: package-lock.json is out of sync with
+      # package.json on this repo (it predates several dependency bumps, e.g.
+      # firebase and react-router-dom), so `npm ci` fails before it installs
+      # anything. `npm install` resolves and refreshes the tree instead.
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Type check
+        run: npx tsc --noEmit
+
+      - name: Build web bundle
+        run: npm run build
+
+      - name: Generate Android project
+        run: npx cap add android
+
+      - name: Apply Android permissions
+        run: node scripts/configure-android.mjs
+
+      - name: Sync web assets into Android project
+        run: npx cap sync android
+
+      - name: Assemble debug APK
+        working-directory: android
+        run: ./gradlew assembleDebug --no-daemon --stacktrace
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: aurelix-debug-apk
+          path: android/app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Dump generated manifest and Gradle SDK versions
+        working-directory: android
+        run: |
+          echo "--- resolved SDK versions (app/build.gradle) ---"
+          grep -E "minSdkVersion|targetSdkVersion|compileSdkVersion" app/build.gradle variables.gradle 2>/dev/null || true
+          echo "--- merged manifest (readable) ---"
+          MERGED=$(find app/build/intermediates/merged_manifest -name "AndroidManifest.xml" | head -1)
+          if [ -n "$MERGED" ]; then cat "$MERGED"; else echo "no merged manifest found, listing intermediates:"; find app/build/intermediates -iname "*manifest*" | head -20; fi
+
+  # Boots a real Android emulator, installs the APK, launches it, and captures
+  # logcat plus a screenshot. This is the actual verification that the app
+  # renders — static inspection of the bundle cannot prove that.
+  emulator-check:
+    name: Boot on emulator and capture logcat
+    runs-on: ubuntu-latest
+    needs: apk
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download APK
+        uses: actions/download-artifact@v4
+        with:
+          name: aurelix-debug-apk
+          path: apk
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Enable KVM (required for the emulator to run at usable speed)
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Run on emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 30
+          target: google_apis
+          arch: x86_64
+          profile: pixel_5
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: true
+          # Each line of `script` under android-emulator-runner is invoked as
+          # its own `sh -c`, so shell variables set on one line do not survive
+          # to the next. Everything that depends on $APK has to run inside a
+          # single `sh -c '...; ...; ...'` line.
+          script: >
+            sh -c '
+            set -e;
+            echo "--- contents of apk/ ---";
+            find apk -type f;
+            APK=$(find apk -type f -name "*.apk" | head -1);
+            if [ -z "$APK" ]; then echo "No .apk file found under apk/"; exit 1; fi;
+            echo "Installing $APK";
+            adb install -r "$APK";
+            adb logcat -c;
+            adb shell monkey -p com.aurelix.parallax -c android.intent.category.LAUNCHER 1;
+            sleep 12;
+            echo "--- screenshot ---";
+            adb exec-out screencap -p > app-render.png;
+            echo "--- logcat since launch (Capacitor/Chromium/AndroidRuntime/System.err) ---";
+            adb logcat -d | grep -iE "Capacitor|chromium|AndroidRuntime|System\.err|FATAL|WebView|CONSOLE" | tail -300 > app-logcat.txt || true;
+            adb logcat -d > app-logcat-full.txt;
+            cat app-logcat.txt
+            '
+
+      - name: Upload screenshot and logcat
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: emulator-diagnostics
+          path: |
+            app-render.png
+            app-logcat.txt
+            app-logcat-full.txt
+          if-no-files-found: warn
+          retention-days: 14
