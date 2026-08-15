@@ -1,4 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
+import { collection, addDoc, serverTimestamp, doc, updateDoc, getDocs } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Room, createLocalTracks, Track, LocalVideoTrack, LocalAudioTrack } from "livekit-client";
@@ -7,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { ArrowLeft, Radio, Heart, Users, Globe, Ticket, Crown, Gift, RotateCcw } from "lucide-react";
+import { useAuth } from "@/contexts/AuthProvider";
 
 type ChatRow = { id: string; user_id: string; body: string; created_at: string };
 type GiftRow = { id: string; gift_id: string; coins_total: number; sender_id: string };
@@ -14,6 +17,7 @@ type Access = "free" | "ticket" | "subscribers_only";
 
 export default function LiveHost() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const videoRef = useRef<HTMLVideoElement>(null);
   const roomRef = useRef<Room | null>(null);
   const videoTrackRef = useRef<LocalVideoTrack | null>(null);
@@ -36,9 +40,9 @@ export default function LiveHost() {
 
   useEffect(() => {
     (async () => {
-      const { data } = await supabase.from("gifts").select("id, icon, name");
+      const catSnap = await getDocs(collection(db, "gifts"));
       const map: Record<string, { icon: string; name: string }> = {};
-      (data ?? []).forEach((g: any) => { map[g.id] = { icon: g.icon, name: g.name }; });
+      catSnap.docs.forEach((d) => { const data = d.data(); map[d.id] = { icon: data.icon, name: data.name }; });
       setCatalog(map);
     })();
   }, []);
@@ -91,8 +95,6 @@ export default function LiveHost() {
     if (starting) return;
     setStarting(true);
     try {
-      const { data: userData } = await supabase.auth.getUser();
-      const user = userData.user;
       if (!user) { toast.error("Please sign in"); return; }
 
       // 1) Request camera/mic first — surface permission errors early
@@ -113,19 +115,21 @@ export default function LiveHost() {
         if (t.kind === Track.Kind.Audio) audioTrackRef.current = t as LocalAudioTrack;
       }
 
-      // 2) Create the stream record
+      // 2) Create the stream record in Firestore
       const roomName = `live_${user.id}_${Date.now()}`;
-      const { data: stream, error: insErr } = await supabase.from("live_streams").insert({
-          host_id: user.id,
-          title: title || null,
-          livekit_room: roomName,
-          access_type: access as any,
-          ticket_price_coins: access === "ticket" ? Math.max(1, price) : 0,
-          allow_gifts: allowGifts,
-        } as any).select().single();
-      if (insErr) throw insErr;
-      setStreamId((stream as any).id);
-      setTips((stream as any).total_tips_coins ?? 0);
+      const streamDoc = await addDoc(collection(db, "live_streams"), {
+        host_id: user.id,
+        title: title || null,
+        livekit_room: roomName,
+        access_type: access,
+        ticket_price_coins: access === "ticket" ? Math.max(1, price) : 0,
+        allow_gifts: allowGifts,
+        status: "live",
+        started_at: serverTimestamp(),
+        total_tips_coins: 0,
+      });
+      setStreamId(streamDoc.id);
+      setTips(0);
 
       // 3) Get LiveKit token & connect
       const { data, error } = await supabase.functions.invoke("livekit-token", {
@@ -161,7 +165,10 @@ export default function LiveHost() {
       roomRef.current?.disconnect();
       roomRef.current = null;
       if (streamId) {
-          supabase.from("live_streams").update({ status: "ended", ended_at: new Date().toISOString() }).eq("id", streamId);
+        await updateDoc(doc(db, "live_streams", streamId), {
+          status: "ended",
+          ended_at: new Date().toISOString()
+        });
       }
     } finally {
       navigate(-1);

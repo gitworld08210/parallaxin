@@ -1,4 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
+import { collection, addDoc, serverTimestamp, doc, getDoc, getDocs } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { Room, RoomEvent, RemoteTrack, Track } from "livekit-client";
@@ -8,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { toast } from "sonner";
 import { ArrowLeft, Heart, Send, Users, Ticket, Crown, Gift, Lock } from "lucide-react";
+import { useAuth } from "@/contexts/AuthProvider";
 
 type ChatRow = { id: string; user_id: string; body: string; created_at: string };
 type Stream = {
@@ -21,6 +24,7 @@ type GiftEvent = { id: string; gift_id: string; coins_total: number; sender_id: 
 export default function LiveViewer() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const videoRef = useRef<HTMLVideoElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
   const roomRef = useRef<Room | null>(null);
@@ -40,8 +44,8 @@ export default function LiveViewer() {
 
   useEffect(() => {
     (async () => {
-      const { data } = await supabase.from("gift_catalog" as any).select("*");
-      setCatalog((data ?? []) as GiftDef[]);
+      const catSnap = await getDocs(collection(db, "gift_catalog"));
+      setCatalog(catSnap.docs.map(d => ({ id: d.id, ...d.data() })) as GiftDef[]);
     })();
   }, []);
 
@@ -49,16 +53,15 @@ export default function LiveViewer() {
   useEffect(() => {
     if (!id) return;
     (async () => {
-      const { data, error } = await supabase.from("live_streams" as any).select("*").eq("id", id).maybeSingle();
-      if (error || !data) { toast.error("Stream not found"); navigate(-1); return; }
-      const s = data as any as Stream;
+      const streamDoc = await getDoc(doc(db, "live_streams", id));
+      if (!streamDoc.exists()) { toast.error("Stream not found"); navigate(-1); return; }
+      const s = { id: streamDoc.id, ...streamDoc.data() } as any as Stream;
       setStream(s);
       setTips(Number(s.total_tips_coins ?? 0));
       if (s.status === "ended") { setEnded(true); return; }
 
-      const { data: u } = await supabase.auth.getUser();
-      const uid = u.user?.id;
-      setMe(uid ?? null);
+      const uid = user?.id ?? null;
+      setMe(uid);
       if (uid && s.host_id === uid) { setAccess("granted"); return; }
       if (s.access_type === "free") { setAccess("granted"); return; }
       if (!uid) { setAccess(s.access_type === "ticket" ? "needs_ticket" : "needs_sub"); return; }
@@ -72,7 +75,7 @@ export default function LiveViewer() {
         setAccess(active ? "granted" : "needs_sub");
       }
     })();
-  }, [id, navigate]);
+  }, [id, navigate, user]);
 
   // Connect livekit once access is granted
   useEffect(() => {
@@ -135,9 +138,21 @@ subscribe();
     if (!text.trim() || !id || !me) return;
     const body = text.trim();
     setText("");
+    await addDoc(collection(db, "live_chat"), {
+      stream_id: id,
+      user_id: me,
+      body,
+      created_at: serverTimestamp()
+    });
   };
+
   const sendHeart = async () => {
     if (!id || !me) return;
+    await addDoc(collection(db, "live_reactions"), {
+      stream_id: id,
+      user_id: me,
+      created_at: serverTimestamp()
+    });
   };
 
   const buyTicket = async () => {
