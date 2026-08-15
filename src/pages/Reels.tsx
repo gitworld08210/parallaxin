@@ -1,7 +1,6 @@
-import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { Heart, MessageCircle, Send, Plus, Volume2, VolumeX, Pause, Camera, Search, Music2, Bookmark, MoreHorizontal, AlertCircle } from "lucide-react";
+import { Heart, MessageCircle, Send, Plus, Volume2, VolumeX, Pause, Search, Music2, Bookmark, Home, Compass, User, Mail } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { collection, query, where, orderBy, limit, getDocs } from "firebase/firestore";
 import { db } from "@/lib/firebase";
@@ -51,7 +50,7 @@ const Reels = () => {
         where("is_reel", "==", true),
         where("status", "==", "published"),
         orderBy("created_at", "desc"),
-        limit(10) // Reduced from 50 to 10 for faster initial load
+        limit(10)
       );
       const snap = await getDocs(q);
       const data = snap.docs.map(doc => ({ 
@@ -119,75 +118,102 @@ const Reels = () => {
   };
 
   return (
-    <div className="bg-black text-white relative h-full w-full overflow-hidden" onMouseMove={bumpChrome} onTouchStart={bumpChrome}>
-      {/* TikTok-style top: For You / Following with animated pill underline */}
+    <div className="bg-black text-white relative h-[100dvh] w-full overflow-hidden" onMouseMove={bumpChrome} onTouchStart={bumpChrome}>
+      {/* TikTok-style top tabs: Following | For You */}
       <header
         className={cn(
-          "absolute top-0 inset-x-0 z-30 pt-3 pb-4 px-4 flex items-center justify-between transition-opacity duration-500",
-          "bg-gradient-to-b from-black/80 via-black/40 to-transparent",
+          "absolute top-0 inset-x-0 z-30 pt-[env(safe-area-inset-top,12px)] pb-4 flex items-center justify-center transition-opacity duration-500",
+          "bg-gradient-to-b from-black/70 to-transparent",
           chromeDim ? "opacity-0 pointer-events-none" : "opacity-100"
         )}
       >
-        <Link to="/search" className="p-2 -ml-2" aria-label="Search">
-          <Search className="h-5 w-5" strokeWidth={2} />
-        </Link>
-
         <div className="flex items-center gap-6">
           {(["following", "foryou"] as FeedTab[]).map((t) => (
             <button
               key={t}
               onClick={() => setTab(t)}
               className={cn(
-                "relative py-1 text-[15px] font-semibold transition-colors",
-                tab === t ? "text-white" : "text-white/60"
+                "relative py-2 text-[16px] font-bold transition-colors",
+                tab === t ? "text-white" : "text-white/50"
               )}
             >
               {t === "following" ? "Following" : "For You"}
               {tab === t && (
                 <motion.span
-                  layoutId="reels-tab-underline"
-                  className="absolute -bottom-1 left-1/2 -translate-x-1/2 h-0.5 w-6 bg-white rounded-full"
+                  layoutId="reels-tab-pill"
+                  className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 h-[3px] w-7 bg-white rounded-full"
                   transition={{ type: "spring", stiffness: 500, damping: 40 }}
                 />
               )}
             </button>
           ))}
         </div>
-
-        <div className="p-2 -mr-2 w-9 h-9" /> {/* Placeholder to balance search icon */}
       </header>
 
+      {/* Scrollable video container */}
       <div ref={containerRef} className="h-full w-full overflow-y-scroll snap-y snap-mandatory scrollbar-hide">
         {reels.length === 0 && (
           <div className="h-full grid place-items-center text-center px-8">
             <div>
-              <p className="font-display text-3xl mb-2">No reels yet</p>
+              <p className="font-serif italic text-3xl mb-2">No reels yet</p>
               <p className="text-sm text-white/60 mb-6">Be the first to drop one.</p>
-              <Link to="/compose/reel" className="inline-flex items-center gap-2 px-5 py-3 rounded-full bg-primary text-primary-foreground font-semibold text-sm">
+              <Link to="/compose/reel" className="inline-flex items-center gap-2 px-5 py-3 rounded-full bg-white text-black font-semibold text-sm">
                 <Plus className="h-4 w-4" /> Create reel
               </Link>
             </div>
           </div>
         )}
         {reels.map((r) => (
-          <div key={r.id} className="snap-start min-h-full w-full">
+          <div key={r.id} className="snap-start h-[100dvh] w-full">
             <ReelItem
-            key={r.id}
-            r={r}
-            muted={muted}
-            chromeDim={chromeDim}
-            isPaused={pausedIds.has(r.id)}
-            isActive={activeId === r.id}
-            onTogglePause={togglePause}
-            onToggleMute={() => { setMuted((m) => !m); bumpChrome(); }}
-            onToggleLike={toggleLike}
-            onToggleBookmark={toggleBookmark}
-            onOpenComments={(id) => setCommentPost(id)}
-            onShare={share}
+              r={r}
+              muted={muted}
+              chromeDim={chromeDim}
+              isPaused={pausedIds.has(r.id)}
+              isActive={activeId === r.id}
+              onTogglePause={togglePause}
+              onToggleMute={() => { setMuted((m) => !m); bumpChrome(); }}
+              onToggleLike={toggleLike}
+              onToggleBookmark={toggleBookmark}
+              onOpenComments={(id) => setCommentPost(id)}
+              onShare={share}
             />
           </div>
         ))}
       </div>
+
+      {/* Bottom Navigation Bar - TikTok style */}
+      <nav
+        className={cn(
+          "absolute bottom-0 inset-x-0 z-30 pb-[env(safe-area-inset-bottom,8px)] pt-2 px-2",
+          "bg-gradient-to-t from-black/90 via-black/60 to-transparent",
+          "flex items-center justify-around",
+          "transition-opacity duration-500",
+          chromeDim ? "opacity-30" : "opacity-100"
+        )}
+      >
+        <Link to="/" className="flex flex-col items-center gap-0.5 py-1">
+          <Home className="h-6 w-6 text-white/70" strokeWidth={1.75} />
+          <span className="text-[10px] text-white/70">Home</span>
+        </Link>
+        <Link to="/discover" className="flex flex-col items-center gap-0.5 py-1">
+          <Compass className="h-6 w-6 text-white/70" strokeWidth={1.75} />
+          <span className="text-[10px] text-white/70">Discover</span>
+        </Link>
+        <Link to="/compose/reel" className="flex items-center justify-center">
+          <div className="h-10 w-12 rounded-lg bg-white flex items-center justify-center">
+            <Plus className="h-6 w-6 text-black" strokeWidth={2.5} />
+          </div>
+        </Link>
+        <Link to="/messages" className="flex flex-col items-center gap-0.5 py-1">
+          <Mail className="h-6 w-6 text-white/70" strokeWidth={1.75} />
+          <span className="text-[10px] text-white/70">Inbox</span>
+        </Link>
+        <Link to="/profile" className="flex flex-col items-center gap-0.5 py-1">
+          <User className="h-6 w-6 text-white" strokeWidth={1.75} />
+          <span className="text-[10px] text-white">Me</span>
+        </Link>
+      </nav>
 
       <CommentSheet postId={commentPost} open={!!commentPost} onOpenChange={(b) => !b && setCommentPost(null)} />
       <ShareToDM postId={sharePost} open={!!sharePost} onOpenChange={(b) => !b && setSharePost(null)} />
@@ -227,7 +253,6 @@ const ReelItem = ({
   useEffect(() => {
     if (isActive && r.id !== lastActiveId.current) {
       lastActiveId.current = r.id;
-      // Start tracking watch time for interest engine
       if (watchTimer.current) window.clearInterval(watchTimer.current);
       
       const checkpoints = new Set([25, 50, 90]);
@@ -255,7 +280,7 @@ const ReelItem = ({
     };
   }, [isActive, isPaused, r.id]);
 
-  const onTap = (e: React.MouseEvent) => {
+  const onTap = () => {
     const now = Date.now();
     if (now - lastTap.current < 280) {
       if (!r.liked) onToggleLike(r);
@@ -288,7 +313,7 @@ const ReelItem = ({
   }, []);
 
   return (
-    <section className="relative h-full w-full snap-start grid place-items-center shrink-0">
+    <section className="relative h-full w-full grid place-items-center shrink-0">
       <video
         ref={videoRef}
         data-reel-id={r.id}
@@ -300,8 +325,8 @@ const ReelItem = ({
         className="absolute inset-0 w-full h-full object-cover"
       />
 
-      {/* Vignette + top/bottom scrims for text legibility */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-transparent to-black/40 pointer-events-none" />
+      {/* Gradient overlays for text legibility */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30 pointer-events-none" />
 
       {/* Double-tap heart burst */}
       <AnimatePresence>
@@ -315,56 +340,57 @@ const ReelItem = ({
             className="absolute inset-0 grid place-items-center pointer-events-none"
             onAnimationComplete={() => setHeartBurst(0)}
           >
-            <Heart className="h-32 w-32 fill-white text-white drop-shadow-2xl" strokeWidth={0} />
+            <Heart className="h-28 w-28 fill-white text-white drop-shadow-2xl" strokeWidth={0} />
           </motion.div>
         )}
       </AnimatePresence>
 
       {/* Pause indicator */}
       {isPaused && (
-        <div className="absolute inset-0 grid place-items-center pointer-events-none">
+        <div className="absolute inset-0 grid place-items-center pointer-events-none z-10">
           <div className="h-20 w-20 rounded-full bg-white/15 backdrop-blur-xl grid place-items-center animate-in fade-in zoom-in duration-200">
             <Pause className="h-8 w-8 fill-white" />
           </div>
         </div>
       )}
 
-      {/* Mute toggle */}
+      {/* Mute toggle - top right */}
       <button
         onClick={onToggleMute}
         className={cn(
-          "absolute top-4 right-4 h-9 w-9 rounded-full bg-black/20 backdrop-blur-md border border-white/10 grid place-items-center transition-opacity duration-500 z-20",
+          "absolute top-14 right-4 h-8 w-8 rounded-full bg-black/30 backdrop-blur-md grid place-items-center transition-opacity duration-500 z-20",
           chromeDim ? "opacity-0 pointer-events-none" : "opacity-100"
         )}
       >
         {muted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
       </button>
 
-      {/* Right action rail — TikTok style */}
+      {/* Right side action column - TikTok style */}
       <div
         className={cn(
-          "absolute right-2.5 bottom-28 flex flex-col items-center gap-4 transition-opacity duration-500 z-20",
+          "absolute right-3 bottom-32 flex flex-col items-center gap-5 transition-opacity duration-500 z-20",
           chromeDim ? "opacity-30" : "opacity-100"
         )}
       >
-        {/* Avatar + follow plus */}
-        <Link to={r.profile ? `/u/${r.profile.username}` : "#"} className="relative pb-2">
+        {/* Avatar + follow badge */}
+        <Link to={r.profile ? `/u/${r.profile.username}` : "#"} className="relative mb-2">
           {r.profile?.avatar_url ? (
             <img src={r.profile.avatar_url} className="h-12 w-12 rounded-full object-cover ring-2 ring-white" />
           ) : (
-            <div className="h-12 w-12 rounded-full bg-primary ring-2 ring-white grid place-items-center font-bold">
+            <div className="h-12 w-12 rounded-full bg-zinc-700 ring-2 ring-white grid place-items-center font-bold text-sm">
               {r.profile?.username?.[0]?.toUpperCase() ?? "?"}
             </div>
           )}
-          <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 h-5 w-5 rounded-full bg-accent grid place-items-center ring-2 ring-black">
-            <Plus className="h-3 w-3 text-accent-foreground" strokeWidth={3} />
+          <span className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 h-5 w-5 rounded-full bg-rose-500 grid place-items-center ring-2 ring-black">
+            <Plus className="h-3 w-3 text-white" strokeWidth={3} />
           </span>
         </Link>
 
+        {/* Heart */}
         <ActionButton
           icon={
             <Heart
-              className={cn("h-8 w-8 transition-transform", r.liked ? "fill-accent text-accent scale-110" : "text-white")}
+              className={cn("h-7 w-7 transition-transform", r.liked ? "fill-rose-500 text-rose-500 scale-110" : "text-white")}
               strokeWidth={1.75}
             />
           }
@@ -372,47 +398,50 @@ const ReelItem = ({
           onClick={() => onToggleLike(r)}
         />
 
+        {/* Comment */}
         <ActionButton
-          icon={<MessageCircle className="h-8 w-8 text-white" strokeWidth={1.75} />}
+          icon={<MessageCircle className="h-7 w-7 text-white" strokeWidth={1.75} />}
           label={fmt(r.comment_count)}
           onClick={() => onOpenComments(r.id)}
         />
 
+        {/* Share */}
         <ActionButton
-          icon={<Bookmark className={cn("h-8 w-8", r.bookmarked ? "fill-yellow-400 text-yellow-400" : "text-white")} strokeWidth={1.75} />}
-          label="Save"
-          onClick={() => onToggleBookmark(r)}
-        />
-
-        <ActionButton
-          icon={<Send className="h-8 w-8 text-white" strokeWidth={1.75} />}
+          icon={<Send className="h-7 w-7 text-white" strokeWidth={1.75} />}
           label="Share"
           onClick={() => onShare(r)}
         />
 
-        {/* Spinning music disc */}
+        {/* Bookmark */}
+        <ActionButton
+          icon={<Bookmark className={cn("h-7 w-7", r.bookmarked ? "fill-yellow-400 text-yellow-400" : "text-white")} strokeWidth={1.75} />}
+          label="Save"
+          onClick={() => onToggleBookmark(r)}
+        />
+
+        {/* Spinning album art disc */}
         <motion.div
           animate={{ rotate: isActive && !isPaused ? 360 : 0 }}
           transition={{ duration: 6, ease: "linear", repeat: Infinity }}
-          className="mt-1 h-10 w-10 rounded-full bg-gradient-to-br from-neutral-800 to-black ring-2 ring-white/30 grid place-items-center overflow-hidden"
+          className="mt-2 h-11 w-11 rounded-full bg-gradient-to-br from-zinc-800 to-black ring-[3px] ring-zinc-600 grid place-items-center overflow-hidden"
         >
           {r.profile?.avatar_url ? (
-            <img src={r.profile.avatar_url} className="h-6 w-6 rounded-full object-cover" />
+            <img src={r.profile.avatar_url} className="h-7 w-7 rounded-full object-cover" />
           ) : (
             <Music2 className="h-4 w-4 text-white/80" />
           )}
         </motion.div>
       </div>
 
-      {/* Bottom caption block */}
+      {/* Bottom left - Username, caption, music */}
       <div
         className={cn(
-          "absolute left-4 right-20 bottom-8 transition-opacity duration-500 z-20",
+          "absolute left-4 right-24 bottom-20 transition-opacity duration-500 z-20",
           chromeDim ? "opacity-50" : "opacity-100"
         )}
       >
         <div className="flex items-center gap-2 mb-2">
-          <Link to={r.profile ? `/u/${r.profile.username}` : "#"} className="font-semibold text-[15px] tracking-tight">
+          <Link to={r.profile ? `/u/${r.profile.username}` : "#"} className="font-bold text-[15px] tracking-tight">
             @{r.profile?.username ?? "unknown"}
           </Link>
           {ad && <WhyThisAd explanation={ad.explanation} />}
@@ -421,29 +450,30 @@ const ReelItem = ({
           <p
             onClick={() => setCaptionExpanded((v) => !v)}
             className={cn(
-              "mt-1.5 text-[13.5px] leading-snug text-white/95",
+              "text-[13px] leading-snug text-white/90",
               !captionExpanded && "line-clamp-2"
             )}
           >
             {r.content}
           </p>
         )}
-        <div className="mt-2.5 flex items-center gap-1.5 text-[12px] text-white/85">
-          <Music2 className="h-3.5 w-3.5" />
-          <div className="overflow-hidden max-w-[80%] whitespace-nowrap">
+        {/* Music marquee */}
+        <div className="mt-3 flex items-center gap-2 text-[12px] text-white/80">
+          <Music2 className="h-3.5 w-3.5 shrink-0" />
+          <div className="overflow-hidden max-w-[75%] whitespace-nowrap">
             <motion.span
               animate={{ x: ["0%", "-50%"] }}
-              transition={{ duration: 12, repeat: Infinity, ease: "linear" }}
+              transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
               className="inline-block pr-8"
             >
-              Original sound — @{r.profile?.username ?? "unknown"} · Original sound — @{r.profile?.username ?? "unknown"} ·
+              Original sound - @{r.profile?.username ?? "unknown"} &nbsp;&nbsp; Original sound - @{r.profile?.username ?? "unknown"} &nbsp;&nbsp;
             </motion.span>
           </div>
         </div>
       </div>
 
-      {/* Bottom progress scrubber */}
-      <div className="absolute left-0 right-0 bottom-0 h-0.5 bg-white/15 z-20">
+      {/* Bottom progress bar */}
+      <div className="absolute left-0 right-0 bottom-[68px] h-[2px] bg-white/20 z-20">
         <div className="h-full bg-white transition-[width] duration-150" style={{ width: `${progress}%` }} />
       </div>
     </section>
@@ -451,9 +481,9 @@ const ReelItem = ({
 };
 
 const ActionButton = ({ icon, label, onClick }: { icon: React.ReactNode; label: string; onClick: () => void }) => (
-  <button onClick={onClick} className="flex flex-col items-center gap-0.5 active:scale-95 transition-transform">
-    <div className="drop-shadow-[0_2px_6px_rgba(0,0,0,0.5)]">{icon}</div>
-    <span className="text-[11px] font-semibold drop-shadow">{label}</span>
+  <button onClick={onClick} className="flex flex-col items-center gap-1 active:scale-95 transition-transform">
+    <div className="drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)]">{icon}</div>
+    <span className="text-[11px] font-semibold text-white drop-shadow">{label}</span>
   </button>
 );
 

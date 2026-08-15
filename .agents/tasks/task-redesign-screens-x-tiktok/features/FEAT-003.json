@@ -1,0 +1,30 @@
+{
+  "id": "FEAT-003",
+  "type": "feat",
+  "description": "Redesign Reels.tsx to TikTok-style full-screen vertical video, and redesign MessagesPasscodeGate.tsx to X-style passcode screen with forgot-passcode flow.",
+  "status": "in_progress",
+  "steps": [
+    "Rewrite src/pages/Reels.tsx to TikTok-style layout: full viewport height video (swipe up/down to navigate), 'Following | For You' tabs at top center (white text, active has underline), right side action column (avatar with + follow badge, heart + count, comment bubble + count, share arrow + 'Share' text), bottom left (@username, caption text with hashtags, music name with marquee scroll), bottom right (spinning album art circle), bottom nav (Home / Discover / + create / Inbox / Me). Keep all existing state logic, IntersectionObserver for autoplay, toggleLike/toggleBookmark/togglePause, CommentSheet/ShareToDM, and ad intelligence hooks.",
+    "Rewrite src/components/messages/MessagesPasscodeGate.tsx: Main screen shows 'Enter your passcode' title centered, subtitle about encryption keys and message decryption, 4 circle OTP inputs (filled when digit entered), 'Forgot Passcode' link below inputs. Forgot passcode screen shows warning circle icon at top, 'Forgot Passcode' bold title, explanation text about resetting chat, red 'Reset Chat' pill button, 'Go Back' text button. Keep existing passcode storage/fetch logic (readCache, writeCache, fetchRemote, saveRemote) and unlock gate mechanism intact.",
+    "All components: pure black background, white text, minimal. Use existing lucide-react icons, framer-motion, cn(). Reels bottom nav should navigate to actual routes (/  /discover  /compose  /messages  /profile)."
+  ],
+  "acceptance_criteria": [
+    "Reels page shows full-viewport TikTok-style video with swipe navigation",
+    "Reels has 'Following | For You' tabs with animated underline at top",
+    "Reels right-side action column shows avatar, heart, comment, share with counts",
+    "Reels bottom-left shows username, caption, music marquee",
+    "Reels bottom-right shows spinning album art disc",
+    "Reels has bottom navigation bar with 5 items",
+    "MessagesPasscodeGate shows centered 'Enter your passcode' with 4 circle OTP dots",
+    "MessagesPasscodeGate has 'Forgot Passcode' link that shows forgot-passcode screen",
+    "Forgot passcode screen shows warning icon, explanation, red Reset Chat button, Go Back button",
+    "All existing video autoplay, like/bookmark/comment functionality preserved in Reels",
+    "All existing passcode verification logic preserved in MessagesPasscodeGate",
+    "TypeScript compiles without errors (NODE_OPTIONS= npx tsc --noEmit)"
+  ],
+  "verification": [
+    "NODE_OPTIONS= npx tsc --noEmit passes with zero errors"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

@@ -1,0 +1,7 @@
+{
+  "task_id": "task-redesign-screens-x-tiktok",
+  "task_description": "Redesign Auth, Profile, SideMenu, Reels, and MessagesPasscodeGate screens to match X/Twitter + TikTok style references with Parallax branding. Add Firebase Phone Auth support. Keep dark theme throughout.",
+  "status": "in_progress",
+  "feature_order": ["FEAT-001", "FEAT-002", "FEAT-003"],
+  "blocked_reason": null
+}
