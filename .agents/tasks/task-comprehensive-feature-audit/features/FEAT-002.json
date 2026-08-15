@@ -2,7 +2,7 @@
   "id": "FEAT-002",
   "type": "fix",
   "description": "Fix Messages/Conversations bugs - inconsistent user.id/user.uid usage in startChat, empty members array in new conversations, Firestore Timestamp handling for created_at in message rendering, and broken NewGroupSheet that uses Supabase RPC.",
-  "status": "in_progress",
+  "status": "completed",
   "steps": [
     "In src/pages/Messages.tsx: Fix startChat() - change member_ids from [user.uid, otherId] to [user.id, otherId] for consistency. Add last_message_at: serverTimestamp() and last_message_text: null to the new conversation doc. The members array should be populated with profile info or left for the Conversation page to resolve.",
     "In src/pages/Conversation.tsx: Add handling for Firestore Timestamp objects in message created_at. When messages come from onSnapshot, created_at will be a Firestore Timestamp (not a string). Convert it: use .toDate().toISOString() if it's a Timestamp, or fall back to the string value. Apply this conversion in the onSnapshot handler when mapping docs.",
@@ -21,5 +21,5 @@
     "Run NODE_OPTIONS='' npx tsc --noEmit and confirm zero errors"
   ],
   "blocked_reason": null,
-  "findings": ""
+  "findings": "All four bugs fixed and verified with tsc --noEmit (zero errors). Messages.tsx: changed user.uid to user.id and added last_message_text field. Conversation.tsx: added Timestamp-to-ISO conversion in onSnapshot handler for created_at and read_at. NewGroupSheet.tsx: fully replaced Supabase RPC and profile queries with Firestore addDoc and getDocs. VoiceMessage.tsx: replaced hardcoded URL with uploadToCloudinary call. Removed unused supabase imports from Messages.tsx and VoiceMessage.tsx."
 }
