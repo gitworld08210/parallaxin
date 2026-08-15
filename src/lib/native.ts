@@ -109,20 +109,31 @@ type BackButtonHandler = () => void;
  */
 export const registerBackButton = (handler: BackButtonHandler): (() => void) => {
   const app = getPlugin<{
-    addListener: (event: string, cb: () => void) => Promise<{ remove: () => Promise<void> }>;
+    addListener: (event: string, cb: () => void) => unknown;
   }>("App");
   if (!app) return () => undefined;
 
   let removed = false;
   let handle: { remove: () => Promise<void> } | null = null;
 
-  app.addListener("backButton", handler)
-    .then((h) => {
-      handle = h;
-      // Guard against the listener resolving after cleanup already ran.
-      if (removed) void h.remove();
-    })
-    .catch((err) => console.warn("Back button listener failed:", err));
+  // `addListener` is called through the raw `window.Capacitor.Plugins` proxy
+  // rather than the typed `@capacitor/app` package, so it is not guaranteed to
+  // return a real native Promise on every bridge implementation. Chaining
+  // `.then()` directly on it previously threw `... .then is not a function`
+  // synchronously at module load, which crashed the whole render tree before
+  // anything mounted — the app showed a black screen with nothing in #root.
+  // `Promise.resolve(...)` normalises any return shape (Promise, thenable, or
+  // a plain value) into a real Promise before chaining.
+  try {
+    Promise.resolve(app.addListener("backButton", handler))
+      .then((h: any) => {
+        handle = h;
+        if (removed) void h?.remove?.();
+      })
+      .catch((err: unknown) => console.warn("Back button listener failed:", err));
+  } catch (err) {
+    console.warn("Back button listener registration threw synchronously:", err);
+  }
 
   return () => {
     removed = true;
