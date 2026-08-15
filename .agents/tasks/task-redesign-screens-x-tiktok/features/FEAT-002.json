@@ -1,0 +1,25 @@
+{
+  "id": "FEAT-002",
+  "type": "feat",
+  "description": "Redesign Profile.tsx to X/Twitter style, redesign SideMenu.tsx to X-style drawer, and redesign the VerificationSheet as a verified badge popup bottom sheet with Parallax branding.",
+  "status": "in_progress",
+  "steps": [
+    "Rewrite src/pages/Profile.tsx to match X/Twitter profile style: full-width cover banner (~180px height), large circular avatar (80px) overlapping banner bottom edge, action buttons (... more, message icon, 'Follow' pill or 'Edit profile' if own), bold display name + blue verified badge + @username, bio text, location/link/joined info row with icons, '143 Following  149 Followers' with bold numbers, tabs: Posts | Replies | Media | Likes. Keep all existing data fetching, mutations (follow/block/mute), and state logic intact.",
+    "Rewrite src/components/layout/SideMenu.tsx to X-style drawer: large avatar top-left + settings gear icon top-right, display name bold + @username gray + '12 Following  0 Followers', menu items with icons (Profile, Premium with colored '50% off' badge, Communities, Bookmarks, Lists, Spaces, Creator Studio), separator, secondary items (Settings and privacy, Help Center), dark mode toggle at bottom-left. Keep existing Sheet component wrapping, existing auth context usage, and signOut functionality.",
+    "Rewrite src/components/profile/VerificationSheet.tsx as a bottom sheet popup matching the design spec: 'Verified account' bold title, blue checkmark icon + 'This account is verified. Learn more' (Learn more in blue), calendar icon + 'Verified since April 2025.' Keep the Sheet component wrapper and existing props interface. Update branding from 'Aurelix' to 'Parallax'.",
+    "All components must keep pure black background, white text, minimal spacing. Use existing lucide-react icons, framer-motion for animations, cn() for conditional classes."
+  ],
+  "acceptance_criteria": [
+    "Profile page shows X/Twitter style: cover banner, overlapping avatar, action buttons, name/username/bio, metadata row, follow counts, tabbed content",
+    "SideMenu drawer shows: avatar, name, follow counts, menu items with icons and badges, secondary items, dark mode toggle",
+    "VerificationSheet shows: 'Verified account' title, blue checkmark with description, 'Verified since' date",
+    "All branding says 'Parallax' not 'Aurelix'",
+    "All existing functionality (follow, block, mute, DM, share, signOut) is preserved",
+    "TypeScript compiles without errors (NODE_OPTIONS= npx tsc --noEmit)"
+  ],
+  "verification": [
+    "NODE_OPTIONS= npx tsc --noEmit passes with zero errors"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}
