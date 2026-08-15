@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
 import { ImagePlus, X, Globe, Star, BarChart3, MessageSquare, Plus, Trash2, Music, Wand2 } from "lucide-react";
 
 import { useAuth } from "@/contexts/AuthProvider";
@@ -9,6 +8,8 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { toast } from "sonner";
 import { uploadToCloudinary } from "@/lib/cloudinary";
 import { FilterStrip, FilterKey, filterCss } from "@/components/compose/FilterStrip";
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 
 type Sticker =
   | { id: string; kind: "poll"; x: number; y: number; question: string; options: string[] }
@@ -16,7 +17,7 @@ type Sticker =
   | { id: string; kind: "music"; x: number; y: number; title: string };
 
 const StoryCompose = () => {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const nav = useNavigate();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
@@ -76,22 +77,31 @@ const StoryCompose = () => {
     setBusy(true);
     try {
       const url = await uploadToCloudinary(file);
-      const { data: storyRow, error } = await supabase.from("stories").insert({
+      const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+      const storyRef = await addDoc(collection(db, "stories"), {
         user_id: user.id,
         media_url: url,
         media_type: file.type.startsWith("video") ? "video" : "image",
-        audience: audience as any,
-      }).select("id").single();
-      
-      if (error) throw error;
-      if (stickers.length && storyRow?.id) {
-        const rows = stickers.map((s) => ({
-          story_id: storyRow.id,
-          kind: s.kind,
-          position: { x: s.x, y: s.y },
-          payload: s.kind === "poll" ? { question: s.question, options: s.options } : s.kind === "qa" ? { prompt: s.prompt } : { title: s.title },
-        }));
-        await supabase.from("story_stickers").insert(rows);
+        audience,
+        created_at: serverTimestamp(),
+        expires_at: expiresAt,
+        profile: {
+          username: profile?.username || "",
+          display_name: profile?.display_name || "",
+          avatar_url: profile?.avatar_url || null,
+        },
+      });
+
+      if (stickers.length && storyRef.id) {
+        const stickerPromises = stickers.map((s) =>
+          addDoc(collection(db, "story_stickers"), {
+            story_id: storyRef.id,
+            kind: s.kind,
+            position: { x: s.x, y: s.y },
+            payload: s.kind === "poll" ? { question: s.question, options: s.options } : s.kind === "qa" ? { prompt: s.prompt } : { title: s.title },
+          })
+        );
+        await Promise.all(stickerPromises);
       }
       toast.success("Story added ✦ · expires in 24h");
       nav("/");

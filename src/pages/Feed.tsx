@@ -11,8 +11,9 @@ import { FeedSkeleton } from "@/components/social/FeedSkeleton";
 import { EmptyState } from "@/components/empty/EmptyState";
 import { SideMenu } from "@/components/layout/SideMenu";
 import { AuraAvatar } from "@/components/vibe/AuraAvatar";
-import { collection, query, where, orderBy, limit, getDocs } from "firebase/firestore";
+import { collection, query, where, orderBy, limit, getDocs, getDoc, doc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import { toast } from "sonner";
 
 import { useAuth } from "@/contexts/AuthProvider";
 import { gradientFor, initialsOf } from "@/lib/format";
@@ -25,28 +26,97 @@ const Feed = () => {
   const [loading, setLoading] = useState(true);
   const [commentPost, setCommentPost] = useState<string | null>(null);
 
+  const PAGE_SIZE = 10;
+
+  // `in` filters are capped by Firestore, so the followed-author set has to be
+  // queried in chunks and merged client-side.
+  const chunk = <T,>(arr: T[], size: number): T[][] => {
+    const out: T[][] = [];
+    for (let i = 0; i < arr.length; i += size) out.push(arr.slice(i, i + size));
+    return out;
+  };
+
+  const loadForYou = async (): Promise<FeedPost[]> => {
+    const snap = await getDocs(query(
+      collection(db, "posts"),
+      where("status", "==", "published"),
+      where("is_reel", "==", false),
+      orderBy("created_at", "desc"),
+      limit(PAGE_SIZE)
+    ));
+    return snap.docs.map((d) => ({ id: d.id, ...d.data() })) as FeedPost[];
+  };
+
+  const loadFollowing = async (uid: string): Promise<FeedPost[]> => {
+    const followSnap = await getDocs(query(
+      collection(db, "follows"),
+      where("follower_id", "==", uid)
+    ));
+    const authorIds = followSnap.docs
+      .map((d) => d.data()?.following_id)
+      .filter((v): v is string => typeof v === "string" && v.length > 0);
+
+    if (authorIds.length === 0) return [];
+
+    const batches = await Promise.all(
+      chunk(authorIds, 10).map((ids) => getDocs(query(
+        collection(db, "posts"),
+        where("status", "==", "published"),
+        where("is_reel", "==", false),
+        where("user_id", "in", ids),
+        orderBy("created_at", "desc"),
+        limit(PAGE_SIZE)
+      )))
+    );
+
+    const seen = new Set<string>();
+    const merged: FeedPost[] = [];
+    for (const snap of batches) {
+      for (const d of snap.docs) {
+        if (seen.has(d.id)) continue;
+        seen.add(d.id);
+        merged.push({ id: d.id, ...d.data() } as FeedPost);
+      }
+    }
+
+    const toMillis = (v: any): number => {
+      if (!v) return 0;
+      if (typeof v?.toMillis === "function") return v.toMillis();
+      const parsed = new Date(v).getTime();
+      return Number.isNaN(parsed) ? 0 : parsed;
+    };
+
+    return merged
+      .sort((a, b) => toMillis((b as any).created_at) - toMillis((a as any).created_at))
+      .slice(0, PAGE_SIZE);
+  };
+
+  // The like state was previously hardcoded to false, so every post rendered as
+  // un-liked even when the viewer had already liked it.
+  const withLikeState = async (rows: FeedPost[], uid: string): Promise<FeedPost[]> => {
+    const flags = await Promise.all(rows.map(async (p) => {
+      try {
+        const likeSnap = await getDoc(doc(db, "likes", `${uid}_${p.id}`));
+        return likeSnap.exists();
+      } catch {
+        return false;
+      }
+    }));
+    return rows.map((p, i) => ({ ...p, liked: flags[i] }));
+  };
+
   const load = async () => {
     if (!user) return;
     setLoading(true);
 
     try {
-      // Load posts from Firestore - using a memoized query would be better but let's optimize the execution
-      const q = query(
-        collection(db, "posts"),
-        where("status", "==", "published"),
-        where("is_reel", "==", false),
-        orderBy("created_at", "desc"),
-        limit(10)
-      );
-      const snap = await getDocs(q);
-      const postsData = snap.docs.map(doc => ({ 
-        id: doc.id, 
-        ...doc.data(),
-        liked: false // Initialize liked state
-      })) as FeedPost[];
-      setPosts(postsData);
+      const rows = tab === "following"
+        ? await loadFollowing(user.id)
+        : await loadForYou();
+      setPosts(await withLikeState(rows, user.id));
     } catch (err) {
       console.error("Error loading feed:", err);
+      toast.error("Could not load your feed");
     } finally {
       setLoading(false);
     }

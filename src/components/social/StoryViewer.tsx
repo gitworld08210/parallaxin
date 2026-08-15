@@ -3,7 +3,6 @@ import { X, Send } from "lucide-react";
 import { timeAgo } from "@/lib/format";
 
 import { useAuth } from "@/contexts/AuthProvider";
-import { supabase } from "@/integrations/supabase/client";
 import { StoryStickersLayer } from "@/components/social/StoryStickersLayer";
 import { toast } from "sonner";
 import { collection, addDoc, query, where, getDocs, serverTimestamp } from "firebase/firestore";
@@ -56,30 +55,37 @@ export const StoryViewer = ({ stories, startIdx, onClose }: { stories: Story[]; 
 
   const react = async (emoji: string) => {
     if (!user) return toast.error("Sign in");
-    const { error } = await supabase.from("story_reactions").insert({
-      story_id: current.id, user_id: user.uid, emoji
-    });
-    if (error) toast.error(error.message); else toast.success(`Reacted ${emoji}`);
+    try {
+      await addDoc(collection(db, "story_reactions"), {
+        story_id: current.id,
+        user_id: user.id,
+        emoji,
+        created_at: serverTimestamp(),
+      });
+      toast.success(`Reacted ${emoji}`);
+    } catch (err: any) {
+      toast.error(err.message || "Reaction failed");
+    }
   };
 
   const sendReply = async () => {
     if (!user || !reply.trim() || !current.profile) return;
-    if (current.user_id === user.uid) { toast.error("Can't reply to yourself"); return; }
+    if (current.user_id === user.id) { toast.error("Can't reply to yourself"); return; }
     try {
       const convsRef = collection(db, "conversations");
-      const q1 = query(convsRef, where("member_ids", "array-contains", user.uid));
+      const q1 = query(convsRef, where("member_ids", "array-contains", user.id));
       const snap = await getDocs(q1);
       let convId = snap.docs.find((d) => (d.data().member_ids || []).includes(current.user_id))?.id ?? null;
       if (!convId) {
         const newConv = await addDoc(convsRef, {
-          member_ids: [user.uid, current.user_id],
+          member_ids: [user.id, current.user_id],
           created_at: serverTimestamp(),
         });
         convId = newConv.id;
       }
       const content = `↩️ Replied to story: ${reply.trim().slice(0, 500)}`;
       await addDoc(collection(db, "conversations", convId, "messages"), {
-        sender_id: user.uid,
+        sender_id: user.id,
         content,
         created_at: serverTimestamp(),
       });

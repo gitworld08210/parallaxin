@@ -1,4 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
+import { collection, addDoc, serverTimestamp, doc, updateDoc, getDocs, onSnapshot, query, where, orderBy, limit, limitToLast } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Room, createLocalTracks, Track, LocalVideoTrack, LocalAudioTrack } from "livekit-client";
@@ -7,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { ArrowLeft, Radio, Heart, Users, Globe, Ticket, Crown, Gift, RotateCcw } from "lucide-react";
+import { useAuth } from "@/contexts/AuthProvider";
 
 type ChatRow = { id: string; user_id: string; body: string; created_at: string };
 type GiftRow = { id: string; gift_id: string; coins_total: number; sender_id: string };
@@ -14,6 +17,7 @@ type Access = "free" | "ticket" | "subscribers_only";
 
 export default function LiveHost() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const videoRef = useRef<HTMLVideoElement>(null);
   const roomRef = useRef<Room | null>(null);
   const videoTrackRef = useRef<LocalVideoTrack | null>(null);
@@ -36,9 +40,13 @@ export default function LiveHost() {
 
   useEffect(() => {
     (async () => {
-      const { data } = await supabase.from("gifts").select("id, icon, name");
+      // The viewer reads the catalogue from `gift_catalog`; the host read
+      // `gifts`, so one side always rendered an empty gift list. Prefer the
+      // shared collection and fall back to the legacy name.
+      let catSnap = await getDocs(collection(db, "gift_catalog"));
+      if (catSnap.empty) catSnap = await getDocs(collection(db, "gifts"));
       const map: Record<string, { icon: string; name: string }> = {};
-      (data ?? []).forEach((g: any) => { map[g.id] = { icon: g.icon, name: g.name }; });
+      catSnap.docs.forEach((d) => { const data = d.data(); map[d.id] = { icon: data.icon, name: data.name }; });
       setCatalog(map);
     })();
   }, []);
@@ -91,8 +99,6 @@ export default function LiveHost() {
     if (starting) return;
     setStarting(true);
     try {
-      const { data: userData } = await supabase.auth.getUser();
-      const user = userData.user;
       if (!user) { toast.error("Please sign in"); return; }
 
       // 1) Request camera/mic first — surface permission errors early
@@ -113,19 +119,21 @@ export default function LiveHost() {
         if (t.kind === Track.Kind.Audio) audioTrackRef.current = t as LocalAudioTrack;
       }
 
-      // 2) Create the stream record
+      // 2) Create the stream record in Firestore
       const roomName = `live_${user.id}_${Date.now()}`;
-      const { data: stream, error: insErr } = await supabase.from("live_streams").insert({
-          host_id: user.id,
-          title: title || null,
-          livekit_room: roomName,
-          access_type: access as any,
-          ticket_price_coins: access === "ticket" ? Math.max(1, price) : 0,
-          allow_gifts: allowGifts,
-        } as any).select().single();
-      if (insErr) throw insErr;
-      setStreamId((stream as any).id);
-      setTips((stream as any).total_tips_coins ?? 0);
+      const streamDoc = await addDoc(collection(db, "live_streams"), {
+        host_id: user.id,
+        title: title || null,
+        livekit_room: roomName,
+        access_type: access,
+        ticket_price_coins: access === "ticket" ? Math.max(1, price) : 0,
+        allow_gifts: allowGifts,
+        status: "live",
+        started_at: serverTimestamp(),
+        total_tips_coins: 0,
+      });
+      setStreamId(streamDoc.id);
+      setTips(0);
 
       // 3) Get LiveKit token & connect
       const { data, error } = await supabase.functions.invoke("livekit-token", {
@@ -161,27 +169,60 @@ export default function LiveHost() {
       roomRef.current?.disconnect();
       roomRef.current = null;
       if (streamId) {
-          supabase.from("live_streams").update({ status: "ended", ended_at: new Date().toISOString() }).eq("id", streamId);
+        await updateDoc(doc(db, "live_streams", streamId), {
+          status: "ended",
+          // `started_at` is a Firestore timestamp, so `ended_at` must be one
+          // too or duration/ordering comparisons break.
+          ended_at: serverTimestamp()
+        });
       }
     } finally {
       navigate(-1);
     }
   };
 
+  // Viewers write chat and reactions to Firestore, so the host has to observe
+  // Firestore. Listening on Supabase Postgres meant the host never saw a single
+  // viewer message.
   useEffect(() => {
     if (!streamId) return;
-      supabase.channel(`live:${streamId}`).
-on("postgres_changes", { event: "INSERT", schema: "public", table: "live_chat", filter: `stream_id=eq.${streamId}` },
-        (p) => setChat((c) => [...c.slice(-50), p.new as ChatRow])).
-on("postgres_changes", { event: "INSERT", schema: "public", table: "live_reactions", filter: `stream_id=eq.${streamId}` },
-        () => setHearts((h) => [...h, { id: Date.now() + Math.random() }])).
-on("postgres_changes", { event: "INSERT", schema: "public", table: "live_gifts", filter: `stream_id=eq.${streamId}` },
+
+    const unsubChat = onSnapshot(
+      query(collection(db, "live_chat"), where("stream_id", "==", streamId), orderBy("created_at", "asc"), limitToLast(50)),
+      (snap) => setChat(snap.docs.map((d) => ({ id: d.id, ...d.data() })) as ChatRow[]),
+      (err) => console.warn("Live chat listener failed:", err),
+    );
+
+    const startedAt = Date.now();
+    const unsubReactions = onSnapshot(
+      query(collection(db, "live_reactions"), where("stream_id", "==", streamId), orderBy("created_at", "desc"), limit(20)),
+      (snap) => {
+        snap.docChanges().forEach((change) => {
+          if (change.type !== "added") return;
+          const created = change.doc.data()?.created_at?.toMillis?.() ?? 0;
+          if (created >= startedAt) setHearts((h) => [...h, { id: Date.now() + Math.random() }]);
+        });
+      },
+      (err) => console.warn("Live reactions listener failed:", err),
+    );
+
+    return () => { unsubChat(); unsubReactions(); };
+  }, [streamId]);
+
+  // Gift events come from the backend gifting function over Supabase realtime.
+  // The channel is now removed on unmount rather than left subscribed.
+  useEffect(() => {
+    if (!streamId) return;
+    const channel = supabase.channel(`live-gifts:${streamId}`)
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "live_gifts", filter: `stream_id=eq.${streamId}` },
         (p) => {
           const g = p.new as GiftRow;
           setTips((t) => t + Number(g.coins_total || 0));
           setRecentGifts((arr) => [g, ...arr].slice(0, 6));
-        }).
-subscribe();
+        })
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
   }, [streamId]);
 
   useEffect(() => {
