@@ -168,7 +168,7 @@ export default function LiveViewer() {
 
   const send = async () => {
     if (!text.trim() || !id || !me) return;
-    const body = text.trim();
+    const body = text.trim().slice(0, 2000);
     setText("");
     await addDoc(collection(db, "live_chat"), {
       stream_id: id,
