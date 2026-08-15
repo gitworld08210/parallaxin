@@ -1,12 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { auth, db, googleProvider } from "@/lib/firebase";
+import { auth, db } from "@/lib/firebase";
 import { 
   signInWithEmailAndPassword, 
   createUserWithEmailAndPassword, 
-  signInWithPopup,
+  type User as FirebaseUser,
 } from "firebase/auth";
+import { consumePendingGoogleSignIn, signInWithGoogleSmart } from "@/lib/googleSignIn";
 import { doc, setDoc, getDoc, serverTimestamp } from "firebase/firestore";
 import { useAuth } from "@/contexts/AuthProvider";
 import { toast } from "sonner";
@@ -151,18 +152,15 @@ const Auth = () => {
     }
   };
 
-  const handleGoogle = async () => {
-    setBusy(true);
-    inProgress.current = true;
-    try {
-      if (tab === "signup" && kind === "organization") localStorage.setItem(ORG_INTENT_KEY, "organization");
-      const res = await signInWithPopup(auth, googleProvider);
-      
-      const profSnap = await getDoc(doc(db, "profiles", res.user.uid));
+  // Shared by the popup, native and redirect paths so a Google account is
+  // provisioned identically however sign-in completed.
+  const provisionGoogleUser = async (googleUser: FirebaseUser) => {
+    {
+      const profSnap = await getDoc(doc(db, "profiles", googleUser.uid));
       if (!profSnap.exists()) {
-        const uid = res.user.uid;
-        const email = res.user.email;
-        const name = res.user.displayName || email?.split('@')[0] || "User";
+        const uid = googleUser.uid;
+        const email = googleUser.email;
+        const name = googleUser.displayName || email?.split('@')[0] || "User";
         const baseUsername = email?.split('@')[0] || uid.slice(0, 8);
         const finalUsername = `${baseUsername}${Math.floor(1000 + Math.random() * 9000)}`;
         
@@ -173,7 +171,7 @@ const Auth = () => {
           display_name: name,
           username: finalUsername,
           account_type: kind,
-          avatar_url: res.user.photoURL,
+          avatar_url: googleUser.photoURL,
           onboarded_at: serverTimestamp(),
           created_at: serverTimestamp(),
           followers_count: 0,
@@ -199,14 +197,30 @@ const Auth = () => {
             username: finalUsername,
             display_name: name,
             account_type: kind,
-            avatar_url: res.user.photoURL
+            avatar_url: googleUser.photoURL
           } as any);
         } catch (e) {
           console.warn("Supabase sync failed", e);
         }
       }
       toast.success("Signed in with Google");
-      await routeForUser(res.user.uid);
+      await routeForUser(googleUser.uid);
+    }
+  };
+
+  const handleGoogle = async () => {
+    setBusy(true);
+    inProgress.current = true;
+    try {
+      if (tab === "signup" && kind === "organization") localStorage.setItem(ORG_INTENT_KEY, "organization");
+
+      // Popup on the web, native account picker or redirect inside the Android
+      // shell. A redirect leaves the page, so there is nothing more to do here.
+      const { user: googleUser, redirecting } = await signInWithGoogleSmart();
+      if (redirecting) return;
+      if (!googleUser) throw new Error("Google sign-in did not return an account");
+
+      await provisionGoogleUser(googleUser);
     } catch (e: any) {
       toast.error(e?.message || "Google sign-in failed");
     } finally {
@@ -214,6 +228,28 @@ const Auth = () => {
       setBusy(false);
     }
   };
+
+  // Completes a Google sign-in that finished via full-page redirect, which is
+  // the fallback path inside the Android WebView.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const redirectedUser = await consumePendingGoogleSignIn();
+      if (!redirectedUser || cancelled) return;
+      inProgress.current = true;
+      setBusy(true);
+      try {
+        await provisionGoogleUser(redirectedUser);
+      } catch (e: any) {
+        toast.error(e?.message || "Google sign-in failed");
+      } finally {
+        inProgress.current = false;
+        setBusy(false);
+      }
+    })();
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-6 relative overflow-hidden">
