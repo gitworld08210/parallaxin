@@ -75,8 +75,7 @@ export const SideMenu = ({ trigger, unreadNotif, unreadDm }: { trigger?: React.R
     { to: "/premium", icon: Crown, label: "Aurelix Premium", badge: "PRO" },
   ];
 
-  const canAdminOS = profile?.account_type === "organization" || 
-                     profile?.is_admin || 
+  const canAdminOS = profile?.is_admin ||
                      profile?.is_founder || 
                      ["COO", "CEO", "HR Head", "Finance Head"].includes(profile?.role || "");
 

@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
+import { auth } from '@/lib/firebase';
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { Room, RoomEvent, RemoteTrack, Track } from "livekit-client";
@@ -56,8 +57,8 @@ export default function LiveViewer() {
       setTips(Number(s.total_tips_coins ?? 0));
       if (s.status === "ended") { setEnded(true); return; }
 
-      const { data: u } = await supabase.auth.getUser();
-      const uid = u.user?.id;
+      await auth.authStateReady();
+      const uid = auth.currentUser?.uid;
       setMe(uid ?? null);
       if (uid && s.host_id === uid) { setAccess("granted"); return; }
       if (s.access_type === "free") { setAccess("granted"); return; }

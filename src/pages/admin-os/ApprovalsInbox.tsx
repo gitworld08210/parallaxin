@@ -2,31 +2,26 @@ import { useState, useEffect } from "react";
 import { TopBar } from "@/components/vibe/TopBar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/contexts/AuthProvider";
-import { collection, query, where, orderBy, onSnapshot, updateDoc, doc, serverTimestamp, getDoc, runTransaction } from "firebase/firestore";
+import { collection, query, orderBy, onSnapshot, updateDoc, doc, serverTimestamp, runTransaction } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { 
   ShieldCheck, 
   Coins, 
   UserCheck, 
-  FileText, 
   CheckCircle2, 
   XCircle, 
-  Clock, 
-  ArrowRight,
   TrendingUp,
-  Layout
 } from "lucide-react";
 import { format } from "date-fns";
-import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
 const ApprovalsInbox = () => {
-  const { user, profile } = useAuth();
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState("finance");
   const [topups, setTopups] = useState<any[]>([]);
   const [verifications, setVerifications] = useState<any[]>([]);
   const [kycRequests, setKycRequests] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [processingId, setProcessingId] = useState<string | null>(null);
 
   useEffect(() => {
     // 1. Finance Queue (Coin Top-ups)
@@ -47,61 +42,109 @@ const ApprovalsInbox = () => {
       setKycRequests(snap.docs.map(d => ({ id: d.id, ...d.data() })));
     });
 
-    setLoading(false);
     return () => { unsubFinance(); unsubVerif(); unsubKyc(); };
   }, []);
 
   const handleApproveTopup = async (topup: any) => {
+    if (!user) return toast.error("You must be signed in to review top-ups");
+
+    setProcessingId(topup.id);
     try {
-      await runTransaction(db, async (transaction) => {
+      const approvedCoins = await runTransaction(db, async (transaction) => {
         const topupRef = doc(db, "coin_topups", topup.id);
-        const profileRef = doc(db, "profiles", topup.user_id);
-        
-        const profileSnap = await transaction.get(profileRef);
-        if (!profileSnap.exists()) throw new Error("User profile not found");
-        
-        const currentBalance = profileSnap.data().coin_balance || 0;
-        
+        const ledgerRef = doc(db, "ledger", topup.id);
+
+        const topupSnap = await transaction.get(topupRef);
+        if (!topupSnap.exists()) throw new Error("Top-up request not found");
+
+        const currentTopup = topupSnap.data();
+        if (currentTopup.status !== "submitted") {
+          throw new Error("This top-up has already been processed");
+        }
+
+        const utr = String(currentTopup.utr || "").trim();
+        if (!/^[0-9]{12}$/.test(utr)) throw new Error("Top-up payment reference is invalid");
+
+        const walletRef = doc(db, "wallets", currentTopup.user_id);
+        const receiptRef = doc(db, "payment_receipts", utr);
+        const walletSnap = await transaction.get(walletRef);
+        const ledgerSnap = await transaction.get(ledgerRef);
+        const receiptSnap = await transaction.get(receiptRef);
+
+        if (ledgerSnap.exists()) throw new Error("This top-up has already been credited");
+        if (receiptSnap.exists()) throw new Error("This payment reference has already been used");
+
+        const coins = Number(currentTopup.coins);
+        const amount = Number(currentTopup.amount_inr);
+        const validPackage = (coins === 100 && amount === 49)
+          || (coins === 500 && amount === 199)
+          || (coins === 1500 && amount === 499)
+          || (coins === 5000 && amount === 1499);
+        if (!validPackage) throw new Error("Top-up package is invalid");
+
+        const currentBalance = Number(walletSnap.data()?.total) || 0;
+
         transaction.update(topupRef, {
           status: "approved",
           approved_at: serverTimestamp(),
-          reviewer_id: user?.id
-        });
-        
-        transaction.update(profileRef, {
-          coin_balance: currentBalance + topup.coins,
-          last_transaction_at: serverTimestamp()
+          reviewer_id: user.id,
         });
 
-        // Add to ledger
-        const ledgerRef = doc(collection(db, "ledger"));
+        transaction.set(walletRef, {
+          user_id: currentTopup.user_id,
+          total: currentBalance + coins,
+          updated_at: serverTimestamp(),
+          last_transaction_id: topup.id,
+        }, { merge: true });
+
+        // The deterministic ID and status guard make approval idempotent.
         transaction.set(ledgerRef, {
-          user_id: topup.user_id,
+          user_id: currentTopup.user_id,
           type: "credit",
-          amount: topup.coins,
+          amount: coins,
           source: "topup",
           reference_id: topup.id,
+          reviewer_id: user.id,
           label: "Coin Purchase Approved",
-          created_at: serverTimestamp()
+          created_at: serverTimestamp(),
         });
+
+        transaction.set(receiptRef, {
+          utr,
+          topup_id: topup.id,
+          user_id: currentTopup.user_id,
+          amount_inr: amount,
+          coins,
+          reviewer_id: user.id,
+          created_at: serverTimestamp(),
+        });
+
+        return coins;
       });
-      
-      toast.success(`Approved ${topup.coins} coins for user`);
+
+      toast.success(`Approved ${approvedCoins} coins for user`);
     } catch (e: any) {
-      toast.error(e.message);
+      toast.error(e.message || "Could not approve top-up");
+    } finally {
+      setProcessingId(null);
     }
   };
 
   const handleReject = async (collectionName: string, id: string) => {
+    if (!user) return toast.error("You must be signed in to review requests");
+
+    setProcessingId(id);
     try {
       await updateDoc(doc(db, collectionName, id), {
         status: "rejected",
         reviewed_at: serverTimestamp(),
-        reviewer_id: user?.id
+        reviewer_id: user.id,
       });
       toast.success("Request rejected");
     } catch (e: any) {
-      toast.error(e.message);
+      toast.error(e.message || "Could not reject request");
+    } finally {
+      setProcessingId(null);
     }
   };
 
@@ -168,13 +211,17 @@ const ApprovalsInbox = () => {
                   <div className="flex items-center gap-2">
                     <button 
                       onClick={() => handleReject("coin_topups", topup.id)}
-                      className="h-8 w-8 rounded-full bg-rose-500/10 text-rose-500 grid place-items-center hover:bg-rose-500/20"
+                      disabled={processingId === topup.id}
+                      aria-label="Reject top-up"
+                      className="h-8 w-8 rounded-full bg-rose-500/10 text-rose-500 grid place-items-center hover:bg-rose-500/20 disabled:opacity-50"
                     >
                       <XCircle className="h-4 w-4" />
                     </button>
                     <button 
                       onClick={() => handleApproveTopup(topup)}
-                      className="h-8 w-8 rounded-full bg-emerald-500/10 text-emerald-500 grid place-items-center hover:bg-emerald-500/20"
+                      disabled={processingId === topup.id}
+                      aria-label="Approve top-up"
+                      className="h-8 w-8 rounded-full bg-emerald-500/10 text-emerald-500 grid place-items-center hover:bg-emerald-500/20 disabled:opacity-50"
                     >
                       <CheckCircle2 className="h-4 w-4" />
                     </button>

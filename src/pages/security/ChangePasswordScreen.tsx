@@ -5,7 +5,8 @@ import { TopBar } from "@/components/vibe/TopBar";
 
 import { useAuth } from "@/contexts/AuthProvider";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
+import { auth } from "@/lib/firebase";
+import { EmailAuthProvider, reauthenticateWithCredential, updatePassword } from "firebase/auth";
 
 export default function ChangePasswordScreen() {
   const nav = useNavigate();
@@ -18,13 +19,24 @@ export default function ChangePasswordScreen() {
     if (!user?.email) return;
     if (next.length < 8) return toast.error("Password must be at least 8 characters");
     setBusy(true);
-    const { error: reauthError } = await supabase.auth.signInWithPassword({ email: user.email, password: current });
-    if (reauthError) { setBusy(false); return toast.error("Current password is incorrect"); }
-    const { error } = await supabase.auth.updateUser({ password: next });
-    setBusy(false);
-    if (error) return toast.error(error.message);
-    toast.success("Password updated");
-    nav(-1);
+    try {
+      await auth.authStateReady();
+      const firebaseUser = auth.currentUser;
+      if (!firebaseUser?.email) throw new Error("Password sign-in is not available for this account");
+
+      const credential = EmailAuthProvider.credential(firebaseUser.email, current);
+      await reauthenticateWithCredential(firebaseUser, credential);
+      await updatePassword(firebaseUser, next);
+      toast.success("Password updated");
+      nav(-1);
+    } catch (error: any) {
+      const message = error?.code === "auth/invalid-credential"
+        ? "Current password is incorrect"
+        : error?.message || "Could not update password";
+      toast.error(message);
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (

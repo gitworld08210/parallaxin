@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { auth } from "@/lib/firebase";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { toast } from "sonner";
@@ -29,12 +30,14 @@ export const useReviewContent = () => {
       categoryId?: string;
       notes?: string;
     }) => {
-      const { data: u } = await supabase.auth.getUser();
+      await auth.authStateReady();
+      const uid = auth.currentUser?.uid;
+      if (!uid) throw new Error("Not authenticated");
       const { error } = await supabase.from('content_context').update({
         human_review_status: input.status,
         human_review_required: false,
         primary_category_id: input.categoryId || null,
-        classified_by: u.user?.id,
+        classified_by: uid,
         classified_at: new Date().toISOString(),
         notes: input.notes,
         updated_at: new Date().toISOString(),
