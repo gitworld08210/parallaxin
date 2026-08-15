@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthProvider";
-import { doc, updateDoc, getDoc } from "firebase/firestore";
+import { doc, setDoc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { toast } from "sonner";
 import { Loader2, ShieldCheck, Zap, Sparkles } from "lucide-react";
@@ -36,11 +36,11 @@ export function BecomeCreatorSheet({ open, onOpenChange }: BecomeCreatorSheetPro
     setSubmitting(true);
     try {
       const profileRef = doc(db, "profiles", user.uid);
-      await updateDoc(profileRef, {
+      await setDoc(profileRef, {
         is_creator: true,
         creator_terms_version: version,
         creator_activated_at: new Date().toISOString()
-      });
+      }, { merge: true });
       toast.success("Welcome, Creator ✦");
       if (refreshProfile) await refreshProfile();
       onOpenChange(false);
