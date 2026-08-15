@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { auth } from "@/lib/firebase";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Room, createLocalTracks, Track, LocalVideoTrack, LocalAudioTrack } from "livekit-client";
@@ -91,8 +92,8 @@ export default function LiveHost() {
     if (starting) return;
     setStarting(true);
     try {
-      const { data: userData } = await supabase.auth.getUser();
-      const user = userData.user;
+      await auth.authStateReady();
+      const user = auth.currentUser;
       if (!user) { toast.error("Please sign in"); return; }
 
       // 1) Request camera/mic first — surface permission errors early

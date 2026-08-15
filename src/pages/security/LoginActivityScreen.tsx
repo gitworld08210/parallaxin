@@ -21,7 +21,7 @@ const deviceOf = (ua: string | null) => {
 
 export default function LoginActivityScreen() {
   const nav = useNavigate();
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const [events, setEvents] = useState<Event[]>([]);
 
   useEffect(() => { (async () => {
@@ -30,11 +30,15 @@ export default function LoginActivityScreen() {
     setEvents((data || []) as Event[]);
   })(); }, [user]);
 
-  const signOutAll = async () => {
-    if (!confirm("Sign out of all devices?")) return;
-    const { error } = await supabase.auth.signOut({ scope: "global" } as any);
-    if (error) toast.error(error.message);
-    else toast.success("Signed out everywhere");
+  const signOutCurrentDevice = async () => {
+    if (!confirm("Sign out of this device?")) return;
+    try {
+      await signOut();
+      toast.success("Signed out");
+      nav("/auth", { replace: true });
+    } catch (error: any) {
+      toast.error(error.message || "Could not sign out");
+    }
   };
 
   return (
@@ -58,9 +62,9 @@ export default function LoginActivityScreen() {
           </div>
         ))}
 
-        <button onClick={signOutAll}
+        <button onClick={signOutCurrentDevice}
           className="mt-6 w-full rounded-2xl border border-[hsl(15_55%_40%_/_0.4)] text-[hsl(15_55%_60%)] py-3.5 font-medium flex items-center justify-center gap-2">
-          <LogOut className="h-4 w-4" /> Sign out of all devices
+          <LogOut className="h-4 w-4" /> Sign out of this device
         </button>
       </div>
     </div>

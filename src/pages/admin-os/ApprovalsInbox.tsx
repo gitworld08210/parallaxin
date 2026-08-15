@@ -2,31 +2,27 @@ import { useState, useEffect } from "react";
 import { TopBar } from "@/components/vibe/TopBar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/contexts/AuthProvider";
-import { collection, query, where, orderBy, onSnapshot, updateDoc, doc, serverTimestamp, getDoc, runTransaction } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { collection, query, orderBy, onSnapshot, updateDoc, doc, serverTimestamp, runTransaction } from "firebase/firestore";
+import { auth, db } from "@/lib/firebase";
+import { supabase } from "@/integrations/supabase/client";
 import { 
   ShieldCheck, 
   Coins, 
   UserCheck, 
-  FileText, 
   CheckCircle2, 
   XCircle, 
-  Clock, 
-  ArrowRight,
   TrendingUp,
-  Layout
 } from "lucide-react";
 import { format } from "date-fns";
-import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
 const ApprovalsInbox = () => {
-  const { user, profile } = useAuth();
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState("finance");
   const [topups, setTopups] = useState<any[]>([]);
   const [verifications, setVerifications] = useState<any[]>([]);
   const [kycRequests, setKycRequests] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [processingId, setProcessingId] = useState<string | null>(null);
 
   useEffect(() => {
     // 1. Finance Queue (Coin Top-ups)
@@ -47,61 +43,70 @@ const ApprovalsInbox = () => {
       setKycRequests(snap.docs.map(d => ({ id: d.id, ...d.data() })));
     });
 
-    setLoading(false);
     return () => { unsubFinance(); unsubVerif(); unsubKyc(); };
   }, []);
 
-  const handleApproveTopup = async (topup: any) => {
-    try {
-      await runTransaction(db, async (transaction) => {
-        const topupRef = doc(db, "coin_topups", topup.id);
-        const profileRef = doc(db, "profiles", topup.user_id);
-        
-        const profileSnap = await transaction.get(profileRef);
-        if (!profileSnap.exists()) throw new Error("User profile not found");
-        
-        const currentBalance = profileSnap.data().coin_balance || 0;
-        
-        transaction.update(topupRef, {
-          status: "approved",
-          approved_at: serverTimestamp(),
-          reviewer_id: user?.id
-        });
-        
-        transaction.update(profileRef, {
-          coin_balance: currentBalance + topup.coins,
-          last_transaction_at: serverTimestamp()
-        });
+  /**
+   * Coin crediting is performed by the finance-review-topup function under a
+   * service account. The client cannot write wallets, ledger or top-up status,
+   * so this only reports the outcome — it never computes a balance.
+   */
+  const reviewTopup = async (topup: any, decision: "approved" | "rejected") => {
+    if (!auth.currentUser) return toast.error("You must be signed in to review top-ups");
 
-        // Add to ledger
-        const ledgerRef = doc(collection(db, "ledger"));
-        transaction.set(ledgerRef, {
-          user_id: topup.user_id,
-          type: "credit",
-          amount: topup.coins,
-          source: "topup",
-          reference_id: topup.id,
-          label: "Coin Purchase Approved",
-          created_at: serverTimestamp()
-        });
+    setProcessingId(topup.id);
+    try {
+      const idToken = await auth.currentUser.getIdToken();
+      const { data, error } = await supabase.functions.invoke("finance-review-topup", {
+        body: { topup_id: topup.id, decision },
+        headers: { Authorization: `Bearer ${idToken}` },
       });
-      
-      toast.success(`Approved ${topup.coins} coins for user`);
+
+      if (error) {
+        // On a non-2xx response supabase-js leaves `data` null and exposes the
+        // body through the error context, so reach for the specific reason
+        // ("already processed", "duplicate reference") before the generic one.
+        let message = error.message || "Review failed";
+        const context = (error as any)?.context;
+        if (context && typeof context.json === "function") {
+          try {
+            const body = await context.json();
+            if (body?.error) message = body.error;
+          } catch {
+            // Body was not JSON; keep the transport-level message.
+          }
+        }
+        throw new Error(message);
+      }
+      if ((data as any)?.error) throw new Error((data as any).error);
+
+      toast.success(
+        decision === "approved"
+          ? `Approved ${(data as any)?.coins ?? topup.coins} coins for user`
+          : "Top-up rejected",
+      );
     } catch (e: any) {
-      toast.error(e.message);
+      toast.error(e.message || "Could not review top-up");
+    } finally {
+      setProcessingId(null);
     }
   };
 
   const handleReject = async (collectionName: string, id: string) => {
+    if (!user) return toast.error("You must be signed in to review requests");
+
+    setProcessingId(id);
     try {
       await updateDoc(doc(db, collectionName, id), {
         status: "rejected",
         reviewed_at: serverTimestamp(),
-        reviewer_id: user?.id
+        reviewer_id: user.id,
       });
       toast.success("Request rejected");
     } catch (e: any) {
-      toast.error(e.message);
+      toast.error(e.message || "Could not reject request");
+    } finally {
+      setProcessingId(null);
     }
   };
 
@@ -167,14 +172,18 @@ const ApprovalsInbox = () => {
                   </div>
                   <div className="flex items-center gap-2">
                     <button 
-                      onClick={() => handleReject("coin_topups", topup.id)}
-                      className="h-8 w-8 rounded-full bg-rose-500/10 text-rose-500 grid place-items-center hover:bg-rose-500/20"
+                      onClick={() => reviewTopup(topup, "rejected")}
+                      disabled={processingId === topup.id}
+                      aria-label="Reject top-up"
+                      className="h-8 w-8 rounded-full bg-rose-500/10 text-rose-500 grid place-items-center hover:bg-rose-500/20 disabled:opacity-50"
                     >
                       <XCircle className="h-4 w-4" />
                     </button>
                     <button 
-                      onClick={() => handleApproveTopup(topup)}
-                      className="h-8 w-8 rounded-full bg-emerald-500/10 text-emerald-500 grid place-items-center hover:bg-emerald-500/20"
+                      onClick={() => reviewTopup(topup, "approved")}
+                      disabled={processingId === topup.id}
+                      aria-label="Approve top-up"
+                      className="h-8 w-8 rounded-full bg-emerald-500/10 text-emerald-500 grid place-items-center hover:bg-emerald-500/20 disabled:opacity-50"
                     >
                       <CheckCircle2 className="h-4 w-4" />
                     </button>

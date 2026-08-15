@@ -1,38 +1,449 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return signedIn() && request.auth.uid == userId;
+    }
+
+    function profile() {
+      return get(/databases/$(database)/documents/profiles/$(request.auth.uid)).data;
+    }
+
+    function isAdmin() {
+      return signedIn() && (
+        request.auth.token.get('admin', false) == true ||
+        (
+          exists(/databases/$(database)/documents/profiles/$(request.auth.uid)) &&
+          (
+            profile().get('is_admin', false) == true ||
+            profile().get('is_founder', false) == true ||
+            ['COO', 'CEO', 'HR Head', 'Finance Head'].hasAny([profile().get('role', '')])
+          )
+        )
+      );
+    }
+
+    function canReviewFinance() {
+      return signedIn() && (
+        request.auth.token.get('admin', false) == true ||
+        (
+          exists(/databases/$(database)/documents/profiles/$(request.auth.uid)) &&
+          (
+            profile().get('is_admin', false) == true ||
+            profile().get('is_founder', false) == true ||
+            ['COO', 'CEO', 'Finance Head'].hasAny([profile().get('role', '')])
+          )
+        )
+      );
+    }
+
+    function validCoinPackage(coins, amount) {
+      return (coins == 100 && amount == 49) ||
+        (coins == 500 && amount == 199) ||
+        (coins == 1500 && amount == 499) ||
+        (coins == 5000 && amount == 1499);
+    }
+
     match /profiles/{userId} {
       allow read: if true;
-      allow write: if request.auth != null && request.auth.uid == userId;
+      allow create: if isOwner(userId)
+        && request.resource.data.user_id == userId
+        && request.resource.data.id == userId
+        && !request.resource.data.keys().hasAny([
+          'is_admin', 'is_founder', 'role', 'department', 'coin_balance',
+          'last_transaction_at', 'last_transaction_id', 'verification_kind',
+          'last_verification_request_id'
+        ])
+        && request.resource.data.get('verified', false) == false;
+      allow update: if (
+        isOwner(userId)
+        && !request.resource.data.diff(resource.data).affectedKeys().hasAny([
+          'id', 'user_id', 'is_admin', 'is_founder', 'role', 'department',
+          'coin_balance', 'last_transaction_at', 'last_transaction_id',
+          'verified', 'verification_kind', 'last_verification_request_id'
+        ])
+      ) || (
+        isAdmin()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'verified', 'verification_kind', 'last_verification_request_id'
+        ])
+        && request.resource.data.last_verification_request_id is string
+        && get(/databases/$(database)/documents/verification_requests/$(request.resource.data.last_verification_request_id)).data.status == 'pending'
+        && getAfter(/databases/$(database)/documents/verification_requests/$(request.resource.data.last_verification_request_id)).data.status == 'approved'
+        && getAfter(/databases/$(database)/documents/verification_requests/$(request.resource.data.last_verification_request_id)).data.user_id == userId
+      );
+      allow delete: if false;
     }
+
     match /usernames/{username} {
       allow read: if true;
-      allow write: if request.auth != null; // Ideally check if writing their own UID
+      allow create: if signedIn()
+        && request.resource.data.user_id == request.auth.uid
+        && request.resource.data.uid == request.auth.uid;
+      allow update: if signedIn()
+        && resource.data.user_id == request.auth.uid
+        && request.resource.data.user_id == request.auth.uid
+        && request.resource.data.uid == request.auth.uid;
+      allow delete: if signedIn() && resource.data.user_id == request.auth.uid;
     }
+
     match /posts/{postId} {
       allow read: if true;
-      allow write: if request.auth != null && (request.resource.data.user_id == request.auth.uid || resource.data.user_id == request.auth.uid);
+      allow create: if signedIn() && request.resource.data.user_id == request.auth.uid;
+      allow update: if signedIn() && (
+        resource.data.user_id == request.auth.uid ||
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'like_count', 'comment_count', 'view_count'
+        ])
+      );
+      allow delete: if signedIn() && resource.data.user_id == request.auth.uid;
     }
+
     match /comments/{commentId} {
       allow read: if true;
-      allow write: if request.auth != null;
+      allow create: if signedIn() && request.resource.data.user_id == request.auth.uid;
+      allow update, delete: if signedIn() && resource.data.user_id == request.auth.uid;
     }
+
     match /likes/{likeId} {
       allow read: if true;
-      allow write: if request.auth != null;
+      allow create: if signedIn() && request.resource.data.user_id == request.auth.uid;
+      allow delete: if signedIn() && resource.data.user_id == request.auth.uid;
+      allow update: if false;
     }
+
     match /follows/{followId} {
       allow read: if true;
-      allow write: if request.auth != null;
+      allow create: if signedIn() && request.resource.data.follower_id == request.auth.uid;
+      allow delete: if signedIn() && resource.data.follower_id == request.auth.uid;
+      allow update: if false;
     }
+
     match /saves/{saveId} {
-      allow read: if request.auth != null && saveId.startsWith(request.auth.uid);
-      allow write: if request.auth != null && saveId.startsWith(request.auth.uid);
+      allow read, create, update, delete: if signedIn() && saveId.matches('^' + request.auth.uid + '_.*$');
     }
-    // Fallback for other collections to ensure basic functionality
+
+    match /blocks/{blockId} {
+      allow read: if signedIn() && resource.data.blocker_id == request.auth.uid;
+      allow create: if signedIn() && request.resource.data.blocker_id == request.auth.uid;
+      allow delete: if signedIn() && resource.data.blocker_id == request.auth.uid;
+      allow update: if false;
+    }
+
+    match /mutes/{muteId} {
+      allow read: if signedIn() && resource.data.muter_id == request.auth.uid;
+      allow create: if signedIn() && request.resource.data.muter_id == request.auth.uid;
+      allow delete: if signedIn() && resource.data.muter_id == request.auth.uid;
+      allow update: if false;
+    }
+
+    match /conversations/{conversationId} {
+      allow read: if signedIn() && request.auth.uid in resource.data.member_ids;
+      allow create: if signedIn()
+        && request.auth.uid in request.resource.data.member_ids
+        && request.resource.data.member_ids.size() >= 2;
+      allow update: if signedIn()
+        && request.auth.uid in resource.data.member_ids
+        && request.resource.data.member_ids == resource.data.member_ids;
+      allow delete: if false;
+
+      match /messages/{messageId} {
+        allow read: if signedIn()
+          && request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.member_ids;
+        allow create: if signedIn()
+          && request.resource.data.sender_id == request.auth.uid
+          && request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.member_ids;
+        allow update, delete: if false;
+      }
+    }
+
+    match /coin_topups/{topupId} {
+      allow read: if canReviewFinance() || (signedIn() && resource.data.user_id == request.auth.uid);
+      allow create: if signedIn()
+        && request.resource.data.keys().hasOnly([
+          'user_id', 'coins', 'amount_inr', 'status', 'created_at'
+        ])
+        && request.resource.data.user_id == request.auth.uid
+        && request.resource.data.status == 'pending'
+        && validCoinPackage(request.resource.data.coins, request.resource.data.amount_inr);
+      // A payer may only attach their UPI reference and submit for review.
+      // Approval and rejection are performed by the finance-review-topup
+      // function using a service account, which bypasses these rules, so no
+      // client — including finance staff — can move a top-up to a terminal
+      // state or touch the amount.
+      allow update: if signedIn()
+        && resource.data.user_id == request.auth.uid
+        && resource.data.status == 'pending'
+        && request.resource.data.status == 'submitted'
+        && request.resource.data.user_id == resource.data.user_id
+        && request.resource.data.coins == resource.data.coins
+        && request.resource.data.amount_inr == resource.data.amount_inr
+        && request.resource.data.utr is string
+        && request.resource.data.utr.matches('^[0-9]{12}$')
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'utr', 'status', 'updated_at'
+        ]);
+      allow delete: if false;
+    }
+
+    match /ledger/{ledgerId} {
+      allow read: if canReviewFinance() || (signedIn() && resource.data.user_id == request.auth.uid);
+      // Written only by the finance-review-topup function.
+      allow write: if false;
+    }
+
+    // Idempotency claim on a payment, keyed by UPI reference or provider payment
+    // id so one payment cannot be credited twice. Written only by server code.
+    match /payment_receipts/{reference} {
+      allow read: if canReviewFinance();
+      allow write: if false;
+    }
+
+    // Internal reviewer notes. Deliberately separate from coin_topups, which
+    // the payer can read.
+    match /topup_review_notes/{topupId} {
+      allow read: if canReviewFinance();
+      allow write: if false;
+    }
+
+    // Maps a Razorpay order to its top-up. This is the trusted attribution path
+    // for the webhook, so no client may write it.
+    match /razorpay_orders/{orderId} {
+      allow read: if canReviewFinance();
+      allow write: if false;
+    }
+
+    // Payments that arrived but could not be credited. Finance reads these to
+    // reconcile; a payer being charged without coins must not be log-only.
+    match /payment_exceptions/{paymentId} {
+      allow read: if canReviewFinance();
+      allow write: if false;
+    }
+
+    match /verification_requests/{requestId} {
+      allow read: if isAdmin() || (signedIn() && resource.data.user_id == request.auth.uid);
+      allow create: if signedIn()
+        && request.resource.data.user_id == request.auth.uid
+        && request.resource.data.status == 'pending';
+      allow update: if (
+        isAdmin()
+        && resource.data.status == 'pending'
+        && request.resource.data.status == 'approved'
+        && request.resource.data.user_id == resource.data.user_id
+        && request.resource.data.reviewer_id == request.auth.uid
+        && getAfter(/databases/$(database)/documents/profiles/$(resource.data.user_id)).data.verified == true
+        && getAfter(/databases/$(database)/documents/profiles/$(resource.data.user_id)).data.last_verification_request_id == requestId
+      ) || (
+        isAdmin()
+        && resource.data.status == 'pending'
+        && request.resource.data.status == 'rejected'
+        && request.resource.data.user_id == resource.data.user_id
+        && request.resource.data.reviewer_id == request.auth.uid
+      );
+      allow delete: if false;
+    }
+
+    match /virtual_world_applications/{applicationId} {
+      allow read: if isAdmin() || (signedIn() && resource.data.user_id == request.auth.uid);
+      allow create: if signedIn()
+        && request.resource.data.user_id == request.auth.uid
+        && request.resource.data.status == 'pending';
+      allow update: if isAdmin()
+        && resource.data.status == 'pending'
+        && request.resource.data.status in ['approved', 'rejected']
+        && request.resource.data.reviewer_id == request.auth.uid;
+      allow delete: if false;
+    }
+
+    match /virtual_world_access/{userId} {
+      allow read: if isAdmin() || (signedIn() && resource.data.user_id == request.auth.uid);
+      allow create, update: if isAdmin() && request.resource.data.user_id == userId;
+      allow delete: if false;
+    }
+
+    match /support_tickets/{ticketId} {
+      allow read: if isAdmin() || (signedIn() && resource.data.requester_id == request.auth.uid);
+      allow create: if signedIn()
+        && request.resource.data.requester_id == request.auth.uid
+        && request.resource.data.status == 'open';
+      allow update: if isAdmin();
+      allow delete: if false;
+    }
+
+    match /notifications/{notificationId} {
+      allow read: if signedIn() && resource.data.user_id == request.auth.uid;
+      allow update: if signedIn()
+        && resource.data.user_id == request.auth.uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read']);
+      allow create: if isAdmin();
+      allow delete: if false;
+    }
+
+    match /onboarding_sessions/{sessionId} {
+      allow read, create, update: if isAdmin();
+      allow delete: if false;
+    }
+
+    match /admin_audit_logs/{logId} {
+      allow read: if isAdmin();
+      allow create: if isAdmin() && request.resource.data.actor_user_id == request.auth.uid;
+      allow update, delete: if false;
+    }
+
+    match /payment_settings/{settingId} {
+      allow read: if signedIn();
+      allow write: if isAdmin();
+    }
+
+    match /config/{configId} {
+      allow read: if signedIn();
+      allow write: if isAdmin();
+    }
+
+    match /email_accounts/{email} {
+      allow read: if false;
+      allow create, update: if signedIn();
+      allow delete: if false;
+    }
+
+    // Stories are composed in the client, so the author must be able to create
+    // them. Expiry is advisory metadata: a client can set any value, so reads
+    // must still filter on `expires_at` and cleanup belongs to a scheduled job.
+    match /stories/{storyId} {
+      allow read: if true;
+      allow create: if signedIn()
+        && request.resource.data.user_id == request.auth.uid
+        && request.resource.data.media_url is string;
+      allow update: if false;
+      allow delete: if signedIn() && resource.data.user_id == request.auth.uid;
+    }
+
+    match /story_reactions/{reactionId} {
+      allow read: if signedIn() && (
+        resource.data.user_id == request.auth.uid ||
+        get(/databases/$(database)/documents/stories/$(resource.data.story_id)).data.user_id == request.auth.uid
+      );
+      allow create: if signedIn()
+        && request.resource.data.user_id == request.auth.uid
+        && request.resource.data.emoji is string
+        && request.resource.data.emoji.size() <= 8;
+      allow update, delete: if false;
+    }
+
+    // Stickers are attached to a story, so authorship is derived from the parent
+    // story rather than trusted from the payload.
+    match /story_stickers/{stickerId} {
+      allow read: if signedIn();
+      allow create: if signedIn()
+        && get(/databases/$(database)/documents/stories/$(request.resource.data.story_id)).data.user_id == request.auth.uid;
+      allow update, delete: if false;
+    }
+
+    // Canonical coin balance. Credited only by privileged server code, so no
+    // client can alter a balance even with finance authority.
+    match /wallets/{userId} {
+      allow read: if isOwner(userId) || canReviewFinance();
+      allow write: if false;
+    }
+
+    match /wallet_analytics/{analyticsId} {
+      allow read: if canReviewFinance() || (signedIn() && resource.data.user_id == request.auth.uid);
+      allow write: if false;
+    }
+
+    match /coin_transactions/{transactionId} {
+      allow read: if signedIn() && resource.data.user_id == request.auth.uid;
+      allow write: if false;
+    }
+
+    match /tips/{tipId} {
+      allow read: if signedIn() && (
+        resource.data.sender_id == request.auth.uid ||
+        resource.data.recipient_id == request.auth.uid
+      );
+      allow write: if false;
+    }
+
+    match /live_gifts/{giftId} {
+      allow read: if signedIn() && resource.data.sender_id == request.auth.uid;
+      allow write: if false;
+    }
+
+    // A host creates and ends their own broadcast. Tip totals are money-adjacent
+    // and are written by privileged code, so the host cannot set them.
+    match /live_streams/{streamId} {
+      allow read: if signedIn();
+      allow create: if signedIn()
+        && request.resource.data.host_id == request.auth.uid
+        && request.resource.data.get('total_tips_coins', 0) == 0;
+      allow update: if signedIn()
+        && resource.data.host_id == request.auth.uid
+        && request.resource.data.host_id == resource.data.host_id
+        && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['total_tips_coins']);
+      allow delete: if false;
+    }
+
+    // Viewers post chat and reactions from the client, so authorship is pinned
+    // to the caller and messages are immutable once sent.
+    match /live_chat/{messageId} {
+      allow read: if signedIn();
+      allow create: if signedIn()
+        && request.resource.data.user_id == request.auth.uid
+        && request.resource.data.stream_id is string
+        && request.resource.data.body is string
+        && request.resource.data.body.size() > 0
+        && request.resource.data.body.size() <= 2000;
+      allow update, delete: if false;
+    }
+
+    match /live_reactions/{reactionId} {
+      allow read: if signedIn();
+      allow create: if signedIn()
+        && request.resource.data.user_id == request.auth.uid
+        && request.resource.data.stream_id is string;
+      allow update, delete: if false;
+    }
+
+    // Gift catalogues are presentation data managed by staff. `gifts` is the
+    // legacy collection name still read as a fallback.
+    match /gift_catalog/{giftId} {
+      allow read: if signedIn();
+      allow write: if isAdmin();
+    }
+
+    match /gifts/{giftId} {
+      allow read: if signedIn();
+      allow write: if isAdmin();
+    }
+
+    match /post_unlocks/{unlockId} {
+      allow read: if signedIn() && resource.data.user_id == request.auth.uid;
+      allow write: if false;
+    }
+
+    match /creator_payout_requests/{payoutId} {
+      allow read: if signedIn() && resource.data.user_id == request.auth.uid;
+      allow write: if false;
+    }
+
+    match /virtual_world_logs/{logId} {
+      allow read: if isAdmin() || (signedIn() && resource.data.user_id == request.auth.uid);
+      allow write: if false;
+    }
+
+    match /organization_memberships/{membershipId} {
+      allow read: if signedIn();
+      allow write: if false;
+    }
+
+    // Deny unknown collections by default. New client access must receive an
+    // explicit collection rule and ownership/role predicate.
     match /{document=**} {
-      allow read: if request.auth != null;
-      allow write: if request.auth != null;
+      allow read, write: if false;
     }
   }
 }

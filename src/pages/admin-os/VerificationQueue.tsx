@@ -1,15 +1,12 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthProvider";
-import { collection, query, where, orderBy, onSnapshot } from "firebase/firestore";
+import { collection, query, orderBy, onSnapshot, doc, runTransaction } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { TopBar } from "@/components/vibe/TopBar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { VerificationBadge } from "@/components/vibe/VerificationBadge";
-import { ShieldCheck, UserCheck, AlertCircle, Clock, CheckCircle2, XCircle } from "lucide-react";
+import { UserCheck, CheckCircle2, XCircle } from "lucide-react";
 import { format } from "date-fns";
-import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import { updateDoc, doc, runTransaction } from "firebase/firestore";
 
 const VerificationQueue = () => {
   const { user } = useAuth();
@@ -31,27 +28,37 @@ const VerificationQueue = () => {
   }, []);
 
   const handleAction = async (req: any, status: 'approved' | 'rejected') => {
+    if (!user) return toast.error("You must be signed in to review requests");
+
     try {
       await runTransaction(db, async (transaction) => {
         const reqRef = doc(db, "verification_requests", req.id);
-        const profileRef = doc(db, "profiles", req.user_id);
+        const reqSnap = await transaction.get(reqRef);
+        if (!reqSnap.exists()) throw new Error("Verification request not found");
 
+        const currentRequest = reqSnap.data();
+        if (currentRequest.status !== "pending") {
+          throw new Error("This verification request has already been processed");
+        }
+
+        const profileRef = doc(db, "profiles", currentRequest.user_id);
         transaction.update(reqRef, {
           status,
           reviewed_at: new Date().toISOString(),
-          reviewer_id: user?.id
+          reviewer_id: user.id,
         });
 
         if (status === 'approved') {
           transaction.update(profileRef, {
             verified: true,
-            verification_kind: req.kind || 'verified'
+            verification_kind: currentRequest.kind || currentRequest.category || 'verified',
+            last_verification_request_id: req.id,
           });
         }
       });
       toast.success(`Request ${status}`);
     } catch (e: any) {
-      toast.error(e.message);
+      toast.error(e.message || "Could not review request");
     }
   };
 

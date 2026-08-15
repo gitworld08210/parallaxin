@@ -17,7 +17,8 @@ import { cn } from "@/lib/utils";
 const AdminOSDashboard = () => {
   const { profile } = useAuth();
 
-  const isAdmin = profile?.account_type === "organization" || profile?.is_admin || profile?.is_founder;
+  const isAdmin = profile?.is_admin || profile?.is_founder ||
+    ["COO", "CEO", "HR Head", "Finance Head"].includes(profile?.role || "");
 
   if (!isAdmin) {
     return (

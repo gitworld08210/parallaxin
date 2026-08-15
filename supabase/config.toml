@@ -1,1 +1,16 @@
 project_id = "xmztbdaupkvezhhokmwx"
+
+# These functions do not use Supabase Auth, so the gateway cannot validate their
+# callers and must not try. Each performs its own verification before doing any
+# work: the first two verify a Firebase ID token against Google's JWKS, and the
+# webhook verifies an HMAC signature over the raw request body.
+
+[functions.finance-review-topup]
+verify_jwt = false
+
+[functions.razorpay-create-order]
+verify_jwt = false
+
+# Razorpay signs with a shared secret and sends no JWT.
+[functions.razorpay-webhook]
+verify_jwt = false

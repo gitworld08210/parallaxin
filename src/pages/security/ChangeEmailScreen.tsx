@@ -5,12 +5,12 @@ import { TopBar } from "@/components/vibe/TopBar";
 
 import { useAuth } from "@/contexts/AuthProvider";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
+import { auth } from "@/lib/firebase";
+import { verifyBeforeUpdateEmail } from "firebase/auth";
 
 export default function ChangeEmailScreen() {
   const nav = useNavigate();
   const { user } = useAuth();
-  const pending = (user as any)?.new_email as string | undefined;
   const [email, setEmail] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -19,24 +19,19 @@ export default function ChangeEmailScreen() {
       return toast.error("Enter a valid email");
     }
     setBusy(true);
-    const { error } = await supabase.auth.updateUser(
-      { email: email.trim() },
-      { emailRedirectTo: `${window.location.origin}/` },
-    );
-    setBusy(false);
-    if (error) return toast.error(error.message);
-    toast.success("Verification link sent to your new address");
-    setEmail("");
-  };
-
-  const resend = async () => {
-    if (!pending) return;
-    setBusy(true);
-    const { error } = await supabase.auth.resend({ type: "email_change", email: pending });
-    setBusy(false);
-    if (error) return toast.error(error.message);
-
-    toast.success("Verification link re-sent");
+    try {
+      await auth.authStateReady();
+      if (!auth.currentUser) throw new Error("Not authenticated");
+      await verifyBeforeUpdateEmail(auth.currentUser, email.trim(), {
+        url: `${window.location.origin}/`,
+      });
+      toast.success("Verification link sent to your new address");
+      setEmail("");
+    } catch (error: any) {
+      toast.error(error.message || "Could not update email");
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
@@ -49,18 +44,12 @@ export default function ChangeEmailScreen() {
           <p className="font-mono text-sm text-foreground break-all">{user?.email}</p>
         </div>
 
-        {pending && (
-          <div className="rounded-2xl bg-primary/10 border border-primary/30 p-4 space-y-2">
-            <p className="text-[11px] uppercase tracking-wider text-primary flex items-center gap-1.5"><Mail className="h-3 w-3" /> Pending change</p>
-            <p className="text-sm break-all">{pending}</p>
-            <p className="text-xs text-muted-foreground">
-              Your email address will change only after you click the confirmation link we sent to the new address.
-            </p>
-            <button onClick={resend} disabled={busy} className="text-xs font-semibold text-primary hover:underline">
-              Resend confirmation link
-            </button>
-          </div>
-        )}
+        <div className="rounded-2xl bg-primary/10 border border-primary/30 p-4 space-y-2">
+          <p className="text-[11px] uppercase tracking-wider text-primary flex items-center gap-1.5"><Mail className="h-3 w-3" /> Verified change</p>
+          <p className="text-xs text-muted-foreground">
+            Firebase will send a confirmation link to the new address. Your sign-in email changes only after that link is confirmed.
+          </p>
+        </div>
 
         <input
           type="email"

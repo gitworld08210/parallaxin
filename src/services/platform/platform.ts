@@ -1,6 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { collection, addDoc, serverTimestamp, query, where, getDocs, orderBy, limit, doc, updateDoc, getDoc } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { auth, db } from "@/lib/firebase";
+import { reportOperationalError } from "@/lib/operationalErrors";
 /**
  * Aurelix Admin OS — Core Platform Engines service layer.
  *
@@ -12,6 +13,16 @@ import { db } from "@/lib/firebase";
 
 // -------- shared helpers --------
 
+async function getActorUserId(): Promise<string | null> {
+  await auth.authStateReady();
+  return auth.currentUser?.uid ?? null;
+}
+
+export type AuditDeliveryResult = {
+  firestore: boolean;
+  supabase: boolean;
+};
+
 export async function logAdminAction(input: {
   module: string;
   action: string;
@@ -19,37 +30,65 @@ export async function logAdminAction(input: {
   target_id?: string;
   before?: unknown;
   after?: unknown;
-}) {
-  const { data: userData } = await supabase.auth.getUser();
-  const uid = userData.user?.id;
-  if (!uid) return;
-  
-  // Primary: Firestore for audit trails
-  try {
-    await addDoc(collection(db, "admin_audit_logs"), {
-      actor_user_id: uid,
+}): Promise<AuditDeliveryResult> {
+  const uid = await getActorUserId();
+  if (!uid) {
+    reportOperationalError("admin-audit", new Error("Missing authenticated actor"), {
       module: input.module,
       action: input.action,
-      target_type: input.target_type ?? null,
-      target_id: input.target_id ?? null,
-      before: input.before ?? null,
-      after: input.after ?? null,
-      created_at: serverTimestamp()
+      targetId: input.target_id ?? null,
     });
-  } catch (e) {
-    console.warn("Firestore audit log failed", e);
+    return { firestore: false, supabase: false };
   }
 
-  // Secondary: Supabase for legacy admin views
-  await supabase.from("admin_audit_logs" as any).insert({
+  const firestoreWrite = addDoc(collection(db, "admin_audit_logs"), {
     actor_user_id: uid,
     module: input.module,
     action: input.action,
     target_type: input.target_type ?? null,
     target_id: input.target_id ?? null,
-    before: (input.before ?? null) as never,
-    after: (input.after ?? null) as never,
-  } as any);
+    before: input.before ?? null,
+    after: input.after ?? null,
+    created_at: serverTimestamp(),
+  });
+
+  const supabaseWrite = (async () => {
+    const { error } = await supabase.from("admin_audit_logs" as any).insert({
+      actor_user_id: uid,
+      module: input.module,
+      action: input.action,
+      target_type: input.target_type ?? null,
+      target_id: input.target_id ?? null,
+      before: (input.before ?? null) as never,
+      after: (input.after ?? null) as never,
+    } as any);
+    if (error) throw error;
+  })();
+
+  const [firestoreResult, supabaseResult] = await Promise.allSettled([
+    firestoreWrite,
+    supabaseWrite,
+  ]);
+
+  if (firestoreResult.status === "rejected") {
+    reportOperationalError("admin-audit-firestore", firestoreResult.reason, {
+      module: input.module,
+      action: input.action,
+      targetId: input.target_id ?? null,
+    });
+  }
+  if (supabaseResult.status === "rejected") {
+    reportOperationalError("admin-audit-supabase", supabaseResult.reason, {
+      module: input.module,
+      action: input.action,
+      targetId: input.target_id ?? null,
+    });
+  }
+
+  return {
+    firestore: firestoreResult.status === "fulfilled",
+    supabase: supabaseResult.status === "fulfilled",
+  };
 }
 
 export async function emitActivity(input: {
@@ -60,21 +99,38 @@ export async function emitActivity(input: {
   visibility?: "public" | "admin" | "department";
   summary: string;
   metadata?: Record<string, unknown>;
-}) {
-  const { data: userData } = await supabase.auth.getUser();
-  const uid = userData.user?.id;
-  if (!uid) return;
-  await supabase.from("platform_activity" as any).insert({
-    actor_user_id: uid,
-    verb: input.verb,
-    object_type: input.object_type,
-    object_id: input.object_id ?? null,
-    department: input.department ?? null,
-    visibility: input.visibility ?? "admin",
-    summary: input.summary,
-    metadata: (input.metadata ?? {}) as never,
-  } as any);
+}): Promise<boolean> {
+  const uid = await getActorUserId();
+  if (!uid) {
+    reportOperationalError("platform-activity", new Error("Missing authenticated actor"), {
+      verb: input.verb,
+      objectType: input.object_type,
+      objectId: input.object_id ?? null,
+    });
+    return false;
+  }
 
+  try {
+    const { error } = await supabase.from("platform_activity" as any).insert({
+      actor_user_id: uid,
+      verb: input.verb,
+      object_type: input.object_type,
+      object_id: input.object_id ?? null,
+      department: input.department ?? null,
+      visibility: input.visibility ?? "admin",
+      summary: input.summary,
+      metadata: (input.metadata ?? {}) as never,
+    } as any);
+    if (error) throw error;
+    return true;
+  } catch (error) {
+    reportOperationalError("platform-activity", error, {
+      verb: input.verb,
+      objectType: input.object_type,
+      objectId: input.object_id ?? null,
+    });
+    return false;
+  }
 }
 
 // -------- Approval engine --------
@@ -93,8 +149,7 @@ export interface CreateApprovalInput {
 
 export const approvals = {
   async create(input: CreateApprovalInput) {
-    const { data: userData } = await supabase.auth.getUser();
-    const uid = userData.user?.id;
+    const uid = await getActorUserId();
     if (!uid) throw new Error("Not authenticated");
     const { data, error } = await supabase.from("platform_approval_requests").insert({
       module: input.module,
@@ -134,8 +189,7 @@ export const approvals = {
     return data;
   },
   async decide(id: string, decision: "approved" | "rejected", reason?: string) {
-    const { data: userData } = await supabase.auth.getUser();
-    const uid = userData.user?.id;
+    const uid = await getActorUserId();
     if (!uid) throw new Error("Not authenticated");
     const status = decision === "approved" ? "approved" : "rejected";
     const { data: before } = await supabase.from("platform_approval_requests").select("*").eq("id", id).single();
@@ -191,7 +245,7 @@ export const workflows = {
     trigger?: string;
     steps?: unknown[];
   }) {
-    const { data: userData } = await supabase.auth.getUser();
+    const uid = await getActorUserId();
     const { data, error } = await supabase.from("platform_workflows").insert({
       key: input.key,
       name: input.name,
@@ -199,7 +253,7 @@ export const workflows = {
       owner_department: input.owner_department ?? null,
       trigger: input.trigger ?? "manual",
       steps: (input.steps ?? []) as never,
-      created_by: userData.user?.id ?? null,
+      created_by: uid,
     }).select().single();
     if (error) throw error;
     await logAdminAction({
@@ -307,8 +361,7 @@ export const assignments = {
     method?: "manual" | "auto" | "rule";
     priority?: "low" | "normal" | "high" | "urgent";
   }) {
-    const { data: userData } = await supabase.auth.getUser();
-    const uid = userData.user?.id;
+    const uid = await getActorUserId();
     const { data, error } = await supabase.from("platform_assignments").insert({
       module: input.module,
       entity_type: input.entity_type,
@@ -396,8 +449,7 @@ export const documents = {
     file: File;
     department?: string;
   }) {
-    const { data: userData } = await supabase.auth.getUser();
-    const uid = userData.user?.id;
+    const uid = await getActorUserId();
     if (!uid) throw new Error("Not authenticated");
     const path = `${uid}/${crypto.randomUUID()}-${input.file.name}`;
     const { error: upErr } = await supabase.storage.from("platform-documents").upload(path, input.file);
@@ -453,11 +505,11 @@ export const reports = {
     return data;
   },
   async run(definition_id: string, parameters: Record<string, unknown> = {}) {
-    const { data: userData } = await supabase.auth.getUser();
+    const uid = await getActorUserId();
     const { data, error } = await supabase.from("platform_report_runs").insert({
       definition_id,
       parameters: parameters as never,
-      requested_by: userData.user?.id ?? null,
+      requested_by: uid,
       status: "pending",
     }).select().single();
     if (error) throw error;

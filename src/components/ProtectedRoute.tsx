@@ -27,8 +27,7 @@ export const AdminOSGate = ({ children }: { children?: React.ReactNode }) => {
 
   if (loading) return null;
 
-  const isAdmin = profile?.account_type === "organization" || 
-                  profile?.is_admin || 
+  const isAdmin = profile?.is_admin ||
                   profile?.is_founder || 
                   ["COO", "CEO", "HR Head", "Finance Head"].includes(profile?.role || "");
 
