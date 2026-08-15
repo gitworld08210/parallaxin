@@ -34,8 +34,12 @@ jobs:
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
 
+      # `npm ci` cannot be used: package-lock.json is out of sync with
+      # package.json on this repo (it predates several dependency bumps, e.g.
+      # firebase and react-router-dom), so `npm ci` fails before it installs
+      # anything. `npm install` resolves and refreshes the tree instead.
       - name: Install dependencies
-        run: npm ci
+        run: npm install --no-audit --no-fund
 
       - name: Type check
         run: npx tsc --noEmit
