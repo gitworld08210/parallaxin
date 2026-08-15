@@ -2,7 +2,7 @@
   "id": "FEAT-003",
   "type": "feat",
   "description": "Redesign Reels.tsx to TikTok-style full-screen vertical video, and redesign MessagesPasscodeGate.tsx to X-style passcode screen with forgot-passcode flow.",
-  "status": "in_progress",
+  "status": "completed",
   "steps": [
     "Rewrite src/pages/Reels.tsx to TikTok-style layout: full viewport height video (swipe up/down to navigate), 'Following | For You' tabs at top center (white text, active has underline), right side action column (avatar with + follow badge, heart + count, comment bubble + count, share arrow + 'Share' text), bottom left (@username, caption text with hashtags, music name with marquee scroll), bottom right (spinning album art circle), bottom nav (Home / Discover / + create / Inbox / Me). Keep all existing state logic, IntersectionObserver for autoplay, toggleLike/toggleBookmark/togglePause, CommentSheet/ShareToDM, and ad intelligence hooks.",
     "Rewrite src/components/messages/MessagesPasscodeGate.tsx: Main screen shows 'Enter your passcode' title centered, subtitle about encryption keys and message decryption, 4 circle OTP inputs (filled when digit entered), 'Forgot Passcode' link below inputs. Forgot passcode screen shows warning circle icon at top, 'Forgot Passcode' bold title, explanation text about resetting chat, red 'Reset Chat' pill button, 'Go Back' text button. Keep existing passcode storage/fetch logic (readCache, writeCache, fetchRemote, saveRemote) and unlock gate mechanism intact.",
@@ -26,5 +26,5 @@
     "NODE_OPTIONS= npx tsc --noEmit passes with zero errors"
   ],
   "blocked_reason": null,
-  "findings": ""
+  "findings": "Both Reels.tsx and MessagesPasscodeGate.tsx were already redesigned in the working tree. Reels has TikTok-style full-viewport video with snap scroll, Following/For You tabs, right action column (avatar+follow, heart, comment, share, bookmark, spinning album disc), bottom-left caption+music marquee, and bottom nav. MessagesPasscodeGate has centered passcode entry with 4 circle OTP dots, number pad, forgot passcode flow with warning icon and red Reset Chat button. TypeScript compiles cleanly. All changes pushed to origin/ui/home-story-redesign."
 }
