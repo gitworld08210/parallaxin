@@ -1,6 +1,8 @@
 import { supabase } from "@/integrations/supabase/client";
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
+import { addDoc, collection, doc, serverTimestamp, updateDoc } from "firebase/firestore";
 
+import { db } from "@/lib/firebase";
 import { useAuth } from "@/contexts/AuthProvider";
 import { createPeer, getUserMedia, stopStream } from "@/lib/webrtc";
 import { toast } from "sonner";
@@ -91,6 +93,17 @@ export const CallProvider = ({ children }: { children: React.ReactNode }) => {
     pendingIceRef.current = [];
     remoteDescSetRef.current = false;
     if (ringTimerRef.current) { clearTimeout(ringTimerRef.current); ringTimerRef.current = null; }
+    // Signalling channels are per-call. Without removing them, every finished
+    // call left a live subscription that kept handling signals for a call that
+    // no longer exists, and a later call could be torn down by a stale handler.
+    if (signalChRef.current) {
+      try { supabase.removeChannel(signalChRef.current); } catch { /* noop */ }
+      signalChRef.current = null;
+    }
+    if (callRowChRef.current) {
+      try { supabase.removeChannel(callRowChRef.current); } catch { /* noop */ }
+      callRowChRef.current = null;
+    }
   }, [localStream, remoteStream]);
 
   const insertSummaryMessage = useCallback(async (conversationId: string, kind: CallKind, finalStatus: string, duration: number) => {
@@ -103,7 +116,23 @@ export const CallProvider = ({ children }: { children: React.ReactNode }) => {
     else if (finalStatus === "declined") label = `🚫 ${kind === "video" ? "Video" : "Voice"} call declined`;
     else if (finalStatus === "cancelled") label = `📵 ${kind === "video" ? "Video" : "Voice"} call cancelled`;
     if (!label) return;
-    await supabase.from("messages").insert({ conversation_id: conversationId, sender_id: user.uid, content: label });
+    // Conversations render messages from the Firestore subcollection, so the
+    // summary has to be written there. Writing it to Supabase left every call
+    // summary invisible in the thread.
+    try {
+      await addDoc(collection(db, "conversations", conversationId, "messages"), {
+        sender_id: user.id,
+        content: label,
+        created_at: serverTimestamp(),
+      });
+      await updateDoc(doc(db, "conversations", conversationId), {
+        last_message_text: label,
+        last_message_at: serverTimestamp(),
+        last_sender_id: user.id,
+      });
+    } catch (e) {
+      console.warn("Call summary message skipped:", e);
+    }
   }, [user]);
 
   const finishCall = useCallback(async (finalStatus: "ended" | "missed" | "declined" | "cancelled" | "busy") => {

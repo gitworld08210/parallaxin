@@ -149,6 +149,11 @@ export const PostCard = ({ post, onOpenComments }: { post: FeedPost; onOpenComme
       const saveId = `${user.id}_${post.id}`;
       const saveRef = doc(db, "saves", saveId);
       if (next) {
+        await setDoc(saveRef, {
+          user_id: user.id,
+          post_id: post.id,
+          created_at: serverTimestamp()
+        });
         toast.success("Saved");
       } else {
         await deleteDoc(saveRef);

@@ -17,7 +17,7 @@ type Comment = {
 };
 
 export const CommentSheet = ({ postId, open, onOpenChange }: { postId: string | null; open: boolean; onOpenChange: (b: boolean) => void }) => {
-  const { user } = useAuth();
+  const { user, profile: myProfile } = useAuth();
   const [items, setItems] = useState<Comment[]>([]);
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(false);
@@ -48,10 +48,13 @@ export const CommentSheet = ({ postId, open, onOpenChange }: { postId: string | 
         user_id: user.id,
         content: text.trim(),
         created_at: serverTimestamp(),
+        // Comment authorship is denormalised, so it must come from the stored
+        // profile. `user_metadata` is only populated for federated sign-ins and
+        // would render email/password users as a generic "User".
         profile: {
-          username: user.user_metadata?.username || user.email?.split('@')[0] || "user",
-          display_name: user.user_metadata?.display_name || "User",
-          avatar_url: user.user_metadata?.avatar_url || null
+          username: myProfile?.username || user.email?.split('@')[0] || "user",
+          display_name: myProfile?.display_name || myProfile?.username || "User",
+          avatar_url: myProfile?.avatar_url ?? null
         }
       });
       await updateDoc(doc(db, "posts", postId), { comment_count: increment(1) });

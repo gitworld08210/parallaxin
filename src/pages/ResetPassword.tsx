@@ -10,24 +10,25 @@ const ResetPassword = () => {
   const nav = useNavigate();
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
-  const [oobCode, setOobCode] = useState<string | null>(null);
+  // Read the code during the first render so a link that is missing `oobCode`
+  // never renders the password form. Previously it showed a form whose submit
+  // button could never be enabled, with no explanation.
+  const [oobCode] = useState<string | null>(
+    () => new URLSearchParams(window.location.search).get("oobCode"),
+  );
   const [validCode, setValidCode] = useState<boolean | null>(null);
   const [success, setSuccess] = useState(false);
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const code = params.get("oobCode");
-    if (code) {
-      setOobCode(code);
-      verifyPasswordResetCode(auth, code)
-        .then(() => setValidCode(true))
-        .catch((err) => {
-          console.error(err);
-          setValidCode(false);
-          toast.error("Invalid or expired reset link");
-        });
-    }
-  }, []);
+    if (!oobCode) return;
+    verifyPasswordResetCode(auth, oobCode)
+      .then(() => setValidCode(true))
+      .catch((err) => {
+        console.error(err);
+        setValidCode(false);
+        toast.error("Invalid or expired reset link");
+      });
+  }, [oobCode]);
 
   const handleReset = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,13 +48,17 @@ const ResetPassword = () => {
     }
   };
 
-  if (oobCode && validCode === false) {
+  if (!oobCode || validCode === false) {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center p-6">
         <div className="text-center max-w-sm">
           <AlertCircle className="h-16 w-16 text-rose-500 mx-auto mb-6" />
           <h1 className="text-2xl font-bold mb-2">Invalid Link</h1>
-          <p className="text-muted-foreground mb-8">This password reset link is invalid or has expired.</p>
+          <p className="text-muted-foreground mb-8">
+            {oobCode
+              ? "This password reset link is invalid or has expired."
+              : "This page needs a reset link from your email."}
+          </p>
           <Link to="/forgot-password" title="Request a new reset link" className="text-[#0095F6] font-bold hover:underline">
             Request a new link
           </Link>

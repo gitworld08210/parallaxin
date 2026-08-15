@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import { collection, addDoc, serverTimestamp, doc, updateDoc, getDocs } from "firebase/firestore";
+import { collection, addDoc, serverTimestamp, doc, updateDoc, getDocs, onSnapshot, query, where, orderBy, limit, limitToLast } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -40,7 +40,11 @@ export default function LiveHost() {
 
   useEffect(() => {
     (async () => {
-      const catSnap = await getDocs(collection(db, "gifts"));
+      // The viewer reads the catalogue from `gift_catalog`; the host read
+      // `gifts`, so one side always rendered an empty gift list. Prefer the
+      // shared collection and fall back to the legacy name.
+      let catSnap = await getDocs(collection(db, "gift_catalog"));
+      if (catSnap.empty) catSnap = await getDocs(collection(db, "gifts"));
       const map: Record<string, { icon: string; name: string }> = {};
       catSnap.docs.forEach((d) => { const data = d.data(); map[d.id] = { icon: data.icon, name: data.name }; });
       setCatalog(map);
@@ -167,7 +171,9 @@ export default function LiveHost() {
       if (streamId) {
         await updateDoc(doc(db, "live_streams", streamId), {
           status: "ended",
-          ended_at: new Date().toISOString()
+          // `started_at` is a Firestore timestamp, so `ended_at` must be one
+          // too or duration/ordering comparisons break.
+          ended_at: serverTimestamp()
         });
       }
     } finally {
@@ -175,20 +181,48 @@ export default function LiveHost() {
     }
   };
 
+  // Viewers write chat and reactions to Firestore, so the host has to observe
+  // Firestore. Listening on Supabase Postgres meant the host never saw a single
+  // viewer message.
   useEffect(() => {
     if (!streamId) return;
-      supabase.channel(`live:${streamId}`).
-on("postgres_changes", { event: "INSERT", schema: "public", table: "live_chat", filter: `stream_id=eq.${streamId}` },
-        (p) => setChat((c) => [...c.slice(-50), p.new as ChatRow])).
-on("postgres_changes", { event: "INSERT", schema: "public", table: "live_reactions", filter: `stream_id=eq.${streamId}` },
-        () => setHearts((h) => [...h, { id: Date.now() + Math.random() }])).
-on("postgres_changes", { event: "INSERT", schema: "public", table: "live_gifts", filter: `stream_id=eq.${streamId}` },
+
+    const unsubChat = onSnapshot(
+      query(collection(db, "live_chat"), where("stream_id", "==", streamId), orderBy("created_at", "asc"), limitToLast(50)),
+      (snap) => setChat(snap.docs.map((d) => ({ id: d.id, ...d.data() })) as ChatRow[]),
+      (err) => console.warn("Live chat listener failed:", err),
+    );
+
+    const startedAt = Date.now();
+    const unsubReactions = onSnapshot(
+      query(collection(db, "live_reactions"), where("stream_id", "==", streamId), orderBy("created_at", "desc"), limit(20)),
+      (snap) => {
+        snap.docChanges().forEach((change) => {
+          if (change.type !== "added") return;
+          const created = change.doc.data()?.created_at?.toMillis?.() ?? 0;
+          if (created >= startedAt) setHearts((h) => [...h, { id: Date.now() + Math.random() }]);
+        });
+      },
+      (err) => console.warn("Live reactions listener failed:", err),
+    );
+
+    return () => { unsubChat(); unsubReactions(); };
+  }, [streamId]);
+
+  // Gift events come from the backend gifting function over Supabase realtime.
+  // The channel is now removed on unmount rather than left subscribed.
+  useEffect(() => {
+    if (!streamId) return;
+    const channel = supabase.channel(`live-gifts:${streamId}`)
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "live_gifts", filter: `stream_id=eq.${streamId}` },
         (p) => {
           const g = p.new as GiftRow;
           setTips((t) => t + Number(g.coins_total || 0));
           setRecentGifts((arr) => [g, ...arr].slice(0, 6));
-        }).
-subscribe();
+        })
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
   }, [streamId]);
 
   useEffect(() => {

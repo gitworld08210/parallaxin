@@ -9,6 +9,8 @@ import { gradientFor, initialsOf } from "@/lib/format";
 import { toast } from "sonner";
 import { uploadToCloudinary } from "@/lib/cloudinary";
 import { supabase } from "@/integrations/supabase/client";
+import { doc, getDoc, setDoc, deleteDoc, serverTimestamp } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 
 
 
@@ -65,15 +67,32 @@ const EditProfile = () => {
     setBusy(true);
     
     try {
-      // 1. Update Profile in Firestore (Primary Source of Truth)
-      const { doc, setDoc, serverTimestamp } = await import("firebase/firestore");
-      const { db } = await import("@/lib/firebase");
-      
+      const nextUsername = username.trim().toLowerCase();
+      const prevUsername = (profile?.username || "").trim().toLowerCase();
+
+      if (!nextUsername) {
+        toast.error("Username is required");
+        setBusy(false);
+        return;
+      }
+
+      // Claiming a username used to be an unconditional merge write, which let
+      // one account overwrite another account's claim. Verify ownership first.
+      if (nextUsername !== prevUsername) {
+        const claim = await getDoc(doc(db, "usernames", nextUsername));
+        const owner = claim.exists() ? claim.data()?.user_id : null;
+        if (claim.exists() && owner !== user.uid) {
+          toast.error("That username is already taken");
+          setBusy(false);
+          return;
+        }
+      }
+
       const profileData = {
         id: user.uid,
         user_id: user.uid,
         display_name: displayName,
-        username,
+        username: nextUsername,
         bio,
         avatar_url: avatar,
         cover_url: cover,
@@ -81,13 +100,21 @@ const EditProfile = () => {
       };
 
       await setDoc(doc(db, "profiles", user.uid), profileData, { merge: true });
-      
-      // Also try writing to username-indexed doc for resolution efficiency
-      if (username) {
-        await setDoc(doc(db, "usernames", username.toLowerCase()), { 
-          user_id: user.uid,
-          uid: user.uid 
-        }, { merge: true });
+
+      await setDoc(doc(db, "usernames", nextUsername), {
+        user_id: user.uid,
+        uid: user.uid,
+        updated_at: serverTimestamp(),
+      }, { merge: true });
+
+      // Release the previous handle, otherwise it stays claimed forever and
+      // nobody — including this user — can take it again.
+      if (prevUsername && prevUsername !== nextUsername) {
+        try {
+          await deleteDoc(doc(db, "usernames", prevUsername));
+        } catch (relErr) {
+          console.warn("Could not release previous username:", relErr);
+        }
       }
 
       // 2. Sync to Supabase for backend triggers/legacy logic
