@@ -116,7 +116,10 @@ jobs:
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
           script: |
-            APK=$(find apk -name "*.apk" | head -1)
+            echo "--- contents of apk/ ---"
+            find apk -type f
+            APK=$(find apk -type f -name "*.apk" | head -1)
+            if [ -z "$APK" ]; then echo "No .apk file found under apk/"; exit 1; fi
             echo "Installing $APK"
             adb install -r "$APK"
             adb logcat -c
