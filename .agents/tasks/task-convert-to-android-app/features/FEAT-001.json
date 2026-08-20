@@ -1,0 +1,25 @@
+{
+  "id": "FEAT-001",
+  "type": "chore",
+  "description": "Install dependencies, clean up root directory of leftover Python scripts, and verify the existing build works before making Capacitor changes.",
+  "status": "completed",
+  "steps": [
+    "Run `npm install` in /projects/sandbox/parallaxin to restore node_modules",
+    "Delete all fix_syntax*.py, fix_chains*.py, fix_dangling_chains.py, and check_publish.py files from the root directory (32 files total)",
+    "Run `npm run build` to verify the project builds cleanly before any modifications",
+    "Run `npm run test` to verify existing tests pass"
+  ],
+  "acceptance_criteria": [
+    "node_modules/ directory exists with all dependencies installed",
+    "No .py scripts remain in the project root directory",
+    "npm run build succeeds and produces a dist/ directory",
+    "npm run test passes (or reports no failures)"
+  ],
+  "verification": [
+    "Run `npm run build` and confirm exit code 0",
+    "Run `npm run test` and confirm exit code 0",
+    "Run `ls *.py` in project root and confirm no files found"
+  ],
+  "blocked_reason": null,
+  "findings": "All 32 .py scripts removed. npm install succeeded (912 packages). Build succeeds with vite 5.4.19 (9.43s, produces dist/ with chunked output). 1 test file passes (vitest 3.2.4). Note: supabase/functions/mcp/index.ts has a pre-existing uncommitted version bump (0.20.0 -> 0.20.1) that was not part of this task. Build produces large chunk warnings for index-C0kYwfHC.js (1.5MB) and livekit-client (534KB) but exits 0."
+}
