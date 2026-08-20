@@ -1,0 +1,7 @@
+{
+  "task_id": "task-convert-to-android-app",
+  "task_description": "Convert the Aurelix React web app into an Android app using Capacitor. Install Capacitor, configure it for the project, add Android platform, install native plugins (back button, status bar, splash screen, keyboard, camera, push notifications), update Vite config for Capacitor compatibility, and clean up leftover scripts.",
+  "status": "in_progress",
+  "feature_order": ["FEAT-001", "FEAT-002"],
+  "blocked_reason": null
+}

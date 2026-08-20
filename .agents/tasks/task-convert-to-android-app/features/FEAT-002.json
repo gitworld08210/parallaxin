@@ -1,0 +1,44 @@
+{
+  "id": "FEAT-002",
+  "type": "feat",
+  "description": "Install and configure Capacitor for Android, update Vite config for Capacitor compatibility, configure native plugins, handle Android back button, set up status bar/splash screen, and add Capacitor npm scripts.",
+  "status": "in_progress",
+  "steps": [
+    "Install Capacitor core packages: `npm install @capacitor/core @capacitor/cli @capacitor/android`",
+    "Install native plugins: `npm install @capacitor/app @capacitor/haptics @capacitor/status-bar @capacitor/splash-screen @capacitor/keyboard @capacitor/camera @capacitor/push-notifications`",
+    "Create capacitor.config.ts in project root with: appId 'com.aurelix.app', appName 'Aurelix', webDir 'dist', server config for development (url pointing to local dev server with cleartext enabled), plugins config for SplashScreen (autoHide, launchShowDuration, backgroundColor matching dark theme #08070f), StatusBar (style dark, backgroundColor #08070f), Keyboard (resize 'body', style 'dark')",
+    "Update vite.config.ts: add `base: './'` to the config object so assets load correctly from file:// protocol in Capacitor WebView. Keep the existing server config for dev mode.",
+    "Run `npm run build` to produce the dist/ directory needed for cap add",
+    "Run `npx cap add android` to scaffold the android/ directory",
+    "Run `npx cap sync` to sync web assets and plugins to the android project",
+    "Create src/lib/capacitor.ts utility file that: imports { Capacitor } from '@capacitor/core', exports `isNativePlatform()` function (returns Capacitor.isNativePlatform()), exports `getPlatform()` function (returns Capacitor.getPlatform())",
+    "Create src/hooks/useBackButton.ts hook that: imports App from '@capacitor/app', imports useNavigate and useLocation from react-router-dom, listens to 'backButton' event on native platforms, navigates back if history available or minimizes app if at root route ('/' or '/feed')",
+    "Create src/hooks/useStatusBar.ts hook that: imports StatusBar and Style from '@capacitor/status-bar', on mount sets status bar style to Dark and backgroundColor to #08070f on native platforms",
+    "Create src/hooks/useNativeApp.ts that combines useBackButton and useStatusBar into a single hook to call from App.tsx",
+    "Update src/App.tsx: import and call useNativeApp() hook inside the BrowserRouter (needs to be inside router context for useNavigate). Add a small NativeInit component that uses the hook and renders null, placed inside BrowserRouter.",
+    "Update package.json scripts to add: 'cap:sync': 'cap sync', 'cap:open': 'cap open android', 'cap:build': 'vite build && cap sync', 'cap:run': 'cap run android'",
+    "Update index.html: ensure the viewport meta tag includes 'viewport-fit=cover' (already present), and add a meta tag for Capacitor: <meta name='format-detection' content='telephone=no'>"
+  ],
+  "acceptance_criteria": [
+    "capacitor.config.ts exists with correct appId, appName, webDir, and plugin configs",
+    "android/ directory exists with valid Android project structure (app/build.gradle, AndroidManifest.xml)",
+    "vite.config.ts has base: './' set",
+    "src/lib/capacitor.ts exports isNativePlatform and getPlatform utility functions",
+    "src/hooks/useBackButton.ts handles Android back button navigation correctly",
+    "src/hooks/useStatusBar.ts configures status bar for dark theme",
+    "src/hooks/useNativeApp.ts combines native hooks",
+    "App.tsx uses the NativeInit component inside BrowserRouter",
+    "package.json has cap:sync, cap:open, cap:build, cap:run scripts",
+    "npm run build succeeds with all changes",
+    "npm run test passes"
+  ],
+  "verification": [
+    "Run `npm run build` and confirm exit code 0 (build succeeds with base: './')",
+    "Run `npm run test` and confirm exit code 0",
+    "Confirm android/ directory exists with `ls android/app/build.gradle.kts` or `ls android/app/build.gradle`",
+    "Confirm capacitor.config.ts exists and contains 'com.aurelix.app'",
+    "Run `npx cap sync` and confirm exit code 0"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

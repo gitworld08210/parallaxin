@@ -11,6 +11,7 @@ import { AppShell } from "@/components/layout/AppShell";
 import { ThemeProvider } from "@/contexts/ThemeProvider";
 import { CallProvider } from "@/contexts/CallProvider";
 import MessagesPasscodeGate from "@/components/messages/MessagesPasscodeGate";
+import useNativeApp from "@/hooks/useNativeApp";
 
 // Eager: critical first-paint routes
 const Feed = lazy(() => import("./pages/Feed"));
@@ -412,6 +413,11 @@ const RouteFallback = () => (
   </div>
 );
 
+const NativeInit = () => {
+  useNativeApp();
+  return null;
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider>
@@ -419,6 +425,7 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
+        <NativeInit />
         <AuthProvider>
           <CallProvider>
           <Suspense fallback={<RouteFallback />}>
